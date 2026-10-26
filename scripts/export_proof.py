@@ -19,7 +19,9 @@ import sys
 import time
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+# The checkout the command runs in, not this file's folder: the workflow runs a copy kept outside
+# the checkout while it switches between base and head.
+REPO = Path.cwd()
 DATA = "frontend/public/data"
 STAMP = re.compile(rb'"generated_at": ?"[^"]*"')
 CATALOGUE = ("catalog.json", "delivery.json")
