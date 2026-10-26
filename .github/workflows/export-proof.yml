@@ -1,0 +1,83 @@
+name: Export proof
+
+# By hand: build and export the named subjects on two refs against the same stored warehouse and
+# raw files, and fail unless every file they write is the same (scripts/export_proof.py,
+# docs/package.md step 3). Reads R2, publishes and commits nothing.
+#
+#     gh workflow run export-proof.yml --ref main -f head=<branch> -f subjects="welfare taxes"
+
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: The ref before the change
+        default: main
+      head:
+        description: The ref after the change (a branch or SHA)
+        required: true
+      subjects:
+        description: Subjects of platform/pipeline.yml, space-separated
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    # Run from main: the R2 credentials are secrets of the anton-portfolio environment.
+    if: github.ref == 'refs/heads/main'
+    environment: anton-portfolio
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      BASE: ${{ inputs.base }}
+      HEAD: ${{ inputs.head }}
+      SUBJECTS: ${{ inputs.subjects }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      # The tool from main, kept outside the checkout while base and head are checked out.
+      - run: cp scripts/export_proof.py "$RUNNER_TEMP/export_proof.py"
+      - name: Set up and restore the subjects' raw and feature files
+        uses: ./.github/actions/data-setup
+        with:
+          pull: ${{ inputs.subjects }}
+      - name: Fetch the stored warehouse and keep a clean copy
+        run: |
+          python platform/publish/warehouse_store.py pull --only db
+          cp "$PORTFOLIO_DB" "$RUNNER_TEMP/clean.duckdb"
+      # Unquoted $SUBJECTS on purpose: one argument per subject.
+      - name: Before
+        run: |
+          git checkout --quiet "$BASE"
+          pip install --no-deps --no-build-isolation -e .
+          cp "$RUNNER_TEMP/clean.duckdb" "$PORTFOLIO_DB"
+          python "$RUNNER_TEMP/export_proof.py" record "$RUNNER_TEMP/before.json" -- \
+            python platform/pipeline.py run $SUBJECTS --only dbt,export
+      - name: After
+        run: |
+          git checkout --quiet "$HEAD"
+          pip install --no-deps --no-build-isolation -e .
+          cp "$RUNNER_TEMP/clean.duckdb" "$PORTFOLIO_DB"
+          python "$RUNNER_TEMP/export_proof.py" record "$RUNNER_TEMP/after.json" -- \
+            python platform/pipeline.py run $SUBJECTS --only dbt,export
+      - name: Compare
+        run: |
+          python "$RUNNER_TEMP/export_proof.py" compare "$RUNNER_TEMP/before.json" "$RUNNER_TEMP/after.json" \
+            | tee -a "$GITHUB_STEP_SUMMARY"
