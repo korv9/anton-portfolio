@@ -1,0 +1,43 @@
+# The platform as a package
+
+The pipeline grew as 149 runnable scripts that found each other by editing `sys.path` (about
+260 times) and worked out their own paths (`ROOT` about 110 times, `PORTFOLIO_DB` 35). This
+moves them into one installable package, `portfolio` under `src/`, a step at a time.
+
+```bash
+pip install --require-hashes -r platform/requirements-ci.lock
+pip install --require-hashes -r platform/requirements-dev.lock
+pip install --no-deps --no-build-isolation -e .
+lint-imports
+```
+
+## Layers
+
+Higher layers may import lower ones, never the reverse; `lint-imports` enforces it in CI
+(`[tool.importlinter]` in `pyproject.toml`). Layers on one line are independent of each other.
+
+| Layer | Holds |
+|---|---|
+| `portfolio.pipeline` | the registry runner and the `portfolio` command |
+| `portfolio.publish` · `portfolio.quality` | exports per domain; the gate, measures and validity |
+| `portfolio.ml` · `portfolio.ingest` | embeddings and clustering; one subpackage per source |
+| `portfolio.storage` | raw store, delivery, releases, retention, warehouse backup |
+| `portfolio.core` | `config` (paths, environment), `io` (JSON, hashing), `db` (the warehouse) |
+
+The dbt project stays in `platform/models`, beside the package rather than inside it.
+
+## Steps
+
+Each step is one pull request. A step that moves an export is proven by the published files:
+their sha256 before and after must be identical.
+
+1. **Core.** `pyproject.toml`, `portfolio.core`, the layer contract, `requirements-dev.lock`.
+   Nothing existing moves; `platform/lib/common.py` stays until step 5.
+2. **Storage.** `lib/rawstore`, `lib/delivery`, `publish/release`, `upload`, `retention`,
+   `warehouse_store` move to `portfolio.storage`; the old paths stay as thin shims so
+   `pipeline.yml` and the workflows keep working.
+3. **Exports**, one domain at a time, onto `core.io` and `core.db`.
+4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
+   import the package instead of adding the working directory to `sys.path`.
+5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls
+   `python -m portfolio`; ruff and mypy run on `core` and `storage`.

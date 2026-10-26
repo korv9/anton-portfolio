@@ -1,0 +1,32 @@
+# The data platform as one installable package (`pip install -e .`), so scripts import
+# `portfolio.*` instead of editing sys.path. Moved over step by step; see docs/package.md.
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "portfolio-platform"
+version = "0.1.0"
+description = "The data platform behind antonernstsson.com: ingest, dbt, ML, quality and releases."
+requires-python = ">=3.12"
+# Runtime pins live in platform/requirements-*.lock; nothing is resolved from here.
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# Higher layers may import lower ones, never the reverse (checked with `lint-imports`).
+# Layers that do not exist yet are optional and start counting once they are moved in.
+[tool.importlinter]
+root_package = "portfolio"
+
+[[tool.importlinter.contracts]]
+name = "Platform layers"
+type = "layers"
+layers = [
+    "(portfolio.pipeline)",
+    "(portfolio.publish) | (portfolio.quality)",
+    "(portfolio.ml) | (portfolio.ingest)",
+    "(portfolio.storage)",
+    "portfolio.core",
+]

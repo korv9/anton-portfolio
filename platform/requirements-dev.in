@@ -1,0 +1,3 @@
+# Developer and CI tools that check the package itself (pyproject.toml).
+import-linter
+setuptools
