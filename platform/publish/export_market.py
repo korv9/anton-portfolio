@@ -17,19 +17,13 @@ Writes frontend/public/data/jobs/market.json from the gold market models (dbt ta
 """
 from __future__ import annotations
 
-import os
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
 
-import duckdb  # noqa: E402
-
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 OUT = PUBLIC / "jobs/market.json"
 
 
@@ -38,7 +32,7 @@ def rows(connection, sql: str) -> list[tuple]:
 
 
 def main() -> None:
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
     latest_year, last_month = rows(connection, """
         select latest_year, last_month_of_latest_year from gold.mart_market_period""")[0]
     years = [y for (y,) in rows(connection, """
@@ -102,7 +96,7 @@ def main() -> None:
                     select archive, source_url, sha256, ads from gold.mart_market_archives
                     order by archive""")]
 
-    write_json(OUT, {
+    io.write_json(OUT, {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "years": years,
         "latest_year": latest_year,
@@ -124,7 +118,7 @@ def main() -> None:
                    "the quarter's archive is published. An ad is not a hire; an ad without a "
                    "number of vacancies counts as one. The latest year is partial, so changes "
                    "compare the same complete months."),
-    })
+    }, newline=False)
     total = sum(n for _, n, _ in monthly["all"])
     print(f"market: {total:,} ads {years[0]}-{monthly['all'][-1][0]}, {len(fields)} fields, "
           f"{len(occupations)} occupation groups, {len(regions)} counties")

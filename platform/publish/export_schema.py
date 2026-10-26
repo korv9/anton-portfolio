@@ -17,19 +17,15 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 from datetime import date, datetime, timezone
 from decimal import Decimal
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+import duckdb
 
-import duckdb  # noqa: E402
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PLATFORM, PUBLIC, ROOT
 
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-PLATFORM = ROOT / "platform"
 OUT = PUBLIC / "schema"
 SAMPLE_ROWS = 8
 TEXT_LIMIT = 160
@@ -90,7 +86,7 @@ def summary(nodes: list[dict], layers: dict, tests: int) -> dict:
 
 def main() -> None:
     m = manifest()
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
     columns_by_table: dict[tuple[str, str], list[tuple[str, str]]] = {}
     for schema, table, column, kind in connection.execute("""
             select table_schema, table_name, column_name, data_type
@@ -203,7 +199,7 @@ def main() -> None:
         }
         nodes.append(entry)
         if sample and (sample["rows"] or sample.get("error")):
-            write_json(OUT / "samples" / f"{key.split('.', 1)[1]}.json", sample)
+            io.write_json(OUT / "samples" / f"{key.split('.', 1)[1]}.json", sample, newline=False)
 
     # How each table joins what it reads: the key columns both have.
     by_id = {n["id"]: n for n in nodes}
@@ -220,7 +216,7 @@ def main() -> None:
     for n in nodes:
         layers[n["layer"]] = layers.get(n["layer"], 0) + 1
     generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
-    write_json(OUT / "models.json", {
+    io.write_json(OUT / "models.json", {
         "generated_from": "dbt manifest and the DuckDB warehouse",
         "generated_at": generated_at,
         "dbt_version": m["metadata"].get("dbt_version"),
@@ -229,12 +225,12 @@ def main() -> None:
         "links": [link for link in links if link["from"] in all_nodes],
         "edges": edges,
         "nodes": nodes,
-    })
+    }, newline=False)
     # The projects hub shows each file's age next to its figures.
-    write_json(OUT / "summary.json", {
+    io.write_json(OUT / "summary.json", {
         **summary(nodes, layers, tests_total(m)),
         "generated_at": generated_at,
-    })
+    }, newline=False)
     print(f"schema: {len(nodes)} tables ({layers}), {len(links)} links, "
           f"{sum(1 for n in nodes if n['has_sample'])} with example rows")
 

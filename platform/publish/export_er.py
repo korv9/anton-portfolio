@@ -25,16 +25,14 @@ from __future__ import annotations
 import argparse
 import itertools
 import json
-import os
 import sys
 from datetime import date
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
 
-ROOT = Path(__file__).resolve().parents[2]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/schema/er.json"
+OUT = PUBLIC / "schema/er.json"
 MIN_COVERAGE = 0.9
 KEY_NAMES = {"session", "bill", "designation", "point", "household_type", "spending_group",
              "topic", "archive", "slug", "month", "year", "source", "decision_key", "date_day",
@@ -92,7 +90,7 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path)
     args = parser.parse_args()
     manifest = json.loads((args.manifest or newest_manifest()).read_text(encoding="utf-8"))
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
 
     nodes = {n["name"]: n for n in manifest["nodes"].values()
              if n["resource_type"] in ("model", "seed")
@@ -285,7 +283,7 @@ def main() -> int:
         "relations": sorted(relations, key=lambda r: (r["from"], r["to"], r["from_cols"])),
         "shared_codes": [{"code": "party", "tables": party_tables, "values": sorted(values)}],
     }
-    OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    io.write_json(OUT, out)
     by_basis: dict[str, int] = {}
     for r in relations:
         by_basis["+".join(r["basis"])] = by_basis.get("+".join(r["basis"]), 0) + 1

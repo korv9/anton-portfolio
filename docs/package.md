@@ -57,7 +57,12 @@ their sha256 before and after must be identical.
    files byte-identical, the timeline identical with CRLF normalised. The cluster *fitting*
    scripts in `clusters/` are ML stages and wait for step 4. `export_ai_act_diffusion.py` is left
    as it is: its mart is built by a hand-run stage outside the pipeline, so no warehouse holds it
-   and a change could not be proven.
+   and a change could not be proven. Then market, news, er and schema: the first runs found three
+   more unstable outputs (party counts and fetch status without an order, two ER relations tied
+   on their sort key, schema samples from a parallel `limit`), fixed first. Proof: 361 files,
+   identical with CRLF normalised and each run's own `generated_at` blanked; the 356 schema
+   samples identical byte for byte. Still to move: welfare, taxes, sfs, parliament, politics and
+   debates, which read dbt run results only a dbt run on the pulled warehouse produces.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
 5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls
