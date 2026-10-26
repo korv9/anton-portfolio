@@ -285,10 +285,10 @@ test('each platform card states a finding in a small chart that answers the keyb
   await expect
     .poll(() => page.locator('.hub-items .mini-head').count())
     .toBeGreaterThanOrEqual(11)
-  // Every project row has its picture; the two repositories close as a text-only pair.
+  // Every project row has its picture; the repositories, Homie's among them, close as text links.
   const rows = page.locator('.hub-items:not(.hub-repos) > li')
   await expect(rows.locator('.hub-row-visual')).toHaveCount(await rows.count())
-  await expect(page.locator('.hub-repos > li')).toHaveCount(2)
+  await expect(page.locator('.hub-repos > li')).toHaveCount(3)
   await expect(
     page.locator('.hub-items > li', { has: page.locator('a[href="#thesis"]') }),
   ).toContainText('72 of the 121')

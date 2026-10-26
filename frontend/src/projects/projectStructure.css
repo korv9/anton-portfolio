@@ -60,3 +60,111 @@
     gap: 1.5rem;
   }
 }
+/* The shared close of a project page: question, work, findings, steps, limits. */
+.project-brief {
+  display: grid;
+  gap: var(--sp-7);
+  margin-block: var(--sp-section) var(--sp-5);
+}
+.project-brief h3 {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.brief-lead {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.45;
+}
+.brief-built,
+.brief-how {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--sp-5) 3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.brief-built dt,
+.brief-how b {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--ink);
+  font-weight: 600;
+}
+.brief-built dd {
+  margin: 0;
+}
+.brief-built dd,
+.brief-how span,
+.brief-shows span,
+.brief-foot p {
+  color: var(--muted);
+  line-height: 1.55;
+}
+.brief-how {
+  counter-reset: step;
+}
+.brief-how li::before {
+  counter-increment: step;
+  content: counter(step, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: var(--small);
+  color: var(--muted);
+}
+.brief-shows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: var(--sp-5) 3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.brief-shows b {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  width: max-content;
+  max-width: 100%;
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brief-foot {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--sp-5) 3rem;
+  align-items: start;
+}
+.brief-foot p {
+  margin: 0;
+  max-width: var(--measure);
+}
+.brief-foot a {
+  align-self: end;
+  color: var(--ink);
+}
+:root[data-sw-theme='light'] .brief-shows b {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+@media (forced-colors: active) {
+  .brief-shows b {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}

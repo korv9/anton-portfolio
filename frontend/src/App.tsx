@@ -7,6 +7,7 @@ import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
+import ProjectBrief from './projects/ProjectBrief'
 import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
 import './site/site.css'
@@ -127,6 +128,7 @@ export default function App() {
               </Suspense>
             </ProjectStructure>
           </PageBoundary>
+          <ProjectBrief route={route} />
           <ProjectPager route={route} />
         </main>
       </div>

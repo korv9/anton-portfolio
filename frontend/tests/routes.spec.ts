@@ -91,7 +91,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (
       (await crumbs.count()) < 2 &&
       !(await page.locator('.project-context [aria-current]').count()) &&
-      href !== '#projects' &&
+      // #projects-platform is a part of the projects page itself.
+      !href.startsWith('#projects') &&
       !(await page.locator('.politik-long, .tech, .sweden').count())
     )
       unplaced.push(href)

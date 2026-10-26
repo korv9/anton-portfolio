@@ -170,7 +170,8 @@ export const HUB_GROUPS: HubGroup[] = [
     items: [
       registry('thesis'),
       registry('drugcomb'),
-      registry('homie'),
+      // A backend without a page of its own: the card opens the repository.
+      { ...registry('homie'), href: 'https://github.com/korv9/homie-api' },
       repo(
         'swedish-job-market-analytics',
         t('Analys av svenska arbetsmarknaden', 'Swedish job market analytics'),
