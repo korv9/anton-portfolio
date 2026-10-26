@@ -8,18 +8,12 @@ topics, how many items named each party in the last 30 days, and each source's l
 """
 from __future__ import annotations
 
-import os
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
 
-import duckdb  # noqa: E402
-
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 OUT = PUBLIC / "parliament/news.json"
 MAX_ITEMS = 600
 DAYS = 60
@@ -32,7 +26,7 @@ SOURCES = {
 
 
 def main() -> None:
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
     items = []
     for item_id, source, title, summary, url, published, parties, topics in connection.execute(f"""
             select item_id, source, title, summary, url, published_at, parties, topics
@@ -51,18 +45,18 @@ def main() -> None:
         select p.party, count(*) from gold.fct_news_item_party as p
         join gold.fct_news_item as n using (item_id)
         where n.is_political and n.published_at >= now() - interval 30 day
-        group by 1""").fetchall())
+        group by 1 order by 1""").fetchall())
     collected_since = connection.execute(
         "select min(first_seen) from gold.fct_news_item").fetchone()[0]
     status = {}
     for source, last_fetch, last_success, last_status, last_error, fetches, failed in \
-            connection.execute("select * from gold.mart_news_fetch_status").fetchall():
+            connection.execute("select * from gold.mart_news_fetch_status order by 1").fetchall():
         status[source] = {**SOURCES.get(source, {"name": source, "url": None}),
                           "last_fetch": last_fetch and last_fetch.isoformat(),
                           "last_success": last_success and last_success.isoformat(),
                           "last_status": last_status, "last_error": last_error,
                           "fetches": fetches, "failed_fetches": failed}
-    write_json(OUT, {
+    io.write_json(OUT, {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "days": DAYS,
         # The archive starts when collection started: the feeds cannot be read backwards.
@@ -78,7 +72,7 @@ def main() -> None:
                    "'Tidöpartierna'), or by the full name of a minister, Speaker or member in "
                    "office (Riksdagen's person list), and topics by keyword; an item can name "
                    "a party without being about it."),
-    })
+    }, newline=False)
     print(f"news: {len(items)} political items in {DAYS} days; parties {party_counts}")
 
 
