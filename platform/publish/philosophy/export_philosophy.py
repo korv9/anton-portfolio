@@ -65,7 +65,9 @@ def main() -> int:
                           where variant = '{variant}' order by passage_id""").fetchall()
         atlas[variant] = [[p, index[d], round(x, 3), round(y, 3), c] for p, d, x, y, c in pts]
     passages = {p: excerpt(t) for p, t in con.sql(
-        "select distinct passage_id, text from gold.mart_philosophy_atlas").fetchall()}
+        # Ordered: without it DuckDB's parallel scan reorders the keys, and the file's bytes
+        # (and so the catalogue's sha256) changed on every run with the same data.
+        "select distinct passage_id, text from gold.mart_philosophy_atlas order by passage_id").fetchall()}
     clusters = rows(con, """select variant, cluster_id, size, fingerprint, works, traditions, work_count,
                                    largest_work_share, work_entropy, is_cross_work, representatives,
                                    distinctive_terms, review_status, review_label
