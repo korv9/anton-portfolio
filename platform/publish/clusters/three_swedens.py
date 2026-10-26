@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import json
 
-import duckdb
-
 import stats
+
+from portfolio.core import db, io
 
 NAME = "three-swedens"
 SPACES = ["social", "jobs", "votes"]
@@ -46,10 +46,10 @@ def payload(con) -> dict:
 
 
 def main() -> None:
-    with duckdb.connect(str(stats.DATABASE), read_only=True) as con:
-        body = json.dumps(payload(con), ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n"
+    with db.connect(stats.DATABASE) as con:
+        body = io.dumps(payload(con), allow_nan=False)
     out = stats.PUBLIC / "clusters" / f"{NAME}.json"
-    out.write_text(body, encoding="utf-8", newline="\n")
+    io.write_text(out, body)
     print(f"clusters/{NAME}.json {len(body.encode('utf-8'))} bytes")
 
 

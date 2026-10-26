@@ -21,24 +21,34 @@ def unwrap(payload):
     return payload.get("data", payload) if isinstance(payload, dict) else payload
 
 
-def dumps(payload, *, indent: int | None = None, newline: bool = True, ensure_ascii: bool = False) -> str:
-    """The site's JSON text: compact unless indented, non-ASCII kept as is unless asked to escape."""
-    text = (json.dumps(payload, ensure_ascii=ensure_ascii, indent=indent) if indent
-            else json.dumps(payload, ensure_ascii=ensure_ascii, separators=(",", ":")))
+def dumps(payload, *, indent: int | None = None, newline: bool = True, ensure_ascii: bool = False,
+          allow_nan: bool = True) -> str:
+    """The site's JSON text: compact unless indented, non-ASCII kept as is unless asked to escape.
+
+    allow_nan=False raises on NaN or infinity instead of writing tokens browsers cannot parse.
+    """
+    options = {"ensure_ascii": ensure_ascii, "allow_nan": allow_nan}
+    text = (json.dumps(payload, indent=indent, **options) if indent
+            else json.dumps(payload, separators=(",", ":"), **options))
     return text + "\n" if newline else text
 
 
 def write_json(path, payload, *, indent: int | None = None, newline: bool = True,
-               ensure_ascii: bool = False) -> Path:
+               ensure_ascii: bool = False, allow_nan: bool = True) -> Path:
     """Write JSON, creating the folder, and return the path.
 
     Always LF: text mode on Windows would write CRLF, so a local run differed from CI's bytes
     (some exporters passed newline="\\n" for this, most did not). On Linux nothing changes.
     """
+    return write_text(path, dumps(payload, indent=indent, newline=newline, ensure_ascii=ensure_ascii,
+                                  allow_nan=allow_nan))
+
+
+def write_text(path, text: str) -> Path:
+    """Write UTF-8 text with LF line endings, creating the folder, and return the path."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(dumps(payload, indent=indent, newline=newline, ensure_ascii=ensure_ascii),
-                    encoding="utf-8", newline="\n")
+    path.write_text(text, encoding="utf-8", newline="\n")
     return path
 
 

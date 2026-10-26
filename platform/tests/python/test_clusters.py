@@ -217,7 +217,7 @@ def test_export_writes_nothing_when_one_file_is_too_large(tmp_path, monkeypatch)
     monkeypatch.setattr(export, "OUT", tmp_path)
     monkeypatch.setattr(export, "payload", lambda con, name: {"name": name, "pad": "x" * (10 if name == "a" else 300)})
     monkeypatch.setattr(export, "MAX_BYTES", 100)
-    monkeypatch.setattr(export.duckdb, "connect", lambda *a, **k: contextlib.nullcontext())
+    monkeypatch.setattr(export.db, "connect", lambda *a, **k: contextlib.nullcontext())
     with pytest.raises(SystemExit):
         export.main(["a", "b"])
     assert not list(tmp_path.iterdir())

@@ -52,7 +52,12 @@ their sha256 before and after must be identical.
    most exporters wrote CRLF, so a local run differed from CI's bytes; on Linux nothing changes.
    The SWEDEN proof is therefore LF-normalised (23 files identical; the catalogue compared
    without the sizes and hashes that embed the line endings); the two exporters that already
-   wrote LF are identical byte for byte.
+   wrote LF are identical byte for byte. Then the cluster exports (`clusters/export.py`,
+   `three_swedens.py`, through `clusters/stats.py`) and the AI governance timeline; the cluster
+   files byte-identical, the timeline identical with CRLF normalised. The cluster *fitting*
+   scripts in `clusters/` are ML stages and wait for step 4. `export_ai_act_diffusion.py` is left
+   as it is: its mart is built by a hand-run stage outside the pipeline, so no warehouse holds it
+   and a change could not be proven.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
 5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls
