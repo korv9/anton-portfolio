@@ -1,5 +1,5 @@
 /**
- * Replik (#replik): six sections and a method block, each finding read from its file at load
+ * Replik (#replik): six sections, each finding read from its file at load
  * time. Checks the page against the committed JSON, not against numbers typed into the test.
  */
 import { test, expect } from './test'
@@ -11,7 +11,6 @@ const SECTIONS = [
   'replik-votes',
   'replik-model',
   'replik-now',
-  'replik-method',
 ]
 
 test('Replik shows its six sections with findings from the data @mobile', async ({

@@ -198,12 +198,12 @@ export const posts: Post[] = [
       const bar = fixed(ARI_P05_BAR, 1)
       return k4.qualifies
         ? l(
-            `Municipalities per group; under each name, the towns nearest its centre. The groups pass their pre-registered stability check (bootstrap ARI 5th percentile ${p05}, bar ${bar})`,
-            `Kommuner per grupp; under varje namn orterna närmast gruppens mitt. Grupperna klarar sin förregistrerade stabilitetskontroll (bootstrap-ARI, 5:e percentilen ${p05}, gräns ${bar})`,
+            `Municipalities per group, with the towns nearest each centre. Stable (bootstrap ARI ${p05}, bar ${bar})`,
+            `Kommuner per grupp, med orterna närmast varje mitt. Stabila (bootstrap-ARI ${p05}, gräns ${bar})`,
           )
         : l(
-            `Municipalities per group; under each name, the towns nearest its centre. The groups failed their pre-registered stability check (bootstrap ARI 5th percentile ${p05} < ${bar}), so they describe, not find`,
-            `Kommuner per grupp; under varje namn orterna närmast gruppens mitt. Grupperna klarade inte sin förregistrerade stabilitetskontroll (bootstrap-ARI, 5:e percentilen ${p05} < ${bar}) och är en beskrivning, inget fynd`,
+            `Municipalities per group, with the towns nearest each centre. Not stable (bootstrap ARI ${p05} < ${bar}): a description, not a finding`,
+            `Kommuner per grupp, med orterna närmast varje mitt. Inte stabila (bootstrap-ARI ${p05} < ${bar}): en beskrivning, inget fynd`,
           )
     },
     render: () => <GroupSizes />,

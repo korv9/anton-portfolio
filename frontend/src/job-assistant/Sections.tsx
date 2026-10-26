@@ -51,33 +51,33 @@ export default function Sections({
         <ol className="ja-steps">
           <li>
             {l(
-              'The CV is read into a profile. Every skill keeps the CV line it comes from and one of three levels: used in work (LIA or employment), used in education or a project, or only listed. Wishes and interests are added by hand and never count as experience.',
-              'Cv:t läses in till en profil. Varje kompetens behåller cv-raden den kommer från och en av tre nivåer: använd i arbete (LIA eller anställning), i utbildning eller projekt, eller bara listad. Önskemål och intressen läggs till för hand och räknas aldrig som erfarenhet.',
+              'The CV becomes a profile. Each skill keeps its CV line and a level: used in work, in education or a project, or only listed.',
+              'Cv:t blir en profil. Varje kompetens behåller sin cv-rad och en nivå: använd i arbete, i utbildning eller projekt, eller bara listad.',
             )}
           </li>
           <li>
             {l(
-              'Several times a day the Data/IT ads that JobTech added, changed or removed are read. A removed ad stays, marked closed.',
-              'Flera gånger om dagen läses de Data/IT-annonser som JobTech lagt till, ändrat eller tagit bort. En borttagen annons finns kvar, markerad som stängd.',
+              'New, changed and removed Data/IT ads are read several times a day.',
+              'Nya, ändrade och borttagna Data/IT-annonser läses flera gånger om dagen.',
             )}
           </li>
           <li>
             {l(
-              'Rules compare each ad with the approved profile on role, skills, seniority and place. Strong means a wished role in the title, a wished place, not senior, and at least 60 % of three or more named skills shown in employment or internships. Skills shown only in projects or education are counted apart and never make an ad strong or possible. Education and conditions such as citizenship are listed apart and never change the class.',
-              'Regler jämför varje annons med den godkända profilen på roll, kompetenser, senioritet och ort. Stark betyder en önskad roll i titeln, en önskad ort, inte senior, och minst 60 % av tre eller fler nämnda kompetenser visade i anställning eller praktik. Kompetenser som bara finns i projekt eller utbildning räknas för sig och gör aldrig en annons stark eller möjlig. Utbildning och villkor som medborgarskap listas för sig och ändrar aldrig klassen.',
+              'Rules compare each ad with the profile on role, skills, seniority and place. Strong: a wished role and place, not senior, and at least 60 % of the named skills shown in work.',
+              'Regler jämför varje annons med profilen på roll, kompetenser, senioritet och ort. Stark: önskad roll och ort, inte senior, och minst 60 % av de nämnda kompetenserna visade i arbete.',
             )}
           </li>
           <li>
             {l(
-              'A language model may add a short explanation within a small daily budget. It is shown only if every sentence quotes the ad or the CV and every quote is found there.',
-              'En språkmodell kan lägga till en kort förklaring inom en liten daglig budget. Den visas bara om varje mening citerar annonsen eller cv:t och varje citat finns där.',
+              'A language model may add a short explanation. It is shown only if every quote is found in the ad or the CV.',
+              'En språkmodell kan lägga till en kort förklaring. Den visas bara om varje citat finns i annonsen eller cv:t.',
             )}
           </li>
         </ol>
         <p className="ja-muted">
           {l(
-            'Data: JobTech, Arbetsförmedlingen open data (CC0); this site is not affiliated with Arbetsförmedlingen. Built on the data platform behind this site: raw files with provenance, dbt models with contracts, versioned releases. ',
-            'Data: JobTech, Arbetsförmedlingens öppna data (CC0); sajten är inte knuten till Arbetsförmedlingen. Byggt på sajtens dataplattform: råfiler med proveniens, dbt-modeller med kontrakt, versionerade releaser. ',
+            'Data: JobTech, Arbetsförmedlingen open data (CC0). Not affiliated with Arbetsförmedlingen. ',
+            'Data: JobTech, Arbetsförmedlingens öppna data (CC0). Inte knuten till Arbetsförmedlingen. ',
           )}
           <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/job-assistant.md">
             {l('Method and code on GitHub', 'Metod och kod på GitHub')}
@@ -151,8 +151,8 @@ export default function Sections({
           <h2 id="ja-eval">{l('Is the list right?', 'Stämmer listan?')}</h2>
           <p>
             {l(
-              `I label ads as relevant, maybe or not relevant, both from the list and from a fixed sample of 30 ads outside it, to find misranked and missed jobs. Labelled so far: ${ev.labelled} of the 50 planned.`,
-              `Jag märker annonser som relevanta, kanske eller inte relevanta, både från listan och från ett fast urval på 30 annonser utanför den, för att hitta felrankade och missade jobb. Märkta hittills: ${ev.labelled} av 50 planerade.`,
+              `I label ads from the list and 30 outside it, to find misranked and missed jobs. Labelled: ${ev.labelled} of 50.`,
+              `Jag märker annonser från listan och 30 utanför den, för att hitta felrankade och missade jobb. Märkta: ${ev.labelled} av 50.`,
             )}
           </p>
           {ev.labelled > 0 && (

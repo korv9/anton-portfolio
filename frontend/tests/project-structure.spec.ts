@@ -15,7 +15,7 @@ test(
       'Why it matters',
     ])
     await expect(page.locator('.thesis-page .project-section p')).toHaveCount(
-      12,
+      10,
     )
     await expect(page.locator('.thesis-stats dd')).toHaveText([
       '21,633',

@@ -36,8 +36,8 @@ export default function CrossTraditions({
       </h2>
       <p>
         {l(
-          'The audit’s highest-ranked clusters after book-centring. Each draws on many books and traditions, and no single book supplies much of it. They are recurring contexts, shown as data with two passages each, not meanings.',
-          'Granskningens högst rankade kluster efter bokcentreringen. Vart och ett hämtar ur många böcker och traditioner, och ingen enskild bok står för mycket av det. De är återkommande sammanhang, visade som data med två ställen vardera, inte betydelser.',
+          'The highest-ranked clusters after book-centring, two passages each. Many books and traditions, no single book dominant.',
+          'De högst rankade klustren efter bokcentrering, två ställen vardera. Många böcker och traditioner, ingen enskild bok dominerar.',
         )}
       </p>
       <ol className="cross-cards">

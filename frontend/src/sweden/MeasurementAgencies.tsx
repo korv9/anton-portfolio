@@ -20,7 +20,7 @@ export default function Agencies({
           'Myndigheter som anges som källa i de två katalogerna',
         )}
       </h3>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption className="visually-hidden">
             {l(

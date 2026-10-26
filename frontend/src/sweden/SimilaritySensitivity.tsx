@@ -82,7 +82,7 @@ export default function SimilaritySensitivity({ s }: { s: Sensitivity }) {
     s.outcomes.results.find((r) => r.outcome === id && r.split === split)
   return (
     <>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(
@@ -114,7 +114,7 @@ export default function SimilaritySensitivity({ s }: { s: Sensitivity }) {
           </tbody>
         </table>
       </div>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(
@@ -148,7 +148,7 @@ export default function SimilaritySensitivity({ s }: { s: Sensitivity }) {
           </tbody>
         </table>
       </div>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(

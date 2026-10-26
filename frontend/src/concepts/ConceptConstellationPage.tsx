@@ -277,8 +277,8 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
         <ReportShell
           name={NAME}
           intro={l(
-            `${summary.concepts.length} concepts chosen by an editor, read across ${passages.toLocaleString('en-GB')} passages of myth, philosophy, sampled Riksdag speech paragraphs and the EU AI Act with one multilingual model. It shows semantic similarity, never that one text influenced another.`,
-            `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${passages.toLocaleString('sv')} passager ur myter, filosofi, ett urval stycken ur riksdagsanföranden och EU:s AI-förordning med en flerspråkig modell. Den visar semantisk likhet, aldrig att en text har påverkat en annan.`,
+            `${summary.concepts.length} concepts across ${passages.toLocaleString('en-GB')} passages of myth, philosophy, Riksdag speeches and the EU AI Act. Similarity, not influence.`,
+            `${summary.concepts.length} begrepp över ${passages.toLocaleString('sv')} passager ur myter, filosofi, riksdagsanföranden och EU:s AI-förordning. Likhet, inte påverkan.`,
           )}
           tabs={tabs()}
           path={route.path}
@@ -355,8 +355,8 @@ function Constellation({
           `${summary.concepts.length} begrepp efter familj, de fyra korpusarna i mitten`,
         )}
         lead={l(
-          'Every line has a stated type, drawn in its own style. Choose a concept to keep only its lines and read its profile.',
-          'Varje linje har en angiven typ, ritad i sin egen stil. Välj ett begrepp för att bara behålla dess linjer och läsa dess profil.',
+          'Each line type has its own style. Choose a concept to see only its lines.',
+          'Varje linjetyp har sin egen stil. Välj ett begrepp för att bara se dess linjer.',
         )}
         source={`${summary.run.model}; ${l('tensions and links chosen by an editor', 'spänningar och länkar valda av en redaktör')}`}
       >
@@ -708,8 +708,8 @@ function Profiles({
           'Varje sorts text har sitt eget ledande begrepp',
         )}
         lead={l(
-          `How often a concept is a passage’s closest of all ${summary.concepts.length}, per corpus, in times chance (1.0× = ${pct(chance, 1)}). Concepts are sorted by the corpus where they peak. A comparison within each passage, so it does not depend on how close a corpus’s language is to abstract sentences in general.`,
-          `Hur ofta ett begrepp är en passages närmaste av alla ${summary.concepts.length}, per korpus, i gånger slumpen (1,0× = ${pct(chance, 1)}). Begreppen är sorterade efter korpusen där de toppar. En jämförelse inom varje passage, så den beror inte på hur nära en korpus språk ligger abstrakta meningar i allmänhet.`,
+          `How often a concept is a passage’s closest of all ${summary.concepts.length}, per corpus, in times chance (1.0× = ${pct(chance, 1)}). Sorted by the corpus where it peaks.`,
+          `Hur ofta ett begrepp är en passages närmaste av alla ${summary.concepts.length}, per korpus, i gånger slumpen (1,0× = ${pct(chance, 1)}). Sorterat efter korpusen där det toppar.`,
         )}
         source={l(
           'Rank of each concept within each passage, against chance',
@@ -843,8 +843,8 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
           </h2>
           <p className="cc-hint">
             {l(
-              'Per corpus, the passages where this concept is among the three closest and most unusually so for that corpus. What the model finds closest to the anchor, not passages a reader has judged to be about the concept.',
-              'Per korpus de passager där begreppet är bland de tre närmaste och mest ovanligt nära för just den korpusen. Det modellen finner närmast ankaret, inte passager som en läsare har bedömt handla om begreppet.',
+              'Per corpus, the passages the model finds closest to this concept.',
+              'Per korpus, de passager som modellen finner närmast begreppet.',
             )}
           </p>
           {!passages ? (
@@ -905,8 +905,8 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
                 aria-hidden="true"
               />{' '}
               {l(
-                'Per pair of corpora, the two closest of their representative passages, shown only above the 95th percentile of random pairs between the same corpora. Similar wording; not influence, and not the same meaning.',
-                'För varje korpuspar de två närmaste av deras representativa passager, visade bara över 95:e percentilen för slumpvisa par mellan samma korpusar. Liknande formuleringar; inte påverkan och inte samma betydelse.',
+                'The closest passage pair per pair of corpora, above the 95th percentile of random pairs. Similar wording, not influence.',
+                'Det närmaste passageparet per korpuspar, över 95:e percentilen för slumpvisa par. Liknande formuleringar, inte påverkan.',
               )}
             </p>
             <ul className="cc-pairs">

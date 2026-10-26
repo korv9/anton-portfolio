@@ -146,7 +146,7 @@ export function redirectOf(path: string): string | undefined {
  * The reports: three tabs each, every tab an address of its own. All of them are laid out like
  * the start page: edge to edge, no breadcrumb or topic rows.
  */
-/** The SWEDEN research platform: the hub, the six research products and Connections. */
+/** The SWEDEN research platform on one page: its top and a section per product and Connections. */
 export const SWEDEN_PATHS = [
   '#sweden',
   '#sweden-matning',
@@ -173,7 +173,14 @@ export const CONCEPT_TABS = [
   '#concept-constellation',
 ]
 export const DRUGCOMB_TABS = ['#drugcomb', '#drugcomb-model', '#drugcomb-cells']
-const REPORTS = [PHILOSOPHY_TABS, SYMBOLIC_TABS, CONCEPT_TABS, DRUGCOMB_TABS]
+// SWEDEN is one page now: its addresses scroll to a section, like a report's tabs.
+const REPORTS = [
+  PHILOSOPHY_TABS,
+  SYMBOLIC_TABS,
+  CONCEPT_TABS,
+  DRUGCOMB_TABS,
+  SWEDEN_PATHS,
+]
 export function isLongRead(path: string) {
   return (
     REPORTS.flat().includes(path) ||

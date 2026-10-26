@@ -21,7 +21,8 @@ import { reducedMotion } from './stage'
 const MunicipalityField = lazy(() => import('./MunicipalityField'))
 
 /** The finer split's four groups; categorical colours, legible on the dark and light page. */
-export const GROUP_HEX = ['#E07A5F', '#3D9A8B', '#9B8BE0', '#C9A227']
+// Charcoal only: the four groups as ivory to grey, light to dark.
+export const GROUP_HEX = ['#f1efe7', '#b3ada2', '#8c877d', '#5f5b55']
 
 type Muni = {
   code: string

@@ -220,8 +220,8 @@ export const MAPS = (): MapSpec[] => [
       'Partiledardebatter efter ämne',
     ),
     meaning: l(
-      'Each point is a passage of whole sentences, 80 to 150 words, from 108 party-leader debates 1993–2026. The address to the Speaker, applause notes and endorsement lists were removed before embedding. Grey points belong to no group. A language model read sample passages from each group and proposed its name; the names are the model’s labels, not a person’s reading.',
-      'Varje punkt är en passage med hela meningar, 80 till 150 ord, ur 108 partiledardebatter 1993–2026. Tilltalet till talmannen, applådnoteringar och instämmandelistor togs bort före inbäddningen. Grå punkter hör inte till någon grupp. En språkmodell läste exempelpassager ur varje grupp och föreslog dess namn; namnen är modellens etiketter, inte en persons läsning.',
+      'Each point is a passage of 80 to 150 words from 108 party-leader debates, 1993–2026. Grey points belong to no group. Group names are a language model’s labels.',
+      'Varje punkt är en passage på 80 till 150 ord ur 108 partiledardebatter, 1993–2026. Grå punkter hör inte till någon grupp. Gruppnamnen är en språkmodells etiketter.',
     ),
     variants: [
       {
@@ -240,8 +240,8 @@ export const MAPS = (): MapSpec[] => [
       'Passager ur 113 filosofiska verk',
     ),
     meaning: l(
-      'Each point is a passage, at most 200 per work, from 113 works by 66 authors on Project Gutenberg. The search penalises groups that follow one author or translator, so a group here runs across works. The group names were proposed by a language model from sample passages.',
-      'Varje punkt är en passage, högst 200 per verk, ur 113 verk av 66 författare på Project Gutenberg. Sökningen ger avdrag för grupper som följer en författare eller översättare, så en grupp här spänner över flera verk. Gruppnamnen föreslogs av en språkmodell utifrån exempelpassager.',
+      'Each point is a passage from 113 works by 66 authors. Groups that follow one author or translator are penalised, so groups run across works. Names are a language model’s labels.',
+      'Varje punkt är en passage ur 113 verk av 66 författare. Grupper som följer en författare eller översättare får avdrag, så grupperna spänner över verk. Namnen är en språkmodells etiketter.',
     ),
     variants: [
       {
@@ -260,8 +260,8 @@ export const MAPS = (): MapSpec[] => [
       'Kommunprofiler: tolv indikatorer 2024',
     ),
     meaning: l(
-      'Each point is one of 280 municipalities, placed by the first two principal components of twelve indicators. Ten municipalities are left out: seven lack a value for social assistance and three for Riksdag turnout. The groups describe similar profiles; they do not rank wellbeing. Resampled 200 times, the four groups mostly return (mean bootstrap ARI 0.78), but in the weakest 5 % of rounds agreement falls to 0.50, under the preregistered bar of 0.6, so read them as a summary of profiles rather than a finding.',
-      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av tolv indikatorer. Tio kommuner är inte med: sju saknar värde för ekonomiskt bistånd och tre för valdeltagande. Grupperna beskriver liknande profiler och rangordnar inte välmående. Vid 200 omdragningar kommer de fyra grupperna oftast tillbaka (bootstrap-ARI i snitt 0,78), men i de svagaste 5 % av omgångarna sjunker överensstämmelsen till 0,50, under den förregistrerade gränsen 0,6, så läs dem som en sammanfattning av profiler och inte som ett fynd.',
+      'Each point is a municipality, placed by twelve indicators. The groups are similar profiles, not a ranking. Weak stability (bootstrap ARI 0.78, 0.50 in the worst 5 %): a summary, not a finding.',
+      'Varje punkt är en kommun, placerad efter tolv indikatorer. Grupperna är liknande profiler, ingen rangordning. Svag stabilitet (bootstrap-ARI 0,78, 0,50 i de sämsta 5 %): en sammanfattning, inget fynd.',
     ),
     variants: [
       {
@@ -512,47 +512,6 @@ export default function ClusterVisualsPage() {
       </header>
       <SentencePlacer spec={debates} />
       <ClusterGallery />
-      <details className="cv-method">
-        <summary>{l('How these maps are made', 'Så görs kartorna')}</summary>
-        <p>
-          {l(
-            'Each map is drawn straight from its published points. Clusters take the site’s warm greys by size, the largest brightest; points in no cluster sit dimmer underneath. The frame comes from the clustered points only, and the few points beyond it are left out rather than pressed onto the edge. Close points are similar in the model’s eyes; distances on a 2-D map are a picture, not a measurement.',
-            'Varje karta ritas direkt ur sina publicerade punkter. Klustren får sajtens varma grå toner efter storlek, det största ljusast; punkter utan kluster ligger dovare under. Ramen utgår bara från de klustrade punkterna, och de få punkterna utanför lämnas bort i stället för att tryckas mot kanten. Närliggande punkter liknar varandra enligt modellen; avstånd på en 2D-karta är en bild, inte ett mått.',
-          )}
-        </p>
-        <p>
-          {l(
-            'Your sentence is embedded with bge-m3 by Cloudflare Workers AI, is not logged or stored, and is placed at the closeness-weighted position of its 15 nearest passages. The placement is an approximation, not a new UMAP run.',
-            'Din mening bäddas in med bge-m3 av Cloudflare Workers AI, loggas eller sparas inte och placeras på den närhetsviktade positionen för sina 15 närmaste passager. Placeringen är en approximation, inte en ny UMAP-körning.',
-          )}
-        </p>
-        {maps.map((spec) => (
-          <p key={spec.id}>
-            <strong>{spec.title}.</strong> {spec.meaning}
-          </p>
-        ))}
-        <p>
-          <strong>
-            {l('Riksdag debates by session.', 'Riksdagsdebatter per riksmöte.')}
-          </strong>{' '}
-          {l(
-            'Up to 400 speech passages from each of the 33 sessions 1993/94–2025/26, placed by one shared topic model so the sessions compare like with like. It is an earlier, unvalidated model: most passages fit none of its topics, so read these maps as texture, not findings. The four earlier sessions come from an older topic model; only its twelve largest groups are drawn.',
-            'Upp till 400 talpassager ur vart och ett av de 33 riksmötena 1993/94–2025/26, placerade av en och samma ämnesmodell så att riksmötena går att jämföra. Det är en tidigare, ovaliderad modell: de flesta passager passar inget av dess ämnen, så läs kartorna som textur, inte som resultat. De fyra tidigare riksmötena kommer från en äldre ämnesmodell; bara dess tolv största grupper ritas.',
-          )}
-        </p>
-        <p>
-          <strong>
-            {l(
-              'Cancer drugs by synergy profile.',
-              'Cancerläkemedel efter synergiprofil.',
-            )}
-          </strong>{' '}
-          {l(
-            'Each point is a drug with at least 300 measured combinations in DrugCombDB, placed by its mean synergy per tissue and grouped by k-means, with k chosen by silhouette.',
-            'Varje punkt är ett läkemedel med minst 300 uppmätta kombinationer i DrugCombDB, placerat efter sin genomsnittliga synergi per vävnad och grupperat med k-means, där k valdes efter silhouette.',
-          )}
-        </p>
-      </details>
       {lab && <ClusterLab />}
     </div>
   )

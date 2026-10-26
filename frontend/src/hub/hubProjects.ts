@@ -63,8 +63,8 @@ export const HUB_GROUPS: HubGroup[] = [
         id: 'jobs',
         title: t('Arbetsförmedla', 'Arbetsförmedla'),
         text: t(
-          'Mitt cv matchat flera gånger om dagen mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
-          'My CV matched several times a day with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
+          'Mitt cv matchat mot aktuella Data/IT-annonser flera gånger om dagen. Varje klass visar annonsens mening och cv-raden bakom.',
+          'My CV matched with current Data/IT ads several times a day. Each class shows the ad sentence and the CV line behind it.',
         ),
         href: '#jobs',
         domain: 'jobs',
@@ -108,8 +108,8 @@ export const HUB_GROUPS: HubGroup[] = [
         id: 'meaning',
         title: t('What does it even mean?', 'What does it even mean?'),
         text: t(
-          'Ett flöde med alla diagram som plattformens publicerade data räcker till. Varje diagram visar vilken fil och källa det bygger på.',
-          'A feed of every chart the platform’s published data supports. Each chart shows the file and the source it is built from.',
+          'Varje diagram som plattformens data räcker till, med sin källa.',
+          'Every chart the platform’s data supports, with its source.',
         ),
         href: MEANING,
       },

@@ -150,8 +150,8 @@ export default function JobAssistantPage({ route }: { route: Route }) {
         </p>
         <p className="ja-lede">
           {l(
-            'Ads are read from JobTech several times a day and checked against my CV. Each match gets a class, never a percentage, and shows the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
-            'Annonserna läses från JobTech flera gånger om dagen och jämförs med mitt cv. Varje matchning får en klass, aldrig en procentsats, och visar annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
+            'Data/IT ads, checked against my CV several times a day. Each match gets a class, not a percentage, with the ad sentence and CV line behind it.',
+            'Data/IT-annonser, jämförda med mitt cv flera gånger om dagen. Varje matchning får en klass, inte en procentsats, med annonsens mening och cv-raden bakom.',
           )}
         </p>
         <p className="ja-mono">

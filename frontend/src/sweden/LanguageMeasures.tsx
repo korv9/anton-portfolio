@@ -98,7 +98,7 @@ export function MeasureAgreement({
     )
   }
   return (
-    <div className="sw-table-wrap">
+    <div className="sw-table-wrap" tabIndex={0}>
       <table className="sw-table">
         <caption>
           {l(
@@ -162,7 +162,7 @@ export function CompositionTable({
   )
   return (
     <>
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(

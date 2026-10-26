@@ -1,13 +1,7 @@
-/** Document titles, breadcrumbs and project paging from the project registry. */
+/** Document titles and breadcrumbs from the project registry. */
 import { l } from '../i18n'
 import { isLongRead, type Route } from '../router'
-import {
-  neighbours,
-  projectForRoute,
-  type Bilingual,
-  type ProjectEntry,
-} from '../projects/projectRegistry'
-import { PROJECT_PAGES, briefPath } from '../projects/ProjectBrief'
+import { projectForRoute, type Bilingual } from '../projects/projectRegistry'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -69,55 +63,6 @@ export function ProjectContext({ route }: { route: Route }) {
           </>
         )}
       </ol>
-    </nav>
-  )
-}
-
-/** Previous and next flagship project, at the bottom of a flagship's page. */
-type PagerLink = Pick<ProjectEntry, 'href' | 'title'>
-
-/** Previous and next in the order #projects lists the pages, else in registry order. */
-function pagerNeighbours(route: Route): {
-  previous?: PagerLink
-  next?: PagerLink
-} | null {
-  const path = briefPath(route)
-  if (path) {
-    const i = PROJECT_PAGES.findIndex((p) => p.href === path)
-    return { previous: PROJECT_PAGES[i - 1], next: PROJECT_PAGES[i + 1] }
-  }
-  const project = projectForRoute(route)
-  return project && !isLongRead(route.path) ? neighbours(project.id) : null
-}
-
-export function ProjectPager({ route }: { route: Route }) {
-  const pages = pagerNeighbours(route)
-  if (!pages) return null
-  const { previous, next } = pages
-  const link = (p: PagerLink | undefined, dir: 'previous' | 'next') =>
-    p ? (
-      <a
-        className={`pager-${dir}`}
-        href={p.href}
-        rel={dir === 'previous' ? 'prev' : 'next'}
-      >
-        <small>
-          {dir === 'previous'
-            ? l('Previous project', 'Föregående projekt')
-            : l('Next project', 'Nästa projekt')}
-        </small>
-        <span>{b(p.title)}</span>
-      </a>
-    ) : (
-      <span />
-    )
-  return (
-    <nav
-      className="project-pager ds-container"
-      aria-label={l('More projects', 'Fler projekt')}
-    >
-      {link(previous, 'previous')}
-      {link(next, 'next')}
     </nav>
   )
 }

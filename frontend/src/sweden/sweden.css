@@ -1,10 +1,9 @@
 /*
  * SWEDEN research platform. Every rule is scoped to .sweden, so the homepage (.home-shell) and
- * the other projects never see these tokens. Dark by default; the header's theme control
- * switches to light (html[data-sw-theme='light']). Type: Archivo Expanded for the name,
+ * the other projects never see these tokens. Charcoal only: ivory and greys, no hues. Type: Archivo Expanded for the name,
  * IBM Plex Mono for navigation, labels and numbers, the site's Helvetica Neue for questions and
- * headings (docs/site-goals.md, "One look"), * all self-hosted under the OFL (public/fonts/sweden). Scene panels are the one place with
- * translucency, blur and shadow (docs/sweden-design.md); below the scene the page stays flat.
+ * headings (docs/site-goals.md, "One look"), * all self-hosted under the OFL (public/fonts/sweden). The page is flat: one
+ * scrolling page, a short section per product (template.tsx).
  */
 @font-face {
   font-family: 'SW Archivo';
@@ -33,17 +32,17 @@
   --sw-ink: #f1efe7;
   --sw-muted: #aaa59a;
   --sw-line: rgba(241, 239, 231, 0.13);
-  --sw-accent: #c9bcf2;
-  --sw-seq-lo: #3a3256;
-  --sw-seq-hi: #e3d8ff;
-  --sw-div-neg: #e08a5c;
+  --sw-accent: #ebe6da;
+  --sw-seq-lo: #34332f;
+  --sw-seq-hi: #f1efe7;
+  --sw-div-neg: #8c877d;
   --sw-div-mid: #44433f;
-  --sw-div-pos: #6fb3d2;
+  --sw-div-pos: #d9d4c8;
   --sw-base: #3a3936;
   --sw-band: #1d1d1b;
-  --sw-pill: #d9cff7;
+  --sw-pill: #d9d4c8;
   --sw-band-ink: #f1f0ec;
-  --sw-stamp: #e2b65a;
+  --sw-stamp: #c6c1b6;
   --sw-font-name: 'SW Archivo', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sw-font-display: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --sw-font-mono:
@@ -58,9 +57,9 @@
   --color-chart-neutral: var(--sw-accent);
   --color-chart-muted: var(--sw-seq-lo);
   --series-1: var(--sw-accent);
-  --series-2: var(--sw-div-pos);
+  --series-2: #b3ada2;
   --series-3: var(--sw-div-neg);
-  --series-4: #8d8b93;
+  --series-4: #6f6b63;
   --series-5: var(--sw-seq-hi);
   --wash: rgba(237, 230, 214, 0.08);
   --page: var(--sw-bg);
@@ -68,38 +67,12 @@
   background: var(--sw-bg);
   color: var(--sw-ink);
   font-family: var(--font, system-ui, sans-serif);
-  margin-inline: calc(-1 * var(--gutter, 0px));
-  min-height: 100svh;
-}
-:root[data-sw-theme='light'] .sweden {
-  --sw-bg: #e9e8e4;
-  --sw-glass: rgba(250, 249, 246, 0.88);
-  --sw-solid: #f8f7f4;
-  --sw-ink: #141416;
-  --sw-muted: #55545b;
-  --sw-line: rgba(20, 20, 22, 0.14);
-  --sw-accent: #5a4a8c;
-  --sw-seq-lo: #bcb1dc;
-  --sw-seq-hi: #2c1f5e;
-  --sw-div-neg: #b4562a;
-  --sw-div-mid: #c9c7c2;
-  --sw-div-pos: #2f6f8f;
-  --sw-base: #b9b6af;
-  --sw-stamp: #8a6a1f;
-  --series-4: #7a7880;
-  --wash: rgba(20, 20, 22, 0.06);
-  color-scheme: light;
 }
 /* The SWEDEN pages paint the whole window, under the site's own background. */
 :root:has(.site-shell[data-workspace='sweden']) body,
 .site-shell[data-workspace='sweden'] {
   background: var(--sw-page, #242422);
 }
-:root[data-sw-theme='light']:has(.site-shell[data-workspace='sweden']) body,
-:root[data-sw-theme='light'] .site-shell[data-workspace='sweden'] {
-  --sw-page: #e9e8e4;
-}
-
 /* The site's #main heading rule has an id in it; match it so SWEDEN's headings keep their weight. */
 .sweden h1,
 .sweden h2,
@@ -150,155 +123,6 @@
   cursor: pointer;
 }
 
-/* Header: a solid band fixed over the top of the scene, so it follows the reader down the
-   page. The scene panels start below it (top: 7.75rem). */
-.sw-header {
-  position: fixed;
-  inset: 0 0 auto;
-  z-index: 50;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  padding: 1.375rem max(1.875rem, var(--gutter, 1rem)) 0.25rem;
-  background: var(--sw-bg);
-}
-/* In-page jumps land below the header. */
-:root:has(.sw-header) {
-  scroll-padding-top: 8rem;
-}
-/* Pages without a scene (the meaning page) keep the header in the flow, sticky. */
-.sweden.sw-header-host {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  min-height: 0;
-  margin-inline: 0;
-}
-.sw-header-host .sw-header {
-  position: relative;
-}
-.sw-header-main {
-  min-width: 0;
-}
-.sw-wordmark {
-  display: inline-block;
-  font: 800 1.5625rem/1 var(--sw-font-name);
-  font-stretch: 125%;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-decoration: none;
-  color: var(--sw-ink);
-}
-.sw-nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 1.375rem;
-  margin-top: 0.75rem;
-  font: 400 0.875rem/1 var(--sw-font-mono);
-  letter-spacing: 0.06em;
-}
-.sw-nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  color: var(--sw-muted);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-.sw-nav a:hover,
-.sw-nav a[aria-current='page'] {
-  color: var(--sw-ink);
-}
-.sw-nav a[aria-current='page'] span,
-.sw-nav a[aria-current='page']:first-child {
-  text-decoration: underline;
-  text-underline-offset: 0.55em;
-  text-decoration-thickness: 1px;
-}
-.sw-nav b {
-  margin-right: 0.4em;
-  font-weight: 500;
-  color: var(--sw-accent);
-}
-.sw-header-tools {
-  display: flex;
-  gap: 0.625rem;
-  flex: none;
-}
-.sw-box {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  padding: 0 1rem;
-  border: 1px solid color-mix(in srgb, var(--sw-ink) 28%, transparent);
-  border-radius: 4px;
-  background: color-mix(in srgb, var(--sw-bg) 40%, transparent);
-  color: var(--sw-ink);
-  font: 500 0.875rem/1 var(--sw-font-mono);
-  letter-spacing: 0.14em;
-  cursor: pointer;
-}
-.sw-box:hover {
-  border-color: var(--sw-ink);
-}
-.sw-menu {
-  margin: 0 0 0 auto;
-  width: min(25rem, 92vw);
-  max-width: none;
-  height: 100dvh;
-  max-height: none;
-  padding: 1.375rem 1.75rem;
-  border: 0;
-  border-left: 1px solid var(--sw-line);
-  background: var(--sw-solid);
-  color: var(--sw-ink);
-}
-.sw-menu::backdrop {
-  background: rgba(0, 0, 0, 0.45);
-}
-.sw-menu-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-.sw-menu-top .sw-wordmark {
-  font-size: 1.125rem;
-}
-.sw-menu nav {
-  display: grid;
-  gap: 0.125rem;
-}
-.sw-menu h2 {
-  margin: 1.25rem 0 0.375rem;
-  font: 500 0.6875rem/1 var(--sw-font-mono);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--sw-muted);
-}
-.sw-menu a {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 2.75rem;
-  padding: 0 0.625rem;
-  margin: 0 -0.625rem;
-  border-radius: 4px;
-  font: 500 1.125rem/1.2 var(--sw-font-display);
-  text-decoration: none;
-}
-.sw-menu a:hover,
-.sw-menu a[aria-current='page'] {
-  background: color-mix(in srgb, var(--sw-ink) 8%, transparent);
-}
-.sw-menu a small {
-  font: 500 0.75rem/1 var(--sw-font-mono);
-  color: var(--sw-accent);
-}
-
 /* Status and evidence stamps: text, not colour alone */
 .sw-stamp {
   display: inline-block;
@@ -319,202 +143,192 @@
   margin-left: 0;
 }
 
-/* Scene: the full viewport. The visual fills it; four panels sit on fixed places above. */
-.sw-page {
-  position: relative;
+/* One page: the intro, a sticky jump row, then a short section per product. */
+.sw-one {
+  padding: 0 var(--gutter, 1rem) 4rem;
+  max-width: 64rem;
+  margin-inline: auto;
 }
-.sw-scene {
-  position: relative;
-  height: 100svh;
-  min-height: 40rem;
-  overflow: hidden;
+.sw-intro {
+  padding: 2.5rem 0 1rem;
 }
-.sw-scene-visual {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
+.sw-intro h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
+  line-height: 1.08;
 }
-.sw-panel {
-  position: absolute;
-  z-index: 3;
-  padding: 1rem 1.125rem;
-  background: var(--sw-glass);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--sw-line);
-  border-radius: 8px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
-}
-.sw-scene-title {
-  left: max(1.875rem, var(--gutter, 1rem));
-  top: 7.75rem;
-  width: 24.5rem;
-  max-height: calc(100svh - 9.5rem);
-  overflow: auto;
-}
-.sw-scene-legend {
-  right: max(1.875rem, var(--gutter, 1rem));
-  top: 7.75rem;
-  width: 19rem;
-  font-size: 0.8125rem;
-}
-.sw-scene-control {
-  left: calc(max(1.875rem, var(--gutter, 1rem)) + 25.5rem);
-  right: calc(max(1.875rem, var(--gutter, 1rem)) + 21rem);
-  bottom: 1.875rem;
-}
-.sw-scene-info {
-  right: max(1.875rem, var(--gutter, 1rem));
-  bottom: 1.875rem;
-  width: 19rem;
-  max-height: 42svh;
-  overflow: auto;
-  font-size: 0.875rem;
-}
-.sw-scene-legend > b:first-child,
-.sw-scene-legend > .sw-legend-head {
-  display: block;
-  margin: -1rem -1.125rem 0.75rem;
-  padding: 0.75rem 1.125rem 0.625rem;
-  border-bottom: 1px solid var(--sw-line);
-  font: 500 0.71875rem/1.3 var(--sw-font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.sw-lead {
+  margin: 0.75rem 0 0;
+  max-width: 40rem;
   color: var(--sw-muted);
+}
+.sw-back {
+  display: inline-block;
+  margin-bottom: 1rem;
+  font: 400 0.8125rem/1 var(--sw-font-mono);
+  color: var(--sw-muted);
+  text-decoration: none;
+}
+@media (min-width: 1024px) {
+  .sw-back {
+    display: none;
+  }
+}
+.sw-jump {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  gap: 0 1.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 0.5rem 0;
+  background: var(--sw-bg);
+  font: 400 0.8125rem/1 var(--sw-font-mono);
+  letter-spacing: 0.04em;
+}
+.sw-jump a {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--sw-muted);
+  text-decoration: none;
+}
+.sw-jump a:hover,
+.sw-jump a[aria-current] {
+  color: var(--sw-ink);
+}
+.sw-jump b {
+  margin-right: 0.4em;
+  font-weight: 500;
+  color: var(--sw-ink);
+}
+.sw-section {
+  padding: 4.5rem 0 1rem;
+  scroll-margin-top: 3.5rem;
 }
 .sw-kicker {
   margin: 0 0 0.625rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.4rem;
+  gap: 0.25rem 0.6rem;
   font: 500 0.71875rem/1.3 var(--sw-font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--sw-muted);
 }
-.sw-scene-title h1 {
-  margin: 0;
-  font-size: clamp(1.625rem, 2.4vw, 2.125rem);
-  line-height: 1.06;
+.sw-id {
+  color: var(--sw-ink);
 }
-.sw-line {
-  margin: 0.625rem 0 0;
-  font-size: 0.84375rem;
-  color: color-mix(in srgb, var(--sw-ink) 75%, var(--sw-muted));
+.sw-scene-title h2 {
+  margin: 0;
+  font-size: clamp(1.375rem, 2vw, 1.75rem);
+  line-height: 1.12;
+  max-width: 44rem;
 }
 .sw-finds {
-  margin: 0.875rem 0 0;
-  padding: 0.75rem 0 0;
-  border-top: 1px solid var(--sw-line);
+  margin: 1rem 0 0;
+  padding: 0;
   list-style: none;
   display: grid;
-  gap: 0.125rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem 2rem;
 }
+.sw-find > p,
 .sw-find > button {
-  display: grid;
-  grid-template-columns: 1.75rem 1fr;
-  gap: 0.375rem;
-  width: calc(100% + 1rem);
-  min-height: 2.75rem;
-  margin: 0 -0.5rem;
-  padding: 0.4375rem 0.5rem;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 6px;
   background: none;
   color: var(--sw-ink);
-  font: 0.84375rem/1.4 var(--font, system-ui, sans-serif);
+  font: 0.9375rem/1.45 var(--font, system-ui, sans-serif);
   text-align: left;
+}
+.sw-find > button {
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--sw-line);
+  text-underline-offset: 0.25em;
 }
-.sw-find > button:hover,
-.sw-find > button[aria-expanded='true'] {
-  background: color-mix(in srgb, var(--sw-ink) 6%, transparent);
-}
-.sw-find-n {
-  font: 500 0.75rem/1.6 var(--sw-font-mono);
-  color: var(--sw-accent);
-}
-.sw-finding-flag {
-  display: block;
-  margin-bottom: 0.15rem;
-  font: 500 0.65625rem/1.3 var(--sw-font-mono);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--sw-div-neg);
-}
-.sw-find-more {
-  margin: 0.25rem 0 0.5rem 1.75rem;
+.sw-find .sw-finding-values {
+  margin-top: 0.375rem;
   font-size: 0.8125rem;
   color: var(--sw-muted);
 }
-.sw-find-more ul {
+.sw-find .sw-finding-values ul {
   margin: 0;
   padding-left: 1rem;
 }
-.sw-find-more p {
-  margin: 0.4rem 0 0;
+/* Key numbers only: the first three values; the rest are under Explore. */
+.sw-find .sw-finding-values li:nth-child(n + 4) {
+  display: none;
 }
-.sw-more {
-  display: inline-block;
-  margin-top: 0.75rem;
-  font: 400 0.75rem/1.4 var(--sw-font-mono);
-  letter-spacing: 0.04em;
+.sw-scene-visual {
+  position: relative;
+  height: min(60svh, 34rem);
+  min-height: 20rem;
+  margin-top: 1.5rem;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.sw-scene-visual > :not(.sw-stage) {
+  width: 100%;
+  max-height: 100%;
+  overflow: auto;
+}
+.sw-line {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
   color: var(--sw-muted);
-  text-decoration: none;
 }
-.sw-more:hover {
-  color: var(--sw-ink);
+.sw-scene-panels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  margin-top: 1rem;
+  font-size: 0.8125rem;
+}
+.sw-scene-panels > * {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+.sw-scene-legend > b:first-child,
+.sw-scene-legend > .sw-legend-head {
+  display: block;
+  margin-bottom: 0.5rem;
+  font: 500 0.71875rem/1.3 var(--sw-font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sw-muted);
+}
+.sw-connections {
+  display: grid;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+.sw-connection h3 {
+  margin: 0 0 0.375rem;
+  font-size: 1.0625rem;
+}
+.sw-section .explore-section {
+  margin-top: 1.5rem;
 }
 .sw-question {
   margin: 0.5rem 0;
   font: 400 1.25rem/1.35 var(--sw-font-display);
 }
 
-/* Between desktop and phone: the control takes its own row above the info panel. */
-@media (max-width: 1100px) {
-  .sw-scene-control {
-    left: max(1.875rem, var(--gutter, 1rem));
-    right: max(1.875rem, var(--gutter, 1rem));
-    bottom: auto;
-    top: auto;
-    bottom: 1rem;
-  }
-  .sw-scene-info {
-    bottom: 6.5rem;
-    max-height: 30svh;
-  }
-}
-
 /* Sections below the scene */
 .sw-findings,
 .sw-explore,
 .sw-method,
-.sw-readings,
-.sw-related {
+.sw-readings {
   padding: 2rem var(--gutter, 1rem);
   max-width: 76rem;
   margin-inline: auto;
-}
-/* A page without a scene (Connections): its header clears the fixed SWEDEN header. */
-.sw-hub-head {
-  padding: 8rem var(--gutter, 1rem) 0;
-  max-width: 76rem;
-  margin-inline: auto;
-}
-.sw-hub-head h1 {
-  margin: 0;
-  font-size: clamp(2rem, 3.4vw, 3rem);
-  line-height: 1.04;
-}
-.sw-hub-head .sw-question {
-  margin: 0.75rem 0 1rem;
-}
-@media (max-width: 760px) {
-  .sw-hub-head {
-    padding: 2rem 1rem 0;
-  }
 }
 .sw-findings-grid,
 .sw-readings-grid {
@@ -608,26 +422,6 @@
   color: var(--sw-muted);
 }
 
-.sw-related ul {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.sw-related a {
-  display: grid;
-  gap: 0.35rem;
-  padding: 1rem;
-  border: 1px solid var(--sw-line);
-  border-radius: 2px;
-  text-decoration: none;
-}
-.sw-related a:hover b {
-  text-decoration: underline;
-}
-
 /* Empty state */
 .sw-empty {
   padding: 1.25rem;
@@ -707,70 +501,6 @@
   padding: 0 0.5rem;
 }
 
-/* Phone: the header and panels leave the scene and stack around it. */
-@media (max-width: 760px) {
-  .sw-header {
-    position: sticky;
-    top: 0;
-    padding: 1rem 1rem 0.25rem;
-  }
-  .sw-wordmark {
-    font-size: 1.1875rem;
-  }
-  .sw-nav {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    gap: 0 1.125rem;
-    margin-top: 0.25rem;
-    scrollbar-width: none;
-  }
-  .sw-nav a {
-    flex: none;
-  }
-  .sw-header-tools {
-    gap: 0.5rem;
-  }
-  .sw-header-tools .sw-box {
-    padding: 0 0.75rem;
-  }
-  .sw-scene {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-    padding: 0 1rem 1rem;
-  }
-  .sw-scene-visual {
-    position: relative;
-    order: 2;
-    height: 62svh;
-    min-height: 22rem;
-    margin: 0 -1rem;
-  }
-  .sw-panel {
-    position: static;
-    width: auto;
-    max-height: none;
-  }
-  .sw-scene-title {
-    order: 1;
-  }
-  .sw-scene-control {
-    order: 3;
-  }
-  .sw-scene-info {
-    order: 4;
-  }
-  .sw-scene-legend {
-    order: 5;
-  }
-  .sw-method-body {
-    padding-left: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .sweden *,
   .sweden *::before,
@@ -784,7 +514,6 @@
 .sw-matrix {
   width: 100%;
   align-self: center;
-  padding-top: 14rem;
 }
 .sw-matrix .sw-table td.sw-cell {
   padding: 0;
@@ -1070,7 +799,7 @@ td.sw-cell[data-zero] .sw-cell-button span {
 .sw-stage-tip {
   position: absolute;
   left: 50%;
-  top: 7.75rem;
+  top: 0.75rem;
   transform: translateX(-50%);
   z-index: 2;
   padding: 0.4rem 0.75rem;
@@ -1170,123 +899,6 @@ td.sw-cell[data-zero] .sw-cell-button span {
 .sw-scene-control .sw-controls {
   margin: 0;
   align-items: center;
-}
-
-/* 2D in the scene's place: scrolls inside the free area between the panels. */
-.sw-scene-visual > :not(.sw-stage) {
-  width: 100%;
-  max-height: 100%;
-  overflow: auto;
-  padding: 7.75rem calc(max(1.875rem, var(--gutter, 1rem)) + 21rem) 7rem
-    calc(max(1.875rem, var(--gutter, 1rem)) + 26rem);
-  box-sizing: border-box;
-}
-@media (max-width: 760px) {
-  .sw-scene-visual > :not(.sw-stage) {
-    padding: 0 1rem;
-  }
-}
-
-/* Hub: the question and the six pages over the shared map */
-.sw-hub-fade {
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: min(48rem, 60%);
-  z-index: 2;
-  pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--sw-bg) 94%, transparent) 0%,
-    color-mix(in srgb, var(--sw-bg) 78%, transparent) 70%,
-    transparent 100%
-  );
-}
-.sw-hub-intro {
-  position: absolute;
-  z-index: 3;
-  left: max(1.875rem, var(--gutter, 1rem));
-  top: 8rem;
-  width: min(36rem, 46%);
-}
-.sw-hub-intro h1 {
-  margin: 0;
-  font-size: clamp(2.5rem, 4vw, 3.5rem);
-  line-height: 1.02;
-  letter-spacing: -0.015em;
-}
-.sw-hub-lead {
-  margin: 1rem 0 1.5rem;
-  font: 400 1.25rem/1.4 var(--sw-font-display);
-  color: color-mix(in srgb, var(--sw-ink) 82%, var(--sw-muted));
-}
-.sw-doors {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  border-bottom: 1px solid var(--sw-line);
-}
-.sw-doors a {
-  display: grid;
-  grid-template-columns: 2.25rem 1fr auto;
-  gap: 0.75rem;
-  align-items: baseline;
-  min-height: 2.75rem;
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--sw-line);
-  text-decoration: none;
-}
-.sw-doors a:hover .sw-door-name {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-.sw-door-id {
-  font: 500 0.875rem/1 var(--sw-font-mono);
-  color: var(--sw-accent);
-}
-.sw-door-name {
-  display: block;
-  font: 500 1.3125rem/1.15 var(--sw-font-display);
-}
-.sw-door-q {
-  display: block;
-  margin-top: 0.15rem;
-  font-size: 0.8125rem;
-  color: var(--sw-muted);
-}
-.sw-doors .sw-stamp {
-  margin-left: 0;
-}
-.sw-hub-caption {
-  position: absolute;
-  z-index: 3;
-  right: max(1.875rem, var(--gutter, 1rem));
-  bottom: 1.5rem;
-  margin: 0;
-  font: 400 0.75rem/1.5 var(--sw-font-mono);
-  letter-spacing: 0.04em;
-  color: var(--sw-muted);
-  text-align: right;
-}
-@media (max-width: 760px) {
-  .sw-hub-scene .sw-hub-intro,
-  .sw-hub-scene .sw-hub-caption {
-    position: static;
-    width: auto;
-  }
-  .sw-hub-scene .sw-hub-intro {
-    order: 1;
-  }
-  .sw-hub-scene .sw-scene-visual {
-    order: 2;
-    height: 52svh;
-  }
-  .sw-hub-scene .sw-hub-caption {
-    order: 3;
-    text-align: left;
-  }
-  .sw-hub-fade {
-    display: none;
-  }
 }
 
 /* The shared cluster scatter's legend, on the SWEDEN page colours */

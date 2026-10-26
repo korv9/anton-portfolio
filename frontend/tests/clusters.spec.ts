@@ -40,13 +40,9 @@ test(
         `${n.toLocaleString('en-GB')} points`,
       )
     }
-    // No legends in the gallery; the method sits folded at the bottom.
+    // No legends in the gallery, and no method block under it.
     await expect(tiles.locator('.cv-legend')).toHaveCount(0)
-    const method = page.locator('details.cv-method')
-    await expect(method).not.toHaveAttribute('open')
-    await method.locator('summary').click()
-    await expect(method).toContainText('proposed its name')
-    await expect(method).toContainText('bootstrap ARI')
+    await expect(page.locator('details.cv-method')).toHaveCount(0)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(page.viewportSize()!.width)

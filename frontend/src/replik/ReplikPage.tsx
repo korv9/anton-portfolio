@@ -32,7 +32,6 @@ import {
   record,
   topicId,
   topicName,
-  unnamed,
   yearly,
   type DebateTopics,
   type Eras,
@@ -150,8 +149,8 @@ function EraSection({ eras }: { eras: Eras | null }) {
     >
       <Finding>
         {l(
-          `Grouping the ${eras.topic_shares.sessions.length} sessions by what party leaders talk about gives ${cols.length} eras, with breaks at ${eras.breaks.join(', ')}. They are far tighter than chance (session-order shuffle p = ${num(dx.null.p, 3)}) and line up with governments (AMI ${num(dx.ami_reference.government, 2)}).`,
-          `Grupperar man de ${eras.topic_shares.sessions.length} riksmötena efter vad partiledarna talar om blir det ${cols.length} epoker, med brott ${eras.breaks.join(', ')}. De hänger ihop långt bättre än slumpen (blandad ordning, p = ${num(dx.null.p, 3)}) och följer regeringarna (AMI ${num(dx.ami_reference.government, 2)}).`,
+          `${eras.topic_shares.sessions.length} sessions, grouped by what party leaders talk about: ${cols.length} eras, with breaks at ${eras.breaks.join(', ')}. Tighter than chance (p = ${num(dx.null.p, 3)}).`,
+          `${eras.topic_shares.sessions.length} riksmöten, grupperade efter vad partiledarna talar om: ${cols.length} epoker, med brott ${eras.breaks.join(', ')}. Tätare än slumpen (p = ${num(dx.null.p, 3)}).`,
         )}
       </Finding>
       <figure className="rk-figure">
@@ -198,15 +197,15 @@ function EraSection({ eras }: { eras: Eras | null }) {
         </div>
         <figcaption>
           {l(
-            `Share of each era's debate words that fall in a topic, mean of its sessions. The rows are the topic that most sets each era apart, of ${eras.topic_shares.topics.length}, named by its top Swedish words.`,
-            `Andel av epokens debattord i ett ämne, medel över dess riksmöten. Raderna är det ämne som mest skiljer ut varje epok, av ${eras.topic_shares.topics.length}, namngivet efter sina vanligaste ord.`,
+            `Share of each era's debate words per topic. Each row is the topic that most sets an era apart.`,
+            `Andel av epokens debattord per ämne. Varje rad är det ämne som mest skiljer ut en epok.`,
           )}
         </figcaption>
       </figure>
       <Note>
         {l(
-          `A loose grouping, not a law: with ${eras.topic_shares.sessions.length} sessions, refitting on resampled topics agrees with these eras at ARI ${num(dx.bootstrap_ari.mean, 2)}. The eras are fitted on the older ${eras.topic_shares.topics.length}-topic model; the rest of the page uses the newer one.`,
-          `En lös gruppering, ingen lag: med ${eras.topic_shares.sessions.length} riksmöten stämmer en omskattning på dragna ämnen med epokerna till ARI ${num(dx.bootstrap_ari.mean, 2)}. Epokerna bygger på den äldre modellen med ${eras.topic_shares.topics.length} ämnen; resten av sidan använder den nyare.`,
+          `A loose grouping: resampling agrees at ARI ${num(dx.bootstrap_ari.mean, 2)}. Fitted on the older ${eras.topic_shares.topics.length}-topic model.`,
+          `En lös gruppering: omdragning stämmer till ARI ${num(dx.bootstrap_ari.mean, 2)}. Bygger på den äldre modellen med ${eras.topic_shares.topics.length} ämnen.`,
         )}
       </Note>
     </ProjectSection>
@@ -227,7 +226,6 @@ function PartySection({ topics }: { topics: DebateTopics | null }) {
   const scale = Math.max(
     ...profiles.flatMap((p) => p.profile?.top.map((t) => t.value) ?? [0]),
   )
-  const mixed = unnamed(topics)
   return (
     <ProjectSection
       id="replik-parties"
@@ -239,8 +237,8 @@ function PartySection({ topics }: { topics: DebateTopics | null }) {
     >
       <Finding>
         {l(
-          `In the ${decadeName(decade)} the topic most a party's own, against the other parties' average: `,
-          `Under ${decadeName(decade)} var det ämne som mest var partiets eget, mot de andra partiernas snitt: `,
+          `Each party's most distinctive topic, ${decadeName(decade)}: `,
+          `Varje partis mest egna ämne, ${decadeName(decade)}: `,
         )}
         {profiles
           .filter((p) => p.profile?.distinctive)
@@ -318,8 +316,8 @@ function PartySection({ topics }: { topics: DebateTopics | null }) {
       </div>
       <Note>
         {l(
-          `Share of each party's leader-debate passages in a topic, with the 90 % range from resampling its speeches. ${mixed.length} broad groups of everyday exchanges have no single theme and are labelled as such. Shares of what is said, not stances.`,
-          `Andel av partiets inlägg i partiledardebatterna i ett ämne, med 90 %-intervall från omdragna anföranden. ${mixed.length} breda grupper av vardagliga replikskiften har inget enskilt tema och är märkta så. Andelar av vad som sägs, inte ståndpunkter.`,
+          'Share of each party’s leader-debate passages per topic, with the 90 % range. What is said, not stances.',
+          'Andel av partiets inlägg i partiledardebatterna per ämne, med 90 %-intervall. Vad som sägs, inte ståndpunkter.',
         )}
       </Note>
     </ProjectSection>
@@ -355,8 +353,8 @@ function AgendaSection({ topics }: { topics: DebateTopics | null }) {
       {lead && now && (
         <Finding>
           {l(
-            `In the 2010s migration was ${sh(lead.lead.value)} of ${lead.lead.party}'s leader-debate passages (90 % range ${range(lead.lead.low * 100, lead.lead.high * 100)}), against ${range(lead.min * 100, lead.max * 100)} for every other party. In the ${decadeName(now.lead.period)} it was ${now.lead.party} ${sh(now.lead.value)} (${range(now.lead.low * 100, now.lead.high * 100)}) and ${now.second.party} ${sh(now.second.value)} (${range(now.second.low * 100, now.second.high * 100)}).${now.overlap ? ' The ranges overlap: the others caught up.' : ''}`,
-            `Under 2010-talet var migrationen ${sh(lead.lead.value)} av ${lead.lead.party}s inlägg i partiledardebatterna (90 %-intervall ${range(lead.lead.low * 100, lead.lead.high * 100)}), mot ${range(lead.min * 100, lead.max * 100)} för vart och ett av de andra partierna. Under ${decadeName(now.lead.period)} var det ${now.lead.party} ${sh(now.lead.value)} (${range(now.lead.low * 100, now.lead.high * 100)}) och ${now.second.party} ${sh(now.second.value)} (${range(now.second.low * 100, now.second.high * 100)}).${now.overlap ? ' Intervallen överlappar: de andra hann ikapp.' : ''}`,
+            `2010s: migration was ${sh(lead.lead.value)} of ${lead.lead.party}'s passages, ${range(lead.min * 100, lead.max * 100)} for every other party. ${decadeName(now.lead.period)}: ${now.lead.party} ${sh(now.lead.value)}, ${now.second.party} ${sh(now.second.value)}.${now.overlap ? ' The others caught up.' : ''}`,
+            `2010-talet: migrationen var ${sh(lead.lead.value)} av ${lead.lead.party}s inlägg, ${range(lead.min * 100, lead.max * 100)} för vart och ett av de andra partierna. ${decadeName(now.lead.period)}: ${now.lead.party} ${sh(now.lead.value)}, ${now.second.party} ${sh(now.second.value)}.${now.overlap ? ' De andra hann ikapp.' : ''}`,
           )}
         </Finding>
       )}
@@ -384,8 +382,8 @@ function AgendaSection({ topics }: { topics: DebateTopics | null }) {
       </div>
       <Note>
         {l(
-          `Migration and asylum per decade, with the 90 % range. The ${decadeName(all.at(-1)!)} run to ${series.at(-1)?.period}. The older topic model has the two leading parties level in the 2020s, so read the order as close.`,
-          `Migration och asyl per årtionde, med 90 %-intervall. ${decadeName(all.at(-1)!)} går till ${series.at(-1)?.period}. Den äldre ämnesmodellen har de två ledande partierna jämnt under 2020-talet, så läs ordningen som jämn.`,
+          `Migration and asylum per decade, 90 % range. The ${decadeName(all.at(-1)!)} run to ${series.at(-1)?.period}.`,
+          `Migration och asyl per årtionde, 90 %-intervall. ${decadeName(all.at(-1)!)} går till ${series.at(-1)?.period}.`,
         )}
       </Note>
       {p && (
@@ -421,8 +419,8 @@ function AgendaSection({ topics }: { topics: DebateTopics | null }) {
       />
       <Note>
         {l(
-          'About three party-leader debates a year, so a single year is noisy; the band is the 90 % range. The topic holds in a second embedding model too.',
-          'Ungefär tre partiledardebatter om året, så ett enskilt år är brusigt; bandet är 90 %-intervallet. Ämnet håller även i en andra inbäddningsmodell.',
+          'About three debates a year, so single years are noisy. Band: 90 % range.',
+          'Ungefär tre debatter om året, så enskilda år är brusiga. Band: 90 %-intervall.',
         )}
       </Note>
     </ProjectSection>
@@ -450,8 +448,8 @@ function VoteSection({
       {r5 && (
         <Finding>
           {l(
-            `In ${r5.now.session} ${r5.now.party} voted with the government in ${pct(r5.now.with_government_pct)} of ${num(r5.now.roll_calls)} roll calls, up from ${pct(r5.before.with_government_pct)} the session before, as its abstentions fell from ${pct(r5.before.abstained_pct)} to ${pct(r5.now.abstained_pct)}. In opposition, ${r5.from}–${r5.to}, it voted with the government ${range(r5.min, r5.max, 0)} of the time.`,
-            `Under ${r5.now.session} röstade ${r5.now.party} med regeringen i ${pct(r5.now.with_government_pct)} av ${num(r5.now.roll_calls)} voteringar, upp från ${pct(r5.before.with_government_pct)} riksmötet före, när partiets avstående föll från ${pct(r5.before.abstained_pct)} till ${pct(r5.now.abstained_pct)}. I opposition, ${r5.from}–${r5.to}, röstade det med regeringen ${range(r5.min, r5.max, 0)} av gångerna.`,
+            `${r5.now.session}: ${r5.now.party} voted with the government in ${pct(r5.now.with_government_pct)} of ${num(r5.now.roll_calls)} roll calls, up from ${pct(r5.before.with_government_pct)}. In opposition, ${r5.from}–${r5.to}: ${range(r5.min, r5.max, 0)}.`,
+            `${r5.now.session}: ${r5.now.party} röstade med regeringen i ${pct(r5.now.with_government_pct)} av ${num(r5.now.roll_calls)} voteringar, upp från ${pct(r5.before.with_government_pct)}. I opposition, ${r5.from}–${r5.to}: ${range(r5.min, r5.max, 0)}.`,
           )}
         </Finding>
       )}
@@ -487,15 +485,15 @@ function VoteSection({
       </div>
       <Note>
         {l(
-          `Share of roll calls in which the party majority voted as the government did. Shaded: sessions the party was in government or had a formal agreement with it. ${periods.at(-1)} runs to the last vote in the file, ${r5?.lastVote ?? ''}.`,
-          `Andel voteringar där partiets majoritet röstade som regeringen. Skuggat: riksmöten då partiet satt i regeringen eller hade ett formellt avtal med den. ${periods.at(-1)} går till sista voteringen i filen, ${r5?.lastVote ?? ''}.`,
+          `Share of roll calls where the party majority voted as the government. Shaded: in government or in a formal agreement. ${periods.at(-1)} runs to ${r5?.lastVote ?? ''}.`,
+          `Andel voteringar där partiets majoritet röstade som regeringen. Skuggat: i regeringen eller med ett formellt avtal. ${periods.at(-1)} går till ${r5?.lastVote ?? ''}.`,
         )}
       </Note>
       {talk && (
         <Finding>
           {l(
-            `Talking alike is not voting alike. Across ${talk.sessions.length} sessions, how similar two parties' debate topics are says nothing about how often they vote together: mean Mantel r ${num(talk.diagnostics.null.observed, 2)}, permutation p ${num(talk.diagnostics.null.p, 2)}. An honest null.`,
-            `Att tala lika är inte att rösta lika. Över ${talk.sessions.length} riksmöten säger hur lika två partiers debattämnen är ingenting om hur ofta de röstar lika: Mantels r i snitt ${num(talk.diagnostics.null.observed, 2)}, permutations-p ${num(talk.diagnostics.null.p, 2)}. Ett ärligt nollresultat.`,
+            `Talking alike is not voting alike. Across ${talk.sessions.length} sessions, similar topics do not predict voting together (Mantel r ${num(talk.diagnostics.null.observed, 2)}, p ${num(talk.diagnostics.null.p, 2)}).`,
+            `Att tala lika är inte att rösta lika. Över ${talk.sessions.length} riksmöten förutsäger lika ämnen inte lika röster (Mantels r ${num(talk.diagnostics.null.observed, 2)}, p ${num(talk.diagnostics.null.p, 2)}).`,
           )}
         </Finding>
       )}
@@ -532,8 +530,8 @@ function ModelSection({ polar }: { polar: Polar | null }) {
       {step && (
         <Finding>
           {l(
-            `A text classifier separates parties speaking in the same debate with AUC ${num(step[0].mean, 2)} on average under the ${step[0].first}–${step[0].last} government of ${step[0].parties} (never above ${num(step[0].max, 2)}), and ${num(step[1].mean, 2)} under the ${step[1].first}–${step[1].last} government of ${step[1].parties} (never below ${num(step[1].min, 2)}). 0.5 is chance.`,
-            `En textklassificerare skiljer partier som talar i samma debatt åt med AUC ${num(step[0].mean, 2)} i snitt under regeringen ${step[0].parties} ${step[0].first}–${step[0].last} (aldrig över ${num(step[0].max, 2)}), och ${num(step[1].mean, 2)} under regeringen ${step[1].parties} ${step[1].first}–${step[1].last} (aldrig under ${num(step[1].min, 2)}). 0,5 är slump.`,
+            `A classifier tells parties in the same debate apart with AUC ${num(step[0].mean, 2)} under ${step[0].parties} (${step[0].first}–${step[0].last}) and ${num(step[1].mean, 2)} under ${step[1].parties} (${step[1].first}–${step[1].last}). 0.5 is chance.`,
+            `En klassificerare skiljer partier i samma debatt åt med AUC ${num(step[0].mean, 2)} under ${step[0].parties} (${step[0].first}–${step[0].last}) och ${num(step[1].mean, 2)} under ${step[1].parties} (${step[1].first}–${step[1].last}). 0,5 är slump.`,
           )}
         </Finding>
       )}
@@ -570,8 +568,8 @@ function ModelSection({ polar }: { polar: Polar | null }) {
       </ol>
       <Note>
         {l(
-          `TF-IDF on speeches with party names masked, split by speaker so no person is in both training and test, against a permutation null: ${passed} of ${polar.sessions.length} sessions beat it. Separability is not polarization: being in government changes how a party talks, and leaders' names may leak.`,
-          `TF-IDF på anföranden med partinamnen maskerade, uppdelat per talare så att ingen person finns i både träning och test, mot en permutationsnolla: ${passed} av ${polar.sessions.length} riksmöten slår den. Särskiljbarhet är inte polarisering: att sitta i regeringen ändrar hur ett parti talar, och ledarnas namn kan läcka.`,
+          `TF-IDF, party names masked, split by speaker. ${passed} of ${polar.sessions.length} sessions beat a permutation null. Separability is not polarization.`,
+          `TF-IDF, partinamn maskerade, uppdelat per talare. ${passed} av ${polar.sessions.length} riksmöten slår en permutationsnolla. Särskiljbarhet är inte polarisering.`,
         )}
       </Note>
     </ProjectSection>
@@ -678,8 +676,8 @@ function NowSection({
           </div>
           <Note>
             {l(
-              `Speeches by members with a party, ${years[0]}–${years.at(-1)}; ${years.at(-1)} is part of the year. A mention of "AI" in capitals or a named AI term, not a stance on it.`,
-              `Anföranden av ledamöter med parti, ${years[0]}–${years.at(-1)}; ${years.at(-1)} är en del av året. Ett omnämnande av "AI" med versaler eller en namngiven AI-term, inte en ståndpunkt.`,
+              `A mention of "AI" or a named AI term, not a stance. ${years.at(-1)} is part of the year.`,
+              `Ett omnämnande av "AI" eller en AI-term, inte en ståndpunkt. ${years.at(-1)} är en del av året.`,
             )}
           </Note>
         </>
@@ -738,59 +736,12 @@ function NowSection({
           </div>
           <Note>
             {l(
-              `Swedish word stems used in at least 25 speeches, per 10,000 words; the tick marks the earlier rate. ${terms.now} is a partial session: ${num(terms.words_now / 1e6, 2)} million words against ${num(terms.words_before / 1e6, 2)} million.`,
-              `Ordstammar som används i minst 25 anföranden, per 10 000 ord; strecket visar den tidigare nivån. ${terms.now} är ett ofullständigt riksmöte: ${num(terms.words_now / 1e6, 2)} miljoner ord mot ${num(terms.words_before / 1e6, 2)} miljoner.`,
+              `Words in at least 25 speeches. The tick is the earlier rate. ${terms.now} is a partial session.`,
+              `Ord i minst 25 anföranden. Strecket är den tidigare nivån. ${terms.now} är ett ofullständigt riksmöte.`,
             )}
           </Note>
         </>
       )}
-    </ProjectSection>
-  )
-}
-
-// ---------------------------------------------------------------- method
-
-function Method({ topics }: { topics: DebateTopics | null }) {
-  return (
-    <ProjectSection
-      id="replik-method"
-      label={l('Method and limits', 'Metod och begränsningar')}
-      title={l('How to read this page', 'Så läser du sidan')}
-    >
-      <ul className="rk-method">
-        <li>
-          {l(
-            'Topics are shares of what is said in the party-leader debates, not stances. Their names were written by a language model and have not been reviewed by hand.',
-            'Ämnen är andelar av vad som sägs i partiledardebatterna, inte ståndpunkter. Namnen skrevs av en språkmodell och har inte granskats för hand.',
-          )}
-        </li>
-        {topics && (
-          <li>
-            {l(
-              `The topic model: ${num(topics.diagnostics.n)} passages embedded with a Swedish sentence-BERT, centred per speaker and clustered in a consensus of UMAP + HDBSCAN seeds (seed agreement ARI ${num(topics.diagnostics.seed_ari.mean, 2)}; ${sh(topics.diagnostics.noise_share, 0)} of passages fit no topic and are left out of the shares).`,
-              `Ämnesmodellen: ${num(topics.diagnostics.n)} inlägg inbäddade med en svensk sentence-BERT, centrerade per talare och klustrade i en konsensus av UMAP + HDBSCAN-frön (fröenighet ARI ${num(topics.diagnostics.seed_ari.mean, 2)}; ${sh(topics.diagnostics.noise_share, 0)} av inläggen passar inget ämne och räknas inte in i andelarna).`,
-            )}
-          </li>
-        )}
-        <li>
-          {l(
-            'Separability is not polarization. Roll-call agreement counts the party majority per vote.',
-            'Särskiljbarhet är inte polarisering. Röstsamstämmighet räknar partiets majoritet per votering.',
-          )}
-        </li>
-        <li>
-          {l(
-            'Topic-debate volumes are not compared across 2003/04, when Riksdagen changed how debates are classified.',
-            'Sakdebatternas volymer jämförs inte över 2003/04, då riksdagen ändrade hur debatter klassas.',
-          )}
-        </li>
-        <li>
-          {l(
-            'Source: Riksdagen open data (protocols, speeches and votes). The full text of every debate is kept in object storage; the page reads only the published aggregates.',
-            'Källa: riksdagens öppna data (protokoll, anföranden och voteringar). Hela texten till varje debatt ligger i objektlagring; sidan läser bara de publicerade aggregaten.',
-          )}
-        </li>
-      </ul>
     </ProjectSection>
   )
 }
@@ -821,8 +772,8 @@ export default function ReplikPage() {
       >
         <p>
           {l(
-            'A replik is a rebuttal in a Riksdag debate. This page reads every party-leader debate since 1993 and counts every roll call: what each party talks about, how topics move between them, and whether talking alike means voting alike.',
-            'En replik är ett genmäle i en riksdagsdebatt. Sidan läser varje partiledardebatt sedan 1993 och räknar varje votering: vad varje parti talar om, hur ämnen går mellan dem, och om att tala lika betyder att rösta lika.',
+            'A replik is a rebuttal in a Riksdag debate. Every party-leader debate since 1993, every roll call.',
+            'En replik är ett genmäle i en riksdagsdebatt. Varje partiledardebatt sedan 1993, varje votering.',
           )}
         </p>
         <Stats story={story} sessions={sessions} />
@@ -840,15 +791,14 @@ export default function ReplikPage() {
           'Var skulle din mening hamna?',
         )}
         title={l(
-          'Write a sentence and see which debate subject it lands in',
-          'Skriv en mening och se vilket debattämne den hamnar i',
+          'Write a sentence, see where it lands',
+          'Skriv en mening, se var den hamnar',
         )}
       >
         <SentencePlacer
           spec={MAPS().find((spec) => spec.id === 'research-debates')!}
         />
       </ProjectSection>
-      <Method topics={topics} />
     </article>
   )
 }

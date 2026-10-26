@@ -280,8 +280,8 @@ export const posts: Post[] = [
       )
     }),
     note: [
-      'Share of mapped points per research step; higher is better across books, lower for unclustered. The last step also changed the corpus, so the ends are not a like-for-like comparison',
-      'Andel kartlagda punkter per forskningssteg; högre är bättre för över böcker, lägre för utan kluster. Sista steget ändrade också korpusen, så ändpunkterna går inte att jämföra rakt av',
+      'Share of mapped points per research step. The last step also changed the corpus',
+      'Andel kartlagda punkter per forskningssteg. Sista steget ändrade också korpusen',
     ],
     render: () => <ResearchSteps />,
   },

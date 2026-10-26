@@ -143,8 +143,8 @@ export default function PlatformFlow() {
       </h2>
       <p className="tech-note">
         {l(
-          'From a public source to this site in seven steps. Choose a project to mark the steps its data passes through; point at or focus a step to trace what it is built from.',
-          'Från en offentlig källa till den här sidan i sju steg. Välj ett projekt för att markera stegen dess data går igenom; peka på eller fokusera ett steg för att följa vad det bygger på.',
+          'From a public source to this site in seven steps. Choose a project to mark its path.',
+          'Från en offentlig källa till den här sidan i sju steg. Välj ett projekt för att markera dess väg.',
         )}
       </p>
       {g && PROJECTS.length > 0 && (

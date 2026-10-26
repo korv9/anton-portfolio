@@ -124,8 +124,8 @@ export const posts: Post[] = [
           )
     },
     note: [
-      'Trend of each group’s share of job ads, scaled per group (standard deviations); line: typical group, band: 10th–90th percentile. Arbetsförmedlingen, 2023–2026',
-      'Trend för varje grupps andel av platsannonserna, skalad per grupp (standardavvikelser); linje: typisk grupp, band: 10:e–90:e percentilen. Arbetsförmedlingen, 2023–2026',
+      'Each group’s share of job ads, scaled per group. Line: typical group, band: 10th–90th percentile. Arbetsförmedlingen, 2023–2026',
+      'Varje grupps andel av platsannonserna, skalad per grupp. Linje: typisk grupp, band: 10:e–90:e percentilen. Arbetsförmedlingen, 2023–2026',
     ],
     render: () => <DemandShapes />,
   },

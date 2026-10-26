@@ -174,7 +174,7 @@ export default function Explore({
             note: `SCB ${num(d.scb_tables)} · Kolada ${num(d.kolada_kpis)}`,
           }))}
       />
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l('Every domain in numbers', 'Varje domän i siffror')}
@@ -309,7 +309,7 @@ export default function Explore({
           {l('The list could not be read.', 'Listan kunde inte läsas.')}
         </p>
       ) : items !== 'loading' ? (
-        <div className="sw-table-wrap">
+        <div className="sw-table-wrap" tabIndex={0}>
           <table className="sw-table">
             <caption className="visually-hidden">
               {l('Tables and key figures', 'Tabeller och nyckeltal')}

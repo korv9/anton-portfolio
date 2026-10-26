@@ -1,5 +1,5 @@
 /**
- * When does a law arrive? (#lag-ankomst): six sections, each figure read from the committed
+ * When does a law arrive? (#lag-ankomst): five sections, each figure read from the committed
  * ai-act files at load time. Checks the page against the JSON, not against typed-in numbers.
  */
 import { test, expect } from './test'
@@ -10,7 +10,6 @@ const SECTIONS = [
   'aiclock-riksdag',
   'aiclock-lags',
   'aiclock-law',
-  'aiclock-method',
 ]
 
 test('the AI Act clock shows its sections with figures from the data @mobile', async ({

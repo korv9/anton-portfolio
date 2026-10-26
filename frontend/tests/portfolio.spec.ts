@@ -194,7 +194,12 @@ test('the projects hub leads with the dashboard and the job search', async ({
   await page.goto('/#projekt')
   await expect(page).toHaveURL(/#projects$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
-  await expect(page.locator('.site-header')).toBeVisible()
+  // The projects index on wide screens, the header on phones.
+  await expect(
+    page.locator(
+      page.viewportSize()!.width >= 1024 ? '.project-rail' : '.site-header',
+    ),
+  ).toBeVisible()
   // How the platform is built: seven steps, the job search's path marked.
   const flow = page.locator('#projects-flow')
   await expect(flow.locator('.hub-flow-steps > li')).toHaveCount(7)

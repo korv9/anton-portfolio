@@ -215,8 +215,8 @@ export const posts: Post[] = [
           )
     },
     note: [
-      'Share of all speeches per month, three-month average, to the last complete month; dashed lines mark the AI Act proposal and its publication. Source: Riksdagen open data',
-      'Andel av alla anföranden per månad, glidande tremånadersmedel, till och med senaste hela månaden; streckade linjer markerar förslaget till AI-förordningen och dess publicering. Källa: Riksdagens öppna data',
+      'Share of speeches per month, three-month average. Dashed: the AI Act proposal and publication. Source: Riksdagen',
+      'Andel anföranden per månad, tremånadersmedel. Streckat: förslaget till AI-förordningen och publiceringen. Källa: Riksdagen',
     ],
     render: () => <SpeechLine />,
   },

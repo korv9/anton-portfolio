@@ -174,8 +174,8 @@ export const posts: Post[] = [
       )
     },
     note: [
-      'Sum of each party’s changes to the government’s spending across the 27 expenditure areas, SEK billion; parties without an alternative budget are not shown. Source: Riksdagen',
-      'Summan av varje partis ändringar av regeringens utgifter i de 27 utgiftsområdena, miljarder kronor; partier utan egen budgetmotion visas inte. Källa: Riksdagen',
+      'Each party’s changes to government spending, SEK billion. Source: Riksdagen',
+      'Varje partis ändringar av regeringens utgifter, miljarder kronor. Källa: Riksdagen',
     ],
     render: () => <DeviationBars />,
   },
@@ -197,8 +197,8 @@ export const posts: Post[] = [
           )
     },
     note: [
-      'Median of |outturn ÷ approved budget − 1| per expenditure area and year; the baseline is the budget first approved, before amending budgets. Source: Statskontoret',
-      'Median av |utfall ÷ beslutad budget − 1| per utgiftsområde och år; utgångspunkten är den först beslutade budgeten, före ändringsbudgetar. Källa: Statskontoret',
+      'Median gap between outturn and first approved budget, per area and year. Source: Statskontoret',
+      'Medianavvikelse mellan utfall och först beslutad budget, per område och år. Källa: Statskontoret',
     ],
     render: () => <OutturnBars />,
   },

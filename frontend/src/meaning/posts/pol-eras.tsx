@@ -138,8 +138,8 @@ export const posts: Post[] = [
       'Riksdagens debatter grupperar sig i sex beskrivande epoker, var och en med ett eget ämne',
     ],
     note: [
-      'Share of debate words per topic, mean of each era’s sessions; the six topics that most set an era apart, of 25, by their top Swedish word. A loose grouping of 33 sessions',
-      'Andel av debattorden per ämne, medel över epokens riksmöten; de sex av 25 ämnen som mest skiljer ut en epok, efter sitt vanligaste ord. En lös gruppering av 33 riksmöten',
+      'Share of debate words per topic in each era. The six topics that most set an era apart',
+      'Andel debattord per ämne i varje epok. De sex ämnen som mest skiljer ut en epok',
     ],
     render: () => <EraHeat />,
   },
