@@ -19,7 +19,6 @@ Counts describe what is published. They are not a ranking of how important a dom
 """
 from __future__ import annotations
 
-import json
 import os
 import sys
 from datetime import date
@@ -27,9 +26,10 @@ from pathlib import Path
 
 import duckdb
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/sweden/measurement"
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.publish.catalog import register
+OUT = PUBLIC / "sweden/measurement"
 sys.path.insert(0, str(ROOT / "platform/lib"))
 
 import rawstore  # noqa: E402
@@ -43,10 +43,7 @@ def rows(con, sql: str) -> list[dict]:
 
 
 def write(name: str, payload: dict) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                    encoding="utf-8")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def sensitivity(con) -> dict:
@@ -111,7 +108,7 @@ def elsewhere(con) -> list[dict]:
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     current = date.today().year - 2
     domains = rows(con, f"""
         select d.domain_id as id, d.label_en, d.label_sv, d.scope_en,
@@ -176,10 +173,7 @@ def main() -> int:
     write("items.json", {"columns": ["catalogue", "id", "title", "domain", "institution", "subject",
                                      "frequency", "first_year", "last_year", "geo"],
                          "rows": [list(r) for r in items]})
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([OUT / n for n in ("summary.json", "coverage.json", "items.json")])
+    register([OUT / n for n in ("summary.json", "coverage.json", "items.json")])
     print(f"SWEDEN measurement: {len(items)} items, {len(coverage)} coverage cells -> "
           f"{OUT.relative_to(ROOT)}")
     return 0

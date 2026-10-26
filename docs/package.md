@@ -46,7 +46,13 @@ their sha256 before and after must be identical.
    quality. Proof: each set of exports run before and after against the same warehouse, every
    file it writes (41, catalogue included) hashed; all identical. The first run also found the
    philosophy export was not byte-stable between runs (an unordered `select distinct`), fixed
-   first so the comparison meant something.
+   first so the comparison meant something. Then the six SWEDEN exporters (measurement, language,
+   similarity, belonging, futures, connections), after the same kind of fix in measurement
+   (two unordered domain counts). From here `core.io.write_json` always writes LF: on Windows
+   most exporters wrote CRLF, so a local run differed from CI's bytes; on Linux nothing changes.
+   The SWEDEN proof is therefore LF-normalised (23 files identical; the catalogue compared
+   without the sizes and hashes that embed the line endings); the two exporters that already
+   wrote LF are identical byte for byte.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
 5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls
