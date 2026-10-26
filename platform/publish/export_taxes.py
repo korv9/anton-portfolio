@@ -22,19 +22,11 @@ Run after `dbt build --select tag:taxes`.
 from __future__ import annotations
 
 import json
-import os
-import sys
 from collections import defaultdict
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT
 
-import duckdb  # noqa: E402
-
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
 RUN_RESULTS = ROOT / "platform/target/taxes/run_results.json"
 OUT = PUBLIC / "taxes"
 FIXTURES = ROOT / "frontend/tests/fixtures"
@@ -97,11 +89,11 @@ def withholding_fixture() -> None:
 
 def main() -> None:
     check_dbt()
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
     types = records(connection, "select * from gold.dim_tax_type order by tax_code")
     countries = records(connection, "select * from gold.dim_tax_country order by country_code")
 
-    write_json(OUT / "sweden.json", {
+    io.write_json(OUT / "sweden.json", {
         "types": types,
         "columns": ["year", "tax_code", "pct_gdp", "sek_billion"],
         "rows": rows(connection, """
@@ -109,8 +101,8 @@ def main() -> None:
             from gold.fct_tax_revenue where country_code = 'SWE'
             order by year, tax_code"""),
         "source": "OECD Revenue Statistics, general government",
-    })
-    write_json(OUT / "countries.json", {
+    }, newline=False)
+    io.write_json(OUT / "countries.json", {
         "types": [t for t in types if t["tax_code"] in MAIN_TYPES],
         "countries": countries,
         "columns": ["country_code", "year", "tax_code", "pct_gdp"],
@@ -120,10 +112,10 @@ def main() -> None:
             where tax_code in {MAIN_TYPES} and pct_gdp is not null
             order by country_code, year, tax_code"""),
         "source": "OECD Revenue Statistics, general government",
-    })
+    }, newline=False)
 
     latest = connection.execute("select max(year) from gold.fct_tax_wedge").fetchone()[0]
-    write_json(OUT / "wedge.json", {
+    io.write_json(OUT / "wedge.json", {
         "year": latest,
         "countries": countries,
         "households": {
@@ -143,7 +135,7 @@ def main() -> None:
               and household_type in ('S_C0', 'C_C2') and tax_wedge_pct is not null
             order by all"""),
         "source": "OECD Taxing Wages",
-    })
+    }, newline=False)
 
     rate_year = connection.execute("select max(year) from gold.fct_municipal_tax_rate").fetchone()[0]
     municipalities = defaultdict(lambda: {"parishes": []})
@@ -155,11 +147,11 @@ def main() -> None:
         entry = municipalities[code]
         entry.update({"code": code, "name": name.title(), "local_rate": round(local, 3)})
         entry["parishes"].append([parish.title(), round(burial, 3), round(church, 3)])
-    write_json(OUT / "municipalities.json", {
+    io.write_json(OUT / "municipalities.json", {
         "year": rate_year,
         "municipalities": sorted(municipalities.values(), key=lambda m: m["name"]),
         "source": "Skatteverket, skattesatser per kommun och församling",
-    })
+    }, newline=False)
 
     decisions = records(connection, """
         select decision_key as key, in_force, in_force_year as year, component, direction,
@@ -189,7 +181,7 @@ def main() -> None:
         decision["bill_date"] = decision["bill_date"] and str(decision["bill_date"])
         if decision["vote"]:
             decision["vote"]["vote_date"] = str(decision["vote"]["vote_date"])
-    write_json(OUT / "decisions.json", {
+    io.write_json(OUT / "decisions.json", {
         "decisions": decisions,
         "components": {
             "in_work_credit": ["In-work tax credit", "Jobbskatteavdrag"],
@@ -217,7 +209,7 @@ def main() -> None:
                    "are from the first substantive roll call of that report; for a budget "
                    "framework report (FiU1) that vote settles the whole budget, taxes "
                    "included."),
-    })
+    }, newline=False)
 
     household = defaultdict(lambda: {"groups": []})
     hut_year = None
@@ -235,7 +227,7 @@ def main() -> None:
                                 "vat_rate": row["vat_rate"],
                                 "spending": round(row["sek_per_household"]),
                                 "vat": round(row["vat_sek"]), "note": row["note_sv"]})
-    write_json(OUT / "household.json", {
+    io.write_json(OUT / "household.json", {
         "year": hut_year,
         "households": list(household.values()),
         "method": ("Spending per household (SCB, Hushållens utgifter) is in prices including "
@@ -243,7 +235,7 @@ def main() -> None:
                    "clear rate are counted: rent, health care, insurance, interest and fees "
                    "carry no VAT or a mix, so the estimate is a floor."),
         "source": "SCB, Hushållens utgifter (HUT) 2021, tabell HUThush",
-    })
+    }, newline=False)
 
     withholding_fixture()
     print(f"taxes: {len(decisions)} decisions, {len(types)} tax types, {len(countries)} countries, wedge {latest}, "

@@ -24,12 +24,12 @@ import json
 import re
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
 import pyarrow.parquet as pq
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "frontend/public/data"
+from portfolio.core import io
+from portfolio.core.config import PUBLIC as DATA
+
 CARDS = DATA / "parquet/speech_cards"
 OUT = DATA / "politics/parliament/debate-stats"
 PARTIES = ["S", "SD", "M", "V", "C", "KD", "MP", "L"]
@@ -188,11 +188,7 @@ def main() -> None:
             issue_debates.append(entry)
         issue_debates.sort(key=lambda d: (d["date"], d["first"] or 0))
         name = session.replace("/", "-")
-        (OUT / f"{name}.json").write_text(
-            json.dumps({"session": session, "debates": issue_debates}, ensure_ascii=False,
-                       separators=(",", ":")),
-            encoding="utf-8",
-        )
+        io.write_json(OUT / f"{name}.json", {"session": session, "debates": issue_debates}, newline=False)
         sessions.append({
             "session": session,
             "path": f"politics/parliament/debate-stats/{name}.json",
@@ -217,8 +213,7 @@ def main() -> None:
             for i in issues
         ],
     }
-    (OUT / "index.json").write_text(
-        json.dumps(index, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    io.write_json(OUT / "index.json", index, newline=False)
     linked = sum(s["linked_to_decisions"] for s in sessions)
     print(f"{len(sessions)} sessions, {sum(s['debates'] for s in sessions)} issue debates "
           f"({linked} linked to decisions), {len(leaders)} party-leader debates -> {OUT}")

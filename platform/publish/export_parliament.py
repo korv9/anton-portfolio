@@ -26,20 +26,12 @@ Run after `dbt build --select tag:parliament`; it refuses to export if that run 
 from __future__ import annotations
 
 import json
-import os
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT
 
-import duckdb  # noqa: E402
-
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
 RUN_RESULTS = ROOT / "platform/target/parliament/run_results.json"
 OUT = PUBLIC / "parliament"
 ROLL_CALLS = PUBLIC / "parquet/parliament_roll_calls/part-0.parquet"
@@ -199,7 +191,7 @@ def party_rows(rows: list[dict]) -> list[dict]:
 
 def main() -> None:
     tests = check_dbt()
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
 
     elections = records(connection, """
         select election_year, party, votes, share_pct, seats, source
@@ -272,15 +264,15 @@ def main() -> None:
         "latest_session": latest_session,
         "latest_decisions": latest_decisions,
     }
-    write_json(OUT / "now.json", now, indent=1)
+    io.write_json(OUT / "now.json", now, indent=1)
 
-    write_json(OUT / "elections.json", {
+    io.write_json(OUT / "elections.json", {
         "years": years, "majority": MAJORITY, "party_names": PARTY_NAMES,
         "results": elections,
         "note": "SCB for 1973-2022, Valmyndigheten for later elections. Ny demokrati's votes in "
                 "1991 and 1994 are inside OTHER in SCB's tables; its seats are shown.",
-    })
-    write_json(OUT / "polls.json", {"party_names": PARTY_NAMES, "polls": polls})
+    }, newline=False)
+    io.write_json(OUT / "polls.json", {"party_names": PARTY_NAMES, "polls": polls}, newline=False)
 
     sessions = records(connection, """
         select session, start_year, first_vote, last_vote, roll_calls, election_year,
@@ -295,10 +287,10 @@ def main() -> None:
                round(100 * avg(government_won::int), 1) as government_won_pct
         from gold.fct_roll_call where is_substantive and government_won is not null
         group by session order by session""")
-    write_json(OUT / "sessions.json", {
+    io.write_json(OUT / "sessions.json", {
         "sessions": sessions, "party_record": record, "party_pairs": pairs,
         "government_record": government_record,
-    })
+    }, newline=False)
 
     issues = records(connection, """
         select issue_key, issue_name_sv, issue_name_en, summary_sv, expenditure_areas,
@@ -416,9 +408,9 @@ def main() -> None:
                              "series": [{"year": r["year"], "value": r["value"]}
                                         for r in welfare_by_key[indicator]]}
                             for indicator in issue["welfare_indicators"] if welfare_by_key.get(indicator)]
-    write_json(OUT / "studies.json", studies_page(connection))
+    io.write_json(OUT / "studies.json", studies_page(connection), newline=False)
 
-    write_json(OUT / "issues.json", {
+    io.write_json(OUT / "issues.json", {
         "issues": issues,
         "speech_link_coverage": round(speech_coverage, 3),
         "notes": {
@@ -429,7 +421,7 @@ def main() -> None:
             "budget": "Outturn (Statskontoret) of the expenditure areas the issue's committees decide.",
             "welfare": "Descriptive: read side by side, not as an effect of decisions.",
         },
-    })
+    }, newline=False)
 
     ROLL_CALLS.parent.mkdir(parents=True, exist_ok=True)
     connection.execute(f"""

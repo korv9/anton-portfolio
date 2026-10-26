@@ -22,12 +22,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
-import duckdb  # noqa: E402
-
 import gold_contract  # noqa: E402
-from common import GOLD, ROOT  # noqa: E402
 
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
+from portfolio.core import db
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+
+GOLD = PUBLIC / "gold"
 # The dbt build's manifest: the metric and relationship definitions in semantic-model.json.
 MANIFEST = Path(os.environ.get("DBT_MANIFEST", ROOT / "platform/target/politics/manifest.json"))
 
@@ -185,7 +185,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true", help="Fail if any delivery would change")
     args = parser.parse_args()
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
     files, entries = deliveries(connection)
     files["semantic-model.json"] = semantic_model(files, entries)
     changed = []

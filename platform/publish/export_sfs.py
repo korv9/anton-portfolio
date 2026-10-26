@@ -18,17 +18,10 @@ Run after `dbt build --select tag:sfs --target-path target/sfs`.
 from __future__ import annotations
 
 import json
-import os
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
 
-import duckdb  # noqa: E402
-
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RUN_RESULTS = ROOT / "platform/target/sfs/run_results.json"
 OUT = PUBLIC / "sfs/overview.json"
 # Upper bounds of the length bands, in characters; the last band is everything above 1,500.
@@ -113,14 +106,14 @@ def export(con) -> dict:
 
 
 def main() -> None:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     try:
         overview = export(con)
     finally:
         con.close()
     assert sum(k["documents"] for k in overview["kinds"]) == sum(
         p["documents"] for p in overview["parse"]), "kinds and parse statuses disagree"
-    write_json(OUT, overview)
+    io.write_json(OUT, overview, newline=False)
     print(f"Wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size:,} bytes)")
 
 

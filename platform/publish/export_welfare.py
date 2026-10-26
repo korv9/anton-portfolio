@@ -22,18 +22,12 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.storage import rawstore
 
-import duckdb  # noqa: E402
-
-import rawstore  # noqa: E402
-from common import PUBLIC, ROOT, write_json  # noqa: E402
-
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RUN_RESULTS = ROOT / "platform/target/welfare/run_results.json"
 OUT = PUBLIC / "welfare"
 PARQUET = PUBLIC / "parquet/welfare_indicator"
@@ -134,7 +128,7 @@ def export_datasets(connection) -> list[dict]:
                              "description": " ".join((documented.get(name, {}).get("description") or "").split())}
                             for name, kind, *_ in columns],
             })
-    write_json(OUT / "datasets.json", entries, indent=1)
+    io.write_json(OUT / "datasets.json", entries, indent=1)
     return entries
 
 
@@ -142,7 +136,7 @@ def main() -> None:
     dbt = dbt_summary()
     if dbt["tests"].get("fail") or dbt["tests"].get("error"):
         raise SystemExit(f"Refusing to export: dbt tests failed {dbt['tests']}")
-    connection = duckdb.connect(str(DATABASE), read_only=True)
+    connection = db.warehouse(DATABASE)
 
     indicators = records(connection, """
         select i.*, s.source_name, s.publisher, s.homepage_url, s.citation,
@@ -204,23 +198,23 @@ def main() -> None:
                                 "fct_social_survey_country", "fct_social_survey_region",
                                 "fct_kolada", "mart_county_year_overview")}
 
-    write_json(OUT / "indicators.json", clean(indicators))
-    write_json(OUT / "regions.json", clean(regions))
-    write_json(OUT / "county-year.json", clean(county_year))
-    write_json(OUT / "headlines.json", clean(headlines))
+    io.write_json(OUT / "indicators.json", clean(indicators), newline=False)
+    io.write_json(OUT / "regions.json", clean(regions), newline=False)
+    io.write_json(OUT / "county-year.json", clean(county_year), newline=False)
+    io.write_json(OUT / "headlines.json", clean(headlines), newline=False)
     # Small serving marts as JSON for the analysis page, so it renders without object
     # storage. Every column is already aggregated by its rule in dbt.
-    write_json(OUT / "panel-county-year.json", clean(records(connection, """
+    io.write_json(OUT / "panel-county-year.json", clean(records(connection, """
         select * exclude (year_start) from gold.mart_county_year_panel
-        order by year, region_code""")))
-    write_json(OUT / "national-month.json", clean(records(connection, """
-        select * exclude (period_key) from gold.mart_national_month order by month_start""")))
-    write_json(OUT / "ess-countries.json", clean(records(connection, """
+        order by year, region_code""")), newline=False)
+    io.write_json(OUT / "national-month.json", clean(records(connection, """
+        select * exclude (period_key) from gold.mart_national_month order by month_start""")), newline=False)
+    io.write_json(OUT / "ess-countries.json", clean(records(connection, """
         select m.*, r.reference_year
         from gold.mart_ess_country_round as m
         join gold.dim_period as r using (period_key)
         where m.unit_code in ('SE', 'NORDIC', 'EU27', 'NO', 'DK', 'FI', 'DE')
-        order by m.unit_code, r.reference_year""")))
+        order by m.unit_code, r.reference_year""")), newline=False)
 
     if PARQUET.exists():
         shutil.rmtree(PARQUET)
@@ -260,7 +254,7 @@ def main() -> None:
         "parquet_rows": parquet_rows,
         "datasets": {entry["table"]: entry["rows"] for entry in datasets},
     }
-    write_json(OUT / "run.json", run, indent=1)
+    io.write_json(OUT / "run.json", run, indent=1)
     print(f"welfare: {len(indicators)} indicators, {len(headlines)} headlines, "
           f"{sum(parquet_rows.values())} Parquet rows, dbt tests {dbt['tests']}")
 
