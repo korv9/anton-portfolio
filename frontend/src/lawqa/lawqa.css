@@ -182,6 +182,27 @@
   font-size: var(--body-large);
   line-height: 1.55;
 }
+/* The moral allegory leads; the checked answer under it is what it was told from. */
+.lq-allegory {
+  margin: 0 0 var(--sp-6);
+  max-width: var(--measure);
+}
+.lq-allegory figcaption,
+.lq-law-title {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lq-allegory p {
+  margin: 0 0 0.75rem;
+  font-size: var(--body-large);
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ink);
+}
 .lq-quote q {
   font-style: italic;
   color: var(--ink);

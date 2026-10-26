@@ -257,8 +257,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Workers AI, search with checked quotes',
     ),
     summary: t(
-      'Frågor över ett urval av svenska lagar och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord mot lagtexten.',
-      'Questions over a selection of Swedish statutes and the EU AI Act, answered with quotes checked word for word against the legal text.',
+      'Frågor över ett urval av svenska lagar och EU:s AI-förordning: svaret kontrolleras ord för ord mot lagtexten och berättas sedan som en allegori med sensmoral.',
+      'Questions over a selection of Swedish statutes and the EU AI Act: the answer is checked word for word against the legal text, then retold as an allegory with a moral.',
     ),
     question: t(
       'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan?',
