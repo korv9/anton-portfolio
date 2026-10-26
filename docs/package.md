@@ -40,7 +40,13 @@ their sha256 before and after must be identical.
    `from lib.rawstore import …` and test monkeypatches all reach the one module, and
    `python platform/publish/release.py …` still runs. Every workflow installs the package
    (`.github/actions/data-setup`); `setuptools` is pinned in `requirements.txt` for that.
-3. **Exports**, one domain at a time, onto `core.io` and `core.db`.
+3. **Exports**, one domain at a time, onto `core.io` and `core.db`. Done so far: the catalogue
+   (`build_catalog` → `portfolio.publish.catalog`, with `register`, which 18 exporters reached
+   through a path edit) and ai_politics, concepts, eu_ai_act, job_ai_governance, philosophy and
+   quality. Proof: each set of exports run before and after against the same warehouse, every
+   file it writes (41, catalogue included) hashed; all identical. The first run also found the
+   philosophy export was not byte-stable between runs (an unordered `select distinct`), fixed
+   first so the comparison meant something.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
 5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls

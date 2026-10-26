@@ -73,50 +73,9 @@ def excerpt(context: str, term: str, limit: int = EXCERPT) -> str:
     return piece
 
 
-def is_atlas_parquet(path: str) -> bool:
-    return path.startswith("symbolic/") and path.endswith(".parquet")
-
-
-def register(paths: list[Path]) -> None:
-    """Add or update these files in catalog.json and delivery.json, leaving every other entry."""
-    import hashlib
-
-    sys.path.insert(0, str(ROOT / "platform/publish"))
-    import build_catalog as bc
-
-    catalog = json.loads(bc.CATALOG.read_text(encoding="utf-8"))
-    delivery = json.loads(bc.DELIVERY.read_text(encoding="utf-8"))
-    current = {path.relative_to(bc.PUBLIC).as_posix() for path in paths}
-    entries = {e["path"]: e for e in catalog["files"]}
-    # A new atlas version replaces the old one's Parquet in the catalogue (its copy in storage
-    # stays for the site that still reads it). Only a call that registers atlas Parquet does
-    # this: other exporters (quality) register their own files through here too.
-    if any(is_atlas_parquet(p) for p in current):
-        entries = {k: e for k, e in entries.items() if not is_atlas_parquet(k) or k in current}
-        for name, parts in list(delivery["parquet_datasets"].items()):
-            if any(is_atlas_parquet(p) and p not in current for p in parts):
-                del delivery["parquet_datasets"][name]
-    for path in paths:
-        relative = path.relative_to(bc.PUBLIC).as_posix()
-        # Exact bytes, as build_catalog.py's schema version 2: a binary file is not text.
-        content = path.read_bytes()
-        fmt = bc.classify(relative)
-        entries[relative] = {"path": relative, "product": bc.product_of(relative), "format": fmt,
-                             "bytes": len(content), "rows": bc.row_count(path, fmt),
-                             "schema_version": bc.SCHEMA_VERSION, "partition": bc.partition_of(relative),
-                             "sha256": hashlib.sha256(content).hexdigest(),
-                             "hash_algorithm": "sha256-exact-bytes"}
-        if fmt == "parquet":
-            delivery["parquet_datasets"][relative.split("/")[-1]] = [relative]
-    files = sorted(entries.values(), key=lambda e: e["path"])
-    run_id = hashlib.sha256("".join(f"{e['path']}:{e['sha256']}" for e in files).encode()).hexdigest()[:16]
-    for entry in files:
-        entry["run_id"] = run_id
-    catalog.update(run_id=run_id, files=files)
-    delivery["run_id"] = run_id
-    delivery["parquet_datasets"] = dict(sorted(delivery["parquet_datasets"].items()))
-    bc.CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    bc.DELIVERY.write_text(json.dumps(delivery, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+# Registering a file in the catalogue lives with the catalogue (docs/package.md); imported here so
+# exporters calling export_symbolic.register keep working.
+from portfolio.publish.catalog import is_atlas_parquet, register  # noqa: E402,F401
 
 
 def _dump(name: str, payload) -> Path:

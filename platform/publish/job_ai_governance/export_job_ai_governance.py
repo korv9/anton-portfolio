@@ -17,15 +17,14 @@ Shares always carry their denominator. A mention is a dictionary match, not a re
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.publish.catalog import register
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/ai-act/jobs"
+OUT = PUBLIC / "ai-act/jobs"
 
 
 def rows(con, sql: str) -> list[dict]:
@@ -40,13 +39,11 @@ def rows(con, sql: str) -> list[dict]:
 
 
 def dump(name: str, payload) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     OUT.mkdir(parents=True, exist_ok=True)
     terms = rows(con, """select term_id, family, label_en, label_sv, pattern, case_sensitive, description_en
                          from seeds.job_ai_governance_terms order by sort_order""")
@@ -77,10 +74,7 @@ def main() -> int:
     }
     written = [dump("summary.json", summary), dump("monthly.json", monthly),
                dump("fields.json", fields), dump("examples.json", examples)]
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register(written)
+    register(written)
     print(f"Job AI governance: {summary['ads']:,} ads, {len(archives)} archives -> {OUT.relative_to(ROOT)}")
     return 0
 
