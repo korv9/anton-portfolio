@@ -141,6 +141,9 @@ def main() -> None:
     (OUT / "samples").mkdir(exist_ok=True)
     for stale in (OUT / "samples").glob("*.json"):
         stale.unlink()
+    # One thread, so `limit` returns the same first rows each run: a parallel scan returned
+    # different sample rows run to run. Sorting would scan multi-million-row tables instead.
+    connection.execute("set threads to 1")
 
     for key, node in sorted(all_nodes.items()):
         kind = node["resource_type"]

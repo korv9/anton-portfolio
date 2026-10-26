@@ -56,7 +56,7 @@ def main() -> None:
         "select min(first_seen) from gold.fct_news_item").fetchone()[0]
     status = {}
     for source, last_fetch, last_success, last_status, last_error, fetches, failed in \
-            connection.execute("select * from gold.mart_news_fetch_status").fetchall():
+            connection.execute("select * from gold.mart_news_fetch_status order by 1").fetchall():
         status[source] = {**SOURCES.get(source, {"name": source, "url": None}),
                           "last_fetch": last_fetch and last_fetch.isoformat(),
                           "last_success": last_success and last_success.isoformat(),
