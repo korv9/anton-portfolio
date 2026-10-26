@@ -61,6 +61,8 @@ test('a question shows its passages, then the checked answer', async ({
       json: verified
         ? {
             status: 'verified',
+            allegory:
+              'En räv och en hare arbetade i samma verkstad.\nSensmoral: regeln gäller alla.',
             answer: `Det gäller [[${LAW[0].id}]]"Fixture paragraph 1."`,
             quotes: [{ id: LAW[0].id, quote: 'Fixture paragraph 1.' }],
             model: '@cf/google/gemma-4-26b-a4b-it',
@@ -100,6 +102,14 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.locator('.lq-quote')).toContainText(
     '✓ checked word for word',
   )
+  // The moral allegory leads; the checked answer it was told from follows under its own heading.
+  await expect(page.locator('.lq-allegory p')).toHaveText([
+    'En räv och en hare arbetade i samma verkstad.',
+    'Sensmoral: regeln gäller alla.',
+  ])
+  await expect(
+    page.getByRole('heading', { name: 'What the law says' }),
+  ).toBeVisible()
   expect(asked[0].corpus).toBe('sfs')
   expect(asked[0].passages).toHaveLength(8)
   await page.locator('.lq-quote button').click()

@@ -251,8 +251,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
             </h1>
             <p className="lq-sig">
               {l(
-                'Questions about Swedish law and the EU AI Act, answered with quotes checked word for word',
-                'Frågor om svensk lag och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord',
+                'Questions about Swedish law and the EU AI Act, answered with quotes checked word for word, then retold as an allegory',
+                'Frågor om svensk lag och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord och berättade som en allegori',
               )}
             </p>
           </header>
@@ -417,7 +417,27 @@ export default function AskTheLaw({ route }: { route: Route }) {
                       )}
                     </p>
                   ) : shownReply?.status === 'verified' ? (
-                    <Quoted text={shownReply.answer} onJump={jump} />
+                    <>
+                      {shownReply.allegory && (
+                        <figure className="lq-allegory">
+                          <figcaption>
+                            {l('The allegory', 'Allegorin')}
+                          </figcaption>
+                          {shownReply.allegory
+                            .split(/\n+/)
+                            .filter(Boolean)
+                            .map((line) => (
+                              <p key={line}>{line}</p>
+                            ))}
+                        </figure>
+                      )}
+                      {shownReply.allegory && (
+                        <h3 className="lq-law-title">
+                          {l('What the law says', 'Vad lagen säger')}
+                        </h3>
+                      )}
+                      <Quoted text={shownReply.answer} onJump={jump} />
+                    </>
                   ) : shownReply?.status === 'unverified' ? (
                     <p className="lq-status">
                       {l(

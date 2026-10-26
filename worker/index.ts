@@ -155,6 +155,14 @@ export const SYSTEM = [
   ...RULES,
   'Example of the format: Lagen omfattar anställda [[sfs-1982-80-1]]"Lagen gäller arbetstagare i allmän och enskild tjänst".',
 ].join(' ')
+/** Allegora's second step: the checked answer retold as a fable with a moral. */
+export const ALLEGORY_SYSTEM = [
+  'You are Allegora. You are given a question and an answer about the law that has been checked against the legal text.',
+  'Retell that answer as a short moral allegory, like a fable: three to six sentences about animals, craftspeople or a village, ending with one line that starts with "Moral:" ("Sensmoral:" in Swedish).',
+  'Write in the language of the question. Keep the meaning of the answer exactly: add no rule, exception, number or consequence it does not state.',
+  'Do not cite, quote or name paragraphs, and write no [[ ]] marks.',
+].join(' ')
+
 /** The platform corpus: the repository's documents, dbt models and data catalogue. */
 export const PLATFORM_SYSTEM = [
   "You answer questions about how this data platform is built, using only the numbered passages you are given: the repository's documents, dbt model descriptions and data catalogue.",
@@ -252,13 +260,54 @@ async function answer(request: Request, env: Env) {
   // Generated in full, then checked: an answer with a quote that is not in its source is dropped.
   if (!quotes.every((q) => q.verbatim))
     return json({ status: 'unverified', passages: found })
+  const checked = canonical(text)
+  const allegory =
+    corpus === 'platform' ? null : await retell(env, question, checked)
   return json({
     status: 'verified',
-    answer: canonical(text),
+    ...(allegory && { allegory }),
+    answer: checked,
     quotes: quotes.map(({ id, quote }) => ({ id, quote })),
     model: ANSWER_MODEL,
     usage,
   })
+}
+
+/**
+ * The checked answer, quotes kept as plain text, retold as a moral allegory. It is told from the
+ * checked answer only, never from the passages; a failed or citing retelling leaves the answer.
+ */
+async function retell(env: Env, question: string, checked: string) {
+  const plainAnswer = checked.replace(QUOTE, (_, _id, quote) =>
+    quote ? `"${quote}"` : '',
+  )
+  try {
+    const out = (await env.AI.run(ANSWER_MODEL, {
+      messages: [
+        { role: 'system', content: ALLEGORY_SYSTEM },
+        {
+          role: 'user',
+          content: `Question: ${question}
+
+Checked answer: ${plainAnswer}`,
+        },
+      ],
+      max_tokens: 600,
+      temperature: 0.7,
+      ...ANSWER_OPTIONS,
+    })) as {
+      response?: string
+      choices?: { message?: { content?: string } }[]
+    }
+    const story = (
+      out.response ??
+      out.choices?.[0]?.message?.content ??
+      ''
+    ).trim()
+    return story && !story.includes('[[') ? story : null
+  } catch {
+    return null
+  }
 }
 
 /**

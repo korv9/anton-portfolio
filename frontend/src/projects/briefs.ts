@@ -558,8 +558,8 @@ export const BRIEFS: Record<string, Brief> = {
 
   '#fraga-lagen': {
     question: t(
-      'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan? Ett påhittat lagcitat är värre än inget svar.',
-      'Can a language model answer questions on legal text without inventing quotes, on a free plan? A made-up legal quote is worse than no answer.',
+      'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan, och sedan berätta svaret som en fabel med sensmoral? Ett påhittat lagcitat är värre än inget svar.',
+      'Can a language model answer questions on legal text without inventing quotes, on a free plan, and then retell the answer as a fable with a moral? A made-up legal quote is worse than no answer.',
     ),
     built: [
       {
@@ -581,6 +581,13 @@ export const BRIEFS: Record<string, Brief> = {
         text: t(
           'Workern bäddar in frågan, tar bara emot publicerad lagtext och håller inne varje svar vars citat inte finns ord för ord i sin paragraf.',
           'The Worker embeds the question, accepts only published legal text, and withholds any answer whose quotes are not found word for word in their paragraph.',
+        ),
+      },
+      {
+        title: t('Allegorin', 'The allegory'),
+        text: t(
+          'Ett andra anrop berättar det kontrollerade svaret som en kort fabel som slutar i en sensmoral, utan citat och utan regler svaret inte har.',
+          'A second call retells the checked answer as a short fable ending in a moral, with no quotes and no rule the answer does not state.',
         ),
       },
       {
@@ -650,6 +657,13 @@ export const BRIEFS: Record<string, Brief> = {
           'Gemma answers with quotes; the Worker withholds any answer with an unverified quote.',
         ),
       },
+      {
+        step: t('Berätta', 'Retell'),
+        text: t(
+          'Det kontrollerade svaret blir en fabel med sensmoral, visad ovanför svaret och dess källor.',
+          'The checked answer becomes a fable with a moral, shown above the answer and its sources.',
+        ),
+      },
     ],
     tech: [
       'Cloudflare Workers AI',
@@ -661,8 +675,8 @@ export const BRIEFS: Record<string, Brief> = {
       'Python',
     ],
     limits: t(
-      'Utvärderingen bygger på 20 handskrivna frågor, och demon söker i 40 utvalda lagar, inte hela författningssamlingen. Ett verifierat citat visar att orden finns i lagen, inte att svaret är juridiskt rätt.',
-      'The evaluation rests on 20 hand-written questions, and the demo searches 40 selected statutes, not the whole statute book. A verified quote proves the words are in the law, not that the answer is legally correct.',
+      'Utvärderingen bygger på 20 handskrivna frågor, och demon söker i 40 utvalda lagar, inte hela författningssamlingen. Ett verifierat citat visar att orden finns i lagen, inte att svaret är juridiskt rätt, och fabeln är en bild av svaret, inte rådgivning. Utvärderingen gäller svaret, inte fabeln.',
+      'The evaluation rests on 20 hand-written questions, and the demo searches 40 selected statutes, not the whole statute book. A verified quote proves the words are in the law, not that the answer is legally correct, and the fable is an image of the answer, not advice. The evaluation covers the answer, not the fable.',
     ),
     code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/workers-ai.md',
   },
