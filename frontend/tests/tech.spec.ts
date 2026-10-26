@@ -159,8 +159,11 @@ test('the projects page explains the pipeline, lists the projects and shows the 
   await expect(er.locator('.er-lines path').first()).toBeAttached()
   await er.locator('.er-box').first().click()
   await expect(er.locator('.er-card .tech-table').first()).toBeVisible()
-  // A quality check that does not apply to a product is not counted against it.
-  await expect(page.locator('#tech-quality')).toContainText('9 / 9')
+  // A quality check that does not apply to a product is not counted against it; one the
+  // scheduled build cannot measure (the Symbolic Atlas's shared sample) is not counted as passed.
+  await expect(page.locator('#tech-quality')).toContainText(
+    'Symbolic Atlas8 / 9',
+  )
   // Every table, searchable by table or column.
   const tables = page.locator('#tech-tables')
   await tables.getByRole('searchbox').fill('fct_indicator')

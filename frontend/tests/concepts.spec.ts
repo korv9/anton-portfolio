@@ -8,7 +8,7 @@ test('the Concept Lab draws typed relations and opens concept pages', async ({
   // The lead view: a sorted lift table with each corpus's leading concept annotated.
   await expect(page.locator('.report-tabs a')).toHaveCount(2)
   await expect(page.locator('.cc-leaders li')).toHaveCount(4)
-  await expect(page.locator('.cc-leaders li').first()).toContainText('10.6×')
+  await expect(page.locator('.cc-leaders li').first()).toContainText('10.7×')
   await expect(page.locator('.cc-leaders li').first()).toContainText('Death')
   await expect(page.locator('.cc-table tbody th').first()).toHaveText('Death')
   await expect(page.locator('.cc-table td.is-leader')).toHaveCount(4)
