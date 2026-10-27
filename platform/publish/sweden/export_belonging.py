@@ -86,7 +86,7 @@ def to_sweref(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
 def coverage_counts(con) -> tuple[dict, dict]:
     """The observations left out (no current municipality, no value) and the values gold set to
     missing, by reason."""
-    no_code, no_value = con.execute("""select count(*) filter (where municipality_code is null),
+    no_code, no_value = con.sql("""select count(*) filter (where municipality_code is null),
                                           count(*) filter (where municipality_code is not null and value is null)
                                    from gold.fct_library_observation""").fetchone()
     left_out = {k: n for k, n in (("no municipality in Biblioteksdatabasen", no_code), ("no value", no_value)) if n}

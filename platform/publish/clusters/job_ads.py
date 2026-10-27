@@ -49,7 +49,7 @@ def main() -> None:
     con.sql(f"""copy (select month, occupation_group, occupation_field, count(*) as ads
                       from ads group by all order by all)
                 to '{(OUT / "occupation_month.parquet").as_posix()}' (format parquet)""")
-    counts = dict(zip(["ads", "without_municipality", "first_month", "last_month"], con.execute(
+    counts = dict(zip(["ads", "without_municipality", "first_month", "last_month"], con.sql(
         "select count(*), count(*) - count(municipality), min(month), max(month) from ads").fetchone()))
     counts["folders"] = list(FOLDERS)
     # Written last and atomically: a manifest means both aggregates are complete.

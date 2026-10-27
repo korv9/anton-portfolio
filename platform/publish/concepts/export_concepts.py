@@ -71,7 +71,7 @@ def dump(name: str, payload) -> Path:
 
 
 def has_table(con, schema: str, table: str) -> bool:
-    return bool(con.execute(f"""select count(*) from information_schema.tables
+    return bool(con.sql(f"""select count(*) from information_schema.tables
                             where table_schema = '{schema}' and table_name = '{table}'""").fetchone()[0])
 
 
@@ -93,7 +93,7 @@ def main() -> int:
 
     concept_relations = rows(con, """select concept_a, concept_b, relation_type, strength, tension_id, content_type
                                      from gold.mart_concept_relations order by relation_type, strength desc""")
-    named = con.execute("""select count(*), min(speech_date), max(speech_date)
+    named = con.sql("""select count(*), min(speech_date), max(speech_date)
                        from gold.fct_ai_speech where names_ai_act""").fetchone()
     corpus_relations = [{
         "from": "politics", "to": "law", "relation_type": "documented_reference",
@@ -157,7 +157,7 @@ def main() -> int:
         "concepts": concepts, "corpora": corpora, "relation_types": RELATION_TYPES,
         "run": {k: run[k] for k in ("model", "chunks", "corpus_size", "words", "concepts", "top_rank",
                                     "representatives", "act_version", "baselines", "evaluation", "ran_at")},
-        "reviewed_cluster_links": int(con.execute("select count(*) from gold.bridge_cluster_concept").fetchone()[0]),
+        "reviewed_cluster_links": int(con.sql("select count(*) from gold.bridge_cluster_concept").fetchone()[0]),
     }
     written = [dump("summary.json", summary), dump("profiles.json", profiles),
                dump("relations.json", {"concepts": concept_relations, "corpora": corpus_relations}),
