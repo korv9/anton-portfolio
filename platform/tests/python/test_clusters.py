@@ -143,6 +143,12 @@ def test_tax_branch_support_from_country_bootstrap():
     assert any(s < 1 for c, s in support if c not in groups)
 
 
+def test_trajectory_groups_that_barely_beat_the_null_are_descriptive():
+    assert trajectories.margin_status("finding", 0.0084) == "descriptive"
+    assert trajectories.margin_status("finding", 0.2) == "finding"
+    assert trajectories.margin_status("counter_example", 0.0) == "counter_example"
+
+
 def test_trajectory_null_shuffles_years_within_municipality():
     flat = np.arange(2 * 15 * 3, dtype=float).reshape(2, -1)
     drawn = trajectories.shuffle_years(flat, np.random.default_rng(0))
@@ -211,7 +217,7 @@ def test_export_writes_nothing_when_one_file_is_too_large(tmp_path, monkeypatch)
     monkeypatch.setattr(export, "OUT", tmp_path)
     monkeypatch.setattr(export, "payload", lambda con, name: {"name": name, "pad": "x" * (10 if name == "a" else 300)})
     monkeypatch.setattr(export, "MAX_BYTES", 100)
-    monkeypatch.setattr(export.duckdb, "connect", lambda *a, **k: contextlib.nullcontext())
+    monkeypatch.setattr(export.db, "connect", lambda *a, **k: contextlib.nullcontext())
     with pytest.raises(SystemExit):
         export.main(["a", "b"])
     assert not list(tmp_path.iterdir())

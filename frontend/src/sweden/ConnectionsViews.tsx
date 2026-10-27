@@ -177,7 +177,7 @@ export function ChangeTable({ result }: { result: ChangeResult }) {
   const ci = (c: [number, number]) => `[${c[0].toFixed(2)}, ${c[1].toFixed(2)}]`
   const pv = (v = 1) => (v < 0.001 ? '< 0.001' : v.toFixed(3))
   return (
-    <div className="sw-table-wrap">
+    <div className="sw-table-wrap" tabIndex={0}>
       <table className="sw-table">
         <caption className="sw-note">
           {l(

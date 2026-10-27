@@ -11,7 +11,8 @@ export const EXPERIENCE: {
   org: string
   kind: Bilingual
   period: Bilingual
-  did: Bilingual
+  /** The work in a few pieces, each under a short heading. */
+  parts: { heading: Bilingual; text: Bilingual }[]
   tech: string[]
 }[] = [
   {
@@ -19,10 +20,29 @@ export const EXPERIENCE: {
     org: 'Avtalat',
     kind: t('LIA-praktik', 'LIA internship'),
     period: t('jan 2026 – jun 2026', 'Jan 2026 – Jun 2026'),
-    did: t(
-      'Byggde ut en ETL-pipeline för Freshservice i Azure Databricks med PySpark och Spark SQL, så att den klarar fler instanser och fler analyser. Byggde också Power BI-rapporter och semantiska modeller med DirectQuery och DAX som ersatte manuell rapportering med självbetjäning, och gjorde en reproducerbar NLP-analys av över 21 000 incidenter där datakvaliteten bedömdes med hänsyn till GDPR och anonymisering.',
-      'Extended a Freshservice ETL pipeline in Azure Databricks with PySpark and Spark SQL so it handles more instances and more analyses. Also built Power BI reports and semantic models with DirectQuery and DAX that replaced manual reporting with self-service, and ran a reproducible NLP analysis of 21,000+ incidents, assessing data quality with GDPR and anonymisation in mind.',
-    ),
+    parts: [
+      {
+        heading: t('Pipeline', 'Pipeline'),
+        text: t(
+          'Byggde ut en ETL-pipeline för Freshservice i Azure Databricks med PySpark och Spark SQL, så att den klarar fler instanser och fler analyser.',
+          'Extended a Freshservice ETL pipeline in Azure Databricks with PySpark and Spark SQL so it handles more instances and more analyses.',
+        ),
+      },
+      {
+        heading: t('Rapportering', 'Reporting'),
+        text: t(
+          'Byggde Power BI-rapporter och semantiska modeller med DirectQuery och DAX som ersatte manuell rapportering med självbetjäning.',
+          'Built Power BI reports and semantic models with DirectQuery and DAX that replaced manual reporting with self-service.',
+        ),
+      },
+      {
+        heading: t('Analys', 'Analysis'),
+        text: t(
+          'Gjorde en reproducerbar NLP-analys av 21 633 incidentposter där datakvaliteten bedömdes med hänsyn till GDPR och anonymisering.',
+          'Ran a reproducible NLP analysis of 21,633 incident records, assessing data quality with GDPR and anonymisation in mind.',
+        ),
+      },
+    ],
     tech: [
       'Azure Databricks',
       'PySpark',
@@ -37,10 +57,29 @@ export const EXPERIENCE: {
     org: 'Fora AB',
     kind: t('LIA-praktik', 'LIA internship'),
     period: t('nov 2025 – jan 2026', 'Nov 2025 – Jan 2026'),
-    did: t(
-      'Byggde pipelines i Python, PySpark och Spark SQL som läser in över 80 000 Freshservice-poster från ett REST-API till ett lakehouse i Azure Databricks. Införde sedan inkrementell bearbetning i Bronze-, Silver- och Gold-lager med validering, skydd mot att NULL skriver över data och felhantering, och modellerade en stjärnmodell i Gold-lagret med hashade surrogatnycklar för semantiska modeller och ITSM-rapportering.',
-      'Built Python, PySpark and Spark SQL pipelines that load 80,000+ Freshservice records from a REST API into an Azure Databricks lakehouse. Then set up incremental Bronze, Silver and Gold processing with validation, NULL-overwrite protection and error handling, and modelled a Gold-layer star schema with hashed surrogate keys for semantic models and ITSM reporting.',
-    ),
+    parts: [
+      {
+        heading: t('Inläsning', 'Ingestion'),
+        text: t(
+          'Byggde pipelines i Python, PySpark och Spark SQL som läser in över 80 000 Freshservice-poster från ett REST-API till ett lakehouse i Azure Databricks.',
+          'Built Python, PySpark and Spark SQL pipelines that load 80,000+ Freshservice records from a REST API into an Azure Databricks lakehouse.',
+        ),
+      },
+      {
+        heading: t('Bearbetning', 'Processing'),
+        text: t(
+          'Införde inkrementell bearbetning i Bronze-, Silver- och Gold-lager med validering, skydd mot att NULL skriver över data och felhantering.',
+          'Set up incremental Bronze, Silver and Gold processing with validation, NULL-overwrite protection and error handling.',
+        ),
+      },
+      {
+        heading: t('Modellering', 'Modelling'),
+        text: t(
+          'Modellerade en stjärnmodell i Gold-lagret med hashade surrogatnycklar för semantiska modeller och ITSM-rapportering.',
+          'Modelled a Gold-layer star schema with hashed surrogate keys for semantic models and ITSM reporting.',
+        ),
+      },
+    ],
     tech: [
       'Python',
       'PySpark',
@@ -59,19 +98,29 @@ export const THESIS = {
     'Degree project: Finding recurring IT problems with NLP',
   ),
   kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
-  points: [
-    t(
-      'Undersökte hur NLP, klustring och oövervakad inlärning kunde hjälpa IT-team att koppla samman återkommande incidenter och identifiera mönster värda att undersöka.',
-      'Explored how NLP, clustering and unsupervised learning could help IT teams connect recurring incidents and identify patterns worth investigating.',
-    ),
-    t(
-      'Analyserade 21 633 incidentposter från Freshservice. Av 121 kluster saknade 72 koppling till ett registrerat problem. Lyfte fram 12 grupper med 650 ärenden för fortsatt granskning i verksamheten.',
-      'Analysed 21,633 Freshservice incident records. Of 121 clusters, 72 had no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
-    ),
-    t(
-      'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och få kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
-      'Assessed data quality using five ISO/IEC 25012 dimensions. Missing root-cause documentation and few links between incidents and problems limited the analysis. Useful AI here needs better documentation.',
-    ),
+  /** The thesis in three pieces, each under a short heading as in Experience. */
+  parts: [
+    {
+      heading: t('Frågeställning', 'Question'),
+      text: t(
+        'Undersökte hur NLP, klustring och oövervakad inlärning kunde hjälpa IT-team att koppla samman återkommande incidenter och identifiera mönster värda att undersöka.',
+        'Explored how NLP, clustering and unsupervised learning could help IT teams connect recurring incidents and identify patterns worth investigating.',
+      ),
+    },
+    {
+      heading: t('Resultat', 'Findings'),
+      text: t(
+        'Granskade 21 633 incidentposter från Freshservice. Klustringen av 16 811 av dem gav 121 grupper, varav 72 saknade koppling till ett registrerat problem. Lyfte fram 12 grupper med 650 ärenden för fortsatt granskning i verksamheten.',
+        'Assessed 21,633 Freshservice incident records; clustering 16,811 of them gave 121 groups, 72 with no link to a registered problem. Highlighted 12 groups containing 650 tickets for further operational review.',
+      ),
+    },
+    {
+      heading: t('Datakvalitet', 'Data quality'),
+      text: t(
+        'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och få kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
+        'Assessed data quality using five ISO/IEC 25012 dimensions. Missing root-cause documentation and few links between incidents and problems limited the analysis. Useful AI here needs better documentation.',
+      ),
+    },
   ],
   tech: [
     'Python',
@@ -94,7 +143,7 @@ export const ADDITIONAL = {
   ),
 }
 
-/** Earlier studies outside the field, shown smaller than the main education. */
+/** Earlier studies outside the field, listed after the main education. */
 export const ADDITIONAL_EDUCATION = {
   title: t(
     'Socionomprogrammet med urban profil',

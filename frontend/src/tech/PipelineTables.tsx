@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 import type { TourNode } from './PipelineTour'
 import { REPO } from './techData'
 
@@ -27,11 +28,11 @@ export function Scripts({ graph }: { graph: Graph }) {
       <table className="tech-table">
         <thead>
           <tr>
-            <th scope="col">Script</th>
-            <th scope="col">Subject</th>
-            <th scope="col">Reads from</th>
-            <th scope="col">Writes raw</th>
-            <th scope="col">What it fetches</th>
+            <th scope="col">{l('Script', 'Skript')}</th>
+            <th scope="col">{l('Subject', 'Ämne')}</th>
+            <th scope="col">{l('Reads from', 'Läser från')}</th>
+            <th scope="col">{l('Writes raw', 'Skriver rådata')}</th>
+            <th scope="col">{l('What it fetches', 'Vad det hämtar')}</th>
           </tr>
         </thead>
         <tbody>
@@ -62,16 +63,16 @@ export function Scripts({ graph }: { graph: Graph }) {
   )
 }
 
-const STAGES: [string, string][] = [
-  ['sources', 'Sources'],
-  ['ingestion', 'Ingestion'],
-  ['raw', 'Raw'],
-  ['seeds', 'Seeds'],
-  ['models', 'dbt models'],
-  ['gold', 'Gold'],
-  ['ml', 'ML'],
-  ['delivery', 'Delivery'],
-  ['products', 'Pages'],
+const STAGES: [string, () => string][] = [
+  ['sources', () => l('Sources', 'Källor')],
+  ['ingestion', () => l('Ingestion', 'Inläsning')],
+  ['raw', () => l('Raw', 'Rådata')],
+  ['seeds', () => 'Seeds'],
+  ['models', () => l('dbt models', 'dbt-modeller')],
+  ['gold', () => 'Gold'],
+  ['ml', () => 'ML'],
+  ['delivery', () => l('Delivery', 'Leverans')],
+  ['products', () => l('Pages', 'Sidor')],
 ]
 
 export function Stages({ graph }: { graph: Graph }) {
@@ -85,14 +86,17 @@ export function Stages({ graph }: { graph: Graph }) {
     <div className="tech-scroll" tabIndex={0}>
       <table className="tech-table stages">
         <caption className="visually-hidden">
-          What each subject holds at each stage, from source to page
+          {l(
+            'What each subject holds at each stage, from source to page',
+            'Vad varje ämne rymmer i varje steg, från källa till sida',
+          )}
         </caption>
         <thead>
           <tr>
-            <th scope="col">Subject</th>
+            <th scope="col">{l('Subject', 'Ämne')}</th>
             {STAGES.map(([key, label]) => (
               <th scope="col" key={key} className="num">
-                {label}
+                {label()}
               </th>
             ))}
           </tr>

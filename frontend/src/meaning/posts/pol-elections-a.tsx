@@ -1,4 +1,5 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
+import { l } from '../../i18n'
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
@@ -49,7 +50,7 @@ function StackedShare() {
           const last = top.length - 1
           if (top[last] - base[last] >= 4)
             ends.push({
-              label: p === 'OTHER' ? 'Other' : p,
+              label: p === 'OTHER' ? l('Other', 'Övriga') : p,
               y: y((top[last] + base[last]) / 2),
             })
           base = top
@@ -59,7 +60,10 @@ function StackedShare() {
           <svg
             viewBox="0 0 600 200"
             role="img"
-            aria-label="Vote share by party, stacked, per election"
+            aria-label={l(
+              'Vote share by party, stacked, per election',
+              'Röstandel per parti, staplad, per val',
+            )}
           >
             {layers.map((l) => (
               <path
@@ -124,7 +128,7 @@ function SeatBar() {
         return (
           <>
             <Slicer
-              label="Election year"
+              label={l('Election year', 'Valår')}
               cycles
               options={d.years.slice(-8)}
               value={year}
@@ -133,7 +137,10 @@ function SeatBar() {
             <svg
               viewBox="0 0 300 150"
               role="img"
-              aria-label={`Riksdag seats per party after the ${year} election; ${d.majority} make a majority`}
+              aria-label={l(
+                `Riksdag seats per party after the ${year} election; ${d.majority} make a majority`,
+                `Mandat i riksdagen per parti efter valet ${year}; ${d.majority} ger egen majoritet`,
+              )}
             >
               {segs.map((s) => (
                 <rect
@@ -147,7 +154,9 @@ function SeatBar() {
                   stroke="var(--paper)"
                   strokeWidth={1}
                 >
-                  <title>{`${s.p}: ${s.seats} seats`}</title>
+                  <title>
+                    {l(`${s.p}: ${s.seats} seats`, `${s.p}: ${s.seats} mandat`)}
+                  </title>
                 </rect>
               ))}
               <g className="mean-end">
@@ -174,7 +183,10 @@ function SeatBar() {
                   style={{ stroke: 'var(--mean-ink)', strokeWidth: 1 }}
                 />
                 <text x={x(d.majority)} y={132} textAnchor="middle">
-                  {d.majority} seats for a majority
+                  {l(
+                    `${d.majority} seats for a majority`,
+                    `${d.majority} mandat för majoritet`,
+                  )}
                 </text>
               </g>
             </svg>
@@ -193,9 +205,18 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Elections) =>
       d.years.length
-        ? `Vote share by party in Riksdag elections, ${d.years[0]}–${d.years.at(-1)}`
-        : 'Vote share by party in Riksdag elections',
-    note: 'Share of votes cast, %. Source: Valmyndigheten.',
+        ? l(
+            `Vote share by party in Riksdag elections, ${d.years[0]}–${d.years.at(-1)}`,
+            `Röstandel per parti i riksdagsvalen ${d.years[0]}–${d.years.at(-1)}`,
+          )
+        : l(
+            'Vote share by party in Riksdag elections',
+            'Röstandel per parti i riksdagsvalen',
+          ),
+    note: [
+      'Share of votes cast, %. Source: Valmyndigheten.',
+      'Andel av avgivna röster, %. Källa: Valmyndigheten.',
+    ],
     render: () => <StackedShare />,
   },
   {
@@ -204,9 +225,15 @@ export const posts: Post[] = [
     sources: ['parliament/elections.json'],
     title: (d: Elections) =>
       d.years.length
-        ? `Riksdag seats per party, ${fromEnd(d.years, 8)}–${d.years.at(-1)} elections`
-        : 'Riksdag seats per party',
-    note: 'All seats in one bar, parties from left to right. Source: Valmyndigheten.',
+        ? l(
+            `Riksdag seats per party, ${fromEnd(d.years, 8)}–${d.years.at(-1)} elections`,
+            `Mandat i riksdagen per parti, valen ${fromEnd(d.years, 8)}–${d.years.at(-1)}`,
+          )
+        : l('Riksdag seats per party', 'Mandat i riksdagen per parti'),
+    note: [
+      'All seats in one bar, parties from left to right. Source: Valmyndigheten.',
+      'Alla mandat i en stapel, partierna från vänster till höger. Källa: Valmyndigheten.',
+    ],
     render: () => <SeatBar />,
   },
 ]

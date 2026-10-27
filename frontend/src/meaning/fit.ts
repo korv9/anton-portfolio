@@ -1,3 +1,4 @@
+import { l } from '../i18n'
 /**
  * Fits each chart of a card to the space it is drawn in. Chart text is sized in SVG units and
  * the chart is scaled to the card, so each chart gets its drawn scale as --mean-s; meaning.css
@@ -40,7 +41,11 @@ function fitRows(bars: HTMLElement, open: boolean) {
     }
   }
   const more = open ? 0 : left + cut
-  if (more) bars.dataset.more = String(more)
+  if (more)
+    bars.dataset.more = l(
+      `${more} more when opened`,
+      `${more} till när den öppnas`,
+    )
   else delete bars.dataset.more
 }
 

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { l } from '../i18n'
+import Signature from '../home/Signature'
 import LanguageToggle from './LanguageToggle'
 import './header.css'
 
@@ -24,8 +25,12 @@ export default function SiteHeader() {
   }, [])
   return (
     <header ref={header} className="site-header">
-      <a className="site-identity" href="#start">
-        <strong>ANTON ERNSTSSON</strong>
+      <a
+        className="site-identity"
+        href="#start"
+        aria-label={l('Anton Ernstsson, home', 'Anton Ernstsson, start')}
+      >
+        <Signature className="site-signature" gradientId="site-signature-ink" />
       </a>
       <nav
         className="site-navigation"

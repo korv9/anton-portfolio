@@ -12,8 +12,18 @@ import {
 } from 'react'
 import { fitCharts } from './fit'
 import { useFresh } from './freshness'
-import { PostLeave, PostLive, PostOpen, still, useData, type Post } from './kit'
+import {
+  PostLeave,
+  PostLive,
+  PostOpen,
+  still,
+  tx,
+  useData,
+  type Post,
+  type Text,
+} from './kit'
 import { Trace } from './Trace'
+import { l } from '../i18n'
 
 /** Above this many SVG elements a thumbnail steps without transitions. */
 const DENSE_MARKS = 400
@@ -70,8 +80,8 @@ function observe(
 /** The card's accessible name: its label, its fixed title, or its id read as words under its
  * section. */
 const nameOf = (post: Post, section: string) =>
-  post.label ??
-  (typeof post.title === 'string' ? post.title : undefined) ??
+  tx(post.label) ??
+  (typeof post.title === 'function' ? undefined : tx(post.title)) ??
   `${section}: ${post.id.split('-').slice(1).join(' ')}`
 
 /** The card's visible heading and note, above the chart. */
@@ -95,26 +105,32 @@ function Heading({
   )
 }
 
-/** A title worked out from the post's first source; nothing until that file has loaded. The
- * fetch is shared with the chart, so it costs no second request. */
+/** A title or note worked out from the post's first source; nothing until that file has
+ * loaded. The fetch is shared with the chart, so it costs no second request. */
 function DataHeading({ post }: { post: Post }) {
   const d = useData<unknown>(post.sources[0])
-  let title = ''
-  // Data the title cannot read leaves the heading empty; the chart decides whether to stay.
-  if (d !== null && !(d instanceof Error))
+  const ready = d !== null && !(d instanceof Error)
+  // Data a line cannot read leaves it empty; the chart decides whether to stay.
+  const read = (t: Post['title']) => {
+    if (typeof t !== 'function') return tx(t)
+    if (!ready) return ''
     try {
-      title = (post.title as (d: never) => string)(d as never)
+      return t(d as never)
     } catch {
-      title = ''
+      return ''
     }
+  }
   // Until the data has loaded, the heading keeps its two lines so the chart does not jump.
-  return <Heading title={title} note={post.note} wait />
+  return <Heading title={read(post.title)} note={read(post.note)} wait />
 }
 
 /** The overdue mark's text, with the day of the last ingestion when known. Only an overdue
  * source is marked: a dot on every card would say nothing. */
 const freshText = ({ at }: { at?: string }) =>
-  `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`
+  l(
+    `Source ingestion overdue${at ? `, last ${at.slice(0, 10)}` : ''}`,
+    `Källan är försenad${at ? `, senast ${at.slice(0, 10)}` : ''}`,
+  )
 
 /** Whether the tab is in front; thumbnails stop ticking behind another tab. */
 export function usePageVisible() {
@@ -235,10 +251,13 @@ export function Card({
         />
       )}
       <div className="mean-body" inert={traced || undefined}>
-        {typeof post.title === 'function' ? (
+        {typeof post.title === 'function' || typeof post.note === 'function' ? (
           (near || open) && <DataHeading post={post} />
         ) : (
-          <Heading title={post.title} note={post.note} />
+          <Heading
+            title={tx(post.title)}
+            note={tx(post.note as Text | undefined)}
+          />
         )}
         <PostLeave.Provider value={leave}>
           <PostOpen.Provider value={open}>
@@ -264,7 +283,7 @@ export function Card({
         <button
           type="button"
           className="mean-close"
-          aria-label={`Close chart: ${nameOf(post, section)}`}
+          aria-label={`${l('Close chart', 'Stäng diagram')}: ${nameOf(post, section)}`}
           onClick={() => toggle(null)}
         >
           ×
@@ -273,7 +292,7 @@ export function Card({
         <button
           type="button"
           className="mean-hit"
-          aria-label={`Open chart: ${nameOf(post, section)}`}
+          aria-label={`${l('Open chart', 'Öppna diagram')}: ${nameOf(post, section)}`}
           onClick={() => toggle(post.id)}
         />
       )}

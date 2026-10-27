@@ -1,8 +1,10 @@
 # The job market
 
-The Labour Market Observatory (`#jobb`) shows every job ad published on Arbetsförmedlingen
-since 2020, in all occupations. The IT report on software and data roles, which reads whole ads, is
-`#job-market-tech` (see `platform/ingest/jobtech/`).
+This pipeline counts every job ad published on Arbetsförmedlingen since 2020, in all
+occupations. The Labour Market Observatory page (`#jobb`) was withdrawn on 2026-10-21; its
+addresses lead to `#what-does-it-even-mean`, whose job-market posts
+(`frontend/src/meaning/posts/job-market-*.tsx`) read `jobs/market.json`. The IT report on
+software and data roles, which reads whole ads, is built from `platform/ingest/jobtech/`.
 
 ## Source
 
@@ -61,12 +63,12 @@ or removed in a time window, in the archives' shape.
    - `int_market_periods` (silver): the comparison period ends with the last complete month;
      `mart_market_period` is the same row in gold, for the export.
 3. **Export**: `platform/publish/export_market.py` writes `frontend/public/data/jobs/market.json`,
-   with `daily` (ads per day) and `preliminary` (months from the stream). *Trender* shows the
-   latest days under the monthly chart, marked preliminary.
+   with `daily` (ads per day) and `preliminary` (months from the stream). The feed's
+   job-market posts read the daily series.
 4. **Refresh**: `.github/workflows/refresh-jobs.yml`, every morning (04:23 UTC): it restores
    the stored counts, stream and provenance log from R2, counts any new archive and the stream
-   since the previous run and rebuilds `market.json` (`pipeline.py run market`). It stores the
-   raw files back in R2 before it validates the export, then publishes the `jobs` group as a
+   since the previous run and rebuilds `market.json` (`pipeline.py run market`). The same run
+   refreshes the Job Intelligence files (`job_companies.py refresh`). It stores the raw files back in R2 before it validates the export, then publishes the `jobs` group as a
    versioned release ([delivery-validation.md](delivery-validation.md)). It commits nothing. Quality check `jobs_stream_currentness` warns when the stream's last
    complete day is more than two days old.
 

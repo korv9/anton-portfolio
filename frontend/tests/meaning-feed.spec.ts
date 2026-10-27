@@ -64,6 +64,8 @@ test(
       feed.getByRole('heading', { level: 2, name: 'Politics' }),
     ).toBeVisible()
     const first = feed.locator('.mean-post').first()
+    // The strongest post leads the feed.
+    await expect(first).toHaveAttribute('data-post', 'pol-ai-speech-line')
     // Cards wear the feed's card token.
     const card = await first.evaluate((el) => {
       const probe = document.createElement('i')
@@ -260,4 +262,47 @@ test('the Source panel opens from the keyboard and says what is not recorded', a
   await expect(panel).toHaveCount(0)
   await expect(toggle).toHaveAttribute('aria-expanded', 'false')
   await expect(post.locator('.mean-body')).not.toHaveAttribute('inert')
+})
+
+test('the feed wears the site charcoal tokens and its text passes contrast', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'the same markup on a phone')
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto(FEED)
+  const feed = page.locator('.mean-page')
+  await expect(feed.locator('.mean-post').first()).toBeAttached()
+  await page.waitForLoadState('networkidle')
+  // The page is the site's charcoal, not a palette of its own, and chapters have no rule.
+  await expect(feed).toHaveCSS('background-color', 'rgb(36, 36, 34)')
+  await expect(feed.locator('.mean-section-head').first()).toHaveCSS(
+    'border-bottom-width',
+    '0px',
+  )
+  const { default: AxeBuilder } = await import('@axe-core/playwright')
+  const result = await new AxeBuilder({ page })
+    .include('.mean-page')
+    .withRules(['color-contrast'])
+    .analyze()
+  expect(result.violations.map((v) => v.nodes[0]?.target.join(' '))).toEqual([])
+})
+
+test('in Swedish the first ten cards have Swedish titles', async ({ page }) => {
+  await page.goto(FEED)
+  await page.getByRole('button', { name: 'Svenska' }).click()
+  const feed = page.locator('.mean-page')
+  await expect(
+    feed.getByRole('heading', { level: 2, name: 'Politik' }),
+  ).toBeVisible()
+  for (let i = 0; i < 10; i++) {
+    const card = feed.locator('.mean-post').nth(i)
+    await card.scrollIntoViewIfNeeded()
+    const title = card.locator('.mean-head-title')
+    await expect(title).not.toBeEmpty()
+    // Common English words that never belong in a Swedish title.
+    expect(` ${await title.textContent()} `).not.toMatch(
+      / (the|of|and|from|with)\s/i,
+    )
+  }
 })

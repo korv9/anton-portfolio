@@ -1,8 +1,8 @@
 # Workers AI
 
 Tre demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
-partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Fråga lagen)
-och frågor om hur plattformen själv är byggd (Fråga plattformen).
+partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Allegora,
+`#fraga-lagen`, här kallad Fråga lagen) och frågor om hur plattformen själv är byggd (Fråga plattformen).
 
 ## Regeln
 
@@ -87,6 +87,10 @@ stor del av de tio närmaste grannarna med fulla vektorer som också hittas med 
 | ai-act-en | 1 413   | 0,969              | 0,987              | 256       |
 | debate    | 33 023  | 0,860              | 0,941              | 384       |
 
+Debattkartans filer i `frontend/public/data/workers-ai/debate/` skrivs av
+`python -m ml.research.export_workers_ai --map debate`, som läser vektorerna från
+`platform/nlp/workers_ai.py embed`. `--examples` skriver tre exempelmeningar med vektorer och anropar Workers AI.
+
 ## Evalresultat
 
 Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor och bland de tio
@@ -130,8 +134,17 @@ Raderna per fråga, med modellens råa text, ligger i `warehouse/features/worker
 Exempelfrågorna på sidan är tre av Gemmas verifierade svar per korpus, för `sfs` och `ai-act-sv`,
 tagna direkt från evalraderna utan nya anrop. Frågornas vektorer bäddades in lokalt med samma
 bge-m3. En fråga togs bara med när den lokala vektorn gav exakt samma åtta stycken som vektorn från
-Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel än, eftersom inga engelska frågor
-har körts.
+Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel, eftersom inga engelska frågor
+har körts; där ber sidan läsaren fråga med egna ord.
+
+Exemplet "När börjar AI-förordningen gälla?" besvarades från skäl 179 ("bör tillämpas") i stället
+för artikel 113. Sidan visar därför inte exempel vars citat bara kommer ur skäl (`rct_`); filtret
+ligger i `frontend/src/lawqa/AskTheLaw.tsx` tills frågan körs om och exporten skrivs på nytt.
+
+Sidan öppnar på det första exemplets svar, som bara kräver `examples.json`. Korpusen (`pca.json`,
+`vectors.bin` och `sfs/meta.json` från R2, sammanlagt cirka 12 MB) hämtas först när läsaren går
+till fältet, väljer ett exempel eller öppnar källorna. Mätt på utvecklingsservern 2026-10-25 sjönk
+första laddningen av `#fraga-lagen` från 14,1 MB till 2,3 MB.
 
 ## Neurons per steg
 
@@ -155,8 +168,8 @@ räknades in innan körningarna startade.
 Provanropen från Workern och sidorna kostade 13,2 neurons till. Loggen räknar från tokenantalen.
 För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
 
-Kvar att köra är exemplen för `ai-act-en`, ungefär 180 neurons, när kvoten nollställts
-kl. 00.00 UTC den 2026-10-16. Tills dess visar den engelska sidan att exempel saknas.
+Exemplen för `ai-act-en` (ungefär 180 neurons) kördes aldrig. Den engelska sidan har därför inga
+exempel och ber läsaren fråga med egna ord.
 
 ## Hela författningssamlingen
 
@@ -222,10 +235,11 @@ ingen bit är över 1 500 tecken och att bitarna blir samma text igen, blankteck
 och efter ändringen. `assert_sfs_whole_text_only_without_paragraphs` kontrollerar att inget
 dokument har båda sorterna och att ingen XML-text kommit med.
 
-### Sidan om lagboken
+### Översikten över samlingen
 
-Sidan `#lagboken` (projektet Swedish Statute Book) visar samlingen i tre flikar: omfattning,
-utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
+Sidan `#lagboken` (projektet Swedish Statute Book) togs bort från webbplatsen 2026-10-21 och
+adressen leder till `#what-does-it-even-mean`. Exporten `sfs/overview.json` finns kvar och
+beskriver samlingen: omfattning, utfärdade och upphävda per år samt storlek. Guldmodellen `fct_sfs_document` har en rad per
 dokument med typ, utfärdandeår, upphävandeår, antal numrerade paragrafer (kapitel och §, räknade
 en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den och
 `int_sfs_corpus_paragraphs` och skriver `frontend/public/data/sfs/overview.json`, ungefär
@@ -233,7 +247,7 @@ en gång) och antal stycken. `python platform/publish/export_sfs.py` läser den 
 test fallerat. Filen ingår i leveransgruppen `baseline`.
 
 Raden `Ändrad:` anger bara den senaste ändrings-SFS:en, inte hur många ändringar en lag fått, så
-sidan visar inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
+exporten har inga mest ändrade lagar. Fråga lagen söker fortfarande bara i de 40 utvalda lagarna.
 
 ## Fråga plattformen
 
@@ -253,7 +267,8 @@ Varje stycke har `path` (den spårade filen), `commit` (senaste commit som ändr
 till exempel `docs/pipeline.md#subjects`, eller `dbt:<modell>`, `graph:<nod>` och
 `catalog:<produkt>`. En fil som Git inte spårar, som `.gitignore` täcker eller som ser privat ut
 (`.env`, `private/`, `warehouse/`, `.idea-lineage/`) vägras. Två driftloggar med lokala sökvägar
-(`compliance-intelligence/repository-audit.md` och `validation.md`) är undantagna, och ett stycke
+(`compliance-intelligence/repository-audit.md` och `validation.md`, borttagna 2026-10-23) var
+undantagna, och ett stycke
 som innehåller en lokal hemkatalog (`C:/Users/...`, `/home/...`) tas bort. Testet
 `test_every_published_passage_is_a_tracked_public_file` fallerar om en sådan sökväg eller ett
 sådant stycke finns i den publicerade korpusen. `test_every_document_passage_line_is_in_its_file`
@@ -281,7 +296,10 @@ fältet. Varje citat länkar till sin fil vid sin commit på GitHub. När ett ci
 nod i grafen som är en källa, rådata, en silver- eller guldmodell eller en publicerad fil ritas en
 väg i fem steg: källa, rådata, silver, guld och publicerad fil (`frontend/src/ask/lineage.ts`).
 En modell väljs före andra noder. Ett steg som vägen inte passerar visas som saknat. Komponenten är
-inte monterad i flödet än; den nås på testadressen `#ask-platform`.
+monterad på plattformssidan (`frontend/src/tech/PlatformSections.tsx`) och öppnar där på det första
+exemplets svar; innan korpusen laddats visas citatens filnamn, lästa ur styckets id. Den nås också
+på testadressen `#ask-platform`. Fältets platshållare är exempelfrågan om datafilernas adress, som
+verifierades, inte fråga 1 om juniorandelen, som inte gör det.
 
 Är kvoten slut svarar Workern 503 med `reason: quota`, och komponenten visar då tre förberäknade
 exempel (`examples.json`, frågorna 2, 7 och 10 i evalen, med sina vektorer och kontrollerade svar).

@@ -2,32 +2,25 @@
  * The feed's chrome around the charts: chapter heads with their pause button, the overdue
  * mark and the corner label naming a thumbnail's current option. Split from meaning.css.
  */
-/* A chapter break: title and line on the left, the pause on the right, and a hairline that
-   draws across the grid as the chapter scrolls in. */
+/* A chapter break: title and line on the left, the pause on the right; space, not a rule,
+   separates the chapters. */
 .mean-section-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
   gap: 4px var(--sp-3);
-  margin-bottom: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
-.mean-section-head::after {
-  content: '';
-  grid-column: 1 / -1;
-  height: 1px;
-  margin-top: var(--sp-2);
-  background: var(--mean-ink);
-  transform-origin: left;
-}
-/* Chapter titles sit one step under the feed's display heading. */
-.mean-section-head :is(h2, h3) {
+/* Chapter titles sit one step under the feed's display heading; the id outranks editorial.css. */
+.project-shell #main .mean-section-head :is(h2, h3) {
   grid-column: 1;
+  width: max-content;
+  max-width: 100%;
   margin: 0;
-  color: var(--mean-ink);
   font-family: var(--font);
-  font-size: var(--h2);
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
   font-weight: 750;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.045em;
   line-height: 1;
   text-transform: uppercase;
 }
@@ -37,7 +30,7 @@
   max-width: 62ch;
   color: var(--mean-muted);
   font-family: var(--mean-font);
-  font-size: 0.85rem;
+  font-size: var(--small);
   line-height: 1.4;
   text-wrap: pretty;
 }

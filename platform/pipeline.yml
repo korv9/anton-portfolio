@@ -48,6 +48,8 @@ groups:
       - python platform/publish/export_schema.py
       - python platform/publish/export_er.py
       - python platform/architecture/build_graph.py
+      # The feed provenance reads the new graph; its test compares the two.
+      - python platform/architecture/feed_provenance.py
       - *data_catalog
       - *data_check
       - python platform/publish/validate_public_data.py

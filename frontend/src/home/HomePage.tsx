@@ -1,11 +1,11 @@
 /**
- * The start page, about Anton for a recruiter: the name and role on the first screen, then
- * contact, the way on to the projects (#projects), About, experience and education, and the
- * projects link once more at the end.
+ * The start page, about Anton for a recruiter: the signature, name and role on the first screen,
+ * then About with the contact links, experience above education beside the cluster maps, and the way on to the projects
+ * (#projects) beside the job-ads map.
  */
 import { useEffect } from 'react'
 import { profile } from '../content'
-import { ABOUT, CONTACT } from './content'
+import { ABOUT } from './content'
 import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
 import {
@@ -18,6 +18,9 @@ import {
 } from './orbitContent'
 import { PROJECTS } from '../projects/projectRegistry'
 import LanguageToggle from '../site/LanguageToggle'
+import ClusterDepth from './ClusterDepth'
+import JobsMap from './JobsMap'
+import Signature from './Signature'
 import './home.css'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
@@ -32,23 +35,23 @@ function Identity() {
       id="start"
       aria-labelledby="home-name"
     >
-      <h1 id="home-name" className="home-name">
-        Anton Ernstsson
-      </h1>
-      <p className="home-role">Data &amp; AI Engineering</p>
+      <div className="home-mark">
+        <Signature />
+        <div className="home-byline">
+          <h1 id="home-name" className="home-name">
+            Anton Ernstsson
+          </h1>
+          <p className="home-role">Data &amp; AI Engineering</p>
+        </div>
+      </div>
     </section>
   )
 }
 
-/** The contact line the reader reaches on the first scroll. */
+/** The email and profiles, directly under the About paragraphs. */
 function Contact() {
   return (
-    <section
-      className="home-screen home-contact"
-      id="kontakt"
-      aria-label={l('Contact', 'Kontakt')}
-    >
-      <p className="home-contact-intro">{l(CONTACT.en, CONTACT.sv)}</p>
+    <div className="home-contact" id="kontakt">
       {profile.email && (
         <p className="home-contact-email">
           <a href={`mailto:${profile.email}`}>{profile.email}</a>
@@ -69,36 +72,11 @@ function Contact() {
         {profile.cv && <CvButton />}
         <LanguageToggle />
       </nav>
-    </section>
+    </div>
   )
 }
 
-/** The way on to the projects hub, close to the contact line. */
-function ProjectPages() {
-  return (
-    <section
-      className="home-screen home-project-pages"
-      id="projektsidor"
-      aria-labelledby="project-pages-title"
-    >
-      <h2 id="project-pages-title" className="home-project-pages-title">
-        {l('Project pages', 'Projektsidor')}
-      </h2>
-      <p className="home-project-pages-text">
-        {l(
-          'All my projects are collected on one page. Most of them run on a data platform I built myself, and the job search comes first.',
-          'Alla mina projekt finns samlade på en sida. De flesta körs på en dataplattform som jag har byggt själv, och jobbsöket kommer först.',
-        )}
-      </p>
-      <a className="home-project-pages-link" href="#projects">
-        {l('See the projects', 'Till projekten')}{' '}
-        <span aria-hidden="true">→</span>
-      </a>
-    </section>
-  )
-}
-
-/** About above the work history, with space between experience and education. */
+/** About, then experience above education in one column, with the cluster maps beside them. */
 function Profile() {
   const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
@@ -117,6 +95,7 @@ function Profile() {
             {l(text.en, text.sv)}
           </p>
         ))}
+        <Contact />
       </div>
       <div className="home-column home-experience" id="erfarenhet">
         <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
@@ -130,7 +109,14 @@ function Profile() {
                 <p className="home-job-period">{b(job.period)}</p>
               </div>
               <p className="home-job-role">{b(job.kind)}</p>
-              <p className="home-job-role">{b(job.did)}</p>
+              <div className="home-job-parts">
+                {job.parts.map((part) => (
+                  <div key={part.heading.en}>
+                    <h4 className="home-job-part">{b(part.heading)}</h4>
+                    <p className="home-job-text">{b(part.text)}</p>
+                  </div>
+                ))}
+              </div>
               <p className="home-job-tech">{job.tech.join(' | ')}</p>
             </li>
           ))}
@@ -148,6 +134,7 @@ function Profile() {
           <p className="home-job-role">{b(ADDITIONAL.text)}</p>
         </div>
       </div>
+      <ClusterDepth />
       <div className="home-column home-education" id="utbildning">
         <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
         {EDUCATION.map((e) => (
@@ -158,33 +145,37 @@ function Profile() {
               </h3>
               <p className="home-job-period">{e.period}</p>
             </div>
-            <p className="home-job-role">{b(e.note)}</p>
+            <p className="home-job-text">{b(e.note)}</p>
           </div>
         ))}
+        <div className="home-job">
+          <div className="home-job-head">
+            <h3 className="home-job-org">
+              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
+            </h3>
+            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
+          </div>
+          <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
+        </div>
         {thesis && (
           <div className="home-job">
             <div className="home-job-head">
               <h3 className="home-job-org">{b(THESIS.title)}</h3>
             </div>
             <p className="home-job-role">{b(THESIS.kind)}</p>
-            <p className="home-job-role">{THESIS.points.map(b).join(' ')}</p>
+            <div className="home-job-parts">
+              {THESIS.parts.map((part) => (
+                <div key={part.heading.en}>
+                  <h4 className="home-job-part">{b(part.heading)}</h4>
+                  <p className="home-job-text">{b(part.text)}</p>
+                </div>
+              ))}
+            </div>
             <p className="home-job-role">
               {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
             </p>
           </div>
         )}
-        <div className="home-job home-job-additional">
-          <h3 className="home-label">
-            {l('Additional education', 'Övrig utbildning')}
-          </h3>
-          <div className="home-job-head">
-            <p className="home-job-org-small">
-              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
-            </p>
-            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
-          </div>
-          <p className="home-job-role">{b(ADDITIONAL_EDUCATION.text)}</p>
-        </div>
       </div>
     </section>
   )
@@ -204,13 +195,12 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home" lang={currentLocale()}>
       <Identity />
-      <Contact />
-      <ProjectPages />
       <Profile />
       <footer className="home-cta">
         <a className="home-cta-link" href="#projects">
           {l('Projects', 'Projekt')} <span aria-hidden="true">→</span>
         </a>
+        <JobsMap />
       </footer>
     </div>
   )

@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { l } from '../i18n'
+import { githubStatus } from './github'
 import { REPO, ago, day } from './techData'
 
 export type Run = {
@@ -14,41 +16,9 @@ export type Run = {
 }
 type Workflow = { id: number; name: string; path: string; runs: Run[] }
 
+/** Every workflow with its newest runs, from the scheduled snapshot (github.ts). */
 export async function loadWorkflows(): Promise<Workflow[]> {
-  // GitHub allows 60 unsigned requests an hour; keep the answer for the session.
-  const key = 'tech-workflows'
-  try {
-    const kept = JSON.parse(sessionStorage.getItem(key) ?? 'null')
-    if (kept && Date.now() - kept.at < 5 * 60e3) return kept.workflows
-  } catch {
-    // No session storage: ask again.
-  }
-  const api = async (path: string) => {
-    const response = await fetch(`https://api.github.com/repos/${REPO}/${path}`)
-    if (!response.ok) throw new Error(`GitHub: HTTP ${response.status}`)
-    return response.json()
-  }
-  const list = (await api('actions/workflows')).workflows as Omit<
-    Workflow,
-    'runs'
-  >[]
-  const workflows = await Promise.all(
-    list
-      .filter((w) => w.path.startsWith('.github/workflows/'))
-      .map(async (w) => ({
-        id: w.id,
-        name: w.name,
-        path: w.path,
-        runs: (await api(`actions/workflows/${w.id}/runs?per_page=14`))
-          .workflow_runs as Run[],
-      })),
-  )
-  try {
-    sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), workflows }))
-  } catch {
-    // Nothing to keep it in.
-  }
-  return workflows
+  return (await githubStatus()).workflows
 }
 
 const stateOf = (run: Run) =>
@@ -59,13 +29,17 @@ export function Runs() {
   useEffect(() => {
     loadWorkflows().then(setWorkflows, () => setWorkflows('error'))
   }, [])
-  if (workflows === null) return <p className="tech-note">Reading GitHub…</p>
+  if (workflows === null) return null
   if (workflows === 'error')
     return (
-      <p className="tech-note" role="status">
-        The run history could not be read from GitHub just now (the open API
-        allows 60 requests an hour).{' '}
-        <a href={`https://github.com/${REPO}/actions`}>Open GitHub Actions</a>
+      <p className="tech-note">
+        <a href={`https://github.com/${REPO}/actions`}>
+          {l(
+            'The run history is on GitHub Actions',
+            'Körhistoriken finns på GitHub Actions',
+          )}{' '}
+          <span aria-hidden="true">↗</span>
+        </a>
       </p>
     )
   const sorted = [...workflows].sort((a, b) =>

@@ -37,7 +37,6 @@
   gap: var(--sp-2) var(--sp-5);
   align-items: start;
   padding: var(--sp-5) 0;
-  border-top: 1px solid var(--line);
 }
 /* The rail, and over it the chosen project's path. */
 .hub-flow-steps > li::before,

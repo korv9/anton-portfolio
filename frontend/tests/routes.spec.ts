@@ -91,7 +91,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (
       (await crumbs.count()) < 2 &&
       !(await page.locator('.project-context [aria-current]').count()) &&
-      href !== '#projects' &&
+      // The Overview (#projects) is placed by the index, not a breadcrumb.
+      !href.startsWith('#projects') &&
       !(await page.locator('.politik-long, .tech, .sweden').count())
     )
       unplaced.push(href)
@@ -134,7 +135,7 @@ test('observatory addresses land on the meaning feed', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'routing is the same on a phone')
-  for (const from of ['/#politik', '/#jobb-lan', '/#ai-act-roles', '/#now']) {
+  for (const from of ['/#politik', '/#jobb-lan', '/#now']) {
     await page.goto(from)
     await expect(page).toHaveURL(/#what-does-it-even-mean$/)
   }

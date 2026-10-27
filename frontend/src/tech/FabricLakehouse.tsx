@@ -6,7 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { githubText } from './github'
+import { githubStatus } from './github'
 import { num, reading } from './techData'
 
 const LAKEHOUSE = 'korv9/diva-fabric-lakehouse'
@@ -35,8 +35,8 @@ export function demoSteps(markdown: string): Step[] {
 export function FabricLakehouse() {
   const [steps, setSteps] = useState<Step[] | 'error' | null>(null)
   useEffect(() => {
-    githubText(LAKEHOUSE, 'docs/demo.md').then(
-      (text) => setSteps(demoSteps(text)),
+    githubStatus().then(
+      (status) => setSteps(demoSteps(status.fabric_demo)),
       () => setSteps('error'),
     )
   }, [])
@@ -69,11 +69,13 @@ export function FabricLakehouse() {
         reading
       ) : steps === 'error' || steps.length === 0 ? (
         <p className="tech-note">
-          {l(
-            'The replay results could not be read.',
-            'Resultaten från omkörningen kunde inte läsas.',
-          )}{' '}
-          <a href={DEMO}>docs/demo.md</a>
+          <a href={DEMO}>
+            {l(
+              'The replay results are in docs/demo.md',
+              'Resultaten från omkörningen finns i docs/demo.md',
+            )}{' '}
+            <span aria-hidden="true">↗</span>
+          </a>
         </p>
       ) : (
         <>

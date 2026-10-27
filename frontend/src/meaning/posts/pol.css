@@ -52,6 +52,10 @@
   font-size: calc(10px / var(--mean-k, 1));
   fill: var(--mean-ink);
 }
+/* In the closed agreement matrix three-digit cells run into each other; the shades carry it. */
+[data-post='pol-agree-matrix']:not(.mean-open) .mean-pol-cellv {
+  display: none;
+}
 /* A value beside a direct label: the label takes the ink, the number steps back. */
 .mean-body svg .mean-pol-val {
   fill: var(--mean-muted);

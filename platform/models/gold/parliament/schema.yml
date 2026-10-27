@@ -494,8 +494,13 @@ models:
         data_type: VARCHAR
         description: 'Foreign key to dim_parliament_session: riksmöte the bill was tabled in.'
         data_tests:
-          # Bills are tabled before a session's first roll call, which starts its dim row.
-          - relationships: {arguments: {to: ref('dim_parliament_session'), field: session}, config: {severity: warn}}
+          # Bills are tabled before a session's first roll call, which starts its dim row, so the
+          # newest session is checked once it has one. dbt allows no ref() in where.
+          - relationships:
+              arguments: {to: ref('dim_parliament_session'), field: session}
+              config:
+                severity: warn
+                where: "session <= (select max(session) from gold.dim_parliament_session)"
       - name: number
         data_type: VARCHAR
         description: 'Attribute: the bill''s number within the session, as text.'

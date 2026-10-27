@@ -1,10 +1,8 @@
 /*
- * The start page (home/HomePage.tsx), across the whole screen with no sidebar:
- *   identity: the name and the role, centred, over the moving map;
- *   contact: the line, the email and the profiles, centred;
- *   project pages: a short word and one link on to the projects hub;
- *   profile: About centred above experience and education;
- *   the way on to the projects hub.
+ * The start page (home/HomePage.tsx), ivory on charcoal, across the whole screen with no sidebar:
+ *   identity: the AE signature, the name and the role, centred, over the moving map;
+ *   profile: About with the contact links, then experience above education beside cluster maps;
+ *   the way on to the projects hub, beside the job-ads map.
  */
 .home {
   position: relative;
@@ -34,7 +32,8 @@
 @media (min-width: 761px) {
   .home-backdrop,
   .home-backdrop-foreground {
-    --map-size: min(96vw, 96svh);
+    /* About 1120 px on a 1440 × 900 screen. */
+    --map-size: min(78vw, 124svh);
   }
 }
 .home-backdrop-scene {
@@ -157,6 +156,33 @@
   text-align: center;
   text-transform: uppercase;
 }
+/* All the page's text but the muted lines takes the signature's ink. */
+.home-name,
+.home-title,
+.home-cta-link,
+.home-job-org,
+.home-job-org-small,
+.home-job-part,
+.home-job-text,
+.home-about-text,
+.home-contact a,
+.home-contact .cv-trigger:not(.language-toggle) {
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.home-contact :is(a, .cv-trigger) {
+  text-decoration-color: #c6c1b6;
+}
+.home-contact .home-links .language-toggle {
+  color: var(--muted);
+}
 
 /* ---------- Identity ---------- */
 .home-identity {
@@ -173,53 +199,205 @@
   z-index: 3;
   opacity: 1;
 }
+.home-backdrop-foreground .home-backdrop-scene {
+  opacity: 0.5;
+}
 .home [id] {
   scroll-margin-top: 100px;
+}
+.home-mark {
+  position: relative;
+  width: min(440px, 80vw);
+  translate: 0 -24px;
+}
+.home-signature {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 10px 14px rgb(0 0 0 / 0.55));
+  animation: home-signature-wipe 1.3s cubic-bezier(0.6, 0, 0.3, 1) 0.5s both;
+}
+/* The name sits 8 px into the signature; a glow of the page keeps it clear of the points. */
+.home-byline {
+  position: absolute;
+  top: calc(100% - 8px);
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  translate: -50% 0;
+}
+.home-byline > * {
+  white-space: nowrap;
+}
+.home-byline::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -50px;
+  left: 50%;
+  width: 620px;
+  height: 180px;
+  margin-left: -310px;
+  background: radial-gradient(
+    closest-side,
+    rgb(36 36 34 / 0.94) 0%,
+    rgb(36 36 34 / 0.69) 55%,
+    rgb(36 36 34 / 0) 100%
+  );
 }
 .home-name {
   margin: 0;
   color: var(--ink-identity);
-  font-family: var(--font-identity);
-  font-size: var(--display-xl);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 0.92;
+  font-family: var(--font);
+  font-size: 64px;
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
   text-transform: uppercase;
+  animation: home-rise 0.7s var(--ease) 1.5s both;
 }
-.home-contact-intro {
-  margin: 0 0 var(--sp-4);
-  font-size: var(--body-large);
-  line-height: 1.65;
-  text-wrap: pretty;
+.home-role {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  animation: home-rise 0.6s var(--ease) 2s both;
 }
-/* ---------- Profile ---------- */
+@keyframes home-signature-wipe {
+  from {
+    clip-path: inset(-10% 100% -25% -10%);
+  }
+  to {
+    clip-path: inset(-10% -10% -25% -10%);
+  }
+}
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-signature,
+  .home-name,
+  .home-role {
+    animation: none;
+  }
+}
+/* ---------- Profile: About, then experience above education beside the cluster maps ---------- */
 .home-profile {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 0.45fr) minmax(0, 1fr);
-  gap: var(--sp-7) var(--sp-6);
-  align-items: stretch;
+  grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
+  gap: var(--sp-7) clamp(var(--sp-6), 6vw, 120px);
 }
 .home-about {
   grid-column: 1 / -1;
-  width: min(100%, 42rem);
-  justify-self: center;
-  text-align: center;
+  width: min(100%, 760px);
 }
-.home-about .home-links {
-  justify-content: center;
-}
-.home-experience {
+.home-experience,
+.home-education {
   grid-column: 1;
 }
-.home-education {
-  grid-column: 3;
+.home-maps {
+  grid-column: 2;
+  grid-row: 2 / span 2;
+  display: grid;
+  grid-auto-rows: 1fr;
+  --pointer-x: 0;
+  --pointer-y: 0;
+}
+/* Each map takes a third of the reading and stays beside it while that third scrolls past. */
+.home-map-slot {
+  view-timeline: --home-map block;
+}
+.home-map3d {
+  position: sticky;
+  top: max(var(--sp-6), calc(50svh - min(30vw, 38svh)));
+  width: min(100%, 76svh);
+  margin: 0 auto;
+  perspective: 1100px;
+}
+.home-map3d-scene {
+  position: relative;
+  aspect-ratio: 1;
+  transform-style: preserve-3d;
+  animation: home-map3d-breathe 28s ease-in-out var(--breathe-delay) infinite
+    alternate;
+  /* A soft edge, so the map reads as a field of points rather than a picture. */
+  mask-image: radial-gradient(closest-side, #000 72%, transparent 100%);
+}
+.home-map3d-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transform: translate3d(
+    calc(var(--pointer-x) * var(--depth) * -18px),
+    calc(var(--pointer-y) * var(--depth) * -14px),
+    calc(var(--depth) * 46px)
+  );
+  transition:
+    opacity 0.9s var(--ease),
+    transform 1.1s cubic-bezier(0.2, 0.7, 0.25, 1);
+}
+.home-map3d[data-ready='true'] .home-map3d-layer {
+  opacity: 1;
+}
+.home-map3d[data-paused='true'] .home-map3d-scene {
+  animation-play-state: paused;
+}
+.home-map3d figcaption {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+@keyframes home-map3d-breathe {
+  from {
+    transform: rotateX(14deg) rotateY(-16deg) rotate(-2deg);
+  }
+  to {
+    transform: rotateX(-8deg) rotateY(14deg) rotate(2deg);
+  }
+}
+@supports (animation-timeline: view()) {
+  .home-map3d {
+    animation: home-map3d-drift linear both;
+    animation-timeline: --home-map;
+  }
+}
+@keyframes home-map3d-drift {
+  from {
+    translate: 0 6svh;
+    scale: 0.94;
+  }
+  to {
+    translate: 0 -6svh;
+    scale: 1.02;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-map3d,
+  .home-map3d-scene {
+    animation: none;
+  }
+  .home-map3d-layer {
+    transform: none;
+    transition: none;
+  }
 }
 .home-profile .home-title {
   text-align: left;
-}
-.home-about .home-title {
-  text-align: center;
 }
 
 .home-jobs {
@@ -264,11 +442,30 @@
   margin: var(--sp-1) 0 var(--sp-3);
   color: var(--muted);
 }
+.home-job-parts {
+  display: grid;
+  gap: 18px;
+}
+.home-job-parts .home-job-text {
+  margin: 0;
+}
+.home-job-part {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.home-job-text {
+  margin: 0 0 var(--sp-3);
+  color: var(--home-body);
+  line-height: 1.5;
+}
 .home-job-impact,
 .home-about-text {
   max-width: var(--layout-reading);
   margin: 0 0 var(--sp-3);
-  font-size: var(--body-large);
+  color: var(--home-body);
+  font-size: 1.0625rem;
   line-height: 1.5;
 }
 .home-job-tech {
@@ -276,7 +473,7 @@
   color: var(--muted);
   font-size: var(--fs-sm);
 }
-/* In the three columns the text fills its column, so the columns end close together. */
+/* In the profile the text fills its column. */
 .home-profile .home-job-impact,
 .home-profile .home-about-text {
   max-width: none;
@@ -287,77 +484,24 @@
   flex-wrap: wrap;
   gap: var(--sp-2) var(--sp-5);
 }
-.home-role {
-  margin: var(--sp-5) 0 0;
-  color: var(--ink-identity);
-  font-size: var(--h3);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.01em;
-}
-
-/* ---------- Project pages: right after contact, one clear way on ---------- */
-.home-project-pages {
-  display: grid;
-  justify-items: center;
-  gap: var(--sp-3);
-  max-width: var(--layout-reading);
-  margin-inline: auto;
-  padding-bottom: 0;
-  text-align: center;
-}
-.home-project-pages-title {
-  margin: 0;
-  font-size: var(--h3);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.01em;
-}
-.home-project-pages-text {
-  margin: 0;
-  font-size: var(--body-large);
-  line-height: 1.6;
-  text-wrap: pretty;
-}
-.home-project-pages-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  min-height: 44px;
-  padding: 0 var(--sp-5);
-  border: 1px solid var(--ink-identity);
-  border-radius: var(--radius);
-  color: var(--ink-identity);
-  font-weight: var(--weight-heading);
-  text-decoration: none;
-  transition:
-    background-color var(--dur) var(--ease),
-    color var(--dur) var(--ease);
-}
-.home-project-pages-link:hover {
-  background: var(--ink-identity);
-  color: var(--page);
-}
-.home-project-pages-link:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 4px;
-}
-
-/* ---------- Contact: the first scroll after the name ---------- */
+/* ---------- Contact: under About, left-aligned ---------- */
 .home-contact {
   display: grid;
-  justify-items: center;
+  justify-items: start;
   gap: var(--sp-3);
-  max-width: var(--layout-reading);
-  margin-inline: auto;
-  text-align: center;
+  margin-top: 28px;
 }
 .home-contact-email {
   margin: 0;
   overflow-wrap: anywhere;
 }
+.home-contact a {
+  color: var(--ink);
+}
 .home-contact .home-links {
-  justify-content: center;
   align-items: center;
   margin: 0;
+  font-size: 15px;
 }
 .home-contact .home-links :is(a, button) {
   display: inline-flex;
@@ -367,10 +511,6 @@
   color: inherit;
   text-decoration: underline;
   text-underline-offset: 0.2em;
-}
-/* The contact line follows the name closely; the name's screen already gives it room. */
-.home-screen.home-contact {
-  padding-block: 0;
 }
 
 @supports (animation-timeline: scroll()) {
@@ -414,20 +554,20 @@
     display: none;
   }
 }
-/* ---------- The way into the project pages ---------- */
+/* ---------- The way into the project pages, beside the job-ads map ---------- */
 .home-cta {
+  position: relative;
   display: grid;
-  justify-items: center;
-  gap: var(--sp-5);
-  padding-block: var(--sp-5) var(--sp-section);
-  text-align: center;
-}
-.home-cta-note {
-  max-width: var(--layout-reading);
-  margin: 0;
-  line-height: 1.6;
+  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1.3fr);
+  align-items: center;
+  margin-inline-end: calc(-1 * var(--gutter));
+  padding-block: var(--sp-6) var(--sp-7);
+  overflow: hidden;
 }
 .home-cta-link {
+  position: relative;
+  z-index: 1;
+  justify-self: start;
   color: var(--ink);
   font-size: var(--display-l);
   font-weight: 750;
@@ -438,6 +578,7 @@
   text-decoration-color: transparent;
   text-underline-offset: 0.15em;
   text-transform: uppercase;
+  white-space: nowrap;
   transition: text-decoration-color var(--dur) var(--ease);
 }
 .home-cta-link:hover {
@@ -447,20 +588,44 @@
   outline: 2px solid var(--focus);
   outline-offset: 6px;
 }
-.home-cta .home-links {
-  justify-content: center;
+.home-jobs-map {
+  position: relative;
+  height: 1200px;
+  margin: 0;
+}
+.home-jobs-map canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1600px;
+  height: 1600px;
+  translate: -58% -50%;
+  mask-image: radial-gradient(ellipse closest-side, #000 80%, transparent 100%);
+}
+.home-jobs-map figcaption {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
 }
 
-@media (max-width: 1100px) {
-  .home-profile {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 0.15fr) minmax(0, 1fr);
-    column-gap: var(--sp-4);
-  }
-}
 @media (max-width: 760px) {
-  .home-cta .home-cta-link {
-    font-size: clamp(1.4rem, 7vw, 2.6rem);
-    white-space: nowrap;
+  .home-cta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-jobs-map {
+    height: 120vw;
+  }
+  .home-jobs-map canvas {
+    width: 160vw;
+    height: 160vw;
+    translate: -50% -50%;
+  }
+  .home-mark {
+    width: 260px;
   }
   .home [id] {
     scroll-margin-top: 150px;
@@ -469,12 +634,23 @@
   .home-jobs {
     grid-template-columns: minmax(0, 1fr);
   }
-  .home-experience,
-  .home-education {
+  /* One map, smaller, between experience and education; the other two are left out. */
+  .home-maps {
     grid-column: 1;
+    grid-row: auto;
+  }
+  .home-map-slot + .home-map-slot {
+    display: none;
+  }
+  .home-map3d {
+    position: static;
+    width: min(100%, 420px);
   }
   .home-name {
-    font-size: clamp(2.6rem, 13vw, 4rem);
+    font-size: 30px;
+  }
+  .home-role {
+    font-size: 13px;
   }
   .home-title,
   .home-cta-link {

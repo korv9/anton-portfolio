@@ -3,7 +3,8 @@
 Experiment 2026-10-12. [Metod, datakvalitet och återkörning](public-clustering-method.md)
 innehåller källhashar, modellrevisioner, hela parameterutrymmet och kommandon.
 Det underliggande Riksdagslagret saknas lokalt; den befintliga publicerade
-fulltextkorpusen har frysts utan ny ingestion. Ingen data har publicerats.
+fulltextkorpusen har frysts utan ny ingestion. Experimentet 2026-10-12 publicerades inte;
+uppföljningen 2026-10-14 nedan publicerades i `frontend/public/data/cluster-research/`.
 Endast öppen, publicerad data skickas till Workers AI. Besökarens text loggas aldrig och sparas inte.
 
 Debatterna omfattar 108 debatter och 10 148 hämtade anföranden från 1993-2026.
@@ -21,7 +22,8 @@ hur bra regionerna mår. Skala, dtype (float32), observations-id och ML-kod
 
 ## Uppföljning 2026-10-14: konsensus över tolv seeds
 
-Kartorna på sidan Klustervisualiseringar bygger nu på körningarna nedan. Avsnittet
+Kartorna på sidan Klustervisualiseringar bygger nu på körningarna nedan (3 000 av 33 023
+respektive 21 260 passager visas, `POINTS` i `ml/research/export_public_maps.py`). Avsnittet
 från 2026-10-13 står kvar som jämförelse. Statiska diagram finns i
 `warehouse/cluster_lab/public-consensus-2026-10-13/report.html`.
 

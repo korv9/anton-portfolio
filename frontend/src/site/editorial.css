@@ -112,7 +112,6 @@
   width: 100%;
   grid-column: 1 / -1;
   margin-block: 2rem;
-  border-top: 1px solid var(--line);
   padding-top: 1rem;
 }
 .project-method > .dk-grid {
@@ -236,17 +235,12 @@
   display: block;
   width: 100%;
 }
-.project-shell #main .project-pager {
-  padding-inline: 0;
-  margin-top: var(--sp-7);
-}
 /* Labs and engineering keep figures open; observatory comparisons use bounded panels. */
 .project-shell:is([data-workspace='labs'], [data-workspace='engineering'])
   #main
   :is(.dk-card, .board-card, .theme-figure, .chart-section) {
   background: transparent;
-  border-inline: 0;
-  border-bottom: 0;
+  border: 0;
   padding-inline: 0;
 }
 .project-shell[data-workspace='engineering'] #main .project-section > p {

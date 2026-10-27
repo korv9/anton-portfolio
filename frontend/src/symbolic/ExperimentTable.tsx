@@ -50,8 +50,8 @@ export default function ExperimentTable() {
         </h2>
         <p>
           {l(
-            `The same ${data.experiments[0]?.occurrences ?? ''} passages, run four ways. Masking hides which symbol it is; book-centring removes what all passages of a book share. Lower book share and more cross-book clusters mean less book dependence; silhouette and noise show what that costs.`,
-            `Samma ${data.experiments[0]?.occurrences ?? ''} ställen, körda på fyra sätt. Maskering döljer vilken symbol det är; bokcentrering tar bort det alla ställen i en bok har gemensamt. Lägre bokandel och fler kluster över flera böcker betyder mindre bokberoende; silhuett och brus visar vad det kostar.`,
+            `The same ${data.experiments[0]?.occurrences ?? ''} passages, run four ways. Masking hides the symbol; book-centring removes what a book’s passages share. Lower book share means less book dependence.`,
+            `Samma ${data.experiments[0]?.occurrences ?? ''} ställen, körda på fyra sätt. Maskering döljer symbolen; bokcentrering tar bort det en boks ställen delar. Lägre bokandel betyder mindre bokberoende.`,
           )}
         </p>
         <div className="atlas-table-wrap" tabIndex={0}>
@@ -95,8 +95,8 @@ export default function ExperimentTable() {
         </div>
         <p className="atlas-note">
           {l(
-            'Shares are the mean, over clusters, of the largest book, tradition or symbol in a cluster. A cross-book cluster draws on at least three books with none holding more than half. The map above is the baseline.',
-            'Andelarna är medelvärdet, över klustren, av den största boken, traditionen eller symbolen i ett kluster. Ett kluster över flera böcker hämtar från minst tre böcker och ingen har mer än hälften. Kartan ovan är utgångsläget.',
+            'Shares: the mean of each cluster’s largest book, tradition or symbol. A cross-book cluster draws on at least three books, none above half.',
+            'Andelar: medel av varje klusters största bok, tradition eller symbol. Ett kluster över flera böcker hämtar från minst tre böcker, ingen över hälften.',
           )}
         </p>
       </section>
@@ -143,8 +143,8 @@ function ModelTable() {
       </h2>
       <p>
         {l(
-          `The same ${published.occurrences} book-centred passages, embedded by ${rows.length} models. For each passage, its ${data.neighbours} nearest neighbours are counted: how many come from the same book, and how many hold the same symbol. That needs no clusters, so it compares the models fairly.`,
-          `Samma ${published.occurrences} bokcentrerade ställen, inbäddade av ${rows.length} modeller. För varje ställe räknas dess ${data.neighbours} närmaste grannar: hur många kommer från samma bok, och hur många har samma symbol. Det kräver inga kluster och jämför därför modellerna rättvist.`,
+          `The same ${published.occurrences} passages, embedded by ${rows.length} models. Of each passage’s ${data.neighbours} nearest neighbours: how many share its book, and how many its symbol.`,
+          `Samma ${published.occurrences} ställen, inbäddade av ${rows.length} modeller. Av varje ställes ${data.neighbours} närmaste grannar: hur många delar bok, och hur många symbol.`,
         )}
       </p>
       <div className="atlas-table-wrap" tabIndex={0}>
@@ -186,14 +186,14 @@ function ModelTable() {
       </div>
       <p>
         {l(
-          `${short(best.model)} puts ${points(best.neighbours_same_symbol, published.neighbours_same_symbol)} percentage points more same-symbol passages among the neighbours than ${short(published.model)}. The larger models all move the same way, but the step is small next to the book and tradition effect, and the symbol word itself is still in each passage. The atlas keeps ${short(published.model)}: the clustering settings were chosen for it, and they should change only after the clusters have been reviewed.`,
-          `${short(best.model)} ger ${points(best.neighbours_same_symbol, published.neighbours_same_symbol)} procentenheter fler grannar med samma symbol än ${short(published.model)}. De större modellerna rör sig alla åt samma håll, men steget är litet jämfört med effekten av bok och tradition, och själva symbolordet står kvar i varje ställe. Atlasen behåller ${short(published.model)}: klustringens inställningar valdes för den och bör ändras först när klustren har granskats.`,
+          `${short(best.model)} puts ${points(best.neighbours_same_symbol, published.neighbours_same_symbol)} percentage points more same-symbol passages among the neighbours than ${short(published.model)}. A small step next to the book effect. The atlas keeps ${short(published.model)}.`,
+          `${short(best.model)} ger ${points(best.neighbours_same_symbol, published.neighbours_same_symbol)} procentenheter fler grannar med samma symbol än ${short(published.model)}. Ett litet steg jämfört med bokeffekten. Atlasen behåller ${short(published.model)}.`,
         )}
       </p>
       <p className="atlas-note">
         {l(
-          `By chance, ${pct(published.chance_same_book)} of neighbours would share the book and ${pct(published.chance_same_symbol)} the symbol. Book share is the mean share of a cluster's largest book; a model with only a few clusters makes that number meaningless.`,
-          `Av en slump skulle ${pct(published.chance_same_book)} av grannarna dela bok och ${pct(published.chance_same_symbol)} symbol. Bokandel är medelandelen för ett klusters största bok; en modell med bara några få kluster gör den siffran meningslös.`,
+          `By chance: ${pct(published.chance_same_book)} same book, ${pct(published.chance_same_symbol)} same symbol.`,
+          `Av en slump: ${pct(published.chance_same_book)} samma bok, ${pct(published.chance_same_symbol)} samma symbol.`,
         )}
       </p>
     </section>

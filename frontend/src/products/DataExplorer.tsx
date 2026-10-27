@@ -57,7 +57,12 @@ export default function DataExplorer({
     fetchData('products/datasets.json')
       .then((response) => {
         if (!response.ok)
-          throw Error('The dataset catalog could not be loaded.')
+          throw Error(
+            l(
+              'The dataset catalog could not be loaded.',
+              'Datakatalogen gick inte att läsa in.',
+            ),
+          )
         return response.json() as Promise<Dataset[]>
       })
       .then((products) =>

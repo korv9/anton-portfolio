@@ -1,9 +1,25 @@
 /* Cluster visuals: neutral interface, open maps and categorical data palettes. */
+
+/* Twelve categorical tones for points on the charcoal page: the site's pastels, warm
+   clays and muted blues and greens; every pair is at least 17 ΔE apart, and apart from noise. */
+:root {
+  --cv-c1: var(--cv-apricot);
+  --cv-c2: #8fa7bd;
+  --cv-c3: var(--cv-butter);
+  --cv-c4: #c47a5e;
+  --cv-c5: #9a7b5c;
+  --cv-c6: #b48ab4;
+  --cv-c7: #7fae9f;
+  --cv-c8: var(--cv-powder);
+  --cv-c9: #c9a24a;
+  --cv-c10: #a7b86a;
+  --cv-c11: #6f86c9;
+  --cv-c12: #d98f8f;
+}
 .project-shell #main:has(.cv) {
   background: var(--page);
 }
-.project-shell #main:has(.cv) > .project-context,
-.project-shell #main:has(.cv) > .project-pager {
+.project-shell #main:has(.cv) > .project-context {
   display: none;
 }
 .cv {
@@ -14,19 +30,6 @@
 }
 .cv a {
   color: var(--ink);
-}
-.project-shell #main .cv-intro h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-}
-.cv-intro p {
-  max-width: 70ch;
-  margin: 0;
-  font-size: var(--fs-sm);
-  opacity: 1;
 }
 .cv-section {
   padding-top: var(--sp-7);
@@ -142,8 +145,14 @@
   font-size: var(--fs-label);
   opacity: 1;
 }
+.cv-legend .cv-more button {
+  background: transparent;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
 .cv-status {
-  min-height: 200px;
+  /* About a map's height, so maps further down stay off screen and load only when scrolled to. */
+  min-height: min(780px, 62vw);
   margin: 0;
   font-size: var(--fs-sm);
   opacity: 1;
@@ -224,7 +233,7 @@
 .cv-place-label,
 .cv-place-who {
   margin: 0;
-  color: var(--cv-ground);
+  color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   font-variant-numeric: tabular-nums;
@@ -307,3 +316,50 @@
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
+.cv-meaning + .cv-meaning {
+  margin-top: 0.5em;
+}
+
+/* ---------- The gallery: every clustering dataset, large (ClusterGallery.tsx) ---------- */
+.cv-gallery {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-7) var(--sp-5);
+  padding-top: var(--sp-7);
+}
+@media (min-width: 900px) {
+  .cv-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .cv-tile-wide {
+    grid-column: 1 / -1;
+  }
+  .cv-tile-wide .cv-tile-map {
+    aspect-ratio: 16 / 9;
+  }
+}
+.cv-tile figure {
+  margin: 0;
+}
+.cv-tile-map {
+  aspect-ratio: 1;
+}
+.cv-tile-map canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cv-tile figcaption {
+  margin-top: var(--sp-2);
+}
+.project-shell #main .cv-tile h2 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.cv-tile .cv-specs {
+  margin-top: 0.2rem;
+}
+
+/* The method notes, folded away under the maps. */

@@ -49,3 +49,6 @@ frontend/public/data/parquet/welfare/
 frontend/public/data/status/
 # The job assistant's hourly files: published to R2 by refresh-job-assistant.yml, never committed.
 frontend/public/data/job-assistant/
+
+# pip install -e . metadata
+*.egg-info/

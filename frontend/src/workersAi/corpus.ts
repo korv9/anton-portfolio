@@ -155,6 +155,8 @@ export type Passage = { id: string; text: string }
 export type Answer =
   | {
       status: 'verified'
+      /** The law corpora: the checked answer retold as a moral allegory, when the retelling held. */
+      allegory?: string
       answer: string
       quotes: { id: string; quote: string }[]
       model: string

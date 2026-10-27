@@ -1,4 +1,3 @@
-import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './test'
 
 test(
@@ -18,7 +17,9 @@ test(
       'Case study, spring 2026',
     )
     await expect(thesis.locator('li')).toHaveCount(0)
-    await expect(thesis).toContainText('Of 121 clusters, 72 had no link')
+    await expect(thesis).toContainText(
+      'clustering 16,811 of them gave 121 groups, 72 with no link',
+    )
     await expect(thesis).toContainText('12 groups containing 650 tickets')
     await expect(thesis).toContainText('ISO/IEC 25012')
     await expect(thesis).toContainText('21,633')
@@ -33,45 +34,41 @@ test(
   },
 )
 
-test('experience and education stay aligned while scrolling', async ({
+test('education follows experience in one column, beside the cluster maps', async ({
   page,
+  isMobile,
 }) => {
+  test.skip(isMobile, 'one column with one map on a phone')
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/#erfarenhet')
-  await expect(page.locator('.home-experience')).toHaveCSS(
-    'animation-name',
-    'none',
-  )
-  await expect(page.locator('.home-education')).toHaveCSS(
-    'animation-name',
-    'none',
-  )
   await page.evaluate(() => document.fonts.ready)
-  const start = await page
-    .locator('.home-experience')
-    .evaluate((el) => el.getBoundingClientRect().top + scrollY)
-  for (const offset of [0, 200, 500]) {
-    await page.evaluate(
-      (top) => window.scrollTo({ top, behavior: 'instant' }),
-      start + offset,
-    )
-    await expect
-      .poll(() =>
-        page.evaluate(() => {
-          const experience = document
-            .querySelector('.home-experience .home-title')!
-            .getBoundingClientRect()
-          const education = document
-            .querySelector('.home-education .home-title')!
-            .getBoundingClientRect()
-          return Math.abs(experience.top - education.top)
-        }),
-      )
-      .toBeLessThan(0.5)
-  }
+  const box = (selector: string) =>
+    page
+      .locator(selector)
+      .evaluate((el) => el.getBoundingClientRect().toJSON() as DOMRect)
+  const experience = await box('.home-experience .home-title')
+  const education = await box('.home-education .home-title')
+  expect(Math.abs(experience.left - education.left)).toBeLessThan(0.5)
+  expect(education.top).toBeGreaterThan(experience.bottom)
+  const column = await box('.home-experience')
+  expect(column.width).toBeLessThanOrEqual(641)
+  // The maps sit to the right and stay beside the reading: decorative, drawn, one per slot.
+  const maps = page.locator('.home-map3d')
+  await expect(maps).toHaveCount(3)
+  expect((await box('.home-maps')).left).toBeGreaterThan(column.right)
+  await expect(maps.first()).toHaveCSS('position', 'sticky')
+  await expect(maps.first()).toHaveAttribute('data-ready', 'true', {
+    timeout: 20000,
+  })
+  await expect(maps.first().locator('.home-map3d-scene')).toHaveAttribute(
+    'aria-hidden',
+    'true',
+  )
+  await expect(maps.first().locator('canvas')).toHaveCount(3)
 })
 
 test(
-  'the start page is about Anton: the name, then contact, profile and one way on',
+  'the start page is about Anton: the name, then About with contact, the profile and one way on',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/')
@@ -90,20 +87,15 @@ test(
     await expect(contact.getByRole('link', { name: 'GitHub' })).toBeVisible()
     await expect(contact.getByRole('button', { name: /View CV/ })).toBeVisible()
     await expect(contact.locator('a[href^="mailto:"]')).toBeVisible()
-    // Contact, the project pages, then About, then experience and education.
-    const projects = page.locator('#projektsidor')
-    await expect(
-      projects.getByRole('heading', { name: 'Project pages' }),
-    ).toBeVisible()
-    await expect(
-      projects.getByRole('link', { name: 'See the projects' }),
-    ).toHaveAttribute('href', '#projects')
+    // About with contact under it, then experience and education; no project-pages section.
+    await expect(page.locator('#projektsidor')).toHaveCount(0)
+    await expect(page.getByText('Feedback or ideas are welcome')).toHaveCount(0)
     const top = (id: string) =>
       page
         .locator(`#${id}`)
         .evaluate((el) => el.getBoundingClientRect().top + scrollY)
-    expect(await top('kontakt')).toBeLessThan(await top('projektsidor'))
-    expect(await top('projektsidor')).toBeLessThan(await top('om-mig'))
+    expect(await top('om-mig')).toBeLessThan(await top('kontakt'))
+    await expect(page.locator('#om-mig #kontakt')).toHaveCount(1)
     expect(await top('om-mig')).toBeLessThan(await top('erfarenhet'))
     expect(await top('om-mig')).toBeLessThan(await top('utbildning'))
     // No project content: the links inside the page lead on to the projects hub.
@@ -111,7 +103,7 @@ test(
       await page
         .locator('main a[href^="#"]')
         .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
-    ).toEqual(['#projects', '#projects'])
+    ).toEqual(['#projects'])
     await expect(
       page.locator('.work-card, .home-feed, .mean-post'),
     ).toHaveCount(0)
@@ -195,88 +187,20 @@ test('home remains usable when the decorative debate map is unavailable', async 
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('the projects hub leads with the dashboard and the job search', async ({
+test('Projects opens the Overview: how and why the platform is built, and its numbers', async ({
   page,
 }) => {
   await page.goto('/#projekt')
   await expect(page).toHaveURL(/#projects$/)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Projects')
-  await expect(page.locator('.site-header')).toBeVisible()
-  // How the platform is built: seven steps, the job search's path marked.
-  const flow = page.locator('#projects-flow')
-  await expect(flow.locator('.hub-flow-steps > li')).toHaveCount(7)
-  await expect(
-    flow.getByRole('button', { name: 'The job assistant' }),
-  ).toHaveAttribute('aria-pressed', 'true')
-  await expect(flow.locator('li[data-used]').first()).toBeVisible()
-  // Job search first, opening the job assistant.
-  await expect(page.locator('.hub-items > li').first()).toHaveAttribute(
-    'data-lead',
-  )
-  await expect(page.locator('#projects-jobs a[href="#jobs"]')).toBeVisible()
-  const nav = page.getByRole('navigation', { name: 'Projects' })
-  for (const name of ['Job search', 'SWEDEN', 'Ask the law', 'Platform'])
-    await expect(nav.getByRole('link', { name, exact: true })).toBeVisible()
-  // The platform is a part of the hub; its old address leads there.
-  await page.goto('/#platform')
-  await expect(page).toHaveURL(/#projects-platform$/)
-  await expect(
-    page.getByRole('heading', { level: 2, name: 'The data platform' }),
-  ).toBeInViewport()
-})
-
-test('on a phone the hub sidebar folds into a menu', async ({ page }) => {
-  await page.setViewportSize({ width: 360, height: 740 })
-  await page.goto('/#projects')
-  const menu = page.locator('.hub-nav')
-  await expect(menu).not.toHaveAttribute('open')
-  const nav = page.getByRole('navigation', { name: 'Projects' })
-  await expect(nav).toBeHidden()
-  await menu.locator('summary').click()
-  await expect(nav.getByRole('link', { name: 'Job search' })).toBeVisible()
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth + 1,
-    ),
-  ).toBe(true)
-})
-
-test('each platform card states a finding in a small chart that answers the keyboard', async ({
-  page,
-}) => {
-  await page.goto('/#projects')
-  const sweden = page.locator('#projects-sweden')
-  await sweden.scrollIntoViewIfNeeded()
-  // The chart loads as its card nears the screen and leads with its finding.
-  await expect(sweden.locator('.mini-head')).toContainText(
-    'Library visits fell',
-  )
-  const chart = sweden.getByRole('img')
-  await chart.focus()
-  await page.keyboard.press('Home')
-  await expect(sweden.locator('.mini-tip')).toContainText('2014:')
-  await page.keyboard.press('ArrowRight')
-  await expect(sweden.locator('.mini-tip')).toContainText('2015:')
-  // One toggle per card at most.
-  await sweden.getByRole('button', { name: 'Ad language' }).click()
-  await expect(sweden.locator('.mini-head')).toContainText('passion')
-  const law = page.locator('.hub-items > li', {
-    has: page.locator('a[href="#fraga-lagen"]'),
-  })
-  await law.scrollIntoViewIfNeeded()
-  await expect(law.locator('.mini-bar')).toHaveCount(3)
-  // Every card's chart, loaded, passes axe.
-  const cards = page.locator('.hub-items > li')
-  for (let i = 0; i < (await cards.count()); i++)
-    await cards.nth(i).scrollIntoViewIfNeeded()
-  await expect
-    .poll(() => page.locator('.hub-items .mini-head').count())
-    .toBeGreaterThanOrEqual(7)
-  const scan = await new AxeBuilder({ page }).include('.hub-items').analyze()
-  expect(scan.violations).toEqual([])
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth + 1,
-    ),
-  ).toBe(true)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Overview')
+  await expect(page.locator('.page-head-kpis > div')).toHaveCount(4)
+  await expect(page.locator('.page-head-kpis dd').first()).toHaveText(/M$/)
+  await expect(page.locator('.hub-why dt')).toHaveText(['How', 'Why'])
+  // No project list: the index is the way into the projects.
+  await expect(page.locator('.hub-item')).toHaveCount(0)
+  // The platform page is gone; its old addresses land on the Overview.
+  for (const old of ['#platform', '#projects-platform', '#ask-platform']) {
+    await page.goto('/' + old)
+    await expect(page).toHaveURL(/#projects$/)
+  }
 })

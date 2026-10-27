@@ -49,7 +49,7 @@ test(
 test('a question shows its passages, then the checked answer', async ({
   page,
 }) => {
-  await serveExports(page)
+  const requested = await serveExports(page)
   await page.route('**/api/embed', (route) =>
     route.fulfill({ json: { vector: vectorNear(0) } }),
   )
@@ -61,6 +61,8 @@ test('a question shows its passages, then the checked answer', async ({
       json: verified
         ? {
             status: 'verified',
+            allegory:
+              'En räv och en hare arbetade i samma verkstad.\nSensmoral: regeln gäller alla.',
             answer: `Det gäller [[${LAW[0].id}]]"Fixture paragraph 1."`,
             quotes: [{ id: LAW[0].id, quote: 'Fixture paragraph 1.' }],
             model: '@cf/google/gemma-4-26b-a4b-it',
@@ -69,19 +71,40 @@ test('a question shows its passages, then the checked answer', async ({
     })
   })
   await page.goto('/#fraga-lagen')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Ask the law',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Allegora')
   await expect(page.getByText('not legal advice')).toBeVisible()
+  await expect(page.locator('.lq-examples button')).toHaveCount(1)
+  // The page opens on the first example's checked answer; the corpus waits for the reader.
+  await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
+  expect(requested).not.toContain('sfs/meta.json')
+  // Below the tool, the statute book and the AI Act as data, read from their own small files.
+  await expect(page.locator('#lq-book-title')).toHaveText('The statute book')
+  await expect(page.locator('.lq-laws li')).toHaveCount(40)
+  await expect(page.locator('.lq-mark').first()).toHaveText('· in Allegora')
+  await expect(page.locator('#lq-act-title')).toHaveText('The AI Act')
+  await expect(page.locator('.lq-articles li').first()).toBeVisible()
+  expect(requested).not.toContain('sfs/meta.json')
+  await page.getByRole('button', { name: 'Show the 8 passages found' }).click()
+  await page.getByText('How it is made').click()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)
-  await expect(page.locator('.lq-examples button')).toHaveCount(1)
+  await expect(page.locator('.lq-passages li:visible')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Show all 8' }).click()
+  await expect(page.locator('.lq-passages li:visible')).toHaveCount(8)
   await page.getByLabel('Your question').fill('Vem omfattas av lagen?')
   await page.getByRole('button', { name: 'Ask', exact: true }).click()
   await expect(page.locator('.lq-passages li')).toHaveCount(8)
   await expect(page.locator('.lq-quote')).toContainText(
-    '✓ verbatim in the source',
+    '✓ checked word for word',
   )
+  // The moral allegory leads; the checked answer it was told from follows under its own heading.
+  await expect(page.locator('.lq-allegory p')).toHaveText([
+    'En räv och en hare arbetade i samma verkstad.',
+    'Sensmoral: regeln gäller alla.',
+  ])
+  await expect(
+    page.getByRole('heading', { name: 'What the law says' }),
+  ).toBeVisible()
   expect(asked[0].corpus).toBe('sfs')
   expect(asked[0].passages).toHaveLength(8)
   await page.locator('.lq-quote button').click()
@@ -95,23 +118,25 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.locator('.lq-passages li')).toHaveCount(8)
 
   // The evaluation: the chosen model's figures and the comparison, gpt-oss cost as a lower bound.
-  const tech = page.locator('.lq-tech')
-  await expect(tech).toContainText(
-    '20 questions: 75 % pass the quote check, recall@8 85 %',
+  const kpis = page.locator('.page-head-kpis')
+  await expect(kpis).toContainText('Answers with every quote verified15 of 20')
+  await expect(kpis).toContainText('Right passage in the top 80.85')
+  await expect(page.locator('.lq-checked')).toContainText('n = 20')
+  await expect(page.locator('.lq-tech')).toContainText(
+    '30.2 neurons, 2,672 tokens',
   )
-  await expect(tech).toContainText('30.2 neurons, 2,672 tokens')
   const rows = page.locator('.lq-table tbody tr')
   await expect(rows).toHaveCount(2)
   await expect(rows.nth(0)).toHaveClass('lq-chosen')
   await expect(rows.nth(1)).toContainText('gpt-oss-20b')
   await expect(rows.nth(1).locator('td').last()).toHaveText('at least 50.3')
 
-  // The corpus is part of the address. The English AI Act has no examples yet and says so.
+  // The corpus is part of the address. The English AI Act has no examples and invites a question.
   await page.getByRole('button', { name: 'EU AI Act' }).click()
   await expect(page).toHaveURL(/#fraga-lagen\?korpus=ai-act$/)
   await expect(
     page.getByText(
-      'Example questions for the English text are not published yet.',
+      'Ask in your own words; every quote in the answer is checked against the text.',
     ),
   ).toBeVisible()
   await expect(page.locator('.lq-examples')).toHaveCount(0)

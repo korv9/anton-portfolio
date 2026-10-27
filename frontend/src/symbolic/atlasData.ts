@@ -1,9 +1,10 @@
 /**
- * Loading the Symbolic Atlas. The summary and the start-page preview are JSON served with the
+ * Loading the Symbol Lab. The summary and the start-page preview are JSON served with the
  * site; the points and the symbol profiles are Parquet on object storage, read through the
  * delivery manifest (dataSource.ts, parquet.ts), never by a hard-coded URL.
  */
 import { fetchData } from '../dataSource'
+import { l } from '../i18n'
 import { readParquet as readPart } from '../parquet'
 import type {
   AtlasPoint,
@@ -165,6 +166,14 @@ async function optional<T>(path: string): Promise<T | null> {
     return null
   }
 }
+
+/** A neutral name for a cluster with no data beyond its number; clusters are never "Cluster n". */
+export const contextName = (id: number) =>
+  l(`Context #${id}`, `Sammanhang #${id}`)
+
+/** The cross-book subset of the book-centred clusters, ranked by the audit. */
+export const loadCrossBookClusters = () =>
+  optional<ClusterFile>('symbolic/cross-book-clusters.json')
 
 export const loadBookCenteredClusters = () =>
   optional<ClusterFile>('symbolic/book-centered-clusters.json')

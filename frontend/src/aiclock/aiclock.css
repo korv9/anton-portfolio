@@ -1,0 +1,65 @@
+/* When does a law arrive? (#lag-ankomst, AiClockPage.tsx): ivory on charcoal through the shared
+   tokens, titles in the signature's gradient, space instead of rules between the sections. */
+#main .aiclock .project-section > h2 {
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.aiclock .project-section {
+  border-top: 0;
+}
+#main .aiclock .project-section > h2 {
+  max-width: 24ch;
+  font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+.ac-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+  gap: var(--sp-6);
+}
+.ac-pair h3 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--h3);
+}
+
+/* The Act's dates: a list, so it reads on a phone. */
+.ac-timeline {
+  display: grid;
+  gap: var(--sp-2);
+  max-width: 40rem;
+  margin: 0 0 var(--sp-5);
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+}
+.ac-timeline li {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: var(--sp-3);
+  color: var(--ink);
+}
+.ac-timeline time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.ac-timeline .is-ahead {
+  color: var(--muted);
+}
+
+.ac-articles {
+  max-width: var(--measure);
+  margin: 0 0 var(--sp-5);
+  padding-left: 1.1rem;
+  color: var(--ink-2);
+  line-height: 1.5;
+}

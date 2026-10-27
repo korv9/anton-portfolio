@@ -1,4 +1,5 @@
 /** Riksdag election results 1973 onward and the 2026 count. */
+import { l } from '../../i18n'
 import { Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { pc, signed } from './pol-kit'
@@ -27,7 +28,10 @@ function SeatSwing() {
           <svg
             viewBox="0 0 300 220"
             role="img"
-            aria-label={`Change in seats at the ${n.election.year} election`}
+            aria-label={l(
+              `Change in seats at the ${n.election.year} election`,
+              `Förändring i mandat vid valet ${n.election.year}`,
+            )}
           >
             <line
               x1={x(0)}
@@ -71,8 +75,14 @@ export const posts: Post[] = [
     id: 'pol-seat-swing',
     domain: 'politics',
     sources: ['parliament/now.json'],
-    title: 'Seats won and lost at the latest Riksdag election',
-    note: 'Change in seats against the previous election. Source: Valmyndigheten.',
+    title: [
+      'Seats won and lost at the latest Riksdag election',
+      'Vunna och förlorade mandat i det senaste riksdagsvalet',
+    ],
+    note: [
+      'Change in seats against the previous election. Source: Valmyndigheten.',
+      'Förändring i mandat jämfört med föregående val. Källa: Valmyndigheten.',
+    ],
     render: () => <SeatSwing />,
   },
 ]

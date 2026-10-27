@@ -1,0 +1,118 @@
+/* The shared project head (ui/PageHead.tsx): name in the signature's gradient, one sentence,
+   KPIs; legends under charts; the method folded at the foot. */
+.project-shell #main .page-head-title {
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  padding-block: clamp(3rem, 7vw, 96px) var(--sp-4);
+  font-family: var(--font);
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+  background: linear-gradient(
+    to bottom right,
+    var(--color-accent-focal) 0%,
+    var(--color-ink-secondary) 55%,
+    var(--muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-head-sentence {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--color-ink-secondary);
+  font-size: var(--body-large);
+  line-height: 1.6;
+}
+.page-head-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-5);
+  margin: var(--sp-6) 0 var(--sp-section);
+}
+.page-head-kpis > div {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--sp-2);
+}
+.page-head-kpis dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.page-head-kpis > div:first-child dd {
+  background: linear-gradient(
+    to bottom right,
+    var(--color-accent-focal) 0%,
+    var(--color-ink-secondary) 55%,
+    var(--muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.page-head-kpis dt {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--sp-2) var(--sp-4);
+  margin: var(--sp-3) 0 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+  line-height: 1.4;
+}
+.page-legend-source {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.page-method {
+  margin-top: var(--sp-section);
+}
+.page-method > summary {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+.page-method > summary::-webkit-details-marker {
+  display: none;
+}
+.page-method > summary::after {
+  content: '+';
+}
+.page-method[open] > summary::after {
+  content: '−';
+}
+.page-method-body {
+  max-width: var(--layout-reading);
+  padding-top: var(--sp-4);
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+  line-height: 1.55;
+}

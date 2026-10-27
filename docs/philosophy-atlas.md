@@ -81,3 +81,9 @@ not entirely. Differences along the tensions are small; the lens is ours.
 - Passages are cut mechanically; a passage can join the end of one argument and the start of the
   next.
 - Tension poles are single sentences we wrote; another wording would move the positions.
+
+## Related
+
+The moral-foundations track (`ml/moral/`, the `mart_moral_*` models in
+`platform/models/gold/philosophy_moral/`) is a separate, pre-registered analysis; see
+[philosophy-moral-preregistration.md](philosophy-moral-preregistration.md).

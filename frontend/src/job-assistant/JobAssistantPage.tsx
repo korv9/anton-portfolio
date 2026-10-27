@@ -3,6 +3,8 @@
  * profile (docs/job-assistant.md). Search, filters, sort, the open ad and the tab live in the
  * address, so a link shares the view and the back button closes an ad. Results on the left,
  * the open ad on the right; under 760 px the ad replaces the list with a back button.
+ * Owner-only parts (Applications, labels, owner tools) show only with the owner token
+ * (or ?owner, to enter it).
  */
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { l } from '../i18n'
@@ -12,7 +14,8 @@ import AdList from './AdList'
 import Filters from './Filters'
 import Pipeline from './Pipeline'
 import Sections from './Sections'
-import Stats from './Stats'
+import { statKpis, StaleNotes } from './Stats'
+import PageHead from '../ui/PageHead'
 import Unmatched from './Unmatched'
 import { useListKeys } from './useListKeys'
 import { useJobData } from './useJobData'
@@ -36,7 +39,8 @@ import './job-assistant-sections.css'
 const PAGE = 20
 const TABS = [
   { id: 'jobs', en: 'Jobs', sv: 'Jobb' },
-  { id: 'applications', en: 'Applications', sv: 'Ansökningar' },
+  // Owner-only: the reviews are read with the token, so a visitor's tab could only fail.
+  { id: 'applications', en: 'Applications', sv: 'Ansökningar', owner: true },
   { id: 'about', en: 'How it works', sv: 'Så fungerar det' },
 ] as const
 const narrow = () => matchMedia('(max-width: 760px)').matches
@@ -61,7 +65,8 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     () => parseQuery(route.params, all),
     [route.params, all],
   )
-  const tab = TABS.find((t) => t.id === route.params.get('tab'))?.id ?? 'jobs'
+  const tabs = TABS.filter((t) => owner || !('owner' in t))
+  const tab = tabs.find((t) => t.id === route.params.get('tab'))?.id ?? 'jobs'
   const adId = route.params.get('ad')
   const shown = useMemo(() => searchRows(all, query, day), [all, query, day])
   const counts = useMemo(() => facetCounts(all, query, day), [all, query, day])
@@ -136,23 +141,18 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const profile = data?.matches.profile
   return (
     <div className="ja ds-container">
-      <header className="ja-head">
-        <h1>{l('Job assistant', 'Jobbassistenten')}</h1>
-        <p className="ja-lede">
-          {l(
-            'My CV matched on an hourly schedule with current Data/IT ads from JobTech. Each class says why, with the ad sentence and the CV line behind it. It supports my decision; it does not estimate a chance of being hired.',
-            'Mitt cv matchat enligt ett timschema mot aktuella Data/IT-annonser från JobTech. Varje klass säger varför, med annonsens mening och cv-raden bakom. Det stöder mitt beslut; det uppskattar inte chansen att bli anställd.',
-          )}
-        </p>
-        {data ? (
-          <Stats data={data} records={records} day={day} now={now} />
-        ) : (
-          !failed && <div className="ja-stats ja-skel" aria-hidden="true" />
+      <PageHead
+        title="Arbetsförmedla"
+        sentence={l(
+          'Every open Data/IT job ad in Sweden, checked against my CV several times a day.',
+          'Varje öppen Data/IT-annons i Sverige, prövad mot mitt CV flera gånger om dagen.',
         )}
-      </header>
+        kpis={data ? statKpis({ data, records, day }) : []}
+      />
+      {data && <StaleNotes data={data} now={now} />}
 
       <nav className="ja-tabs" aria-label={l('Job board', 'Jobbtavlan')}>
-        {TABS.map((t) => (
+        {tabs.map((t) => (
           <button
             key={t.id}
             type="button"
@@ -191,6 +191,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
           data={data}
           records={records}
           owner={owner}
+          ownerTools={owner || route.params.has('owner')}
           onOwner={setOwner}
           onRecords={setRecords}
         />

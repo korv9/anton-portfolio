@@ -210,7 +210,8 @@ De vanligaste orden per grupp räknas med c-TF-IDF. För svenska texter används
 stoppordslistan `SWEDISH` i `consensus.py`.
 
 `ml/research/regions.py` hämtar de fem nya indikatorerna från Kolada en gång till
-`sources/kolada_structure_2024.json` och räknar nollfördelningen för silhouette per k.
+`warehouse/cluster_lab/public-consensus-2026-10-13/sources/kolada_structure_2024.json`
+(`configs/cluster_lab/public_regions.yaml`) och räknar nollfördelningen för silhouette per k.
 
 ## Leverans och kontroller
 
@@ -220,8 +221,10 @@ varav 351 huvudsökningar, samt 60 separata 2D-layouter. `sweep.csv`,
 `welfare-permutation.json` innehåller mätningar och körnings-id:n.
 De 37 urvals-/indikatorjämförelserna och 200 permutationsreferenserna sparas
 separat. Alla 60 layouter har verifierade observations-id:n, oförändrade
-klustertilldelningar och checksummor. Textkartorna visar 5 000 av 26 592
-passager; länskartorna visar alla 21 län.
+klustertilldelningar och checksummor. Textkartorna visade 5 000 av 26 592
+passager och länskartorna alla 21 län i körningen 2026-10-12. De publicerade kartorna
+visar nu 3 000 av 33 023 debattpassager, 3 000 av 21 260 filosofipassager och alla
+280 kommuner (k=4); länen klustras inte längre.
 
 Relevanta ML- och datakontraktstester: 39 godkända, ett överhoppat test eftersom
 dess separata SymbolicAtlas-underlag saknas. Två befintliga frontendtester

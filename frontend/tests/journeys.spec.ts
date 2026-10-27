@@ -19,10 +19,10 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
   await page.getByRole('button', { name: 'Control', exact: true }).click()
   await expect(page).toHaveURL(/concept-journey\?begrepp=control/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Where does one idea appear, from stories to law?',
+    'Concept Lab',
   )
-  await expect(page.locator('.politik-intro')).toContainText(
-    'never that one text influenced another',
+  await expect(page.locator('.page-head-sentence')).toContainText(
+    '28 concepts across myth',
   )
   // Four domains, each with passages that open their source.
   await expect(page.locator('.cj-domain')).toHaveCount(4)
@@ -37,16 +37,14 @@ test('a visitor follows an idea across stories, philosophy, politics and law', a
     'Semantic similarity',
   )
   await expect(law.locator('a[href="#ai-act-obligations"]')).toBeVisible()
-  // The stories say plainly that no reviewed symbolic cluster is linked yet.
-  await expect(page.locator('.cj-domain-myth .cj-note').first()).toContainText(
-    'No reviewed Symbol Lab cluster',
-  )
+  // No "not done" notes: an empty link is left out, not announced.
+  await expect(page.locator('.concepts')).not.toContainText('No reviewed')
   await expect(page.locator('.interpretation')).toContainText('not influence')
   // Picking another idea keeps the choice in the address.
   await page.getByRole('button', { name: 'Autonomy', exact: true }).click()
   await expect(page).toHaveURL(/begrepp=autonomy/)
   await expect(page.locator('#resan-title')).toContainText('Autonomy')
-  await expect(page.locator('.cj-domain-law .cj-note').last()).toContainText(
+  await expect(page.locator('.concepts')).not.toContainText(
     'nothing is filled in',
   )
   const axe = await new AxeBuilder({ page })

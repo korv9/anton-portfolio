@@ -43,6 +43,13 @@ def validate_table(payload: bytes) -> None:
         raise ValueError("Incomplete FK table response")
 
 
+def validate_meta(payload: bytes) -> None:
+    """One JSON object with the dimension list that stg_fk_diagnosis_chapters unnests."""
+    meta = json.loads(payload)
+    if not isinstance(meta, dict) or not isinstance(meta.get("filter", {}).get("dimension"), list):
+        raise ValueError("FK meta.json without filter.dimension")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", nargs="*", choices=sorted(DATASETS), help="Fetch only these datasets")
@@ -51,7 +58,8 @@ def main() -> None:
     for dataset, table in DATASETS.items():
         if args.only and dataset not in args.only:
             continue
-        fetch(http, SOURCE, f"{dataset}/meta.json", f"{API}/{dataset}/meta.json", pause=1)
+        fetch(http, SOURCE, f"{dataset}/meta.json", f"{API}/{dataset}/meta.json", pause=1,
+              validate=validate_meta)
         path = fetch(http, SOURCE, f"{dataset}/{table}.json.gz", f"{API}/{dataset}/{table}.json",
                      pause=1, timeout=600, max_age_days=7, validate=validate_table)
         print(f"fk/{dataset}: {path.stat().st_size / 1e6:.1f} MB stored")

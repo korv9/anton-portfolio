@@ -3,7 +3,9 @@ import { test, expect } from './test'
 test(
   'the header links only to About and GitHub',
   { tag: '@mobile' },
-  async ({ page }) => {
+  async ({ page, isMobile }) => {
+    // Wide screens show the projects index instead (project-rail.css).
+    test.skip(!isMobile, 'the header is a phone header')
     await page.goto('/#thesis')
     const header = page.locator('.site-navigation')
     await expect(header.locator('a')).toHaveCount(2)
@@ -15,19 +17,18 @@ test(
   },
 )
 
-test('project pagers follow the groups', async ({ page }) => {
-  // The labs open as reports without a pager; the engineering pages keep it.
-  await page.goto('/#thesis')
-  await expect(page.locator('.project-pager .pager-previous')).toContainText(
-    'Drug Synergy Lab',
-  )
-  // The last engineering page leads on to the platform's part of the projects hub.
-  await page.goto('/#homie')
-  await expect(page.locator('.project-pager .pager-previous')).toContainText(
-    'IT Incident Clustering',
-  )
-  await expect(page.locator('.project-pager .pager-next')).toHaveAttribute(
-    'href',
-    '#projects-platform',
-  )
-})
+test(
+  'on a phone the projects index slides out from the left edge',
+  { tag: '@mobile' },
+  async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'wide screens show the index beside the page')
+    await page.goto('/#thesis')
+    const rail = page.locator('.project-rail')
+    await expect(rail).toBeHidden()
+    await page.getByRole('button', { name: 'Index' }).click()
+    await expect(rail).toBeVisible()
+    await rail.getByRole('link', { name: 'Replik' }).click()
+    await expect(page).toHaveURL(/#replik$/)
+    await expect(rail).toBeHidden()
+  },
+)

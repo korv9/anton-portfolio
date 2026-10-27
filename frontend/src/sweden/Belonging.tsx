@@ -16,7 +16,12 @@ import { setHashParams, type Route } from '../router'
 import { productById } from './products'
 import { useMapLayout, useMapViewBox, type Geometry } from './map'
 import { BelongingField } from './BelongingStage'
-import { recoveryFinding, visitsSplit, type Change } from './BelongingChange'
+import {
+  recoveryFinding,
+  skrName,
+  visitsSplit,
+  type Change,
+} from './BelongingChange'
 import {
   EmptyState,
   ProductEmpty,
@@ -199,7 +204,7 @@ export default function Belonging({ route }: { route: Route }) {
 
   if (data === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )
@@ -251,7 +256,7 @@ export default function Belonging({ route }: { route: Route }) {
   const points = paired('service_points')
   const visits = paired('visits')
   const rel = (from: number, to: number) =>
-    `${to >= from ? '+' : ''}${Math.round((to / from - 1) * 100)} %`
+    `${to >= from ? '+' : ''}${Math.round((to / from - 1) * 100)} %`
 
   const typeOf = (c: string) => place.get(c)?.skr_group ?? null
   const groups = [
@@ -391,8 +396,8 @@ export default function Belonging({ route }: { route: Route }) {
     <Scene
       product={product}
       line={l(
-        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Points are public libraries registered in Biblioteksdatabasen.`,
-        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Punkterna är folkbibliotek registrerade i Biblioteksdatabasen.`,
+        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Points: public libraries, Biblioteksdatabasen.`,
+        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Punkter: folkbibliotek, Biblioteksdatabasen.`,
       )}
       legend={
         <>
@@ -951,7 +956,7 @@ function Explore({
         rows={groups
           .map((g) => ({
             key: g,
-            label: g,
+            label: skrName(g),
             value: median(
               rows
                 .filter((r) => typeOf(r.code) === g)

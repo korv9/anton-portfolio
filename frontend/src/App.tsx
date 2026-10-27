@@ -1,8 +1,9 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { sameReport, useRoute } from './router'
-import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
+import { pageTitle, ProjectContext } from './site/Header'
 import SiteHeader from './site/SiteHeader'
+import ProjectRail from './site/ProjectRail'
 import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
@@ -15,9 +16,6 @@ import './site/editorial.css'
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
-const SwedenHeader = lazy(() =>
-  import('./sweden/Header').then((m) => ({ default: m.SwedenHeader })),
-)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
@@ -29,6 +27,8 @@ const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
+const ReplikPage = lazy(() => import('./replik/ReplikPage'))
+const AiClockPage = lazy(() => import('./aiclock/AiClockPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -74,7 +74,7 @@ export default function App() {
   const { page, path } = route
   const project = projectForRoute(route)
   const workspace =
-    page === 'sweden' || page === 'meaning'
+    page === 'sweden'
       ? 'sweden'
       : (PROJECT_GROUPS.find((group) =>
           group.ids.includes(project?.id ?? ''),
@@ -89,24 +89,19 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it.
-            The start page has none: it opens on the name alone. */}
-        {page === 'meaning' ? (
-          <div className="sweden sw-header-host">
-            <Suspense fallback={null}>
-              <SwedenHeader current="" />
-            </Suspense>
-          </div>
-        ) : (
-          page !== 'sweden' && page !== 'home' && <SiteHeader />
-        )}
+        {/* The start page has no header: it opens on the name alone. Project pages sit beside
+            the index; the header stays for phones and is hidden on wide screens
+            (project-rail.css). */}
+        {page !== 'home' && <ProjectRail route={route} />}
+        {page !== 'home' && <SiteHeader />}
         <main
           id="main"
           tabIndex={-1}
-          key={language}
+          // A new page enters with the projects-start motion: up from below, out of a blur.
+          key={`${language}-${page}`}
           style={{ background: 'transparent' }}
         >
-          {page !== 'meaning' && <ProjectContext route={route} />}
+          <ProjectContext route={route} />
           <PageBoundary key={page}>
             <ProjectStructure route={route}>
               <Suspense
@@ -117,7 +112,7 @@ export default function App() {
                 }
               >
                 {page === 'home' && <HomePage path={path} />}
-                {page === 'projects' && <ProjectsHub path={path} />}
+                {page === 'projects' && <ProjectsHub />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
@@ -131,10 +126,11 @@ export default function App() {
                 {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
                 {page === 'homie' && <HomiePage />}
+                {page === 'replik' && <ReplikPage />}
+                {page === 'aiclock' && <AiClockPage />}
               </Suspense>
             </ProjectStructure>
           </PageBoundary>
-          <ProjectPager route={route} />
         </main>
       </div>
     </CvViewerProvider>

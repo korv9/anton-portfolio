@@ -34,9 +34,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import connections_preregistered as pre  # noqa: E402
 from connections_stats import RESAMPLES, ROUNDS, holm, interval, partial, permutation_p, spearman  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-DATA = ROOT / "frontend/public/data/sweden"
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.publish.catalog import register
+DATA = PUBLIC / "sweden"
 OUT = DATA / "connections"
 SEED = 20261020
 # The last year before the pandemic closed libraries: the reference year's replication.
@@ -184,13 +185,13 @@ def rejected_joins(b_years: set[int], e_years: set[int], rho: float | None, acad
         "reason": ("The two corpora differ in genre, author and length. "
                    + ("The DiVA abstracts are shown next to the Riksdag on The Lost Futures page, never pooled into one map."
                       if academic else
-                      "The DiVA abstracts are being harvested again so that only Swedish abstracts count, each record "
-                      "once; they are shown next to the Riksdag when that is done, never pooled into one map.")),
+                      "The comparison is limited to Swedish DiVA abstracts, each record counted once; they are "
+                      "read next to the Riksdag, never pooled into one map.")),
     }]
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     year = con.sql("select max(year) from gold.fct_municipal_similarity").fetchone()[0]
     from export_similarity import FEATURES
 
@@ -202,7 +203,7 @@ def main() -> int:
     rejected = rejected_joins(*joined_series(con))
     OUT.mkdir(parents=True, exist_ok=True)
     path = OUT / "connections.json"
-    path.write_text(json.dumps({"relationships": relationships, "rejected": rejected, "method": {
+    io.write_json(path, {"relationships": relationships, "rejected": rejected, "method": {
         "statistic": "Spearman's rho; the partial rho removes the controls' ranks linearly from both ranks",
         "interval": f"95 % percentile bootstrap, {RESAMPLES} resamples of municipalities (iid) or of the 21 counties "
                     "(county cluster)",
@@ -221,12 +222,8 @@ def main() -> int:
                        "visits-change": "robust when one coefficient's interval excludes zero in both periods on the "
                                         "same side; not_supported when every interval includes zero; uncertain otherwise"},
         "deviations": pre.DEVIATIONS,
-    }, "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
-        ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8", newline="\n")
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([path])
+    }, "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")})
+    register([path])
     print(f"SWEDEN connections: {len(relationships)} computed, {len(rejected)} rejected -> {path.relative_to(ROOT)}")
     for r in relationships:
         print(f"  {r['id']}: {r['assessment']} {json.dumps({k: v for k, v in r['result'].items() if k != 'points'})}")

@@ -11,19 +11,18 @@ combined or put on one scale. Temporal overlap only.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.publish.catalog import register
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/ai-act"
+OUT = PUBLIC / "ai-act"
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     meta = json.loads(con.sql("""select * from seeds.ai_governance_series order by sort_order""")
                       .df().to_json(orient="records", force_ascii=False))
     series = []
@@ -42,11 +41,8 @@ def main() -> int:
         "caveat_sv": "Samtidighet bevisar inte orsak.",
     }
     path = OUT / "signals.json"
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([path])
+    io.write_json(path, payload)
+    register([path])
     print(f"AI governance timeline: {len(series)} series -> {path.relative_to(ROOT)}")
     return 0
 

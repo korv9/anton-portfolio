@@ -1,34 +1,52 @@
 import { test, expect } from './test'
 
 test(
-  'the cluster visuals draw every clustering from its data and pick a cluster',
+  'the cluster visuals draw the clearest clusterings as large maps with one caption',
   { tag: '@mobile' },
   async ({ page }) => {
+    const lab: string[] = []
+    page.on('request', (r) => {
+      if (r.url().includes('/__cluster_lab/')) lab.push(r.url())
+    })
     await page.goto('/#cluster-visuals')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Cluster visuals',
     )
-    await expect(page.locator('.cv-section')).toHaveCount(7)
-    // The philosophy map is served with the site: its count comes from the file.
+    // The sentence demo leads; the old per-project sections are gone from this page.
+    await expect(page.locator('#cv-place')).toBeVisible()
+    await expect(page.locator('.cv .cv-section')).toHaveCount(0)
+    const tiles = page.locator('.cv-tile')
+    await expect(tiles).toHaveCount(7)
+    await expect(tiles.first()).toHaveAttribute('id', 'cv-map-jobs-detail')
+    // Maps far down the page have not asked for their data yet.
+    await expect(page.locator('#cv-map-debates-legacy canvas')).toHaveCount(0)
+    await expect(
+      page.locator('#cv-map-debates-legacy .cv-tile-map'),
+    ).toHaveAttribute('aria-busy', 'true')
+    // Captions carry the counts from the data files.
     const atlas = await (
       await page.request.get('/data/philosophy/atlas.json')
     ).json()
-    const philosophy = page.locator('#cv-philosophy')
-    await philosophy.scrollIntoViewIfNeeded()
-    await expect(philosophy.locator('canvas')).toHaveAttribute(
-      'aria-label',
-      new RegExp(
-        `${atlas.author_centered.length.toLocaleString('en-GB')} points`,
-      ),
-    )
-    const first = philosophy.locator('.cv-legend button').first()
-    await first.click()
-    await expect(first).toHaveAttribute('aria-pressed', 'true')
-    await first.click()
-    await expect(first).toHaveAttribute('aria-pressed', 'false')
-    // It has two views.
-    await philosophy.getByRole('button', { name: 'Raw' }).click()
-    await expect(philosophy.locator('canvas')).toBeVisible()
+    for (const [key, n] of [
+      ['philosophy-author', atlas.author_centered.length],
+    ]) {
+      const tile = page.locator(`#cv-map-${key}`)
+      await tile.scrollIntoViewIfNeeded()
+      const canvas = tile.locator('canvas')
+      await expect(canvas).toHaveAttribute('aria-hidden', 'true')
+      await expect(canvas).not.toHaveAttribute('data-points', '0')
+      await expect(tile.locator('figcaption h2')).not.toBeEmpty()
+      await expect(tile.locator('figcaption .cv-specs')).toContainText(
+        `${n.toLocaleString('en-GB')} points`,
+      )
+    }
+    // No legends in the gallery, and no method block under it.
+    await expect(tiles.locator('.cv-legend')).toHaveCount(0)
+    await expect(page.locator('details.cv-method')).toHaveCount(0)
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth),
+    ).toBeLessThanOrEqual(page.viewportSize()!.width)
+    expect(lab).toEqual([])
   },
 )
 
@@ -37,10 +55,10 @@ test(
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#cluster-visuals')
-    for (const [slug, id] of [
-      ['debate-topics', 'research-debates'],
-      ['philosophy-topics', 'research-philosophy'],
-      ['municipalities', 'research-municipalities'],
+    for (const slug of [
+      'debate-topics',
+      'philosophy-topics',
+      'municipalities',
     ]) {
       const response = await page.request.get(
         `/data/cluster-research/${slug}.json`,
@@ -55,15 +73,24 @@ test(
           (p: unknown[]) => Number.isFinite(p[1]) && Number.isFinite(p[2]),
         ),
       ).toBeTruthy()
-      const section = page.locator(`#cv-${id}`)
-      await section.scrollIntoViewIfNeeded()
-      await expect(section.locator('canvas')).toBeVisible()
-      await expect(section.locator('.cv-specs')).toContainText(
+      // Only the clearest maps are drawn in the gallery; the others are checked as data.
+      if (slug !== 'debate-topics') continue
+      const tile = page.locator(`#cv-map-${slug}`)
+      await tile.scrollIntoViewIfNeeded()
+      await expect(tile.locator('canvas')).toBeVisible()
+      await expect(tile.locator('.cv-specs')).toContainText(
         `${data.observations.toLocaleString('en-GB')} points`,
       )
-      await expect(section.locator('.cv-specs')).toContainText(
+      await expect(tile.locator('.cv-specs')).toContainText(
         `${data.clusters} clusters`,
       )
     }
+    // The hero map keeps its named debate subjects.
+    const place = page.locator('#cv-place')
+    await place.scrollIntoViewIfNeeded()
+    await expect(place.locator('canvas')).toBeVisible()
+    const first = place.locator('.cv-legend button').first()
+    await first.click()
+    await expect(first).toHaveAttribute('aria-pressed', 'true')
   },
 )

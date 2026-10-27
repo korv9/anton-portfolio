@@ -35,6 +35,7 @@ def test_python_locks_match_the_declared_direct_dependencies():
         'ml': ['requirements.txt', 'requirements-symbolic.txt', 'requirements-ml.in'],
         'news': ['requirements.txt', 'requirements-news.in'],
         'security': ['requirements-security.in'],
+        'dev': ['requirements-dev.in'],
     }
     for name, paths in inputs.items():
         lock = (platform / f'requirements-{name}.lock').read_text()

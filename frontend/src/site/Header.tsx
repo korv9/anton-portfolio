@@ -1,12 +1,7 @@
-/** Document titles, breadcrumbs and project paging from the project registry. */
+/** Document titles and breadcrumbs from the project registry. */
 import { l } from '../i18n'
 import { isLongRead, type Route } from '../router'
-import {
-  neighbours,
-  projectForRoute,
-  type Bilingual,
-  type ProjectEntry,
-} from '../projects/projectRegistry'
+import { projectForRoute, type Bilingual } from '../projects/projectRegistry'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
@@ -21,7 +16,7 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
     sv: 'What does it even mean?',
   },
   projects: { en: 'Projects', sv: 'Projekt' },
-  jobs: { en: 'Job assistant', sv: 'Jobbassistenten' },
+  jobs: { en: 'Arbetsförmedla', sv: 'Arbetsförmedla' },
   sweden: { en: 'SWEDEN', sv: 'SWEDEN' },
 }
 
@@ -68,39 +63,6 @@ export function ProjectContext({ route }: { route: Route }) {
           </>
         )}
       </ol>
-    </nav>
-  )
-}
-
-/** Previous and next flagship project, at the bottom of a flagship's page. */
-export function ProjectPager({ route }: { route: Route }) {
-  const project = projectForRoute(route)
-  if (!project || isLongRead(route.path)) return null
-  const { previous, next } = neighbours(project.id)
-  const link = (p: ProjectEntry | undefined, dir: 'previous' | 'next') =>
-    p ? (
-      <a
-        className={`pager-${dir}`}
-        href={p.href}
-        rel={dir === 'previous' ? 'prev' : 'next'}
-      >
-        <small>
-          {dir === 'previous'
-            ? l('Previous project', 'Föregående projekt')
-            : l('Next project', 'Nästa projekt')}
-        </small>
-        <span>{b(p.title)}</span>
-      </a>
-    ) : (
-      <span />
-    )
-  return (
-    <nav
-      className="project-pager ds-container"
-      aria-label={l('More projects', 'Fler projekt')}
-    >
-      {link(previous, 'previous')}
-      {link(next, 'next')}
     </nav>
   )
 }

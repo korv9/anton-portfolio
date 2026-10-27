@@ -461,3 +461,38 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Contexts that cross traditions (CrossTraditions.tsx): top-ranked cross-book clusters. */
+.cross-traditions {
+  margin-top: var(--sp-7);
+}
+.cross-traditions > p {
+  max-width: var(--measure);
+  color: var(--muted);
+}
+.cross-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: var(--sp-6) var(--sp-5);
+  margin: var(--sp-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.cross-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.cross-card code {
+  color: var(--muted);
+}
+.cross-facts {
+  margin: 0.2rem 0 0.7rem;
+  color: var(--muted);
+  font: 500 0.75rem var(--font-meta);
+}
+.cross-card .cluster-passages q {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,40 +1,54 @@
 /*
- * Ask the law (AskTheLaw.tsx): the corpus switch beside the title, the fixed notices, the
- * question box, then the answer above the passages it quotes, and the law list and the numbers.
+ * Ask the law (AskTheLaw.tsx): the shared page head, the corpus switch, the question box, the
+ * answer above the passages it quotes, the law data, and the method folded at the foot.
+ * No rules: space and a faint tint carry the structure.
  */
-.lq .report-head {
-  align-items: end;
+.lq {
+  --lq-sig: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  --lq-tint: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+/* The signature: ivory fading to stone, clipped to the text. */
+.lq-sig {
+  width: fit-content;
+  background: var(--lq-sig);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 .lq-switch,
 .lq-examples {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-.lq-switch {
-  justify-content: flex-end;
+  gap: var(--sp-2) var(--sp-5);
 }
 .lq-switch button,
 .lq-examples button {
   min-height: 40px;
-  padding: 0.35rem 0.9rem;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius);
+  padding: 0.35rem 0;
+  border: 0;
   background: transparent;
-  color: var(--ink);
+  color: var(--muted);
   font: inherit;
   font-size: var(--small);
   text-align: left;
   cursor: pointer;
 }
+.lq-switch button {
+  font-size: var(--body);
+}
 .lq-switch button:hover,
 .lq-examples button:hover {
-  border-color: var(--ink);
+  color: var(--ink);
 }
 .lq-switch button[aria-pressed='true'] {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
+  color: var(--ink);
+  font-weight: 700;
 }
 .lq-examples button:disabled {
   cursor: not-allowed;
@@ -56,15 +70,20 @@
 }
 .lq-notices p,
 .lq-status,
-.lq-notice {
+.lq-notice,
+.lq-caption,
+.lq-small {
   margin: 0;
 }
 .lq-notice {
   max-width: var(--measure);
   padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--note-bg);
+  background: var(--lq-tint);
+}
+.lq-loading {
+  color: var(--ink-2);
+  font-style: italic;
 }
 .lq-form {
   display: grid;
@@ -73,6 +92,7 @@
 }
 .lq-form label,
 .lq-count,
+.lq-caption,
 .lq-title small,
 .lq-laws small {
   color: var(--muted);
@@ -83,12 +103,13 @@
 }
 .lq-form textarea {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid var(--line-strong);
+  padding: var(--sp-3) var(--sp-4);
+  border: 0;
   border-radius: var(--radius);
-  background: var(--paper-strong);
+  background: var(--lq-tint);
   color: var(--ink);
   font: inherit;
+  font-size: var(--body-large);
   resize: vertical;
 }
 .lq-actions {
@@ -97,11 +118,18 @@
   justify-content: space-between;
   gap: var(--sp-3);
 }
+/* The answer and its sources. */
+.lq-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-7);
+  align-items: start;
+}
 .lq-result {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--sp-6);
-  max-width: 90ch;
+  gap: var(--sp-7);
+  min-width: 0;
 }
 .project-shell #main .lq h2 {
   margin: 0 0 var(--sp-3);
@@ -109,47 +137,95 @@
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+.lq-caption {
+  margin-bottom: var(--sp-3);
+  line-height: 1.6;
+}
+.lq-asked {
+  color: var(--ink-2);
+}
 .lq-answer {
   margin: 0;
   max-width: var(--measure);
   font-size: var(--body-large);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+/* The moral allegory leads; the checked answer under it is what it was told from. */
+.lq-allegory {
+  margin: 0 0 var(--sp-6);
+  max-width: var(--measure);
+}
+.lq-allegory figcaption,
+.lq-law-title {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.lq-allegory p {
+  margin: 0 0 0.75rem;
+  font-size: var(--body-large);
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--ink);
 }
 .lq-quote q {
+  font-style: italic;
+  color: var(--ink);
   background: var(--select);
 }
 .lq-quote small {
-  color: var(--accent);
+  color: var(--muted);
   font-family: var(--font-mono);
   font-size: var(--caption);
   white-space: nowrap;
 }
 .lq-passages {
   display: grid;
-  gap: var(--sp-4);
+  gap: var(--sp-5);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.lq-passages li {
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--line);
+.lq-passages li[hidden] {
+  display: none;
 }
 .lq-passages p {
   overflow-wrap: anywhere;
   margin: 0 0 var(--sp-1);
   max-width: var(--measure);
-  line-height: 1.5;
+  line-height: 1.55;
+}
+.lq-passages p:not(.lq-title) {
+  color: var(--muted);
+  font-size: var(--small);
 }
 .lq-title a {
   color: var(--ink);
   font-weight: 650;
+}
+.lq-more {
+  margin-top: var(--sp-4);
+}
+.lq-checked > p:not(.lq-caption) {
+  max-width: var(--measure);
+  margin: 0 0 var(--sp-5);
+  font-size: var(--small);
+  line-height: 1.55;
+}
+.lq-checked .lq-small {
+  color: var(--muted);
+  font-size: var(--small);
+  line-height: 1.55;
 }
 .lq-about {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
   gap: var(--sp-6) var(--sp-7);
   align-items: start;
+  padding-top: var(--sp-5);
 }
 .lq-laws {
   columns: 2 16rem;
@@ -194,7 +270,6 @@
 .lq-table th,
 .lq-table td {
   padding: var(--sp-2) var(--sp-3) var(--sp-2) 0;
-  border-bottom: 1px solid var(--line);
   text-align: left;
   vertical-align: top;
 }
@@ -222,11 +297,96 @@
 .lq-chosen th span {
   font-weight: 650;
 }
-@media (max-width: 720px) {
-  .lq .report-head {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .lq-switch {
-    justify-content: flex-start;
-  }
+/* The corpora as data (LawData.tsx): a lead line, one chart, two findings, then the lists. */
+.lq-data {
+  display: grid;
+  gap: var(--sp-5);
+  padding-top: var(--sp-7);
+}
+.project-shell #main .lq-data h2 {
+  font-size: var(--h2);
+}
+.project-shell #main .lq-data h3 {
+  margin: 0 0 var(--sp-3);
+  font-size: var(--body);
+  font-weight: 700;
+}
+.lq-lead {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--body-large);
+  line-height: 1.45;
+}
+.lq-figure {
+  margin: 0;
+  max-width: 90ch;
+}
+.lq-chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.lq-chart text {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.lq-in,
+.lq-key-in {
+  fill: var(--ink);
+  background: var(--ink);
+}
+.lq-out,
+.lq-key-out {
+  fill: var(--subtle);
+  background: var(--subtle);
+}
+.lq-ahead rect {
+  opacity: 0.55;
+}
+.lq-key {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin: 0 0.4em 0 0.2em;
+  border-radius: 2px;
+}
+.lq-key-out {
+  margin-left: 1em;
+}
+.lq-long {
+  margin: 0;
+  padding-left: 1.6em;
+  font-size: var(--small);
+}
+.lq-long li {
+  padding-block: 3px;
+}
+.lq-long small,
+.lq-articles small {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+.lq-mark {
+  color: var(--ink);
+  font-weight: 700;
+}
+.lq-articles {
+  columns: 2 22rem;
+  gap: var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--small);
+}
+.lq-articles li {
+  break-inside: avoid;
+  padding-block: 3px;
+}
+.lq-articles b {
+  display: inline-block;
+  min-width: 3ch;
+  font-variant-numeric: tabular-nums;
 }

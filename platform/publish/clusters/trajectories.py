@@ -32,6 +32,8 @@ INDICATORS = ["open_unemployment_18_65_pct", "median_earned_income_sek", "sick_p
 YEARS = list(range(2010, 2025))
 FLOW_YEARS = [2010, 2015, 2020, 2024]
 CHUNK = 5000  # pairs per DTW block: about 30 MB for 15 years x 3 indicators
+# Silhouette points above the null's 95th percentile a grouping needs to count as a finding.
+MIN_MARGIN = 0.05
 
 
 def dtw(series: np.ndarray, chunk: int = CHUNK) -> np.ndarray:
@@ -56,6 +58,11 @@ def shuffle_years(flat: np.ndarray, rng, years: int = len(YEARS)) -> np.ndarray:
     """Each municipality's years in a random order (the same order for its three indicators)."""
     series = flat.reshape(len(flat), years, -1)
     return np.stack([s[rng.permutation(years)] for s in series]).reshape(len(flat), -1)
+
+
+def margin_status(status: str, margin: float) -> str:
+    """A "finding" that beats the null by less than MIN_MARGIN is published as descriptive."""
+    return "descriptive" if status == "finding" and margin < MIN_MARGIN else status
 
 
 def main() -> None:
@@ -87,6 +94,7 @@ def main() -> None:
                                     note=f"Level groups: the silhouette beats the null's 95th percentile by {margin}, and "
                                          "that null keeps each municipality's levels, so the groups are levels, not "
                                          "shapes over time.")
+    diagnostics["status"] = margin_status(diagnostics["status"], margin)
     states = z.dropna(subset=INDICATORS)
     pooled = states[INDICATORS].to_numpy()
     ks, state_sweep = stats.choose_k(pooled)

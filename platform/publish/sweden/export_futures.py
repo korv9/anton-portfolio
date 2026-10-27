@@ -35,10 +35,10 @@ from pathlib import Path
 import duckdb
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"))
-OUT = ROOT / "frontend/public/data/sweden/futures"
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, FEATURES, PUBLIC, ROOT
+from portfolio.publish.catalog import register
+OUT = PUBLIC / "sweden/futures"
 sys.path.insert(0, str(ROOT / "platform/publish/sweden"))
 
 import export_futures_theses  # noqa: E402
@@ -154,8 +154,7 @@ def length_bands(con, kept: set[int]) -> dict:
 
 
 def write(name: str, payload: dict) -> None:
-    (OUT / name).write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                            encoding="utf-8")
+    io.write_json(OUT / name, payload)
 
 
 def kept_years(per_year: dict[int, int], running: int) -> set[int]:
@@ -205,7 +204,7 @@ def academic(con, themes: list[dict], running: int) -> dict | None:
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     terms = con.sql("""select term_id, family, label_en, label_sv, description_en, pattern
                        from seeds.future_terms order by sort_order""").fetchall()
     keys = ["id", "family", "label_en", "label_sv", "description_en", "pattern"]
@@ -287,10 +286,7 @@ def main() -> int:
         "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA"),
         "academic_corpus": "Swedish-language DiVA student-thesis abstracts, counted by platform/ingest/diva/futures_theses.py; shown apart, never pooled",
     })
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([OUT / n for n in ("trends.json", "parties.json", "examples.json", "coverage.json")])
+    register([OUT / n for n in ("trends.json", "parties.json", "examples.json", "coverage.json")])
     print(f"SWEDEN futures: {len(manifests)} sessions, years {min(kept)}–{max(kept)} -> {OUT.relative_to(ROOT)}")
     return 0
 

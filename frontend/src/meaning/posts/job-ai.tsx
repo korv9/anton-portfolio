@@ -4,8 +4,14 @@ import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { EndLabels, YAxis } from '../axes'
 import { linearScale, niceTicks, yearTicks } from '../../charts/scales'
 import { Big, D, linePath, maxOf, pct, present, Svg, XLabels } from './job-kit'
+import { l } from '../../i18n'
 
-type Term = { term_id: string; family: string; label_en: string }
+type Term = {
+  term_id: string
+  family: string
+  label_en: string
+  label_sv?: string
+}
 type Summary = { terms: Term[] }
 type Monthly = {
   month: string
@@ -35,19 +41,23 @@ const byTerm = (rows: Monthly) => {
 }
 
 /** Readable names for the term families in summary.json. */
-const FAMILY: Record<string, string> = {
-  context: 'AI in general',
-  regulation: 'The AI Act',
-  ai_governance: 'AI governance',
-  ml_operations: 'ML operations',
-  data: 'Data and privacy',
-  general: 'Compliance and risk',
+const FAMILY: Record<string, readonly [string, string]> = {
+  context: ['AI in general', 'AI i allmänhet'],
+  regulation: ['The AI Act', 'AI-förordningen'],
+  ai_governance: ['AI governance', 'AI-styrning'],
+  ml_operations: ['ML operations', 'ML-drift'],
+  data: ['Data and privacy', 'Data och integritet'],
+  general: ['Compliance and risk', 'Regelefterlevnad och risk'],
 }
+const familyName = (f: string) => (FAMILY[f] ? l(...FAMILY[f]) : f)
 /** A term's name short enough for a line's end label. */
 const endName = (t: Term) =>
-  t.label_en.replace(/ \/ \w+| and data protection| by name/, '')
+  l(
+    t.label_en.replace(/ \/ \w+| and data protection| by name/, ''),
+    (t.label_sv ?? t.label_en).replace(/ \/ \w+| och dataskydd| vid namn/, ''),
+  )
 const monthName = (m: string) =>
-  new Date(`${m}-01T12:00`).toLocaleString('en-GB', {
+  new Date(`${m}-01T12:00`).toLocaleString(l('en-GB', 'sv-SE'), {
     month: 'long',
     year: 'numeric',
   })
@@ -89,17 +99,20 @@ function TermLines() {
             return (
               <>
                 <Slicer
-                  label="Term family"
+                  label={l('Term family', 'Begreppsfamilj')}
                   options={fams}
-                  format={(f) => FAMILY[f] ?? f}
+                  format={familyName}
                   value={family}
                   onChange={setFamily}
                 />
-                <p className="mean-cap">{FAMILY[family] ?? family}</p>
+                <p className="mean-cap">{familyName(family)}</p>
                 <Svg
                   w={W}
                   h={H}
-                  label={`Share of ads mentioning each ${FAMILY[family] ?? family} term, three-month average`}
+                  label={l(
+                    `Share of ads mentioning each ${familyName(family)} term, three-month average`,
+                    `Andel annonser som nämner varje begrepp inom ${familyName(family).toLowerCase()}, glidande tremånadersmedel`,
+                  )}
                 >
                   <YAxis
                     ticks={ticks}
@@ -172,7 +185,10 @@ function AiBig() {
         return last ? (
           <Big
             value={pct(last.share, 1)}
-            unit={`of ads in ${monthName(last.month)} mention AI`}
+            unit={l(
+              `of ads in ${monthName(last.month)} mention AI`,
+              `av annonserna i ${monthName(last.month)} nämner AI`,
+            )}
           />
         ) : null
       }}
@@ -185,8 +201,14 @@ export const posts: Post[] = [
     id: 'job-ai-big',
     domain: D,
     sources: ['ai-act/jobs/monthly.json'],
-    title: 'Share of job ads that mention AI, latest month',
-    note: 'Arbetsförmedlingen job ads; months with fewer than 1,000 ads are left out',
+    title: [
+      'Share of job ads that mention AI, latest month',
+      'Andel platsannonser som nämner AI, senaste månaden',
+    ],
+    note: [
+      'Arbetsförmedlingen job ads; months with fewer than 1,000 ads are left out',
+      'Platsannonser från Arbetsförmedlingen; månader med färre än 1 000 annonser är utelämnade',
+    ],
     render: () => <AiBig />,
   },
   {
@@ -194,8 +216,14 @@ export const posts: Post[] = [
     domain: D,
     sources: ['ai-act/jobs/monthly.json', 'ai-act/jobs/summary.json'],
     size: 'wide',
-    title: 'How often job ads name AI, data and compliance terms',
-    note: 'Share of ads per month, three-month average, 2020 on; one family of terms at a time; Arbetsförmedlingen',
+    title: [
+      'How often job ads name AI, data and compliance terms',
+      'Hur ofta platsannonser nämner begrepp om AI, data och regelefterlevnad',
+    ],
+    note: [
+      'Share of ads per month, three-month average, 2020 on; one family of terms at a time; Arbetsförmedlingen',
+      'Andel annonser per månad, glidande tremånadersmedel, från 2020; en begreppsfamilj i taget; Arbetsförmedlingen',
+    ],
     render: () => <TermLines />,
   },
 ]

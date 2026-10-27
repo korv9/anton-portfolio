@@ -32,15 +32,14 @@ the delivery catalogue like the other exports.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.publish.catalog import register
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-OUT = ROOT / "frontend/public/data/ai-act"
+OUT = PUBLIC / "ai-act"
 HERE = Path(__file__).resolve().parent
 
 
@@ -60,10 +59,7 @@ def split(value: str | None, sep: str = ";") -> list[str]:
 
 
 def dump(name: str, payload) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                    encoding="utf-8")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def check_navigator(navigator: dict, obligations: set[str], articles: set[str], actors: set[str],
@@ -89,7 +85,7 @@ def check_navigator(navigator: dict, obligations: set[str], articles: set[str], 
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     OUT.mkdir(parents=True, exist_ok=True)
 
     documents = rows(con, """
@@ -228,10 +224,7 @@ def main() -> int:
         OUT / "article-text-en.json",
         OUT / "article-text-sv.json",
     ]
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register(written)
+    register(written)
     print(f"AI Act: {counts['articles']} articles, {counts['actors']} actors, "
           f"{counts['obligations']} obligations, {counts['milestones']} milestones, "
           f"{counts['documents']} documents, {len(changes)} change rows -> {OUT.relative_to(ROOT)}")

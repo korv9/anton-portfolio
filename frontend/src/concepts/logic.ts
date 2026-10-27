@@ -108,17 +108,43 @@ export const pct = (v: number, digits = 0) =>
   `${(v * 100).toFixed(digits).replace('.', ',')} %`
 
 /**
- * The concepts the Concept Journey opens with: the ones the data supports across most domains
- * (a Riksdag word group, an AI Act view or job-ad term, a Philosophy Atlas tension), plus
- * autonomy, which shows how a concept can be strong in one domain and almost absent in another.
+ * The concepts the Concept Journey opens with: first the four that lead one corpus each, with
+ * one bright star and little elsewhere, then control and autonomy for contrast.
  */
 export const JOURNEY_CONCEPTS = [
-  'risk',
-  'transparency',
+  'death',
+  'care',
+  'dignity',
+  'safety',
   'control',
-  'responsibility',
   'autonomy',
 ]
+
+/** Each corpus's concept with the highest lift over chance, in chain order. */
+export function leaders(profiles: Profile[]): Profile[] {
+  return CORPUS_ORDER.map(
+    (c) =>
+      profiles
+        .filter((p) => p.corpus_id === c)
+        .sort((a, b) => b.rank1_lift - a.rank1_lift)[0],
+  ).filter((p): p is Profile => p != null)
+}
+
+/** Concept ids sorted by the corpus where they peak (chain order), then by that peak, highest first. */
+export function byPeak(profiles: Profile[]): string[] {
+  const peak = new Map<string, Profile>()
+  for (const p of profiles) {
+    const q = peak.get(p.concept_id)
+    if (!q || p.rank1_lift > q.rank1_lift) peak.set(p.concept_id, p)
+  }
+  return [...peak.values()]
+    .sort(
+      (a, b) =>
+        CORPUS_ORDER.indexOf(a.corpus_id) - CORPUS_ORDER.indexOf(b.corpus_id) ||
+        b.rank1_lift - a.rank1_lift,
+    )
+    .map((p) => p.concept_id)
+}
 
 /** Where a concept is most and least often the closest, by lift over chance. */
 export function strongestWeakest(

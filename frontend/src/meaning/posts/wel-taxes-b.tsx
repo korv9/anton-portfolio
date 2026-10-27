@@ -10,11 +10,19 @@ import {
   groupBy,
   maxOf,
   path,
+  pct,
   scale,
   signed,
 } from './wel-kit'
+import { l } from '../../i18n'
 
-type Country = { country_code: string; name_en: string; is_nordic: boolean }
+type Country = {
+  country_code: string
+  name_en: string
+  name_sv?: string
+  is_nordic: boolean
+}
+const countryName = (c: Country) => l(c.name_en, c.name_sv ?? c.name_en)
 
 /** country, year, tax code, % of GDP. */
 type Countries = {
@@ -46,7 +54,7 @@ function NordicLines() {
         const nordic = new Map(
           d.countries
             .filter((c) => c.is_nordic)
-            .map((c) => [c.country_code, c.name_en]),
+            .map((c) => [c.country_code, countryName(c)]),
         )
         const [y0, y1] = extent(rows.map((r) => r[1]))
         const x = scale([y0, y1], [30, 500])
@@ -67,14 +75,17 @@ function NordicLines() {
           <Svg
             w={600}
             h={220}
-            label="Total tax revenue as a share of GDP by year: the Nordic countries against the rest of the OECD"
+            label={l(
+              'Total tax revenue as a share of GDP by year: the Nordic countries against the rest of the OECD',
+              'Totala skatteintäkter som andel av BNP per år: de nordiska länderna mot resten av OECD',
+            )}
           >
             <YAxis
               y={ax.y}
               ticks={ax.ticks}
               x0={30}
               x1={500}
-              format={(v) => `${v}%`}
+              format={(v) => pct(v, 0)}
             />
             {lines.map(({ c, list }) => (
               <path
@@ -122,12 +133,15 @@ function SwedenKpi() {
         return s.now === null ? null : (
           <Kpi
             value={fmt(s.now, 1)}
-            unit="% of GDP"
-            label={`Total tax revenue, ${s.year}`}
+            unit={l('% of GDP', '% av BNP')}
+            label={l(
+              `Total tax revenue, ${s.year}`,
+              `Totala skatteintäkter, ${s.year}`,
+            )}
             delta={
               s.before === null
                 ? undefined
-                : signed(s.now - s.before, ' points')
+                : signed(s.now - s.before, l(' points', ' procentenheter'))
             }
             since={String(s.year - 1)}
           />
@@ -145,10 +159,16 @@ export const posts: Post[] = [
     title: (d: Countries) => {
       const s = sweden(d)
       return s.now === null
-        ? "Sweden's total tax take"
-        : `Sweden's total tax take in ${s.year}`
+        ? l("Sweden's total tax take", 'Sveriges totala skattetryck')
+        : l(
+            `Sweden's total tax take in ${s.year}`,
+            `Sveriges totala skattetryck ${s.year}`,
+          )
     },
-    note: 'Taxes and social contributions, % of GDP. Source: OECD Revenue Statistics',
+    note: [
+      'Taxes and social contributions, % of GDP. Source: OECD Revenue Statistics',
+      'Skatter och sociala avgifter, % av BNP. Källa: OECD Revenue Statistics',
+    ],
     render: () => <SwedenKpi />,
   },
   {
@@ -165,12 +185,22 @@ export const posts: Post[] = [
       const top = rows
         .filter((r) => r[1] === year && nordic.has(r[0]))
         .sort((a, b) => b[3]! - a[3]!)[0]
-      const name = d.countries.find((c) => c.country_code === top?.[0])?.name_en
+      const c = d.countries.find((c) => c.country_code === top?.[0])
+      const name = c && countryName(c)
       return top && name
-        ? `${name} had the highest tax take of the Nordic countries in ${year}: ${fmt(top[3]!, 1)}% of GDP`
-        : 'Tax revenue in the Nordic countries and the rest of the OECD'
+        ? l(
+            `${name} had the highest tax take of the Nordic countries in ${year}: ${pct(top[3]!, 1)} of GDP`,
+            `${name} hade högst skattetryck av de nordiska länderna ${year}: ${pct(top[3]!, 1)} av BNP`,
+          )
+        : l(
+            'Tax revenue in the Nordic countries and the rest of the OECD',
+            'Skatteintäkter i de nordiska länderna och resten av OECD',
+          )
     },
-    note: '% of GDP; grey lines: other OECD countries. Source: OECD Revenue Statistics',
+    note: [
+      '% of GDP; grey lines: other OECD countries. Source: OECD Revenue Statistics',
+      '% av BNP; grå linjer: övriga OECD-länder. Källa: OECD Revenue Statistics',
+    ],
     render: () => <NordicLines />,
   },
 ]

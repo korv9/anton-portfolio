@@ -1,12 +1,13 @@
 /**
- * The feed of every chart the site's data allows, shared by the meaning page (dark) and the
- * end of the home page (light). Posts come from ./posts/*.tsx and are grouped by subject, each
- * under a short heading. Thumbnails animate their own slicers while on screen; a click opens one.
+ * The feed of every chart the site's data allows, on the meaning page. Posts come from
+ * ./posts/*.tsx and are grouped by subject, each under a short heading, the strongest first.
+ * Thumbnails animate their own slicers while on screen; a click opens one.
  */
 import { useEffect, useState } from 'react'
 import { flushSync } from 'react-dom'
 import { Card, usePageVisible } from './Card'
 import { type Post } from './kit'
+import { l } from '../i18n'
 import './meaning.css'
 import './feed-chrome.css'
 
@@ -19,95 +20,48 @@ const modules = import.meta.glob<{ posts: Post[] }>('./posts/*.tsx', {
  * lines that read as noise at card size, squeezed scatters and repeats of a stronger number.
  */
 const DROPPED = new Set<string>([
-  // A single number, a test pass rate or a weak relation (rho 0.10): a sentence says as much.
+  // A single number, a test pass rate or a weak relation (rho 0.10, r 0.04): a sentence says
+  // as much, or a sibling already shows the number.
   'wel-population-kpi',
   'wel-connections-scatter',
+  'wel-health-trust',
+  'wel-tax-kpi',
+  'job-ai-big',
   'pol-meaning-ring',
   'pol-debate-kpis',
-  // Answered more plainly by a sibling: issue bars, the stacked vote share, the region bars,
-  // the symbol and risk-tier bars, the named cluster sizes.
+  // Answered more plainly by a sibling: issue bars and the stacked vote share.
   'pol-issue-multiples',
   'pol-share-multiples',
-  'job-region-swarm',
-  'txt-ml-symbol-counts',
-  'txt-act-obligation-heatmap',
-  'txt-ml-cluster-skyline',
-  // Empty or near-uniform.
-  'pol-issue-welfare',
-  'txt-plat-quality-waffle',
-  'job-ai-field-heat',
-  'txt-act-signal-calendar',
-  'txt-plat-compliance-funnel',
-  // Tangles of lines.
-  'txt-ml-model-parallel',
-  'job-occupation-slope',
-  // Squeezed or too fine to read.
-  'pol-cohesion-scatter',
-  'txt-plat-sfs-repealed',
-  'txt-plat-dataset-bubbles',
-  'pol-ministers',
-  // Single numbers beyond the strongest few.
-  'txt-act-duty-total',
-  'txt-act-references-kpi',
-  'txt-act-characters',
-  'txt-plat-gold-kpi',
-  'txt-ml-observations',
-  // Data not fit to show until the phase 1 data review: thin samples, partial periods or
-  // ranges labelled wider than the data.
-  'txt-act-signal-line',
-  'pol-poll-kpi',
-  'pol-poll-radial',
-  'pol-poll-error',
-  'pol-poll-changes',
-  'pol-study-bars',
-  'pol-news-radial',
-  // Data withdrawn on purpose (named employers and workplaces): the files now read
-  // {state: 'unavailable'}, so these could never render.
-  'job-co-skills',
-  'job-co-locations',
-  'job-co-size',
-  'job-co-days',
-  'job-co-remote',
-  'job-co-chord',
-  'job-co-metrics',
-  'job-co-seniority',
-  'job-ws-requirements',
-  // Misleading: a silhouette measured in UMAP space read as clustering quality on a 0-1 gauge.
-  'job-cluster-gauges',
-  // Repeats of a question another post answers more plainly (chart audit, 2026-10-23).
-  'pol-bump',
-  'pol-waffle',
-  'pol-votes-treemap',
-  'pol-seat-grid',
-  'pol-gender-donut',
-  'pol-poll-stream',
-  'pol-poll-heat',
-  'pol-chord',
-  'pol-gov-gauge',
-  'job-ai-ridgeline',
-  'job-cluster-bubbles',
-  'job-lang-lines',
-  'job-occupation-treemap',
-  'job-stream',
-  'txt-act-chapter-treemap',
-  'txt-act-applies-waffle',
-  'txt-act-duty-flows',
-  'txt-ml-topic-map',
-  // Constants, analyst diagnostics, internal logs and tangles that answer no reader's question.
-  'pol-majority',
-  'pol-polar-kpi',
-  'pol-parallel',
-  'job-cluster-years',
-  'job-lang-parallel',
-  'job-archives',
-  'txt-ml-words',
-  'txt-ml-concept-wheel',
-  'txt-plat-arch-rings',
-  'txt-plat-arch-degree',
-  'txt-plat-gold-bytes',
-  'txt-plat-lineage-units',
-  'txt-plat-delivery-donut',
+  // Too fine to read at card size, or a near-uniform frame.
+  'job-sparks',
+  'job-calendar',
+  'txt-act-signal-multiples',
+  'txt-ml-tension-boxes',
+  // Thin samples: three setups compared on 16 to 20 questions.
+  'txt-ml-gauges',
+  // Internal diagnostics (sample tables, node counts) that answer no reader's question.
+  'txt-plat-gold-rows',
+  'txt-plat-arch-stack',
+  // A stale file (the debate summary the pipeline no longer refreshes) and a one-off news
+  // count with no time in it.
+  'pol-topic-tree',
+  'pol-news-topics',
 ])
+
+/** The strongest posts, which open their sections in this order; the rest follow. */
+const LEAD = [
+  'pol-ai-speech-line',
+  'pol-share-stacked',
+  'pol-riksdag-eras-heat',
+  'wel-wedge-lines',
+  'wel-tax-nordic-lines',
+  'job-ai-lines',
+  'txt-act-apply-step',
+]
+const lead = (p: Post) => {
+  const i = LEAD.indexOf(p.id)
+  return i < 0 ? LEAD.length : i
+}
 
 /** Round-robin across groups so neighbouring posts come from different files. */
 function interleave(groups: Post[][]) {
@@ -120,65 +74,98 @@ function interleave(groups: Post[][]) {
 
 /**
  * The feed reads as one long scroll by subject. A post joins the first section whose pattern
- * matches its id; the last section takes the rest.
+ * matches its id; the last section takes the rest. Title and line are [English, Swedish] pairs
+ * for l(), read at render so a language switch takes effect.
  */
-const SECTIONS = [
+const SECTIONS: readonly {
+  key: string
+  title: readonly [string, string]
+  line: readonly [string, string]
+  match: RegExp
+}[] = [
   {
     key: 'politics',
-    title: 'Politics',
-    line: "Elections, polls, news and the Riksdag's votes and debates.",
+    title: ['Politics', 'Politik'],
+    line: [
+      "Elections, polls, news and the Riksdag's votes and debates.",
+      'Val, opinionsmätningar, nyheter och riksdagens omröstningar och debatter.',
+    ],
     match: /^pol-/,
   },
   {
     key: 'sweden',
-    title: 'Sweden',
-    line: 'Welfare, taxes, trust, and how counties and municipalities differ.',
+    title: ['Sweden', 'Sverige'],
+    line: [
+      'Welfare, taxes, trust, and how counties and municipalities differ.',
+      'Välfärd, skatter, tillit och hur län och kommuner skiljer sig åt.',
+    ],
     match: /^wel-/,
   },
   {
     key: 'jobs',
-    title: 'Jobs',
-    line: 'Swedish job ads: demand, fields, language and AI.',
+    title: ['Jobs', 'Jobb'],
+    line: [
+      'Swedish job ads: demand, fields, language and AI.',
+      'Svenska jobbannonser: efterfrågan, yrkesområden, språk och AI.',
+    ],
     match: /^job-/,
   },
   {
     key: 'ai-act',
-    title: 'AI Act',
-    line: 'The EU AI Act: what applies, to whom and when, and how often AI comes up in ads and debates.',
+    title: ['AI Act', 'AI-förordningen'],
+    line: [
+      'The EU AI Act: what applies, to whom and when, and how often AI comes up in ads and debates.',
+      'EU:s AI-förordning: vad som gäller, för vem och när, och hur ofta AI nämns i annonser och debatter.',
+    ],
     match: /^txt-act-/,
   },
   {
     key: 'law',
-    title: 'Swedish law',
-    line: 'The statute book (SFS): its growth, length and largest laws.',
+    title: ['Swedish law', 'Svensk lag'],
+    line: [
+      'The statute book (SFS): its growth, length and largest laws.',
+      'Svensk författningssamling (SFS): dess tillväxt, längd och största lagar.',
+    ],
     match: /^txt-plat-sfs-/,
   },
   {
     key: 'symbols',
-    title: 'Symbols',
-    line: 'Myth and religious symbols across 101 public-domain books.',
+    title: ['Symbols', 'Symboler'],
+    line: [
+      'Myth and religious symbols across 101 public-domain books.',
+      'Myter och religiösa symboler i 101 fria böcker.',
+    ],
     match: /^txt-ml-(symbol|book|model|research|cluster-skyline|gauges)/,
   },
   {
     key: 'philosophy',
-    title: 'Philosophy',
-    line: 'Ideas, works and tensions in the philosophy corpus.',
+    title: ['Philosophy', 'Filosofi'],
+    line: [
+      'Ideas, works and tensions in the philosophy corpus.',
+      'Idéer, verk och spänningar i den filosofiska korpusen.',
+    ],
     match:
       /^txt-ml-(phil|works|tension|eval|cluster-stacks|words|ethics|foundations)/,
   },
   {
     key: 'concepts',
-    title: 'Concepts',
-    line: 'How concepts relate across law, myth, philosophy and politics.',
+    title: ['Concepts', 'Begrepp'],
+    line: [
+      'How concepts relate across law, myth, philosophy and politics.',
+      'Hur begrepp hänger ihop i juridik, myter, filosofi och politik.',
+    ],
     match: /^txt-ml-(concept|pair)/,
   },
   {
     key: 'platform',
-    title: 'Platform',
-    line: 'The models, data quality and lineage behind these charts.',
+    title: ['Platform', 'Plattform'],
+    line: [
+      'The models, data quality and lineage behind these charts.',
+      'Modellerna, datakvaliteten och härkomsten bakom diagrammen.',
+    ],
     match: /./,
   },
-] as const
+]
 
 /** Per section, the posts of each file, interleaved so neighbours come from different files. */
 const grouped = new Map<string, Post[][]>()
@@ -194,7 +181,8 @@ for (const key of Object.keys(modules).sort()) {
 }
 const PARTS = SECTIONS.map((s) => ({
   ...s,
-  posts: interleave(grouped.get(s.key) ?? []),
+  // A stable sort, so the posts after the lead keep their interleaved order.
+  posts: interleave(grouped.get(s.key) ?? []).sort((a, b) => lead(a) - lead(b)),
 })).filter((s) => s.posts.length)
 export const FEED = PARTS.flatMap((s) => s.posts)
 
@@ -207,7 +195,7 @@ function morph(change: () => void) {
   else change()
 }
 
-/** `level` is the section heading level: 2 under the meaning page's h1, 3 on the home page. */
+/** `level` is the section heading level: 2 under the meaning page's h1. */
 export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
   const Heading = level === 2 ? 'h2' : 'h3'
   const [openId, setOpenId] = useState<string | null>(null)
@@ -231,39 +219,45 @@ export default function Feed({ level = 2 }: { level?: 2 | 3 }) {
     })
   return (
     <div className="mean-feed">
-      {PARTS.map((s) => (
-        <section
-          key={s.key}
-          className="mean-section"
-          aria-labelledby={`mean-${s.key}`}
-        >
-          <header className="mean-section-head">
-            <Heading id={`mean-${s.key}`}>{s.title}</Heading>
-            <p>{s.line}</p>
-            <button
-              type="button"
-              className="mean-pause"
-              aria-pressed={paused.has(s.key)}
-              onClick={() => pause(s.key)}
-            >
-              Pause<span className="visually-hidden"> {s.title} charts</span>
-            </button>
-          </header>
-          <div className="mean-grid">
-            {s.posts.map((p) => (
-              <Card
-                key={p.id}
-                post={p}
-                section={s.title}
-                index={FEED.indexOf(p)}
-                open={p.id === openId}
-                moving={pageVisible && !paused.has(s.key)}
-                toggle={toggle}
-              />
-            ))}
-          </div>
-        </section>
-      ))}
+      {PARTS.map((s) => {
+        const title = l(...s.title)
+        return (
+          <section
+            key={s.key}
+            className="mean-section"
+            aria-labelledby={`mean-${s.key}`}
+          >
+            <header className="mean-section-head">
+              <Heading id={`mean-${s.key}`}>{title}</Heading>
+              <p>{l(...s.line)}</p>
+              <button
+                type="button"
+                className="mean-pause"
+                aria-pressed={paused.has(s.key)}
+                onClick={() => pause(s.key)}
+              >
+                {l('Pause', 'Pausa')}
+                <span className="visually-hidden">
+                  {l(` ${title} charts`, ` diagrammen i ${title}`)}
+                </span>
+              </button>
+            </header>
+            <div className="mean-grid">
+              {s.posts.map((p) => (
+                <Card
+                  key={p.id}
+                  post={p}
+                  section={title}
+                  index={FEED.indexOf(p)}
+                  open={p.id === openId}
+                  moving={pageVisible && !paused.has(s.key)}
+                  toggle={toggle}
+                />
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }

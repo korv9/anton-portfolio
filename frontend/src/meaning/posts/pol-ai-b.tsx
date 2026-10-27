@@ -1,4 +1,5 @@
 /** How Riksdag AI speeches weigh paired words per AI Act phase. */
+import { l } from '../../i18n'
 import { focal, Frame, useData, type Post } from '../kit'
 import { EndLabels, YAxis } from '../axes'
 import { linearScale } from '../../charts/scales'
@@ -36,7 +37,16 @@ function swings(rows: Framing) {
     .sort((a, b) => b.swing - a.swing)
 }
 
-const words = (id: string) => id.split('_')
+/** Swedish for the words the pair ids are built from (summary.json's label_sv). */
+const WORD_SV: Record<string, string> = {
+  innovation: 'innovation',
+  safety: 'säkerhet',
+  privacy: 'integritet',
+  security: 'säkerhetspolitik',
+  regulation: 'reglering',
+  competitiveness: 'konkurrenskraft',
+}
+const words = (id: string) => id.split('_').map((w) => l(w, WORD_SV[w] ?? w))
 /** AI speeches in a phase, all parties: the same for every pair. */
 const phaseSpeeches = (rows: Framing, phase: string) =>
   allParties(rows).find((r) => r.period === phase)?.ai_speeches
@@ -48,8 +58,8 @@ const phaseName = (p: { from?: string; until?: string }) =>
   p.from && p.until
     ? `${yearOf(p.from)}–${yearOf(p.until)?.slice(2)}`
     : p.until
-      ? `Until ${yearOf(p.until)}`
-      : `Since ${yearOf(p.from)}`
+      ? l(`Until ${yearOf(p.until)}`, `Till ${yearOf(p.until)}`)
+      : l(`Since ${yearOf(p.from)}`, `Från ${yearOf(p.from)}`)
 
 function FramingSlope() {
   const framing = useData<Framing>(FRAMING)
@@ -79,7 +89,10 @@ function FramingSlope() {
               <svg
                 viewBox="0 0 600 220"
                 role="img"
-                aria-label="Balance between paired words in Riksdag AI speeches, per AI Act phase"
+                aria-label={l(
+                  'Balance between paired words in Riksdag AI speeches, per AI Act phase',
+                  'Balansen mellan ordpar i riksdagens AI-anföranden, per fas av AI-förordningen',
+                )}
               >
                 <YAxis
                   y={y}
@@ -126,7 +139,7 @@ function FramingSlope() {
                       : [
                           {
                             y: y(v),
-                            label: `${a} vs ${b}`,
+                            label: l(`${a} vs ${b}`, `${a} mot ${b}`),
                             color:
                               p.pair_id === top
                                 ? focal(true)
@@ -174,10 +187,16 @@ function framingTitle(rows: Framing) {
     before * during >= 0 ||
     Math.min(n(pre), n(mid)) < MIN_SPEECHES
   )
-    return 'Paired words in Riksdag AI speeches, before and after the AI Act'
+    return l(
+      'Paired words in Riksdag AI speeches, before and after the AI Act',
+      'Ordpar i riksdagens AI-anföranden, före och efter AI-förordningen',
+    )
   const [a, b] = words(top)
   const [first, then] = before > 0 ? [a, b] : [b, a]
-  return `AI speeches in the Riksdag named ${first} over ${then} until the AI Act proposal (n ${n(pre)}), then ${then} (n ${n(mid)})`
+  return l(
+    `AI speeches in the Riksdag named ${first} over ${then} until the AI Act proposal (n ${n(pre)}), then ${then} (n ${n(mid)})`,
+    `AI-anförandena i riksdagen nämnde ${first} före ${then} fram till förslaget till AI-förordningen (n ${n(pre)}), sedan ${then} (n ${n(mid)})`,
+  )
 }
 
 export const posts: Post[] = [
@@ -187,7 +206,10 @@ export const posts: Post[] = [
     sources: ['ai-act/politics/framing.json', 'ai-act/politics/summary.json'],
     size: 'wide',
     title: framingTitle,
-    note: '+1: AI speeches name only the first word of a pair, −1: only the second; all parties; n: AI speeches in the phase. Source: Riksdagen',
+    note: [
+      '+1: AI speeches name only the first word of a pair, −1: only the second; all parties; n: AI speeches in the phase. Source: Riksdagen',
+      '+1: AI-anförandena nämner bara ordparets första ord, −1: bara det andra; alla partier; n: AI-anföranden i fasen. Källa: Riksdagen',
+    ],
     render: () => <FramingSlope />,
   },
 ]

@@ -6,9 +6,11 @@ Code: `platform/publish/clusters/`. Statuses come from `stats.diagnostics`:
 - `descriptive`: fewer than 50 units.
 - `unvalidated`: there is no stability check.
 
+`three-swedens.json` in the same folder comes from `ml/three_swedens.py` and is documented in [sweden-three-spaces-preregistration.md](sweden-three-spaces-preregistration.md).
+
 Only `finding` may be posted as a finding. Every k is picked by silhouette over 2-8 (2-10 for the labour-market types). The pick is flagged when it sits at an end of the sweep or when the runner-up is within 0.005.
 
-## Fits of 2026-10-22, after review round 1 of PR #94
+## Fits of 2026-10-22, after review round 2 of PR #94
 
 The fits ran again on 2026-10-22 after review round 2, against the restored warehouse (CI build of 2026-10-20 plus the job-ad aggregates in R2). Every number below matches the round-1 fit log, and the files in `frontend/public/data/clusters/` now hold these runs. The riksdag eras now sweep 2-8 eras as well; the largest merge-cost jump is still at 6.
 

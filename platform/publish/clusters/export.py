@@ -17,9 +17,9 @@ from __future__ import annotations
 import json
 import sys
 
-import duckdb
-
 import stats
+
+from portfolio.core import db, io
 
 NAMES = ["debate-topics", "session-maps", "talk-vote", "municipal-trajectories", "riksdag-eras", "tax-mix",
          "field-language", "labour-market-types", "demand-curves"]
@@ -51,7 +51,7 @@ def payload(con, name: str) -> dict:
 def bodies(con, names: list[str]) -> dict[str, str]:
     out = {}
     for name in names:
-        out[name] = json.dumps(payload(con, name), ensure_ascii=False, allow_nan=False, separators=(",", ":")) + "\n"
+        out[name] = io.dumps(payload(con, name), allow_nan=False)
         size = len(out[name].encode("utf-8"))
         if size > MAX_BYTES:
             raise SystemExit(f"{name}: {size} bytes is over {MAX_BYTES}; nothing written")
@@ -59,11 +59,11 @@ def bodies(con, names: list[str]) -> dict[str, str]:
 
 
 def main(names: list[str]) -> None:
-    with duckdb.connect(str(stats.DATABASE), read_only=True) as con:
+    with db.connect(stats.DATABASE) as con:
         built = bodies(con, names)
     OUT.mkdir(parents=True, exist_ok=True)
     for name, body in built.items():
-        (OUT / f"{name}.json").write_text(body, encoding="utf-8", newline="\n")
+        io.write_text(OUT / f"{name}.json", body)
         print(f"clusters/{name}.json {len(body.encode('utf-8'))} bytes")
 
 

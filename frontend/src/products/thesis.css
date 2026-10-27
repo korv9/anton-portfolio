@@ -1,0 +1,235 @@
+/* The degree project (#thesis, ThesisCase.tsx): ivory on charcoal through the shared tokens,
+   titles in the signature's gradient, space instead of rules between the sections. */
+#main .thesis-page .project-section > h2 {
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.thesis-page .project-section {
+  border-top: 0;
+}
+.thesis-figure {
+  margin: var(--sp-5) 0 var(--sp-6);
+}
+.thesis-figure figcaption {
+  max-width: var(--measure);
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--caption);
+  line-height: 1.5;
+}
+
+/* 121 dots beside the funnel. */
+.thesis-clusters-body {
+  display: grid;
+  grid-template-columns: max-content minmax(12rem, 18rem);
+  gap: var(--sp-6);
+  align-items: center;
+}
+.thesis-grid {
+  display: grid;
+  /* 11 x 11 = 121: a square block. */
+  grid-template-columns: repeat(11, 18px);
+  gap: 6px;
+}
+.thesis-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.thesis-dot.is-open {
+  background: var(--ink);
+}
+.thesis-funnel {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--small);
+}
+.thesis-funnel strong {
+  display: block;
+  color: var(--ink);
+  font-family: var(--font-meta);
+  font-size: var(--h3, 1.5rem);
+}
+
+/* All tickets of the run by outcome. */
+.thesis-split {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  margin-top: var(--sp-5);
+}
+.thesis-split > span {
+  min-width: 3px;
+}
+.thesis-split-linked {
+  --swatch: var(--stone);
+}
+.thesis-split-clustered {
+  --swatch: var(--ink);
+}
+.thesis-split-noise {
+  --swatch: var(--surface);
+}
+.thesis-split > span {
+  background: var(--swatch);
+}
+.thesis-split-legend,
+.thesis-years-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  margin: var(--sp-3) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--small);
+}
+.thesis-split-legend li::before,
+.thesis-years-legend li::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--sp-2);
+  background: var(--swatch);
+}
+.thesis-split-legend strong {
+  color: var(--ink);
+  font-family: var(--font-meta);
+}
+
+/* ISO/IEC 25012: one row per measure, a bar on a full track. */
+.thesis-quality {
+  display: grid;
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.thesis-quality li {
+  display: grid;
+  grid-template-columns: 9rem 13rem minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: start;
+}
+.thesis-quality-dim {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.thesis-quality-what {
+  font-size: var(--small);
+}
+.thesis-quality-bars {
+  display: grid;
+  gap: var(--sp-2);
+}
+.thesis-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 11rem;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.thesis-bar-track {
+  display: block;
+  height: 14px;
+  background: var(--paper-strong);
+}
+.thesis-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+}
+.thesis-bar-fill.is-muted {
+  background: var(--stone);
+}
+.thesis-bar-label {
+  color: var(--ink);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+}
+.thesis-quality-note {
+  color: var(--muted);
+  font-size: var(--caption);
+  line-height: 1.5;
+}
+
+/* Fill rate per year: the required field beside the voluntary one. */
+.thesis-years {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--sp-3);
+  max-width: 40rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.thesis-years > div {
+  display: grid;
+  gap: var(--sp-2);
+}
+.thesis-years-bars {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 9rem;
+  border-bottom: 1px solid var(--line-strong);
+}
+.thesis-years-bar {
+  flex: 1;
+  min-height: 1px;
+  background: var(--ink);
+}
+.thesis-years-bar.is-muted {
+  background: var(--stone);
+}
+.thesis-years-label {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  text-align: center;
+}
+.thesis-years-legend li {
+  --swatch: var(--ink);
+}
+.thesis-years-legend li.is-muted {
+  --swatch: var(--stone);
+}
+
+@media (max-width: 760px) {
+  .thesis-clusters-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .thesis-grid {
+    grid-template-columns: repeat(11, 14px);
+    gap: 5px;
+  }
+  .thesis-dot {
+    width: 14px;
+    height: 14px;
+  }
+  .thesis-quality li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-2);
+  }
+  .thesis-years {
+    gap: var(--sp-2);
+  }
+  .thesis-bar {
+    grid-template-columns: minmax(0, 1fr) 8.5rem;
+  }
+}

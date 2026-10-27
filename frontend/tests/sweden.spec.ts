@@ -1,10 +1,37 @@
 /**
- * SWEDEN: the hub and every research route open, the withdrawn Wellbeing Observatory's old
- * #sweden addresses lead to the chart feed, and Politics of Measurement draws its findings from the
- * published catalogue (counts are read from the file, never expected as literals).
+ * SWEDEN: one page with a short section per research product; every product's address scrolls to
+ * its section, the withdrawn Wellbeing Observatory's old #sweden addresses lead to the chart feed,
+ * and the products draw their findings from the published files (counts are read from the file,
+ * never expected as literals).
  */
 import AxeBuilder from '@axe-core/playwright'
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from './test'
+
+/** A product's section, after its address has scrolled to it. */
+async function section(page: Page, hash: string, id: string) {
+  await page.goto('/' + hash)
+  const s = page.locator(`#sw-${id}`)
+  await expect(s.locator('h2').first()).toBeVisible()
+  return s
+}
+
+/** Opens the section's fold: explore, method and readings. */
+async function more(s: Locator) {
+  await s.locator('.explore-section > h2 button').first().click()
+}
+
+async function noAxeViolations(page: Page, s: Locator) {
+  const axe = await new AxeBuilder({ page })
+    .include(`#${await s.getAttribute('id')}`)
+    .exclude('canvas')
+    .analyze()
+  expect(
+    axe.violations.map(
+      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    ),
+  ).toEqual([])
+}
 
 const ROUTES = [
   '#sweden-matning',
@@ -12,45 +39,37 @@ const ROUTES = [
   '#sweden-likhet',
   '#sweden-tillhorighet',
   '#sweden-framtid',
+  '#sweden-valfard',
   '#sweden-samband',
 ]
 
-test('the hub lists the five research products and Connections', async ({
+test('one page holds the six research products and Connections', async ({
   page,
 }) => {
   await page.goto('/#sweden')
-  await expect(page.locator('.sw-doors > li')).toHaveCount(6)
+  await expect(page.locator('.sw-section[id^="sw-"]')).toHaveCount(7)
+  await expect(page.locator('.sw-jump a')).toHaveCount(7)
   for (const href of ROUTES)
-    await expect(page.locator(`.sw-doors a[href="${href}"]`)).toHaveCount(1)
-})
-
-test('SWEDEN has one header of its own, with a menu that closes on Escape', async ({
-  page,
-}) => {
-  await page.goto('/#sweden-likhet')
-  await expect(page.locator('.site-header')).toHaveCount(0)
-  await expect(page.locator('.sw-header')).toHaveCount(1)
-  await expect(
-    page.locator('.sw-nav a[aria-current="page"][href="#sweden-likhet"]'),
-  ).toHaveCount(1)
-  const menu = page.getByRole('button', { name: 'MENU' })
-  await menu.click()
-  await expect(page.locator('.sw-menu a[href="#projekt"]')).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(page.locator('.sw-menu')).not.toBeVisible()
-  await expect(menu).toBeFocused()
+    await expect(page.locator(`.sw-jump a[href="${href}"]`)).toHaveCount(1)
+  // The shared head: the name, one sentence and the KPIs read from the coverage files.
+  await expect(page.locator('.sw-header')).toHaveCount(0)
+  await expect(page.locator('.page-head-title')).toHaveText('SWEDEN')
+  await expect(page.locator('.page-head-kpis > div')).toHaveCount(4)
 })
 
 test(
-  'every research route opens with its question',
+  'every research address scrolls to its question',
   { tag: '@mobile' },
   async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     for (const href of ROUTES) {
       await page.goto('/' + href)
-      await expect(page.locator('#sw-title')).toBeVisible()
-      await expect(page.locator('#sw-title')).not.toBeEmpty()
+      const id =
+        href === '#sweden-samband' ? 'X' : 'ABCDEF'[ROUTES.indexOf(href)]
+      const title = page.locator(`#sw-title-${id}`)
+      await expect(title).toBeInViewport()
+      await expect(title).not.toBeEmpty()
       const width = await page.evaluate(
         () => document.documentElement.scrollWidth,
       )
@@ -77,34 +96,32 @@ test('politics of measurement computes its findings from the catalogue', async (
   const culture = summary.domains.find(
     (d: { id: string }) => d.id === 'culture',
   )
-  await page.goto('/#sweden-matning?scen=2d')
-  const cards = page.locator('.sw-find')
+  const s = await section(page, '#sweden-matning?scen=2d', 'A')
+  // The findings sit in the fold, under the chart.
+  await more(s)
+  const cards = s.locator('.sw-find')
   await expect(cards).not.toHaveCount(0)
-  expect(await cards.count()).toBeLessThanOrEqual(3)
-  await expect(page.locator('.sw-finds')).toContainText(
+  expect(await cards.count()).toBeLessThanOrEqual(2)
+  await expect(s.locator('.sw-finds')).toContainText(
     culture.scb_tables.toLocaleString('en-GB'),
   )
   // A matrix cell opens its domain in the info panel and the address keeps it.
-  await page.getByRole('button', { name: /^Culture, 2020s/ }).click()
+  await s.getByRole('button', { name: /^Culture, 2020s/ }).click()
   await expect(page).toHaveURL(/domain=culture/)
-  await expect(page.locator('.sw-scene-info')).toContainText('Culture')
+  await expect(s.locator('.sw-scene-info')).toContainText('Culture')
   await page.goBack()
   await expect(page).not.toHaveURL(/domain=culture/)
   // A count that could not have come out against Porter does not support him.
-  await expect(
-    page.locator('.sw-reading', { hasText: 'Porter' }),
-  ).toHaveAttribute('data-verdict', 'undetermined')
-  await expect(page.locator('.sw-method')).toContainText(
+  await expect(s.locator('.sw-reading', { hasText: 'Porter' })).toHaveAttribute(
+    'data-verdict',
+    'undetermined',
+  )
+  await expect(s.locator('.sw-method')).toContainText(
     `${Math.round(summary.sensitivity.moved_share * 100)} %`,
   )
   // Nine method sections, limitations open.
-  await expect(page.locator('.sw-method details')).toHaveCount(9)
-  const axe = await new AxeBuilder({ page }).include('main').analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await expect(s.locator('.sw-method details')).toHaveCount(9)
+  await noAxeViolations(page, s)
 })
 
 test('the invisible sweden moves municipalities into similarity space', async ({
@@ -114,43 +131,32 @@ test('the invisible sweden moves municipalities into similarity space', async ({
   const data = await (
     await request.get('/data/sweden/similarity/municipalities.json')
   ).json()
-  await page.goto('/#sweden-likhet?scen=2d')
-  await expect(page.locator('.sw-map-dots circle')).toHaveCount(
-    data.summary.total,
+  const s = await section(page, '#sweden-likhet?scen=2d', 'C')
+  await expect(s.locator('.sw-map-dots circle')).toHaveCount(data.summary.total)
+  await more(s)
+  await expect(s.locator('.sw-finds')).toContainText(
+    `${data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
-  await expect(page.locator('.sw-finds')).toContainText(
-    `${data.summary.analysed - data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
-  )
+  // The groups are a summary, not a finding.
+  await expect(s.locator('.sw-finds')).not.toContainText('of 21 counties')
   // Distance to the big cities is measured, and the verdict needs both variants' intervals.
   await expect(
-    page.locator('.sw-reading', { hasText: 'Centre and periphery' }),
+    s.locator('.sw-reading', { hasText: 'Centre and periphery' }),
   ).toHaveAttribute('data-verdict', 'supports')
   // SKR's types hold less than half the variance of the indicators they are not built from.
   await expect(
-    page.locator('.sw-reading', { hasText: 'Official typologies (SKR)' }),
+    s.locator('.sw-reading', { hasText: 'Official typologies (SKR)' }),
   ).toHaveAttribute('data-verdict', 'challenges')
-  await page.getByRole('button', { name: 'Similarity', exact: true }).click()
+  await s.getByRole('button', { name: 'Similarity', exact: true }).click()
   await expect(page).toHaveURL(/vy=likhet/)
-  await page
-    .getByRole('combobox', { name: 'Municipality' })
-    .selectOption('1284')
+  await s.getByRole('combobox', { name: 'Municipality' }).selectOption('1284')
   await expect(page).toHaveURL(/kommun=1284/)
-  await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
-  await expect(page.locator('.sw-neighbours li')).toHaveCount(5)
+  await expect(s.locator('.sw-scene-info')).toContainText('Höganäs')
+  await expect(s.locator('.sw-neighbours li')).toHaveCount(5)
   // A municipality outside the analysis says which value it lacks.
-  await page
-    .getByRole('combobox', { name: 'Municipality' })
-    .selectOption('0481')
-  await expect(page.locator('.sw-scene-info')).toContainText('Riksdag turnout')
-  const axe = await new AxeBuilder({ page })
-    .include('main')
-    .exclude('canvas')
-    .analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await s.getByRole('combobox', { name: 'Municipality' }).selectOption('0481')
+  await expect(s.locator('.sw-scene-info')).toContainText('Riksdag turnout')
+  await noAxeViolations(page, s)
 })
 
 test('the ideal human counts language per word with the occupation mix fixed', async ({
@@ -161,13 +167,12 @@ test('the ideal human counts language per word with the occupation mix fixed', a
     await request.get('/data/sweden/language/trends.json')
   ).json()
   const years = trends.categories[0].rows.map((r: number[]) => r[0])
-  await page.goto('/#sweden-arbete?scen=2d')
-  await expect(page.locator('.sw-matrix thead th.sw-n')).toHaveCount(
-    years.length,
-  )
-  await expect(page.locator('.sw-find')).not.toHaveCount(0)
+  const s = await section(page, '#sweden-arbete?scen=2d', 'B')
+  await expect(s.locator('.sw-matrix thead th.sw-n')).toHaveCount(years.length)
+  await more(s)
+  await expect(s.locator('.sw-find')).not.toHaveCount(0)
   // The years with no occupations say so instead of showing a standardised value.
-  await page
+  await s
     .getByRole('button', {
       name: new RegExp(`^Passion and enthusiasm, ${years[0]}`),
     })
@@ -175,69 +180,43 @@ test('the ideal human counts language per word with the occupation mix fixed', a
   await expect(page).toHaveURL(/kategori=passion/)
   // Every category and sub-term is shown in three measures with its direction; stated
   // qualifications rise as a share of ads and fall per word, so their reading is undetermined.
-  await expect(page.locator('.sw-agree')).toHaveCount(
+  await expect(s.locator('.sw-agree')).toHaveCount(
     trends.categories.length + trends.subterms.length,
   )
   await expect(
-    page.locator('.sw-reading', { hasText: 'Human capital' }),
+    s.locator('.sw-reading', { hasText: 'Human capital' }),
   ).toHaveAttribute('data-verdict', 'undetermined')
   await expect(
-    page.getByText(/split into a part within groups/).first(),
+    s.getByText(/split into a part within groups/).first(),
   ).toBeVisible()
-  const axe = await new AxeBuilder({ page })
-    .include('main')
-    .exclude('canvas')
-    .analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await noAxeViolations(page, s)
 })
 
 test('the infrastructure of belonging maps libraries by municipality and year', async ({
   page,
 }) => {
-  await page.goto('/#sweden-tillhorighet?scen=2d')
-  await expect(page.locator('.sw-choropleth path')).toHaveCount(290)
-  await expect(page.locator('.sw-libraries circle')).not.toHaveCount(0)
-  await page
-    .getByRole('combobox', { name: 'Measure' })
-    .selectOption('visits_rate')
+  const s = await section(page, '#sweden-tillhorighet?scen=2d', 'D')
+  await expect(s.locator('.sw-choropleth path')).toHaveCount(290)
+  await expect(s.locator('.sw-libraries circle')).not.toHaveCount(0)
+
+  await s.getByRole('combobox', { name: 'Measure' }).selectOption('visits_rate')
   await expect(page).toHaveURL(/matt=visits_rate/)
-  // The map sits under the scene panels in 2D; the keyboard reaches every municipality.
-  await page.getByRole('button', { name: /^Höganäs:/ }).press('Enter')
-  await expect(page.locator('.sw-scene-info')).toContainText('Höganäs')
+  // The keyboard reaches every municipality on the 2D map.
+  await s.getByRole('button', { name: /^Höganäs:/ }).press('Enter')
+  await expect(s.locator('.sw-scene-info')).toContainText('Höganäs')
+  await more(s)
+  await expect(
+    s.getByText('Rural municipality with a visitor industry').first(),
+  ).toBeAttached()
   // A count of service points cannot decide a theory of welfare-state contraction.
   await expect(
-    page.locator('.sw-reading', { hasText: 'Habermas' }),
+    s.locator('.sw-reading', { hasText: 'Habermas' }),
   ).toHaveAttribute('data-verdict', 'undetermined')
-  // Visits are reported before and after 2019, with the change by SKR group.
-  await expect(
-    page
-      .getByRole('button', { name: /visits changed .* from 2014 to 2019/ })
-      .first(),
-  ).toBeVisible()
-  await page
-    .getByRole('button', { name: /By SKR group the/ })
-    .first()
-    .click()
-  await expect(
-    page.getByRole('figure', { name: /^Median change in visits per/ }),
-  ).toHaveCount(2)
   // Judged with log population held constant.
   await expect(
-    page.locator('.sw-reading', { hasText: 'Use follows supply' }),
+    s.locator('.sw-reading', { hasText: 'Use follows supply' }),
   ).toHaveAttribute('data-verdict', 'undetermined')
-  const axe = await new AxeBuilder({ page })
-    .include('main')
-    .exclude('canvas')
-    .analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await noAxeViolations(page, s)
 })
 
 test('the lost futures reads every session and links its speeches', async ({
@@ -251,36 +230,28 @@ test('the lost futures reads every session and links its speeches', async ({
   // 1999/2000 is the one session with an eight-digit code.
   expect(sessions).toContain('19992000')
   expect(sessions.length).toBeGreaterThanOrEqual(33)
-  await page.goto('/#sweden-framtid?scen=2d')
-  await expect(page.locator('.sw-matrix tbody tr')).toHaveCount(9)
-  await expect(page.locator('.sw-find')).not.toHaveCount(0)
-  await page
-    .getByRole('combobox', { name: 'Theme' })
-    .selectOption('alternatives')
+  const s = await section(page, '#sweden-framtid?scen=2d', 'E')
+  await expect(s.locator('.sw-matrix tbody tr')).toHaveCount(9)
+  await more(s)
+  await expect(s.locator('.sw-find')).not.toHaveCount(0)
+  const theme = s.getByRole('combobox', { name: 'Theme' }).first()
+  await theme.selectOption('alternatives')
   await expect(page).toHaveURL(/tema=alternatives/)
   await expect(
-    page
+    s
       .locator('.sw-examples a[href^="https://data.riksdagen.se/anforande/"]')
       .first(),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', {
+    s.getByRole('heading', {
       name: 'Speeches about the future at equal length (%)',
     }),
   ).toBeVisible()
-  await page.getByRole('combobox', { name: 'Theme' }).selectOption('security')
+  await theme.selectOption('security')
   await expect(
-    page.getByRole('heading', { name: 'The theme split into its words (%)' }),
+    s.getByRole('heading', { name: 'The theme split into its words (%)' }),
   ).toBeVisible()
-  const axe = await new AxeBuilder({ page })
-    .include('main')
-    .exclude('canvas')
-    .analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await noAxeViolations(page, s)
 })
 
 test('connections state their contracts and the rejected joins', async ({
@@ -290,39 +261,33 @@ test('connections state their contracts and the rejected joins', async ({
   const data = await (
     await request.get('/data/sweden/connections/connections.json')
   ).json()
-  await page.goto('/#sweden-samband')
-  await expect(page.locator('.sw-connection')).toHaveCount(
+  const s = await section(page, '#sweden-samband', 'X')
+  await expect(s.locator('.sw-connection')).toHaveCount(
     data.relationships.length,
   )
-  await expect(page.locator('#sw-rejected ~ details')).toHaveCount(
-    data.rejected.length,
-  )
-  await expect(page.locator('.sw-connection').first()).toContainText(
-    'Denominator',
-  )
-  await expect(page.locator('.sw-connection').first()).not.toContainText(
+  await expect(s.locator('.sw-connection').first()).toContainText('Denominator')
+  await expect(s.locator('.sw-connection').first()).not.toContainText(
     'defined before it was computed',
   )
+  await more(s)
+  await expect(s.locator('.explore-section details')).toHaveCount(
+    data.rejected.length,
+  )
   // 3.1: choosing a municipality moves the one accent and names its values.
-  const pick = page.getByRole('combobox', { name: 'Municipality' })
+  const pick = s.getByRole('combobox', { name: 'Municipality' })
   const { visits, service_points } = data.relationships.find(
     (r: { kind: string }) => r.kind === 'neighbours',
   ).result.measures
   const both = new Set(service_points.points.map((p: string[]) => p[0]))
   const point = visits.points.find((p: string[]) => both.has(p[0]))
   await pick.selectOption(point[0])
-  await expect(page.locator('.sw-dots circle.is-focal')).toHaveCount(2)
-  await expect(page.locator('.sw-neighbours figcaption')).toContainText(
+  await expect(s.locator('.sw-dots circle.is-focal')).toHaveCount(2)
+  await expect(s.locator('.sw-neighbours figcaption')).toContainText(
     point[2].toFixed(2),
   )
   // 3.2: two predictors in two periods.
-  await expect(page.locator('.sw-connection .sw-table tbody tr')).toHaveCount(4)
-  const axe = await new AxeBuilder({ page }).include('main').analyze()
-  expect(
-    axe.violations.map(
-      (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`,
-    ),
-  ).toEqual([])
+  await expect(s.locator('.sw-connection .sw-table tbody tr')).toHaveCount(4)
+  await noAxeViolations(page, s)
 })
 
 test('3D is the default, 2D is one click away, and the homepage never loads three.js', async ({
@@ -333,10 +298,42 @@ test('3D is the default, 2D is one click away, and the homepage never loads thre
     performance.getEntriesByType('resource').map((e) => e.name),
   )
   expect(homeScripts.some((n) => /BarField|three|stage/.test(n))).toBe(false)
-  await page.goto('/#sweden-matning')
+  const s = await section(page, '#sweden-matning', 'A')
   // A 3D canvas where WebGL works, the 2D matrix where it does not.
-  await expect(page.locator('.sw-stage canvas, .sw-matrix')).toHaveCount(1)
-  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await expect(s.locator('.sw-stage canvas, .sw-matrix')).toHaveCount(1)
+  await s.getByRole('button', { name: '2D', exact: true }).click()
   await expect(page).toHaveURL(/scen=2d/)
-  await expect(page.locator('.sw-matrix')).toHaveCount(1)
+  await expect(s.locator('.sw-matrix')).toHaveCount(1)
+})
+
+test('the welfare contract reads its numbers from the tax and survey files', async ({
+  page,
+  request,
+}) => {
+  const wedge = await (await request.get('/data/taxes/wedge.json')).json()
+  const ess = await (
+    await request.get('/data/welfare/ess-countries.json')
+  ).json()
+  const se = wedge.latest.find(
+    (r: { country_code: string; household_type: string; wage_level: string }) =>
+      r.country_code === 'SWE' &&
+      r.household_type === 'S_C0' &&
+      r.wage_level === 'AW100',
+  )
+  const dip = ess.find(
+    (r: { unit_code: string; survey_mode: string }) =>
+      r.unit_code === 'SE' && r.survey_mode === 'self_completion',
+  )
+  const s = await section(page, '#sweden-valfard', 'F')
+  await more(s)
+  await expect(s.locator('.sw-find')).toHaveCount(2)
+  await expect(s.locator('.sw-finds')).toContainText(
+    `${se.tax_wedge_pct.toFixed(1)} %`,
+  )
+  // The self-completed round is flagged against the expectation, never read as a trend.
+  await expect(s.locator('.sw-find[data-contrary]')).toContainText(
+    dip.ppltrst_mean.toFixed(2),
+  )
+  await expect(s.locator('.sw-method details')).toHaveCount(9)
+  await noAxeViolations(page, s)
 })

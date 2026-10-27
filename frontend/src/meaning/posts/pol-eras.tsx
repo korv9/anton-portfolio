@@ -1,4 +1,5 @@
 /** The Riksdag's topic eras: each era's most distinctive topic, as a topic × era grid. */
+import { l } from '../../i18n'
 import { cellInk, focal, Frame, seq, useData, type Post } from '../kit'
 import { pct } from './pol-kit'
 
@@ -60,7 +61,10 @@ function EraHeat() {
           <svg
             viewBox="0 0 600 220"
             role="img"
-            aria-label="Share of debate words per topic in each Riksdag era"
+            aria-label={l(
+              'Share of debate words per topic in each Riksdag era',
+              'Andel av debattorden per ämne i varje riksdagsepok',
+            )}
           >
             <g className="mean-axis">
               {eras.map((e, j) => (
@@ -129,9 +133,14 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['clusters/riksdag-eras.json'],
     size: 'wide',
-    title:
+    title: [
       'Riksdag debates cluster into six descriptive eras, each with a topic of its own',
-    note: 'Share of debate words per topic, mean of each era’s sessions; the six topics that most set an era apart, of 25, by their top Swedish word. A loose grouping of 33 sessions',
+      'Riksdagens debatter grupperar sig i sex beskrivande epoker, var och en med ett eget ämne',
+    ],
+    note: [
+      'Share of debate words per topic in each era. The six topics that most set an era apart',
+      'Andel debattord per ämne i varje epok. De sex ämnen som mest skiljer ut en epok',
+    ],
     render: () => <EraHeat />,
   },
 ]

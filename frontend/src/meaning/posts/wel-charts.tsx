@@ -4,7 +4,8 @@
  */
 import { useState } from 'react'
 import { XAxis, YAxis } from '../axes'
-import { OTHER, Slicer } from '../kit'
+import { OTHER, Slicer, tx, type Text } from '../kit'
+import { l } from '../../i18n'
 import { Ranked, Svg, axis, maxOf, num } from './wel-kit'
 
 export type Dot = { key: string; name: string; x: number; y: number }
@@ -58,13 +59,25 @@ export function Scatter({
     zeroY,
   )
   const by = (f: (p: Dot) => number) => [...dots].sort((a, b) => f(a) - f(b))
-  const named = new Set(
-    dots.length > 30
-      ? []
-      : [by((p) => p.x)[0], by((p) => p.x).at(-1), by((p) => p.y).at(-1)].map(
-          (p) => p?.key,
-        ),
-  )
+  // The highest y first; a name that would sit on one already placed is left to its tooltip.
+  // ponytail: a box test in view-box units, not measured text widths.
+  const placed: Dot[] = []
+  if (dots.length <= 30)
+    for (const p of [
+      by((p) => p.y).at(-1),
+      by((p) => p.x)[0],
+      by((p) => p.x).at(-1),
+    ])
+      if (
+        p &&
+        !placed.some(
+          (q) =>
+            Math.abs(ay.y(q.y) - ay.y(p.y)) < 18 &&
+            Math.abs(ax.y(q.x) - ax.y(p.x)) < 110,
+        )
+      )
+        placed.push(p)
+  const named = new Set(placed.map((p) => p.key))
   return (
     <Svg label={label}>
       <YAxis y={ay.y} ticks={ay.ticks} x0={36} x1={290} format={yFormat} />
@@ -108,7 +121,7 @@ export type CountyYear = {
 
 export type CountyMetric = {
   field: string
-  name: string
+  name: Text
   format: (v: number) => string
 }
 
@@ -150,14 +163,17 @@ export function CountyRank({
   return (
     <>
       <Slicer
-        label="Measure"
+        label={l('Measure', 'Mått')}
         options={names}
-        format={(o) => metrics[o].name}
+        format={(o) => tx(metrics[o].name)!}
         value={m}
         onChange={setM}
       />
       <Ranked
-        label={`Counties ranked by ${metric.name}, ${year}; tick: Sweden as a whole`}
+        label={l(
+          `Counties ranked by ${tx(metric.name)}, ${year}; tick: Sweden as a whole`,
+          `Län rangordnade efter ${tx(metric.name)}, ${year}; streck: hela Sverige`,
+        )}
         format={metric.format}
         mark={nation}
         rows={counties.map((r) => ({

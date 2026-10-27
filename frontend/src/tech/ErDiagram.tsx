@@ -3,6 +3,7 @@
  * key and the columns a relation uses, a line per relation. Press a table to see every column
  * and to keep only its relations lit.
  */
+import { l } from '../i18n'
 import { useMemo, useState } from 'react'
 import {
   BOX_W,
@@ -132,8 +133,10 @@ export default function ErDiagram({
         <TableCard table={table} model={model} />
       ) : (
         <p className="tech-note">
-          Press a table for all its columns. A box shows the key (PK) and the
-          columns a relation uses (FK); dashed boxes belong to another subject.
+          {l(
+            'Press a table for all its columns. A box shows the key (PK) and the columns a relation uses (FK); dashed boxes belong to another subject.',
+            'Tryck på en tabell för att se alla dess kolumner. En ruta visar nyckeln (PK) och kolumnerna som en relation använder (FK); streckade rutor hör till ett annat ämne.',
+          )}
         </p>
       )}
     </div>

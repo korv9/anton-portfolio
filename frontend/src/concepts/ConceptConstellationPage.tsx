@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
-import { CONCEPT_TABS, type Route } from '../router'
+import type { Route } from '../router'
 import { fetchData } from '../dataSource'
 import Journey, { ConceptQuality } from './Journey'
 import ProjectTech from '../projects/ProjectTech'
@@ -25,6 +25,8 @@ import {
   CORPUS_ORDER,
   JOURNEY_CONCEPTS,
   FAMILIES,
+  byPeak,
+  leaders,
   conceptFromPath,
   corpusPositions,
   pct,
@@ -75,15 +77,12 @@ const RELATION_LABEL: Record<string, [string, string]> = {
 }
 const DEFAULTS = { begrepp: '', visa: 'semantic_similarity,shared_tension' }
 const NAME = 'Concept Lab'
+const RELATIONS_QUESTION = (): string =>
+  l(
+    'Which concepts belong together, and on what grounds?',
+    'Vilka begrepp hör ihop, och på vilka grunder?',
+  )
 const tabs = (): ReportTab[] => [
-  {
-    path: '#concept-journey',
-    label: l('Follow a concept', 'Följ ett begrepp'),
-    question: l(
-      'Where does one idea appear, from stories to law?',
-      'Var dyker en idé upp, från berättelser till lag?',
-    ),
-  },
   {
     path: '#concepts-profiles',
     label: l('Compare concepts', 'Jämför begrepp'),
@@ -93,11 +92,11 @@ const tabs = (): ReportTab[] => [
     ),
   },
   {
-    path: '#concept-constellation',
-    label: l('Relations', 'Relationer'),
+    path: '#concept-journey',
+    label: l('Follow a concept', 'Följ ett begrepp'),
     question: l(
-      'Which concepts belong together, and on what grounds?',
-      'Vilka begrepp hör ihop, och på vilka grunder?',
+      'Where does one idea appear, from stories to law?',
+      'Var dyker en idé upp, från berättelser till lag?',
     ),
   },
 ]
@@ -114,6 +113,11 @@ const deeper = (concept?: Concept): DeeperLink[] => [
         },
       ]
     : []),
+  {
+    href: '#concept-constellation',
+    label: l('Relations', 'Relationer'),
+    about: RELATIONS_QUESTION(),
+  },
   {
     href: '#concepts-method',
     label: l('Method and limits', 'Metod och begränsningar'),
@@ -196,17 +200,62 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
   const concept = summary.concepts.find(
     (c) => c.concept_id === conceptFromPath(route.path),
   )
-  if (!CONCEPT_TABS.includes(route.path))
+  const featured = JOURNEY_CONCEPTS.map((id) =>
+    summary.concepts.find((c) => c.concept_id === id),
+  ).filter((c): c is Concept => c != null)
+  const followed = params.begrepp || featured[0]?.concept_id
+  const shown = new Set(params.visa.split(',').filter(Boolean))
+  const toggle = (id: string) => {
+    const next = new Set(shown)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    set({ visa: [...next].join(',') })
+  }
+  const tab = tabs().findIndex((t) => t.path === route.path)
+  if (tab < 0)
     return (
       <ReportFrame>
         <div className="concepts">
           <DeepPage
             id={route.path.slice(1)}
-            back={withQuery('#concept-journey', route.params)}
+            back={withQuery('#concepts-profiles', route.params)}
             name={NAME}
           >
             {concept ? (
               <ConceptPage data={data} concept={concept} />
+            ) : route.path === '#concept-constellation' ? (
+              <>
+                <h1>{RELATIONS_QUESTION()}</h1>
+                <div className="report-slicers">
+                  <p>{l('Relations', 'Relationer')}</p>
+                  <div
+                    className="report-chips"
+                    role="group"
+                    aria-label={l('Relations', 'Relationer')}
+                  >
+                    {[
+                      'semantic_similarity',
+                      'shared_tension',
+                      'shared_concept',
+                    ].map((id) => (
+                      <button
+                        key={id}
+                        type="button"
+                        aria-pressed={shown.has(id)}
+                        onClick={() => toggle(id)}
+                      >
+                        {l(...RELATION_LABEL[id])}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Constellation
+                  data={data}
+                  shown={shown}
+                  selected={params.begrepp || null}
+                  onSelect={(id) => set({ begrepp: id })}
+                />
+              </>
             ) : (
               <>
                 <h1>{l('Method and limits', 'Metod och begränsningar')}</h1>
@@ -221,88 +270,75 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
       </ReportFrame>
     )
 
-  const tab = CONCEPT_TABS.indexOf(route.path)
-  const featured = JOURNEY_CONCEPTS.map((id) =>
-    summary.concepts.find((c) => c.concept_id === id),
-  ).filter((c): c is Concept => c != null)
-  const followed = params.begrepp || featured[0]?.concept_id
-  const shown = new Set(params.visa.split(',').filter(Boolean))
-  const toggle = (id: string) => {
-    const next = new Set(shown)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    set({ visa: [...next].join(',') })
-  }
-  const slicer = [
-    <div
-      className="report-chips"
-      role="group"
-      aria-label={l('Concept', 'Begrepp')}
-    >
-      {featured.map((c) => (
-        <button
-          key={c.concept_id}
-          type="button"
-          aria-pressed={c.concept_id === followed}
-          onClick={() => set({ begrepp: c.concept_id })}
-        >
-          {label(c)}
-        </button>
-      ))}
-    </div>,
-    null,
-    <div
-      className="report-chips"
-      role="group"
-      aria-label={l('Relations', 'Relationer')}
-    >
-      {['semantic_similarity', 'shared_tension', 'shared_concept'].map((id) => (
-        <button
-          key={id}
-          type="button"
-          aria-pressed={shown.has(id)}
-          onClick={() => toggle(id)}
-        >
-          {l(...RELATION_LABEL[id])}
-        </button>
-      ))}
-    </div>,
-  ][tab]
+  const passages = summary.corpora.reduce((s, c) => s + c.chunks, 0)
   return (
     <ReportFrame>
       <div className="concepts">
         <ReportShell
           name={NAME}
           intro={l(
-            `${summary.concepts.length} concepts chosen by an editor, read across ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('en-GB')} passages of myth, philosophy, Riksdag speeches and the EU AI Act with one multilingual model. It shows semantic similarity, never that one text influenced another.`,
-            `${summary.concepts.length} begrepp valda av en redaktör, lästa över ${summary.corpora.reduce((s, c) => s + c.chunks, 0).toLocaleString('sv')} passager ur myter, filosofi, riksdagsanföranden och EU:s AI-förordning med en flerspråkig modell. Den visar semantisk likhet, aldrig att en text har påverkat en annan.`,
+            `${summary.concepts.length} concepts across ${passages.toLocaleString('en-GB')} passages of myth, philosophy, Riksdag speeches and the EU AI Act. Similarity, not influence.`,
+            `${summary.concepts.length} begrepp över ${passages.toLocaleString('sv')} passager ur myter, filosofi, riksdagsanföranden och EU:s AI-förordning. Likhet, inte påverkan.`,
           )}
           tabs={tabs()}
           path={route.path}
           hrefOf={(p) => withQuery(p, route.params)}
           slicerLabel={
-            tab === 0
-              ? l('Follow a concept', 'Följ ett begrepp')
-              : tab === 2
-                ? l('Relations', 'Relationer')
-                : undefined
+            tab === 1 ? l('Follow a concept', 'Följ ett begrepp') : undefined
           }
-          slicer={slicer}
+          slicer={
+            tab === 1 ? (
+              <div
+                className="report-chips"
+                role="group"
+                aria-label={l('Concept', 'Begrepp')}
+              >
+                {featured.map((c) => (
+                  <button
+                    key={c.concept_id}
+                    type="button"
+                    aria-pressed={c.concept_id === followed}
+                    onClick={() => set({ begrepp: c.concept_id })}
+                  >
+                    {label(c)}
+                  </button>
+                ))}
+              </div>
+            ) : null
+          }
           deeper={deeper(
             concept ?? featured.find((c) => c.concept_id === followed),
           )}
+          head={{
+            sentence: l(
+              '28 concepts across myth, philosophy, Riksdag speeches and the EU AI Act.',
+              '28 begrepp i myter, filosofi, riksdagstal och EU:s AI-förordning.',
+            ),
+            kpis: [
+              {
+                value: summary.concepts.length,
+                label: l('concepts', 'begrepp'),
+              },
+              {
+                value: summary.corpora.length,
+                label: l('corpora', 'korpusar'),
+              },
+              {
+                value: passages.toLocaleString('en-GB'),
+                label: l('passages compared', 'jämförda stycken'),
+              },
+              {
+                value: `${Math.round(summary.run.evaluation.same_corpus_neighbours * 100)} %`,
+                label: l(
+                  'neighbours from the same corpus',
+                  'grannar ur samma korpus',
+                ),
+              },
+            ],
+          }}
         >
-          {tab === 0 && <Journey route={route} data={data} />}
-          {tab === 1 && <Profiles summary={summary} profiles={data.profiles} />}
-          {tab === 2 && (
-            <Constellation
-              route={route}
-              data={data}
-              shown={shown}
-              selected={params.begrepp || null}
-              onSelect={(id) => set({ begrepp: id })}
-            />
-          )}
+          {tab === 0 && <Profiles summary={summary} profiles={data.profiles} />}
+          {tab === 1 && <Journey route={route} data={data} />}
         </ReportShell>
       </div>
     </ReportFrame>
@@ -315,7 +351,6 @@ function Constellation({
   selected,
   onSelect,
 }: {
-  route: Route
   data: Data
   shown: Set<string>
   selected: string | null
@@ -347,8 +382,8 @@ function Constellation({
           `${summary.concepts.length} begrepp efter familj, de fyra korpusarna i mitten`,
         )}
         lead={l(
-          'Every line has a stated type, drawn in its own style. Choose a concept to keep only its lines and read its profile.',
-          'Varje linje har en angiven typ, ritad i sin egen stil. Välj ett begrepp för att bara behålla dess linjer och läsa dess profil.',
+          'Each line type has its own style. Choose a concept to see only its lines.',
+          'Varje linjetyp har sin egen stil. Välj ett begrepp för att bara se dess linjer.',
         )}
         source={`${summary.run.model}; ${l('tensions and links chosen by an editor', 'spänningar och länkar valda av en redaktör')}`}
       >
@@ -488,20 +523,31 @@ function Constellation({
                   {l('How to read it', 'Så läser du den')}
                 </p>
                 <ul className="cc-legend">
-                  {summary.relation_types.map((r) => (
-                    <li key={r.id}>
-                      <i
-                        className={`cc-swatch cc-rel-${r.id}`}
-                        aria-hidden="true"
-                      />
-                      <span>
-                        <b>{l(...RELATION_LABEL[r.id])}</b>{' '}
-                        <Kind kind={r.content_type} />
-                        <br />
-                        {l(r.en, r.sv)}
-                      </span>
-                    </li>
-                  ))}
+                  {summary.relation_types
+                    .filter(
+                      (r) =>
+                        r.id !== 'temporal_overlap' ||
+                        relations.corpora.some((x) => x.relation_type === r.id),
+                    )
+                    .map((r) => (
+                      <li key={r.id}>
+                        <i
+                          className={`cc-swatch cc-rel-${r.id}`}
+                          aria-hidden="true"
+                        />
+                        <span>
+                          <b>{l(...RELATION_LABEL[r.id])}</b>{' '}
+                          <Kind kind={r.content_type} />
+                          <br />
+                          {r.id === 'shared_concept'
+                            ? l(
+                                'The concept is a passage’s closest at least twice as often as chance in this corpus.',
+                                'Begreppet är en passages närmaste minst dubbelt så ofta som slumpen i den här korpusen.',
+                              )
+                            : l(r.en, r.sv)}
+                        </span>
+                      </li>
+                    ))}
                 </ul>
               </>
             )}
@@ -529,13 +575,14 @@ function Constellation({
 
 function Method({ summary }: { summary: ConceptSummary }) {
   const ev = summary.run.evaluation
+  const riksdag = summary.corpora.find((c) => c.corpus_id === 'politics')
   return (
     <>
       <ul className="cc-method">
         <li>
           {l(
-            `Sample: at most ${summary.run.corpus_size} passages per corpus, spread evenly over its books, works, years or provisions; every passage keeps its source URL, version and retrieval time.`,
-            `Urval: högst ${summary.run.corpus_size} passager per korpus, jämnt fördelade över dess böcker, verk, år eller bestämmelser; varje passage behåller källans adress, version och hämtningstid.`,
+            `Sample: at most ${summary.run.corpus_size} passages per corpus, spread evenly over its books, works, years or provisions; every passage keeps its source URL, version and retrieval time.${riksdag ? ` The Riksdag corpus is ${riksdag.chunks} paragraphs sampled by year from Riksdag speeches since 2016/17, one paragraph per speech.` : ''}`,
+            `Urval: högst ${summary.run.corpus_size} passager per korpus, jämnt fördelade över dess böcker, verk, år eller bestämmelser; varje passage behåller källans adress, version och hämtningstid.${riksdag ? ` Riksdagskorpusen är ${riksdag.chunks} stycken, ett urval per år ur riksdagsanföranden sedan 2016/17, ett stycke per anförande.` : ''}`,
           )}
         </li>
         <li>
@@ -546,8 +593,8 @@ function Method({ summary }: { summary: ConceptSummary }) {
         </li>
         <li>
           {l(
-            `The corpora differ more from each other than their subjects do: ${pct(ev.same_corpus_neighbours)} of a passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}). So passages are never mapped or clustered together across corpora; they are compared only through the concepts, by rank within a passage.`,
-            `Korpusarna skiljer sig mer från varandra än deras ämnen gör: ${pct(ev.same_corpus_neighbours)} av en passages närmaste grannar kommer från samma korpus (slump ${pct(ev.same_corpus_chance)}). Därför kartläggs eller klustras passager aldrig tillsammans över korpusar; de jämförs bara genom begreppen, efter rang inom en passage.`,
+            `The corpora differ more from each other than their subjects do: ${pct(ev.same_corpus_neighbours)} of a passage’s nearest neighbours come from its own corpus (chance ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} after centring). Part of this is language: the Riksdag corpus is Swedish and the other three English, and ${pct(ev.same_language_neighbours)} of neighbours share a language (chance ${pct(ev.same_language_chance)}). So passages are never mapped or clustered together across corpora; they are compared only through the concepts, by rank within a passage.`,
+            `Korpusarna skiljer sig mer från varandra än deras ämnen gör: ${pct(ev.same_corpus_neighbours)} av en passages närmaste grannar kommer från samma korpus (slump ${pct(ev.same_corpus_chance)}; ${pct(ev.same_corpus_neighbours_centred)} efter centrering). En del av detta är språk: riksdagskorpusen är svensk och de tre andra engelska, och ${pct(ev.same_language_neighbours)} av grannarna delar språk (slump ${pct(ev.same_language_chance)}). Därför kartläggs eller klustras passager aldrig tillsammans över korpusar; de jämförs bara genom begreppen, efter rang inom en passage.`,
           )}
         </li>
         <li>
@@ -670,23 +717,47 @@ function Profiles({
   const corpora = CORPUS_ORDER.map((c) =>
     summary.corpora.find((k) => k.corpus_id === c),
   ).filter((c): c is Corpus => c != null)
+  const conceptOf = (id: string) =>
+    summary.concepts.find((c) => c.concept_id === id)!
+  const corpusOf = (id: string) => corpora.find((c) => c.corpus_id === id)!
+  const top = leaders(profiles)
+  const isLeader = (p: Profile) => top.includes(p)
+  const max = Math.max(...profiles.map((p) => p.rank1_lift))
+  const chance = profiles[0]?.rank1_chance ?? 0
+  const times = (v: number) =>
+    l(`${v.toFixed(1)}×`, `${v.toFixed(1).replace('.', ',')}×`)
   return (
     <div className="report-main">
       <Feature
         id="profiler"
         title={l(
-          'Where each concept is prominent',
-          'Var varje begrepp framträder',
+          'Each kind of text has its own leading concept',
+          'Varje sorts text har sitt eget ledande begrepp',
         )}
         lead={l(
-          'How often a concept is a passage’s closest of all 28, per corpus. Chance is 3.6 %. A comparison within each passage, so it does not depend on how close a corpus’s language is to abstract sentences in general. Open a concept for its passages.',
-          'Hur ofta ett begrepp är en passages närmaste av alla 28, per korpus. Slumpnivån är 3,6 %. En jämförelse inom varje passage, så den beror inte på hur nära en korpus språk ligger abstrakta meningar i allmänhet. Öppna ett begrepp för dess passager.',
+          `How often a concept is a passage’s closest of all ${summary.concepts.length}, per corpus, in times chance (1.0× = ${pct(chance, 1)}). Sorted by the corpus where it peaks.`,
+          `Hur ofta ett begrepp är en passages närmaste av alla ${summary.concepts.length}, per korpus, i gånger slumpen (1,0× = ${pct(chance, 1)}). Sorterat efter korpusen där det toppar.`,
         )}
         source={l(
           'Rank of each concept within each passage, against chance',
           'Varje begrepps rang inom varje passage, mot slumpen',
         )}
       >
+        <ol className="cc-leaders">
+          {top.map((p) => (
+            <li key={p.corpus_id}>
+              <b>{times(p.rank1_lift)}</b>{' '}
+              <a href={`#concept-${p.concept_id}`}>
+                {label(conceptOf(p.concept_id))}
+              </a>{' '}
+              {l('in', 'i')} {label(corpusOf(p.corpus_id))}
+              <span className="cc-muted">
+                {' '}
+                ({pct(p.rank1_share)} {l('of passages', 'av passagerna')})
+              </span>
+            </li>
+          ))}
+        </ol>
         <div
           className="cc-table-wrap"
           tabIndex={0}
@@ -704,24 +775,32 @@ function Profiles({
               </tr>
             </thead>
             <tbody>
-              {summary.concepts.map((c) => (
-                <tr key={c.concept_id}>
+              {byPeak(profiles).map((id) => (
+                <tr key={id}>
                   <th scope="row">
-                    <a href={`#concept-${c.concept_id}`}>{label(c)}</a>
+                    <a href={`#concept-${id}`}>{label(conceptOf(id))}</a>
                   </th>
                   {corpora.map((k) => {
                     const p = profiles.find(
-                      (x) =>
-                        x.concept_id === c.concept_id &&
-                        x.corpus_id === k.corpus_id,
+                      (x) => x.concept_id === id && x.corpus_id === k.corpus_id,
                     )
-                    const v = p ? Math.min(1, p.rank1_share / 0.3) : 0
+                    // Log scale from chance up to the largest lift; at or below chance stays blank.
+                    const v =
+                      p && p.rank1_lift > 1
+                        ? Math.log(p.rank1_lift) / Math.log(max)
+                        : 0
                     return (
                       <td
                         key={k.corpus_id}
+                        className={p && isLeader(p) ? 'is-leader' : undefined}
                         style={{ '--v': v } as React.CSSProperties}
+                        title={
+                          p
+                            ? `${pct(p.rank1_share)} (${p.rank1_chunks}/${p.chunks})`
+                            : undefined
+                        }
                       >
-                        {p ? pct(p.rank1_share) : '–'}
+                        {p ? times(p.rank1_lift) : '–'}
                       </td>
                     )
                   })}
@@ -758,7 +837,6 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
   const corpusOf = (id: string) =>
     summary.corpora.find((c) => c.corpus_id === id)
   const own = (pairs ?? []).filter((p) => p.concept_id === concept.concept_id)
-  const kinds = new Set(links.map((k) => k.kind))
   return (
     <>
       <header className="cc-hero ds-container">
@@ -792,8 +870,8 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
           </h2>
           <p className="cc-hint">
             {l(
-              'Per corpus, the passages where this concept is among the three closest and most unusually so for that corpus. What the model finds closest to the anchor, not passages a reader has judged to be about the concept.',
-              'Per korpus de passager där begreppet är bland de tre närmaste och mest ovanligt nära för just den korpusen. Det modellen finner närmast ankaret, inte passager som en läsare har bedömt handla om begreppet.',
+              'Per corpus, the passages the model finds closest to this concept.',
+              'Per korpus, de passager som modellen finner närmast begreppet.',
             )}
           </p>
           {!passages ? (
@@ -854,8 +932,8 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
                 aria-hidden="true"
               />{' '}
               {l(
-                'Per pair of corpora, the two closest of their representative passages, shown only above the 95th percentile of random pairs between the same corpora. Similar wording; not influence, and not the same meaning.',
-                'För varje korpuspar de två närmaste av deras representativa passager, visade bara över 95:e percentilen för slumpvisa par mellan samma korpusar. Liknande formuleringar; inte påverkan och inte samma betydelse.',
+                'The closest passage pair per pair of corpora, above the 95th percentile of random pairs. Similar wording, not influence.',
+                'Det närmaste passageparet per korpuspar, över 95:e percentilen för slumpvisa par. Liknande formuleringar, inte påverkan.',
               )}
             </p>
             <ul className="cc-pairs">
@@ -892,60 +970,50 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
           </section>
         )}
 
-        <section className="cc-section" aria-labelledby="cc-links-title">
-          <h2 id="cc-links-title">
-            {l('Elsewhere on the site', 'På andra ställen på sajten')}
-          </h2>
-          <p className="cc-hint">
-            {l(
-              'Measures that count the same idea in their own data, linked by an editor. Only where a measure exists; nothing is filled in.',
-              'Mått som räknar samma idé i sina egna data, länkade av en redaktör. Bara där ett mått finns; ingenting fylls i.',
-            )}{' '}
-            <Kind kind="interpretation" />
-          </p>
-          <ul className="cc-links">
-            {links.map((k) => (
-              <LinkRow key={`${k.kind}-${k.target_id}`} link={k} />
-            ))}
-            {!kinds.has('riksdag_framing') && (
-              <li className="cc-muted">
-                {l(
-                  'Riksdag: no word group in the AI-speech dictionary measures this concept.',
-                  'Riksdagen: ingen ordgrupp i AI-ordlistan mäter detta begrepp.',
-                )}
-              </li>
-            )}
-            {!kinds.has('job_term') && (
-              <li className="cc-muted">
-                {l(
-                  'Job ads: no term in the governance dictionary measures this concept.',
-                  'Jobbannonser: ingen term i ordlistan för AI-styrning mäter detta begrepp.',
-                )}
-              </li>
-            )}
-          </ul>
-          {related.length > 0 && (
-            <>
-              <h3>{l('Related concepts', 'Närliggande begrepp')}</h3>
+        {links.length + related.length > 0 && (
+          <section className="cc-section" aria-labelledby="cc-links-title">
+            <h2 id="cc-links-title">
+              {l('Elsewhere on the site', 'På andra ställen på sajten')}
+            </h2>
+            <p className="cc-hint">
+              {l(
+                'Measures that count the same idea in their own data, linked by an editor. Only where a measure exists; nothing is filled in.',
+                'Mått som räknar samma idé i sina egna data, länkade av en redaktör. Bara där ett mått finns; ingenting fylls i.',
+              )}{' '}
+              <Kind kind="interpretation" />
+            </p>
+            {links.length > 0 && (
               <ul className="cc-links">
-                {related.map(({ other, relation }) => (
-                  <li key={`${relation.relation_type}-${other}`}>
-                    <i
-                      className={`cc-swatch cc-rel-${relation.relation_type}`}
-                      aria-hidden="true"
-                    />{' '}
-                    <a href={`#concept-${other}`}>{label(conceptOf(other)!)}</a>{' '}
-                    <span className="cc-muted">
-                      {l(...RELATION_LABEL[relation.relation_type])}
-                      {relation.strength != null &&
-                        ` ${relation.strength.toFixed(2)}`}
-                    </span>
-                  </li>
+                {links.map((k) => (
+                  <LinkRow key={`${k.kind}-${k.target_id}`} link={k} />
                 ))}
               </ul>
-            </>
-          )}
-        </section>
+            )}
+            {related.length > 0 && (
+              <>
+                <h3>{l('Related concepts', 'Närliggande begrepp')}</h3>
+                <ul className="cc-links">
+                  {related.map(({ other, relation }) => (
+                    <li key={`${relation.relation_type}-${other}`}>
+                      <i
+                        className={`cc-swatch cc-rel-${relation.relation_type}`}
+                        aria-hidden="true"
+                      />{' '}
+                      <a href={`#concept-${other}`}>
+                        {label(conceptOf(other)!)}
+                      </a>{' '}
+                      <span className="cc-muted">
+                        {l(...RELATION_LABEL[relation.relation_type])}
+                        {relation.strength != null &&
+                          ` ${relation.strength.toFixed(2)}`}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </section>
+        )}
       </div>
     </>
   )

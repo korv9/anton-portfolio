@@ -89,8 +89,8 @@ export default function BarField({
     const stage = createStage(el)
     stageRef.current = stage
     const { scene, colour } = stage
-    const lo = colour('--sw-seq-lo', '#3a3256')
-    const hi = colour('--sw-seq-hi', '#e3d8ff')
+    const lo = colour('--sw-seq-lo', '#34332f')
+    const hi = colour('--sw-seq-hi', '#f1efe7')
     const unit = 4
     const span = Math.max(cols, rows) * unit
     const tall = span * 0.2

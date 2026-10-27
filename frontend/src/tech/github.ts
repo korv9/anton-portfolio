@@ -1,33 +1,46 @@
 /**
- * Unsigned GitHub API reads for the platform page. GitHub allows 60 an hour per address, so
- * each answer is kept in session storage for five minutes, as WorkflowRuns.tsx does.
+ * The GitHub facts the platform page shows, from status/github.json: a snapshot that
+ * platform/publish/github_status.py writes on a schedule with the workflow's own token. The page
+ * makes no GitHub API calls of its own, so visitors never hit the unsigned limit of 60 an hour.
  */
-export async function github<T>(path: string): Promise<T> {
-  const key = `gh:${path}`
-  try {
-    const kept = JSON.parse(sessionStorage.getItem(key) ?? 'null')
-    if (kept && Date.now() - kept.at < 5 * 60e3) return kept.body
-  } catch {
-    // No session storage: ask again.
+import { objectStorageUrl } from '../dataSource'
+import type { Run } from './WorkflowRuns'
+
+export type Issue = {
+  number: number
+  title: string
+  html_url: string
+  body: string | null
+  created_at: string
+  closed_at: string | null
+}
+export type GithubStatus = {
+  generated_at: string
+  workflows: { id: number; name: string; path: string; runs: Run[] }[]
+  scheduled_runs: {
+    since: string
+    total_count: number
+    workflow_runs: (Run & { name: string; created_at: string })[]
   }
-  const response = await fetch(`https://api.github.com/repos/${path}`)
-  if (!response.ok) throw new Error(`GitHub: HTTP ${response.status}`)
-  const body = await response.json()
-  try {
-    sessionStorage.setItem(key, JSON.stringify({ at: Date.now(), body }))
-  } catch {
-    // Nothing to keep it in.
-  }
-  return body
+  failure_issues: Issue[]
+  incidents: { name: string; html_url: string }[]
+  fabric_demo: string
 }
 
-/** A file's text from the contents API, which sends it base64-encoded. */
-export async function githubText(repo: string, path: string) {
-  const { content } = await github<{ content: string }>(
-    `${repo}/contents/${path}`,
-  )
-  const bytes = Uint8Array.from(atob(content.replace(/\s/g, '')), (c) =>
-    c.charCodeAt(0),
-  )
-  return new TextDecoder().decode(bytes)
+let pending: Promise<GithubStatus> | null = null
+
+/**
+ * One read per page view, shared by every section that needs it. Like status/ingestion.json it
+ * lives in object storage outside any release, so it is read uncached from there.
+ */
+export function githubStatus() {
+  return (pending ??= objectStorageUrl('status/github.json')
+    .then((url) => fetch(url, { cache: 'no-cache' }))
+    .then((r) =>
+      r.ok ? (r.json() as Promise<GithubStatus>) : Promise.reject(r.status),
+    )
+    .catch((error) => {
+      pending = null
+      throw error
+    }))
 }

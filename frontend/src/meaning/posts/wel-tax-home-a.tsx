@@ -1,7 +1,9 @@
 /** Municipal income tax rates: how far they spread. */
 import { Frame, OTHER, focal, useData, type Post } from '../kit'
 import { XAxis, YAxis } from '../axes'
-import { Svg, axis, fmt, num, scale } from './wel-kit'
+import { Svg, axis, num, pct, scale } from './wel-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Municipalities = {
   year: string | number
@@ -22,7 +24,7 @@ const median = (v: number[]) =>
     ? v[(v.length - 1) / 2]
     : (v[v.length / 2 - 1] + v[v.length / 2]) / 2
 
-const rate = (v: number) => `${fmt(v, 2)}%`
+const rate = (v: number) => pct(v, 2)
 
 function RateHistogram() {
   return (
@@ -47,7 +49,10 @@ function RateHistogram() {
           <Svg
             w={600}
             h={220}
-            label={`Municipal income tax rates in ${BIN}-point bins, number of municipalities; median ${rate(mid)}`}
+            label={l(
+              `Municipal income tax rates in ${BIN}-point bins, number of municipalities; median ${rate(mid)}`,
+              `Kommunal inkomstskatt i intervall om ${fixed(BIN, 2)} procentenheter, antal kommuner; median ${rate(mid)}`,
+            )}
           >
             <YAxis y={ay.y} ticks={ay.ticks} x0={36} x1={590} />
             {bins.map((b, i) => (
@@ -59,7 +64,7 @@ function RateHistogram() {
                 height={ay.y(0) - ay.y(counts[i])}
                 fill={OTHER}
               >
-                <title>{`${rate(b)}–${rate(b + BIN)}: ${counts[i]} municipalities`}</title>
+                <title>{`${rate(b)}–${rate(b + BIN)}: ${counts[i]} ${l('municipalities', 'kommuner')}`}</title>
               </rect>
             ))}
             <line
@@ -71,14 +76,14 @@ function RateHistogram() {
               strokeWidth={1.6}
             />
             <text x={x(mid) + 4} y={14} className="mean-wel-name">
-              Median {rate(mid)}
+              {l('Median', 'Median')} {rate(mid)}
             </text>
             <XAxis
               x={x}
               y={206}
               ticks={bins
                 .filter((b) => Math.abs(b - Math.round(b)) < 1e-9)
-                .map((b) => ({ value: b, label: `${b}%` }))}
+                .map((b) => ({ value: b, label: pct(b, 0) }))}
             />
           </Svg>
         )
@@ -96,10 +101,16 @@ export const posts: Post[] = [
     title: (d: Municipalities) => {
       const v = rates(d)
       return v.length
-        ? `Municipal income tax ranged from ${rate(v[0])} to ${rate(v.at(-1)!)} in ${d.year}`
-        : 'Municipal income tax rates'
+        ? l(
+            `Municipal income tax ranged from ${rate(v[0])} to ${rate(v.at(-1)!)} in ${d.year}`,
+            `Kommunalskatten låg mellan ${rate(v[0])} och ${rate(v.at(-1)!)} ${d.year}`,
+          )
+        : l('Municipal income tax rates', 'Kommunala skattesatser')
     },
-    note: 'Municipalities per quarter-point band; municipal plus regional rate. Source: Skatteverket',
+    note: [
+      'Municipalities per quarter-point band; municipal plus regional rate. Source: Skatteverket',
+      'Kommuner per intervall om en kvarts procentenhet; kommunal plus regional skattesats. Källa: Skatteverket',
+    ],
     render: () => <RateHistogram />,
   },
 ]

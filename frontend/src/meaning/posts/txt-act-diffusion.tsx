@@ -12,6 +12,8 @@ import {
 import { niceTicks } from '../../charts/scales'
 import { xTickY } from '../axes'
 import { Svg, heading, line, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import {
   caveat,
   DEFAULT,
@@ -21,7 +23,9 @@ import {
 } from './txt-act-diffusion-data'
 
 /** The one date named on the chart; the others are unlabelled ticks with a tooltip. */
-const ANCHOR: Record<string, string> = { 'entry-into-force': 'in force' }
+const ANCHOR: Record<string, readonly [string, string]> = {
+  'entry-into-force': ['in force', 'ikraft'],
+}
 
 function Diffusion() {
   const data = usable(
@@ -52,7 +56,7 @@ function Diffusion() {
         return (
           <>
             <Slicer
-              label="Term"
+              label={l('Term', 'Begrepp')}
               cycles={false}
               options={options}
               format={(k) => names.get(k) ?? k}
@@ -65,8 +69,14 @@ function Diffusion() {
             <Svg
               w={W}
               h={H}
-              label={`Three-month share of ${names.get(term)}, with the AI Act's dates. ${panels
-                .map((p) => `${p.name}: ${p.total} matches. ${p.said}.`)
+              label={`${l(
+                `Three-month share of ${names.get(term)}, with the AI Act's dates.`,
+                `Andel över tre månader för ${names.get(term)}, med AI-förordningens datum.`,
+              )} ${panels
+                .map(
+                  (p) =>
+                    `${p.name}: ${p.total} ${l('matches', 'träffar')}. ${p.said}.`,
+                )
                 .join(' ')}`}
             >
               {panels.map(({ c, s, total, name }, j) => {
@@ -83,7 +93,10 @@ function Diffusion() {
                     transform={`translate(${j * (pw + gap)},0)`}
                   >
                     <text className="mean-txt-v" x={0} y={10}>
-                      {`${name}, ${total} match${total === 1 ? '' : 'es'}`}
+                      {l(
+                        `${name}, ${total} match${total === 1 ? '' : 'es'}`,
+                        `${name}, ${total} ${total === 1 ? 'träff' : 'träffar'}`,
+                      )}
                     </text>
                     <g className="mean-axis">
                       {ticks.map((t) => (
@@ -95,7 +108,7 @@ function Diffusion() {
                             y2={y(t / 1e5)}
                           />
                           <text x={m - 3} y={y(t / 1e5) + 3.5} textAnchor="end">
-                            {t < 10 ? t.toFixed(t % 1 ? 1 : 0) : t}
+                            {t < 10 ? fixed(t, t % 1 ? 1 : 0) : fixed(t)}
                           </text>
                         </g>
                       ))}
@@ -114,7 +127,10 @@ function Diffusion() {
                         <title>
                           {milestones
                             .filter((d) => d.month === mo)
-                            .map((d) => `${mo}: ${d.title_en}`)
+                            .map(
+                              (d) =>
+                                `${mo}: ${l(d.title_en, d.title_sv || d.title_en)}`,
+                            )
                             .join('\n')}
                         </title>
                       </line>
@@ -131,7 +147,7 @@ function Diffusion() {
                           y={top + 9}
                           textAnchor="end"
                         >
-                          {ANCHOR[mi.milestone_id]}
+                          {l(...ANCHOR[mi.milestone_id])}
                         </text>
                       ))}
                     <path
@@ -184,9 +200,15 @@ export const posts: Post[] = [
     sources: ['ai-act/diffusion.json'],
     domain: 'ai-act',
     size: 'wide',
-    label: "AI Act: when the Act's terms appear in speeches and job ads",
+    label: [
+      "AI Act: when the Act's terms appear in speeches and job ads",
+      'AI-förordningen: när förordningens begrepp dyker upp i anföranden och jobbannonser',
+    ],
     title: heading(headline),
-    note: 'Share of documents using the term, per 100,000, three-month mean; dashed lines are the Act’s dates',
+    note: [
+      'Share of documents using the term, per 100,000, three-month mean; dashed lines are the Act’s dates',
+      'Andel dokument som använder begreppet, per 100 000, medel över tre månader; streckade linjer är förordningens datum',
+    ],
     render: () => <Diffusion />,
   },
 ]

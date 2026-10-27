@@ -3,6 +3,8 @@
   box-sizing: border-box;
 }
 html {
+  /* One step smaller than the browser's 16px: every rem-based size follows. */
+  font-size: 93.75%;
   scroll-behavior: smooth;
 }
 body {
@@ -92,9 +94,6 @@ main {
   font-size: 0.75rem;
   font-weight: 800;
   color: var(--teal);
-}
-.reports {
-  border-top: 1px solid var(--line);
 }
 .featured-projects {
   max-width: none;
@@ -608,62 +607,7 @@ select {
   margin: 0;
 }
 .project-log,
-.about {
-  max-width: none;
-  margin: auto;
-  padding: clamp(4rem, 7vw, 7rem) clamp(1rem, 6vw, 6rem);
-  display: grid;
-  grid-template-columns: 0.65fr 1.35fr;
-  gap: clamp(3rem, 8vw, 10rem);
-}
 .project-log h2,
-.about h2 {
-  font-size: clamp(2rem, 4vw, 4rem);
-  line-height: 1.05;
-}
-.about > div:last-child > p {
-  color: var(--ink-2);
-  max-width: 760px;
-}
-.about {
-  background: var(--ink);
-  color: #f9f7f0;
-  max-width: none;
-  padding-inline: clamp(1rem, 6vw, 6rem);
-}
-.about .eyebrow {
-  color: #6dd2c7;
-}
-.about > div:last-child > p {
-  color: #c9d0cd;
-  font-size: 1.08rem;
-}
-.experience-list {
-  margin: 2rem 0;
-  border-top: 1px solid #42504d;
-}
-.experience-list article {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 1.2rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid #42504d;
-}
-.experience-list time {
-  color: #9aaba6;
-  font-size: 0.78rem;
-  padding-top: 0.2rem;
-}
-.experience-list h3 {
-  font-size: 1rem;
-  letter-spacing: -0.02em;
-}
-.experience-list p {
-  margin: 0.3rem 0 0;
-  color: #aebbb7;
-  font-size: 0.86rem;
-  line-height: 1.5;
-}
 button:focus-visible,
 a:focus-visible,
 select:focus-visible,
@@ -679,8 +623,7 @@ summary:focus-visible {
     font-size: 0.82rem;
   }
   .umap-layout,
-  .project-log,
-  .about {
+  .project-log {
     grid-template-columns: 1fr;
   }
   .point-detail {
@@ -801,13 +744,8 @@ summary:focus-visible {
     width: 720px;
     max-width: none;
   }
-  .project-log,
-  .about {
+  .project-log {
     gap: 2rem;
-  }
-  .experience-list article {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
   }
   footer {
     flex-direction: column;

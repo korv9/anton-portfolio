@@ -95,9 +95,24 @@ export default function Columns({
   const lo = Math.min(0, low)
   const hi = high <= lo ? lo + 1 : high
   const plotW = width - pad.left - pad.right
-  const plotH = height - pad.top - pad.bottom
-  const y = (v: number) => pad.top + ((hi - v) / (hi - lo)) * plotH
   const band = plotW / Math.max(1, categories.length)
+  // A label wider than its column breaks at spaces, so a phone keeps every label.
+  const lines = categories.map((c) => {
+    if (c.length * 7 + 10 <= band) return [c]
+    const out: string[] = []
+    for (const w of c.split(' ')) {
+      const last = out[out.length - 1]
+      if (last !== undefined && (last.length + 1 + w.length) * 6 + 4 <= band)
+        out[out.length - 1] = `${last} ${w}`
+      else out.push(w)
+    }
+    return out
+  })
+  const wrapped = lines.some((x) => x.length > 1)
+  const padBottom =
+    pad.bottom + (Math.max(1, ...lines.map((x) => x.length)) - 1) * 13
+  const plotH = height - pad.top - padBottom
+  const y = (v: number) => pad.top + ((hi - v) / (hi - lo)) * plotH
   const groupGap = band > 14 ? Math.min(8, band * 0.18) : 1
   const inner = band - groupGap
   const colW = stacked ? inner : inner / Math.max(1, series.length)
@@ -108,7 +123,9 @@ export default function Columns({
   // Label every nth category so labels never collide.
   const room = Math.max(
     22,
-    Math.max(...categories.map((c) => c.length)) * 7 + 10,
+    ...lines
+      .flat()
+      .map((c) => (wrapped ? c.length * 6 + 4 : c.length * 7 + 10)),
   )
   const every = Math.max(
     1,
@@ -240,10 +257,18 @@ export default function Columns({
                     <text
                       className="columns-axis"
                       x={pad.left + i * band + band / 2}
-                      y={height - pad.bottom + 16}
+                      y={height - padBottom + 16}
                       textAnchor="middle"
                     >
-                      {category}
+                      {lines[i].map((s, k) => (
+                        <tspan
+                          key={k}
+                          x={pad.left + i * band + band / 2}
+                          dy={k ? 13 : 0}
+                        >
+                          {s}
+                        </tspan>
+                      ))}
                     </text>
                   )}
                 </g>

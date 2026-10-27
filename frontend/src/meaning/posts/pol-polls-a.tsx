@@ -1,4 +1,5 @@
 /** SCB party preference survey, 1972 onward. */
+import { l } from '../../i18n'
 import { useState } from 'react'
 import { Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
@@ -53,7 +54,7 @@ function Lines() {
         return (
           <>
             <Slicer
-              label="Party"
+              label={l('Party', 'Parti')}
               options={PARTIES}
               value={focus}
               onChange={setFocus}
@@ -61,7 +62,10 @@ function Lines() {
             <svg
               viewBox="0 0 600 200"
               role="img"
-              aria-label={`Poll share by party over time, ${focus} highlighted`}
+              aria-label={l(
+                `Poll share by party over time, ${focus} highlighted`,
+                `Opinionsstöd per parti över tid, ${focus} markerat`,
+              )}
             >
               <YAxis
                 y={y}
@@ -115,10 +119,19 @@ export const posts: Post[] = [
     title: (d: Polls) => {
       const ms = months(d)
       return ms.length
-        ? `Party support in SCB surveys, ${ms[0].slice(0, 4)}–${ms.at(-1)!.slice(0, 4)}`
-        : 'Party support in SCB surveys'
+        ? l(
+            `Party support in SCB surveys, ${ms[0].slice(0, 4)}–${ms.at(-1)!.slice(0, 4)}`,
+            `Partisympatier i SCB:s undersökningar, ${ms[0].slice(0, 4)}–${ms.at(-1)!.slice(0, 4)}`,
+          )
+        : l(
+            'Party support in SCB surveys',
+            'Partisympatier i SCB:s undersökningar',
+          )
     },
-    note: 'Share of voters, %, in the party preference survey, mostly twice a year. Source: SCB.',
+    note: [
+      'Share of voters, %, in the party preference survey, mostly twice a year. Source: SCB.',
+      'Andel av väljarna, %, i partisympatiundersökningen, oftast två gånger per år. Källa: SCB.',
+    ],
     render: () => <Lines />,
   },
 ]

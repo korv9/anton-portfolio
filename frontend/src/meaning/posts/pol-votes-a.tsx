@@ -1,9 +1,20 @@
 /** Riksdag roll calls per session since 1993/94: attendance, cohesion, agreement. */
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import { useState } from 'react'
 import { cellInk, focal, Frame, seq, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { niceDomain, ticksBetween, XAxis, YAxis } from '../axes'
-import { best, every, fromEnd, GovStrip, int, PARTIES, Sub } from './pol-kit'
+import {
+  best,
+  every,
+  fromEnd,
+  GovStrip,
+  int,
+  PARTIES,
+  pct,
+  Sub,
+} from './pol-kit'
 
 type Session = {
   session: string
@@ -49,13 +60,20 @@ const METRICS = {
 } as const
 type Metric = keyof typeof METRICS
 const METRIC_KEYS = Object.keys(METRICS) as Metric[]
-const METRIC_NAMES: Record<Metric, string> = {
-  attendance: 'Attendance, % of roll calls',
-  cohesion: 'Party unity: members voting with their party, %',
-  winning: 'On the winning side, %',
-  'with gov': 'Voted with the government, %',
-  abstained: 'Party abstained, % of roll calls',
+const METRIC_NAMES: Record<Metric, readonly [string, string]> = {
+  attendance: ['Attendance, % of roll calls', 'Närvaro, % av voteringarna'],
+  cohesion: [
+    'Party unity: members voting with their party, %',
+    'Partisammanhållning: ledamöter som röstar med sitt parti, %',
+  ],
+  winning: ['On the winning side, %', 'På den vinnande sidan, %'],
+  'with gov': ['Voted with the government, %', 'Röstade med regeringen, %'],
+  abstained: [
+    'Party abstained, % of roll calls',
+    'Partiet avstod, % av voteringarna',
+  ],
 }
+const metricName = (m: Metric) => l(...METRIC_NAMES[m])
 
 const useSessions = () => useData<Sessions>('parliament/sessions.json')
 /** A riksmöte runs from September to the next summer; until the next one opens it may still
@@ -83,7 +101,10 @@ function Columns() {
           <svg
             viewBox="0 0 600 200"
             role="img"
-            aria-label="Roll calls per session, with the government of each session"
+            aria-label={l(
+              'Roll calls per session, with the government of each session',
+              'Voteringar per riksmöte, med regeringen under varje riksmöte',
+            )}
           >
             <YAxis
               y={y}
@@ -102,7 +123,12 @@ function Columns() {
                 fill={focal(i === lastFull)}
                 opacity={ongoing(s) ? 0.4 : 1}
               >
-                <title>{`${s.session}: ${int(s.roll_calls)} roll calls${ongoing(s) ? ' so far (session under way)' : ''}`}</title>
+                <title>
+                  {l(
+                    `${s.session}: ${int(s.roll_calls)} roll calls${ongoing(s) ? ' (session under way)' : ''}`,
+                    `${s.session}: ${int(s.roll_calls)} voteringar${ongoing(s) ? ' (riksmötet pågår)' : ''}`,
+                  )}
+                </title>
               </rect>
             ))}
             <GovStrip sessions={d.sessions} x={x} step={step} y={156} />
@@ -126,7 +152,7 @@ const SHOWN = 8
 
 /** Keeps one decimal from 99.5 to just under 100, so 99.6 is not rounded up to 100. */
 const cell = (v: number) =>
-  v >= 99.5 && v < 100 ? v.toFixed(1) : String(Math.round(v))
+  v >= 99.5 && v < 100 ? fixed(v, 1) : String(Math.round(v))
 
 function MetricHeat() {
   const data = useSessions()
@@ -146,17 +172,20 @@ function MetricHeat() {
         return (
           <>
             <Slicer
-              label="Measure"
+              label={l('Measure', 'Mått')}
               options={METRIC_KEYS}
-              format={(k) => METRIC_NAMES[k]}
+              format={metricName}
               value={m}
               onChange={setM}
             />
-            <Sub>{METRIC_NAMES[m]}</Sub>
+            <Sub>{metricName(m)}</Sub>
             <svg
               viewBox="0 0 600 196"
               role="img"
-              aria-label={`${METRIC_NAMES[m]} per party, last ${SHOWN} sessions`}
+              aria-label={l(
+                `${metricName(m)} per party, last ${SHOWN} sessions`,
+                `${metricName(m)} per parti, de senaste ${SHOWN} riksmötena`,
+              )}
             >
               {ps.map((p, r) => (
                 <g key={p}>
@@ -180,7 +209,7 @@ function MetricHeat() {
                             height={rh}
                             fill={seq(t)}
                           >
-                            <title>{`${p} ${q.session}: ${v} %`}</title>
+                            <title>{`${p} ${q.session}: ${pct(v)}`}</title>
                           </rect>
                           <text
                             x={cx + cw / 2 - 1}
@@ -229,10 +258,16 @@ export const posts: Post[] = [
         (s) => s.roll_calls,
       )
       return top
-        ? `Roll calls per Riksdag session; ${top.session} had the most, ${int(top.roll_calls)}`
-        : 'Roll calls per Riksdag session'
+        ? l(
+            `Roll calls per Riksdag session; ${top.session} had the most, ${int(top.roll_calls)}`,
+            `Voteringar per riksmöte; ${top.session} hade flest, ${int(top.roll_calls)}`,
+          )
+        : l('Roll calls per Riksdag session', 'Voteringar per riksmöte')
     },
-    note: 'Recorded votes per session, with the government of the day. Source: Riksdagen.',
+    note: [
+      'Recorded votes per session, with the government of the day. Source: Riksdagen.',
+      'Voteringar per riksmöte, med dåvarande regering. Källa: Riksdagen.',
+    ],
     render: () => <Columns />,
   },
   {
@@ -242,9 +277,15 @@ export const posts: Post[] = [
     size: 'wide',
     title: (d: Sessions) =>
       d.sessions.length
-        ? `Party voting records, ${fromEnd(d.sessions, SHOWN).session}–${d.sessions.at(-1)!.session}`
-        : 'Party voting records',
-    note: 'Per party and session; the shade follows the value written in each cell. Source: Riksdagen roll calls.',
+        ? l(
+            `Party voting records, ${fromEnd(d.sessions, SHOWN).session}–${d.sessions.at(-1)!.session}`,
+            `Partiernas röstande, ${fromEnd(d.sessions, SHOWN).session}–${d.sessions.at(-1)!.session}`,
+          )
+        : l('Party voting records', 'Partiernas röstande'),
+    note: [
+      'Per party and session; the shade follows the value written in each cell. Source: Riksdagen roll calls.',
+      'Per parti och riksmöte; nyansen följer värdet i varje ruta. Källa: riksdagens voteringar.',
+    ],
     render: () => <MetricHeat />,
   },
 ]

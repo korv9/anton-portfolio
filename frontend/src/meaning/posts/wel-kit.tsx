@@ -10,6 +10,8 @@ import RankBars from '../../charts/RankBars'
 import { linearScale, niceStep } from '../../charts/scales'
 import { niceDomain, ticksBetween } from '../axes'
 import { PostOpen, focal, type Post } from '../kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import './wel.css'
 
 export const posts: Post[] = []
@@ -39,29 +41,37 @@ export function band(xs: number[], top: number[], bottom: number[]) {
 
 export function fmt(v: number, digits = 1) {
   const a = Math.abs(v)
-  if (a >= 1e6) return `${(v / 1e6).toFixed(digits)}M`
-  if (a >= 1e4) return `${(v / 1e3).toFixed(0)}k`
-  return v.toLocaleString('en-GB', { maximumFractionDigits: digits })
+  if (a >= 1e6) return `${fixed(v / 1e6, digits)}${l('M', ' mn')}`
+  if (a >= 1e4) return `${fixed(v / 1e3)}${l('k', ' tn')}`
+  return v.toLocaleString(l('en-GB', 'sv-SE'), {
+    maximumFractionDigits: digits,
+  })
 }
 
 /** '2026-08' -> 'Aug 2026'; a year stays as it is. */
 export const month = (label: string) =>
   /^\d{4}-\d{2}$/.test(label)
-    ? new Date(`${label}-01T00:00:00Z`).toLocaleDateString('en-GB', {
-        month: 'short',
-        year: 'numeric',
-        timeZone: 'UTC',
-      })
+    ? new Date(`${label}-01T00:00:00Z`).toLocaleDateString(
+        l('en-GB', 'sv-SE'),
+        {
+          month: 'short',
+          year: 'numeric',
+          timeZone: 'UTC',
+        },
+      )
     : label
 
 /** Whole kronor with Swedish digit grouping, e.g. '14 108'. */
 export const sek = (v: number) => Math.round(v).toLocaleString('sv-SE')
 
-export const pct = (v: number, digits = 1) => `${fmt(v, digits)}%`
+export const pct = (v: number, digits = 1) => `${fmt(v, digits)}${l('%', ' %')}`
 
-/** 1 -> '1st', 2 -> '2nd', 11 -> '11th'. */
+/** 1 -> '1st' ('1:a'), 2 -> '2nd' ('2:a'), 11 -> '11th' ('11:e'). */
 export const ordinal = (n: number) =>
-  `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`
+  l(
+    `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th')}`,
+    `${n}:${[1, 2].includes(n % 10) && ![11, 12].includes(n % 100) ? 'a' : 'e'}`,
+  )
 
 /** The largest value, or null for an empty list (Math.max would give -Infinity). */
 export const maxOf = (v: number[]) => (v.length ? Math.max(...v) : null)
@@ -234,7 +244,7 @@ export function Kpi({
       {delta ? (
         <em>
           {delta}
-          {since ? ` from ${since}` : ''}
+          {since ? l(` from ${since}`, ` sedan ${since}`) : ''}
         </em>
       ) : null}
     </div>

@@ -1,8 +1,9 @@
 /** Jobs: AI, governance and compliance terms in ads, from ai-act/jobs/*.json. */
 import { focal, Frame, useData, type Post } from '../kit'
 import { Bars, D, fieldName, fmt, maxOf, pct, sum } from './job-kit'
+import { l } from '../../i18n'
 
-type Term = { term_id: string; label_en: string }
+type Term = { term_id: string; label_en: string; label_sv?: string }
 type Summary = { terms: Term[] }
 type Monthly = { term_id: string; mention_count: number }[]
 type Fields = {
@@ -36,7 +37,10 @@ function FieldLollipop() {
     <Frame data={data}>
       {(rows) => (
         <Bars
-          label="Share of ads mentioning AI per occupation field, latest year"
+          label={l(
+            'Share of ads mentioning AI per occupation field, latest year',
+            'Andel annonser som nämner AI per yrkesområde, senaste året',
+          )}
           format={(v) => pct(v, 1)}
           rows={aiByField(rows).sel.map((r, j) => ({
             key: r.field_id,
@@ -71,14 +75,17 @@ function Mentions() {
               .filter((term) => n.has(term.term_id))
               .map((term) => ({
                 key: term.term_id,
-                label: term.label_en,
+                label: l(term.label_en, term.label_sv ?? term.label_en),
                 value: n.get(term.term_id)!,
               }))
               .sort((a, b) => b.value - a.value)
             return (
               <Bars
                 n={13}
-                label="Ads mentioning each term since 2020"
+                label={l(
+                  'Ads mentioning each term since 2020',
+                  'Annonser som nämner varje begrepp sedan 2020',
+                )}
                 format={fmt}
                 rows={ranked.map((r, j) => ({ ...r, color: focal(j === 0) }))}
               />
@@ -98,10 +105,19 @@ export const posts: Post[] = [
     title: (rows: Fields) => {
       const { yr, sel } = aiByField(rows)
       return sel[0]
-        ? `${fieldName(sel[0].field)} ads mention AI most often: ${pct(sel[0].share, 1)} in ${yr}`
-        : 'Share of ads that mention AI, by field'
+        ? l(
+            `${fieldName(sel[0].field)} ads mention AI most often: ${pct(sel[0].share, 1)} in ${yr}`,
+            `Annonser inom ${fieldName(sel[0].field).toLowerCase()} nämner AI oftast: ${pct(sel[0].share, 1)} under ${yr}`,
+          )
+        : l(
+            'Share of ads that mention AI, by field',
+            'Andel annonser som nämner AI, per yrkesområde',
+          )
     },
-    note: "Share of each field's ads naming AI or machine learning, in the latest year of the data, which can be part of a year; Arbetsförmedlingen",
+    note: [
+      "Share of each field's ads naming AI or machine learning, in the latest year of the data, which can be part of a year; Arbetsförmedlingen",
+      'Andel av varje yrkesområdes annonser som nämner AI eller maskininlärning, under det senaste året i datan, som kan vara ett delår; Arbetsförmedlingen',
+    ],
     render: () => <FieldLollipop />,
   },
   {
@@ -112,10 +128,19 @@ export const posts: Post[] = [
       const n = [...counts(rows)].filter(([, v]) => v > 0)
       const top = n.sort((a, b) => b[1] - a[1])[0]?.[0]
       return top === 'privacy' && sum(n.map(([, v]) => v)) > 0
-        ? 'Ads name data protection more often than any AI term'
-        : 'How often ads name each AI and compliance term'
+        ? l(
+            'Ads name data protection more often than any AI term',
+            'Annonser nämner dataskydd oftare än något AI-begrepp',
+          )
+        : l(
+            'How often ads name each AI and compliance term',
+            'Hur ofta annonser nämner varje begrepp för AI och regelefterlevnad',
+          )
     },
-    note: 'Number of ads naming each term, 2020 on; Arbetsförmedlingen',
+    note: [
+      'Number of ads naming each term, 2020 on; Arbetsförmedlingen',
+      'Antal annonser som nämner varje begrepp, från 2020; Arbetsförmedlingen',
+    ],
     render: () => <Mentions />,
   },
 ]

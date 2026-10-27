@@ -8,6 +8,24 @@ import { l } from '../i18n'
 import RankBars from '../charts/RankBars'
 import type { Finding } from './template'
 
+/** SKR's 2023 municipality groups in SKR's own English; the data carries the Swedish names. */
+const SKR_EN: Record<string, string> = {
+  Storstäder: 'Large cities',
+  'Pendlingskommun nära storstad': 'Commuter municipality near a large city',
+  'Större stad': 'Medium-sized town',
+  'Pendlingskommun nära större stad':
+    'Commuter municipality near a medium-sized town',
+  'Lågpendlingskommun nära större stad':
+    'Low-commuting municipality near a medium-sized town',
+  'Mindre stad/tätort': 'Small town or urban area',
+  'Pendlingskommun nära mindre tätort':
+    'Commuter municipality near a small town',
+  'Landsbygdskommun, ej nära större stad': 'Rural municipality',
+  'Landsbygdskommun med besöksnäring':
+    'Rural municipality with a visitor industry',
+}
+export const skrName = (g: string) => l(SKR_EN[g] ?? g, g)
+
 type Total = { n: number; from: number; to: number; change_pct: number | null }
 type Median = { n: number; median: number; ci95: [number, number] }
 type Slope = {
@@ -125,7 +143,7 @@ export function recoveryFinding(c: Change): Finding {
         max={top}
         rows={Object.entries(p.groups).map(([g, m]) => ({
           key: g,
-          label: g,
+          label: skrName(g),
           value: (m.median - 1) * 100,
           note: `${ratio(m.ci95[0])} ${l('to', 'till')} ${ratio(m.ci95[1])}, ${m.n} ${l('municipalities', 'kommuner')}`,
         }))}

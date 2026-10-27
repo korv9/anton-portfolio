@@ -94,3 +94,23 @@ def test_governance_terms_and_masking():
     text = "Kontakta anna@firma.se eller 070-123 45 67 om MLOps."
     m = re.search("MLOps", text)
     assert "[e-post]" in window(text, m) and "[telefon]" in window(text, m)
+
+
+def test_cluster_terms_leave_out_numbering_archaic_and_empty_words():
+    import importlib.util
+
+    import numpy as np
+
+    # By path: platform/nlp/symbolic has a pipeline module too.
+    spec = importlib.util.spec_from_file_location(
+        "philosophy_pipeline", PLATFORM / "nlp" / "philosophy" / "pipeline.py")
+    pipeline = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pipeline)
+    STOPLIST, ctfidf_terms = pipeline.STOPLIST, pipeline.ctfidf_terms
+
+    assert {"iii", "xiv", "prop", "thou", "unto", "said"} <= STOPLIST
+    junk = "Prop III. Note XIV. Thou, thy, thee, ye, unto, hath, doth, shalt; did, does, say, said. "
+    texts = [junk * 3 + "Substance substance state.", junk * 3 + "State state substance."]
+    terms = ctfidf_terms(texts, np.array([0, 1]))
+    assert terms[0][0] == "substance" and terms[1][0] == "state"
+    assert not STOPLIST & {t for words in terms.values() for t in words}

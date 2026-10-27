@@ -1,93 +1,182 @@
 /*
- * The projects hub, part three (hub/ProjectsHub.tsx, JobsPulse.tsx): the project cards, the job
- * search hero with its market chart, and the screenshots.
+ * The projects hub, part three (hub/ProjectsHub.tsx): the lead (the job assistant beside the
+ * job-ads map) and the cards, each a picture over a title, a line and its status in mono. No
+ * fills, boxes or rules around a card: space keeps them apart, as on the start page.
  */
-/* ---------- Groups ---------- */
+/* One project per row: its words on the left, its picture on the right, much space between. */
 .hub-items {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
-  gap: var(--sp-5) var(--sp-6);
+  gap: clamp(6rem, 14vw, 220px);
   margin: 0;
   padding: 0;
   list-style: none;
 }
-/* Title, text and the run line: the run line sits on the card's foot, so cards in a row share
-   their baselines. The card's mini dashboard follows it (mini.css). */
+.hub-items > li {
+  display: grid;
+  grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-5) clamp(2.5rem, 7vw, 120px);
+  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
+}
+.hub-row-text {
+  display: grid;
+  gap: var(--sp-5);
+  align-content: start;
+}
+.hub-row-visual {
+  min-width: 0;
+}
 .hub-item {
   display: grid;
-  grid-template-rows: auto 1fr auto;
   align-content: start;
-  gap: var(--sp-2);
-  height: 100%;
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--line);
+  gap: var(--sp-3);
   color: var(--ink);
   text-decoration: none;
 }
 .hub-item-title {
-  font-size: var(--h3);
+  justify-self: start;
+  font-size: clamp(1.4rem, 2vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -0.02em;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 0.2em;
-  transition: text-decoration-color var(--dur) var(--ease);
 }
+/* The gradient is clipped to the glyphs, an underline included, so hover turns the title solid
+   ivory instead of underlining it. */
 .hub-item:is(:hover, :focus-visible) .hub-item-title {
-  text-decoration-color: currentColor;
+  -webkit-text-fill-color: var(--ink);
 }
-.hub-item-runs {
+.hub-item:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 6px;
+}
+.hub-item-text {
+  justify-self: start;
+  font-size: var(--body-large);
+  line-height: 1.5;
+}
+.hub-item-open {
+  margin-top: var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.08em;
+}
+
+/* ---------- The lead: Arbetsförmedla, its market line and the job-ads map ---------- */
+.hub-lead {
+  padding-bottom: var(--sp-7);
+}
+li[data-lead] .hub-item-title {
+  font-size: clamp(1.9rem, 3.4vw, 2.6rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+/* The map sits by the right edge and fades at its rim, as beside PROJECTS → on the start page. */
+.hub .home-jobs-map {
+  position: relative;
+  height: clamp(360px, 44vw, 600px);
+  margin: 0 calc(-1 * clamp(var(--gutter), 6.5vw, 96px)) 0 0;
+  overflow: hidden;
+}
+.hub .home-jobs-map canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* The tuned map fills its square: a little over the figure's height, only the faded rim cut. */
+  width: clamp(380px, 48vw, 660px);
+  height: clamp(380px, 48vw, 660px);
+  translate: -45% -50%;
+  mask-image: radial-gradient(ellipse closest-side, #000 70%, transparent 100%);
+}
+.hub .home-jobs-map figcaption {
+  position: absolute;
+  right: clamp(var(--gutter), 6.5vw, 96px);
+  bottom: 0;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+/* ---------- SWEDEN's seven products, each its own page ---------- */
+.hub-products {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 var(--sp-5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-products a {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  min-height: 44px;
+  align-items: center;
+  color: var(--ink);
+  text-decoration: none;
+}
+.hub-products a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.hub-products-id {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+}
+
+/* ---------- The other projects' pictures (mini/cardsOther.tsx) ---------- */
+/* Cluster Visuals: a square point map, softly faded at its rim. */
+.hub-point-map canvas {
+  display: block;
+  width: min(100%, 440px);
+  aspect-ratio: 1;
+  mask-image: radial-gradient(ellipse closest-side, #000 80%, transparent 100%);
+}
+/* Homie API: one dot per operation, filled when built, grouped by tag. */
+.hub-ops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4) var(--sp-5);
+}
+.hub-ops > span {
+  display: grid;
+  gap: var(--sp-2);
+}
+.hub-ops-dots {
+  display: flex;
+  gap: 6px;
+}
+.hub-ops-dots span {
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+}
+.hub-ops-dots span[data-built] {
+  background: var(--ink);
+}
+.hub-ops-name {
   color: var(--ink-faded);
   font-family: var(--font-mono);
   font-size: var(--caption);
-  font-variant-numeric: tabular-nums;
 }
-.hub-item-text {
-  max-width: var(--layout-reading);
-  color: var(--ink-faded);
-  line-height: 1.55;
+/* The two repositories: text only, side by side after the other projects. */
+.hub-repos {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--sp-6) clamp(2.5rem, 7vw, 120px);
+  margin-top: clamp(4rem, 8vw, 140px);
 }
-/* The job search leads the hub as its hero: the title large, the text beside the facts. */
-.hub-items > li {
-  scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-5));
+.hub-repos > li {
+  grid-template-columns: minmax(0, 1fr);
 }
-.hub-items > li[data-lead] {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-  gap: var(--sp-5) var(--sp-7);
-  align-items: start;
-  padding: var(--sp-5) 0 var(--sp-6);
-  border-top: 2px solid var(--focal);
-}
-li[data-lead] .hub-item {
-  grid-template-rows: none;
-  padding: 0;
-  border-top: 0;
-}
-li[data-lead] .hub-item-title {
-  color: var(--focal);
-  font-size: clamp(2.25rem, 5vw, 4rem);
-  font-weight: 750;
-  letter-spacing: -0.035em;
-  line-height: 0.95;
-}
-li[data-lead] .hub-item-title::after {
-  content: '\00a0→' / '';
-  font-weight: 400;
-}
-li[data-lead] .hub-item-text {
-  color: var(--ink);
+.hub-repos .hub-item-title {
   font-size: var(--body-large);
 }
-li[data-lead] .hub-item-runs {
-  align-self: start;
-  padding-top: var(--sp-2);
-  border-top: 1px solid var(--line);
-  line-height: 1.8;
-}
-@media (max-width: 760px) {
-  .hub-items > li[data-lead] {
+
+@media (max-width: 860px) {
+  .hub-items > li {
     grid-template-columns: minmax(0, 1fr);
   }
 }

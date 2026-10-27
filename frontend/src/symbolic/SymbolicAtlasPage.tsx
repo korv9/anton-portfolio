@@ -2,12 +2,13 @@
  * Symbol Lab: can recurring symbolic meanings be found in myth, folklore and literature
  * without deciding the meanings first? Every occurrence of twenty symbol words in a corpus of
  * public-domain books (platform/ingest/symbolic/corpus.json) is placed on a map by the similarity of its surrounding sentences (sentence
- * embeddings, UMAP) and grouped by HDBSCAN. Clusters are numbered; only a cluster a person has
- * reviewed (reviewed-clusters.json) is ever named.
+ * embeddings, UMAP) and grouped by HDBSCAN. Clusters are shown by their symbol words and number;
+ * only a cluster a person has reviewed (reviewed-clusters.json) is ever named.
  *
- * Three views of the same points: Baseline (the original embeddings), Cross-book (each book's
- * mean removed, book-bound clusters muted, cross-book candidates and reviewed clusters brought
- * forward) and Reviewed (only clusters a person has read and named).
+ * Views of the same points: Cross-book (the default: each book's mean removed, book-bound
+ * clusters muted, cross-book candidates brought forward), Baseline (the original embeddings, the
+ * "before") and, once any cluster has been reviewed, Reviewed (only those clusters). Below the
+ * map, the audit's top-ranked cross-book clusters are shown as data with two passages each.
  *
  * The pipeline is platform/ingest/symbolic → dbt (bronze, silver, gold) → platform/nlp/symbolic
  * → platform/publish/symbolic; docs/symbolic-atlas.md describes it and its limits.
@@ -31,6 +32,7 @@ import ReportShell, {
 import { Feature } from '../charts/feature/Feature'
 import AtlasCanvas, { type MapLabel, type Paint } from './AtlasCanvas'
 import ClusterPanel, { clusterTitle } from './ClusterPanel'
+import CrossTraditions from './CrossTraditions'
 import CorpusExplorer from './CorpusExplorer'
 import ExperimentTable from './ExperimentTable'
 import ResearchStory from './ResearchStory'
@@ -46,6 +48,7 @@ import {
   loadAtlasSummary,
   loadBookCenteredAtlas,
   loadBookCenteredClusters,
+  loadCrossBookClusters,
   loadResearchHistory,
   loadReviewedClusters,
   loadSymbolProfiles,
@@ -64,19 +67,19 @@ import './symbolic.css'
 type View = 'baseline' | 'cross-book' | 'reviewed'
 const VIEWS: { key: View; name: [string, string]; hint: [string, string] }[] = [
   {
-    key: 'baseline',
-    name: ['Baseline', 'Utgångsläge'],
-    hint: [
-      'The original embeddings: clusters largely follow books.',
-      'De ursprungliga inbäddningarna: klustren följer till stor del böckerna.',
-    ],
-  },
-  {
     key: 'cross-book',
     name: ['Cross-book', 'Över böcker'],
     hint: [
       'Each book’s mean removed. Book-bound clusters are muted; clusters spread over several books stand out.',
       'Varje boks medelvärde borttaget. Bokbundna kluster tonas ned; kluster som sprids över flera böcker framträder.',
+    ],
+  },
+  {
+    key: 'baseline',
+    name: ['Baseline', 'Utgångsläge'],
+    hint: [
+      'Before: the original embeddings, where clusters largely follow books.',
+      'Före: de ursprungliga inbäddningarna, där klustren till stor del följer böckerna.',
     ],
   },
   {
@@ -99,7 +102,7 @@ const DEFAULTS: AtlasFilters & {
   tradition: '',
   cluster: '',
   noise: '1',
-  view: 'baseline',
+  view: 'cross-book',
 }
 // The book views' palette: unreviewed clusters grey, cross-book candidates stone, reviewed
 // clusters and the chosen one off-white.
@@ -183,12 +186,12 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
   const [centred, setCentred] = useState<BookCenteredPoint[] | null>(null)
   const [clusterInfo, setClusterInfo] = useState<ClusterInfo[]>([])
   const [reviewed, setReviewed] = useState<ReviewedCluster[]>([])
+  const [crossBook, setCrossBook] = useState<ClusterInfo[]>([])
   const [history, setHistory] = useState<ResearchHistory | null>(null)
-  const view: View = (
-    ['cross-book', 'reviewed'].includes(filters.view)
-      ? filters.view
-      : 'baseline'
-  ) as View
+  // The Reviewed view exists only once a person has reviewed a cluster.
+  const views = VIEWS.filter((v) => v.key !== 'reviewed' || reviewed.length)
+  const view: View =
+    views.find((v) => v.key === filters.view)?.key ?? 'cross-book'
   const bookView = view !== 'baseline' && centred !== null
 
   useEffect(() => {
@@ -207,12 +210,14 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
       loadBookCenteredClusters(),
       loadReviewedClusters(),
       loadResearchHistory(),
-    ]).then(([bc, info, rev, hist]) => {
+      loadCrossBookClusters(),
+    ]).then(([bc, info, rev, hist, cross]) => {
       if (!live) return
       setCentred(bc)
       setClusterInfo(info?.clusters ?? [])
       setReviewed(rev?.clusters ?? [])
       setHistory(hist)
+      setCrossBook(cross?.clusters ?? [])
     })
     return () => {
       live = false
@@ -353,8 +358,8 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
         <ReportShell
           name={NAME}
           intro={l(
-            `Every use of 20 symbol words in ${summary.document_count} public-domain books of mythology, folklore and literature, placed by the language around it and grouped without labels. A cluster is named only after a person has read it.`,
-            `Varje förekomst av 20 symbolord i ${summary.document_count} fria böcker med mytologi, folksagor och litteratur, placerad efter språket omkring den och grupperad utan etiketter. Ett kluster får namn först när en människa har läst det.`,
+            `Every use of 20 symbol words in ${summary.document_count} books of myth, folklore and literature, placed by the language around it. Clusters get names only after a person reads them.`,
+            `Varje förekomst av 20 symbolord i ${summary.document_count} böcker med myter, folksagor och litteratur, placerad efter språket omkring den. Kluster får namn först när en människa har läst dem.`,
           )}
           tabs={tabs()}
           path={route.path}
@@ -367,7 +372,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                 role="group"
                 aria-label={l('View', 'Vy')}
               >
-                {VIEWS.map((v) => (
+                {views.map((v) => (
                   <button
                     key={v.key}
                     type="button"
@@ -384,6 +389,27 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             ) : undefined
           }
           deeper={deeper()}
+          head={{
+            sentence: l(
+              'Every use of 20 symbol words in 101 books, placed by the language around it.',
+              'Varje användning av 20 symbolord i 101 böcker, placerad efter språket runt den.',
+            ),
+            kpis: [
+              { value: summary.document_count, label: l('books', 'böcker') },
+              {
+                value: summary.symbol_count,
+                label: l('symbol words', 'symbolord'),
+              },
+              {
+                value: summary.occurrence_count.toLocaleString('en-GB'),
+                label: l('occurrences', 'förekomster'),
+              },
+              {
+                value: summary.cluster_count,
+                label: l('meaning clusters', 'betydelsekluster'),
+              },
+            ],
+          }}
         >
           {tab === 0 && (
             <div className="report-main">
@@ -393,7 +419,11 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                   'One point is one use of a symbol word, in its sentences',
                   'En punkt är en förekomst av ett symbolord, i sina meningar',
                 )}
-                lead={l(...VIEWS.find((v) => v.key === view)!.hint)}
+                lead={l(
+                  ...VIEWS.find(
+                    (v) => v.key === (bookView ? view : 'baseline'),
+                  )!.hint,
+                )}
                 source={`Project Gutenberg; ${summary.run.embedding_model.split('/')[1]}, UMAP, HDBSCAN`}
               >
                 <div className="sym-board">
@@ -427,13 +457,13 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                         <dt>{l('A cluster', 'Ett kluster')}</dt>
                         <dd>
                           {l(
-                            'a recurring structure the model found, not yet a meaning',
-                            'en återkommande struktur som modellen hittade, ännu inte en betydelse',
+                            'a recurring structure the model found, not a meaning',
+                            'en återkommande struktur som modellen hittade, inte en betydelse',
                           )}
                         </dd>
                       </div>
                     </dl>
-                    {view !== 'baseline' && (
+                    {bookView && (
                       <ul
                         className="atlas-key"
                         aria-label={l('Key', 'Teckenförklaring')}
@@ -448,19 +478,13 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                             {l('Cross-book candidate', 'Kandidat över böcker')}
                           </li>
                         )}
-                        <li>
-                          <i style={{ background: REVIEWED }} />
-                          {l('Reviewed and named', 'Granskat och namngivet')}
-                        </li>
-                      </ul>
-                    )}
-                    {view === 'reviewed' && reviewed.length === 0 && (
-                      <p className="atlas-empty" role="status">
-                        {l(
-                          'No reviewed semantic clusters yet.',
-                          'Inga granskade semantiska kluster ännu.',
+                        {reviewed.length > 0 && (
+                          <li>
+                            <i style={{ background: REVIEWED }} />
+                            {l('Reviewed and named', 'Granskat och namngivet')}
+                          </li>
                         )}
-                      </p>
+                      </ul>
                     )}
                     <AtlasCanvas
                       points={shown}
@@ -471,7 +495,12 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                       labels={labels}
                       clusterName={
                         bookView
-                          ? (c) => clusterTitle(c, reviewedById.get(c))
+                          ? (c) =>
+                              clusterTitle(
+                                c,
+                                reviewedById.get(c),
+                                infoById.get(c),
+                              )
                           : undefined
                       }
                       onPick={(p) => {
@@ -511,6 +540,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                               name: clusterTitle(
                                 c.cluster_id,
                                 reviewedById.get(c.cluster_id),
+                                c,
                               ),
                             }))
                           : undefined
@@ -563,6 +593,17 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                   </aside>
                 </div>
               </Feature>
+              {centred && (
+                <CrossTraditions
+                  clusters={crossBook}
+                  passages={byId}
+                  onOpen={(id) => {
+                    setPicked(null)
+                    setFilters({ view: 'cross-book', cluster: String(id) })
+                    document.getElementById('atlasen')?.scrollIntoView()
+                  }}
+                />
+              )}
             </div>
           )}
           {tab === 1 &&
@@ -571,8 +612,8 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             ) : (
               <p>
                 {l(
-                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, and ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. So far the map groups passages more by a book's style and translation than by what a symbol means.`,
-                  `I genomsnitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en och samma bok, och ${pct(ev.composition.largest_symbol_share ?? 0)} från en och samma symbol. Än så länge grupperar kartan ställen mer efter bokens stil och översättning än efter vad en symbol betyder.`,
+                  `On average ${pct(ev.composition.largest_book_share ?? 0)} of a cluster comes from one book, ${pct(ev.composition.largest_symbol_share ?? 0)} from one symbol. The map groups style more than meaning.`,
+                  `I snitt kommer ${pct(ev.composition.largest_book_share ?? 0)} av ett kluster från en bok, ${pct(ev.composition.largest_symbol_share ?? 0)} från en symbol. Kartan grupperar stil mer än betydelse.`,
                 )}
               </p>
             ))}
@@ -601,8 +642,8 @@ function Method({
       </p>
       <p>
         {l(
-          'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not yet a symbolic meaning; clusters are exploratory and numbered, a name comes only from a person’s review, and UMAP bends distances.',
-          'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är ännu inte en symbolisk betydelse; klustren är utforskande och numrerade, ett namn kommer bara från en människas granskning, och UMAP förvränger avstånd.',
+          'Before extraction, contents, glossaries, indexes, notes, bibliographies and footnotes are removed by explicit rules, and each removal is recorded. Matching is by word list, so a context is not in itself a symbolic meaning. Clusters are exploratory and shown by their symbol words and number; by design a name comes only from a person reading the passages, never from the model. UMAP bends distances.',
+          'Före extraktionen tas innehållsförteckningar, ordlistor, register, noter, litteraturlistor och fotnoter bort med uttryckliga regler, och varje borttagning registreras. Matchningen sker med en ordlista, så ett sammanhang är inte i sig en symbolisk betydelse. Klustren är utforskande och visas med sina symbolord och sitt nummer; med avsikt kommer ett namn bara från en människa som läser ställena, aldrig från modellen. UMAP förvränger avstånd.',
         )}
       </p>
       <h2>{l('Diagnostics', 'Diagnostik')}</h2>
@@ -680,8 +721,8 @@ function Method({
           'React',
         ]}
         quality={l(
-          'Good clusters did not at first mean symbolic meaning: data quality, cluster quality and construct validity are checked separately.',
-          'Bra kluster betydde inte från början symbolisk mening: datakvalitet, klusterkvalitet och begreppsvaliditet kontrolleras var för sig.',
+          'Tightly separated clusters did not at first mean symbolic meaning: data quality, cluster geometry and construct validity are checked separately.',
+          'Tätt avgränsade kluster betydde inte från början symbolisk mening: datakvalitet, klustergeometri och begreppsvaliditet kontrolleras var för sig.',
         )}
       />
     </>

@@ -1,6 +1,7 @@
 /** The AI Act diffusion clock's data: the file's shape and, per term and corpus, the verdict
  * the chart (txt-act-diffusion.tsx) shows and the card's title states. */
 import { uniq } from './txt-kit'
+import { l } from '../../i18n'
 
 type Lag = {
   corpus: string
@@ -30,7 +31,12 @@ type Check = {
 export type Data = {
   terms: { term_id: string; term_sv: string }[]
   amended_terms: { term_id: string; term_sv: string }[]
-  milestones: { milestone_id: string; month: string; title_en: string }[]
+  milestones: {
+    milestone_id: string
+    month: string
+    title_en: string
+    title_sv?: string | null
+  }[]
   corpora: {
     corpus: string
     first_month: string
@@ -42,9 +48,9 @@ export type Data = {
   diagnostics: { few_matches: number; tests?: number }
 }
 
-const NAME: Record<string, string> = {
-  riksdag: 'Riksdag speeches',
-  job_ads: 'Job ads',
+const NAME: Record<string, readonly [string, string]> = {
+  riksdag: ['Riksdag speeches', 'Riksdagsanföranden'],
+  job_ads: ['Job ads', 'Jobbannonser'],
 }
 export const DEFAULT = 'amended|ai_system'
 const key = (s: { term_list: string; term_id: string }) =>
@@ -58,27 +64,47 @@ function verdict(
   few: number,
   employers?: number | null,
 ) {
-  if (!matches) return 'No match'
+  if (!matches) return l('No match', 'Ingen träff')
   const found = lags.filter((x) => x.lag_months !== null)
-  if (!found.length) return 'No adoption after any date'
+  if (!found.length)
+    return l('No adoption after any date', 'Inget genomslag efter något datum')
   const tested = found.filter((x) => (x.window_matches ?? 0) > few)
-  if (!tested.length) return `Too few matches to test (${few} or fewer)`
+  if (!tested.length)
+    return l(
+      `Too few matches to test (${few} or fewer)`,
+      `För få träffar för att testa (${few} eller färre)`,
+    )
   const short = tested.filter((x) => (x.placebo_p ?? 1) <= 0.05)
-  if (!short.length) return 'No lag shorter than at random dates'
+  if (!short.length)
+    return l(
+      'No lag shorter than at random dates',
+      'Ingen fördröjning kortare än vid slumpade datum',
+    )
   const ends = uniq(short.map((x) => x.adoption_month))
   if (ends.length === 1)
-    return `Shorter than at random dates, all on matches in ${ends[0]}${employers === 1 ? ', from one employer' : ''}`
+    return l(
+      `Shorter than at random dates, all on matches in ${ends[0]}${employers === 1 ? ', from one employer' : ''}`,
+      `Kortare än vid slumpade datum, allt på träffar i ${ends[0]}${employers === 1 ? ', från en arbetsgivare' : ''}`,
+    )
   const months = uniq(lags.map((x) => x.milestone_month)).length
-  return `Shorter than at random dates after ${uniq(short.map((x) => x.milestone_month)).length} of ${months} date months`
+  const after = uniq(short.map((x) => x.milestone_month)).length
+  return l(
+    `Shorter than at random dates after ${after} of ${months} date months`,
+    `Kortare än vid slumpade datum efter ${after} av ${months} datummånader`,
+  )
 }
 
 function readLine(check: Check | undefined) {
-  if (!check) return 'Not read by hand'
+  if (!check) return l('Not read by hand', 'Inte läst för hand')
+  const n = check.employers
   const who =
-    check.employers === null
+    n === null
       ? ''
-      : `, ${check.employers} employer${check.employers === 1 ? '' : 's'}`
-  return `${check.on_topic} of ${check.sampled} read by hand on topic${who}`
+      : l(`, ${n} employer${n === 1 ? '' : 's'}`, `, ${n} arbetsgivare`)
+  return l(
+    `${check.on_topic} of ${check.sampled} read by hand on topic${who}`,
+    `${check.on_topic} av ${check.sampled} lästa för hand handlar om ämnet${who}`,
+  )
 }
 
 /** The terms on offer, the picked one and a panel per corpus with its verdict. */
@@ -90,7 +116,11 @@ export function view(data: Data, pick: string) {
     ...amended_terms
       .filter((t) => !terms.some((p) => p.term_id === t.term_id))
       .map(
-        (t) => [`amended|${t.term_id}`, `${t.term_sv} (amended list)`] as const,
+        (t) =>
+          [
+            `amended|${t.term_id}`,
+            `${t.term_sv} ${l('(amended list)', '(ändringslistan)')}`,
+          ] as const,
       ),
   ])
   const options = [...names.keys()].filter((k) =>
@@ -121,7 +151,7 @@ export function view(data: Data, pick: string) {
         c,
         s,
         total,
-        name: NAME[c.corpus] ?? c.corpus,
+        name: NAME[c.corpus] ? l(...NAME[c.corpus]) : c.corpus,
         said,
         read: readLine(read),
       },
@@ -142,5 +172,10 @@ export function headline(data: Data) {
 }
 
 /** The caveat the card carries: the lag rule's p-values are not corrected for the many tests. */
-export const caveat = (d: Data) =>
-  `Timing, not proof: ${d.diagnostics.tests ? `${d.diagnostics.tests} lag tests, each` : 'each lag test'} at p ≤ 0.05 without correction for multiple tests`
+export const caveat = (d: Data) => {
+  const n = d.diagnostics.tests
+  return l(
+    `Timing, not proof: ${n ? `${n} lag tests, each` : 'each lag test'} at p ≤ 0.05 without correction for multiple tests`,
+    `Tidpunkt, inte bevis: ${n ? `${n} fördröjningstest, vart och ett` : 'varje fördröjningstest'} på p ≤ 0,05 utan korrigering för multipla test`,
+  )
+}

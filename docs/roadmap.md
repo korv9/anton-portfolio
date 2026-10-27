@@ -25,7 +25,7 @@ by the owner; record the change here with a date.
 | Topic | Decision |
 | --- | --- |
 | Order | PR #92 (home feed) merges first. Nothing else touches `frontend/src/home/**` or `frontend/src/meaning/**` until it has. |
-| Merging | Agents merge to `dev` after CI and the reviewers pass. `main` changes only when the owner says yes. |
+| Merging | Agents merge to `loop` after CI and the reviewers pass (`loop` replaced `dev` on 2026-10-22). `main` changes only when the owner says yes. |
 | Municipality grouping | Decided by H4's stability results. Both the k = 4 and the k = 2 posts stay offline until then. |
 | Feed chapters | Chapter headings are allowed in the feed. "How it's made" is the last chapter of the home feed. |
 | Pre-registrations | Each one is committed before the analysis it governs. |
@@ -50,12 +50,12 @@ Motion and layout decisions follow the motion plan's recommendation in each case
 
 | Role | When | Does |
 | --- | --- | --- |
-| Builder | each backlog item | Works in its own worktree and branch, opens a PR against `dev`, reports through the coordinator. |
+| Builder | each backlog item | Works in its own worktree and branch, opens a PR against `loop`, reports through the coordinator. |
 | Code reviewer | every PR | Correctness, tests, reuse, file size, the repository rules in `CLAUDE.md`. |
 | Data and statistics reviewer | every PR that touches data, charts or analysis | Grain, joins, units, nulls, the pre-registration, the null model, what the caption claims. |
 | Design and accessibility QA | before each merge to `main`, batched | Keyboard, axe, reduced motion, 360 px layout, contrast, the approved design direction. |
 | Writer | any published prose | Writes new text only and never changes the owner's existing home-page copy unless asked. Applies `.claude/skills/de-ai-writing/SKILL.md` and runs its `scripts/check_ai_signs.py` on every changed prose file. |
-| Coordinator | throughout | Dispatches items, runs reviewers, merges to `dev`, keeps this file current, asks the owner. |
+| Coordinator | throughout | Dispatches items, runs reviewers, merges to `loop`, keeps this file current, asks the owner. |
 
 Review rules:
 
@@ -93,25 +93,25 @@ item adds to STD.
 
 ## Backlog
 
-Status values: `todo`, `doing`, `review`, `dev` (merged to dev), `main`, `blocked`.
+Status values: `todo`, `doing`, `review`, `loop` (merged to loop), `main`, `blocked`. Statuses checked against the merge commits on `origin/loop` and `origin/main` on 2026-10-23.
 
 ### Phase 1
 
 | Id | Title | Depends on | Owner files | Status | DoD beyond STD |
 | --- | --- | --- | --- | --- | --- |
-| P1.0 | Merge PR #92 (home feed) | none | `frontend/src/home/**`, `frontend/src/meaning/**` | doing | Merged after CI and review. |
-| P1.1 | Data-error fixes, honest KPIs, name visible at first paint, feed pause control | P1.0 | `frontend/src/meaning/posts/{wel-*,job-ai*,pol-*,txt-act*,txt-ml*}.tsx`, `pol-kit.tsx`, `kit.tsx`, `frontend/src/home/home.css`, `DebateBackdrop.tsx`, `platform/publish/` where a value is wrong at the source | todo | Each data error from the chart inventory has a test or fixture assertion. No post shows a UMAP-space silhouette as quality. The name and role are visible at first paint with the debate map delayed. A pause control stops every moving card and keeps its state over a reload. |
-| P1.2 | H1 trace every chart, and the feed chapters | P1.0 | `frontend/src/meaning/{kit.tsx,Feed.tsx,meaning.css,Trace.tsx}`, `platform/architecture/feed_provenance.py`, `frontend/public/data/architecture/feed-provenance.json`, `frontend/src/meaning/posts/how-*.tsx` | todo | Every feed post declares `sources`; a unit test fails on a missing or unknown path. Unresolved lineage reads "lineage not recorded". Freshness comes from real status data and is hidden when unreachable. The cost receipt shows only measured numbers with sources. |
-| P1.3 | Clustering batches 0 to 2 | P1.0 for the feed posts | `ml/cluster_lab/` configs, `warehouse/features/clusters/<name>/`, `platform/publish/clusters/export_<name>.py`, gold `mart_cluster_<name>`, `frontend/src/meaning/posts/*-clusters-*.tsx` | todo | `diagnostics` holds n, k, noise share, original-space silhouette, bootstrap ARI with its 5 to 95 % range, the null value and p, AMI against the reference label. The cluster_lab run id is carried into the export. ARI below 0.6 ships only as a labelled counter-example. Unmatched municipality names are counted and listed. |
-| P1.4 | H4 Three Swedens, with I-14 | P1.3 batch 2, elections in Actions | `docs/sweden-three-spaces-preregistration.md`, `ml/three_swedens.py`, `platform/publish/clusters/three_swedens.py`, gold `mart_municipality_three_spaces`, `frontend/public/data/clusters/three-swedens.json`, one post | review (data; the post follows PR #92) | Pre-registration committed before the analysis. Mantel r with 9,999 permutations and partial Mantel on distance for all three pairs. Copy says "municipalities where". Misfits readable without colour. Settles the municipality grouping. |
-| P1.5 | H3 AI Act diffusion clock, Riksdag and ad lanes, with I-9 | P1.0 | `platform/nlp/ai_act_terms.py`, `seeds/cross_domain/ai_act_terms.csv`, gold `mart_ai_act_term_diffusion`, `ai-act/diffusion.json`, `frontend/src/meaning/posts/txt-act-diffusion.tsx` | review | Term list generated, then reviewed, with each dropped term and its reason in the seed. Placebo p from 200 placebo months per lag. Partial month excluded; 2026 marked Jan to Sep. The ad scan runs in Actions. Result, 2026-10-23: neither lane shows a lag shorter than at random dates for ai-system or ai-modell. The short ad lags of the two longer terms rest on nine ads from one employer, posted on one day. |
-| P1.6 | Futures topics in Actions | none | `.github/workflows/cluster-jobs.yml`, `ml/futures_topics/`, `platform/models/*/sweden_futures/`, `platform/publish/sweden/export_futures_topics.py`, `frontend/src/sweden/FuturesTopics.tsx` | review | Pilot code and pre-registration on `dev`; sample and embeddings in R2 under `features/sweden/futures_topics/`; the workflow runs only from `main`. The pre-registered stability and null tests decide whether any topic is published. |
+| P1.0 | Merge PR #92 (home feed) | none | `frontend/src/home/**`, `frontend/src/meaning/**` | main (#92) | Merged after CI and review. |
+| P1.1 | Data-error fixes, honest KPIs, name visible at first paint, feed pause control | P1.0 | `frontend/src/meaning/posts/{wel-*,job-ai*,pol-*,txt-act*,txt-ml*}.tsx`, `pol-kit.tsx`, `kit.tsx`, `frontend/src/home/home.css`, `DebateBackdrop.tsx`, `platform/publish/` where a value is wrong at the source | main (#99) | Each data error from the chart inventory has a test or fixture assertion. No post shows a UMAP-space silhouette as quality. The name and role are visible at first paint with the debate map delayed. A pause control stops every moving card and keeps its state over a reload. |
+| P1.2 | H1 trace every chart, and the feed chapters | P1.0 | `frontend/src/meaning/{kit.tsx,Feed.tsx,meaning.css,Trace.tsx}`, `platform/architecture/feed_provenance.py`, `frontend/public/data/architecture/feed-provenance.json`, `frontend/src/meaning/posts/how-*.tsx` | loop (#111) | Every feed post declares `sources`; a unit test fails on a missing or unknown path. Unresolved lineage reads "lineage not recorded". Freshness comes from real status data and is hidden when unreachable. The cost receipt shows only measured numbers with sources. |
+| P1.3 | Clustering batches 0 to 2 | P1.0 for the feed posts | `ml/cluster_lab/` configs, `warehouse/features/clusters/<name>/`, `platform/publish/clusters/export_<name>.py`, gold `mart_cluster_<name>`, `frontend/src/meaning/posts/*-clusters-*.tsx` | main (#94) | `diagnostics` holds n, k, noise share, original-space silhouette, bootstrap ARI with its 5 to 95 % range, the null value and p, AMI against the reference label. The cluster_lab run id is carried into the export. ARI below 0.6 ships only as a labelled counter-example. Unmatched municipality names are counted and listed. |
+| P1.4 | H4 Three Swedens, with I-14 | P1.3 batch 2, elections in Actions | `docs/sweden-three-spaces-preregistration.md`, `ml/three_swedens.py`, `platform/publish/clusters/three_swedens.py`, gold `mart_municipality_three_spaces`, `frontend/public/data/clusters/three-swedens.json`, one post | main (#103; the post follows PR #92) | Pre-registration committed before the analysis. Mantel r with 9,999 permutations and partial Mantel on distance for all three pairs. Copy says "municipalities where". Misfits readable without colour. Settles the municipality grouping. |
+| P1.5 | H3 AI Act diffusion clock, Riksdag and ad lanes, with I-9 | P1.0 | `platform/nlp/ai_act_terms.py`, `seeds/cross_domain/ai_act_terms.csv`, gold `mart_ai_act_term_diffusion`, `ai-act/diffusion.json`, `frontend/src/meaning/posts/txt-act-diffusion.tsx` | loop (#97 in main, #116 in loop) | Term list generated, then reviewed, with each dropped term and its reason in the seed. Placebo p from 200 placebo months per lag. Partial month excluded; 2026 marked Jan to Sep. The ad scan runs in Actions. Result, 2026-10-23: neither lane shows a lag shorter than at random dates for ai-system or ai-modell. The short ad lags of the two longer terms rest on nine ads from one employer, posted on one day. |
+| P1.6 | Futures topics in Actions | none | `.github/workflows/cluster-jobs.yml`, `ml/futures_topics/`, `platform/models/*/sweden_futures/`, `platform/publish/sweden/export_futures_topics.py`, `frontend/src/sweden/FuturesTopics.tsx` | review | Pilot code and pre-registration on `loop`; sample and embeddings in R2 under `features/sweden/futures_topics/`; the workflow runs only from `main`. The pre-registered stability and null tests decide whether any topic is published. |
 
 ### Phase 2
 
 | Id | Title | Depends on | Owner files | Status | DoD beyond STD |
 | --- | --- | --- | --- | --- | --- |
-| P2.1 | H2 Ask the platform | P1.2 | `platform/nlp/workers_ai.py`, `platform/nlp/platform_docs_corpus.py`, `frontend/public/data/workers-ai/platform/`, the Worker route beside `/api/answer`, `configs/workers_ai/eval_questions_platform.yaml` | review | At least 75 % of 20 eval answers verified; neurons per answer in `docs/workers-ai.md`. Answers quote verbatim with path and commit. The quota fallback is tested with a stubbed 503. A test fails if the corpus holds an ignored or private path. |
+| P2.1 | H2 Ask the platform | P1.2 | `platform/nlp/workers_ai.py`, `platform/nlp/platform_docs_corpus.py`, `frontend/public/data/workers-ai/platform/`, the Worker route beside `/api/answer`, `configs/workers_ai/eval_questions_platform.yaml` | loop (#102) | At least 75 % of 20 eval answers verified; neurons per answer in `docs/workers-ai.md`. Answers quote verbatim with path and commit. The quota fallback is tested with a stubbed 503. A test fails if the corpus holds an ignored or private path. |
 | P2.2 | H5 academia against industry tech lag, plus H3's thesis lane | P1.5 | `refresh-diva.yml`, `platform/publish/diva_terms.py`, gold `mart_tech_term_adoption`, `jobs/tech-lag.json`, one post | todo | Terms counted in Swedish and English abstracts, coverage per year published. Bootstrap interval on each lag; only terms with at least 50 mentions in both corpora. |
 | P2.3 | Small cross-dataset posts: I-5, I-13, I-12, I-15 | P1.2 | one export, mart and post each; I-5 adds a mapping seed | todo | STD only. |
 

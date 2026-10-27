@@ -2,10 +2,10 @@
  * The investigation as it happened, step by step, with the numbers each step produced
  * (research-history.json): the question, the baseline, the book effect it showed, book-centring,
  * the paratext found and cleaned, the expanded corpus (v4), what the clusters follow (validity)
- * and the human review that alone may name a cluster. The
- * emphasis is on book dominance, cross-book structure and review; cluster-quality diagnostics
- * live under Method.
+ * and the reading that alone may name a cluster. The emphasis is on book dominance and
+ * cross-book structure; cluster-geometry diagnostics live under Method.
  */
+import type { ReactNode } from 'react'
 import { l } from '../i18n'
 import type { ResearchHistory, StepMetrics, Validity } from './atlasTypes'
 import { FindingHero, Interpretation } from '../ui/Story'
@@ -47,6 +47,26 @@ export default function ResearchStory({
   const baselineBefore = history.paratext_clusters.baseline?.before
   const c = history.cleaning
   const r = history.review
+  // What the paratext audit still flags in the published (book-centred) run.
+  const after = history.paratext_clusters.book_centered?.after
+  const left = after?.suspected_paratext_clusters ?? 0
+  const leftShare = (
+    (after?.suspected_paratext_occurrence_share ?? 0) * 100
+  ).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })
+  const afterNote: [string, string] = !left
+    ? [
+        'Afterwards no cluster is flagged as paratext.',
+        'Efteråt flaggas inget kluster som paratext.',
+      ]
+    : left === 1
+      ? [
+          `Afterwards one small cluster (${leftShare} % of passages) is still flagged.`,
+          `Efteråt flaggas fortfarande ett litet kluster (${leftShare} % av ställena).`,
+        ]
+      : [
+          `Afterwards ${left} small clusters (${leftShare} % of passages) are still flagged.`,
+          `Efteråt flaggas fortfarande ${left} små kluster (${leftShare} % av ställena).`,
+        ]
   const steps: {
     tag: [string, string]
     title: [string, string]
@@ -66,10 +86,13 @@ export default function ResearchStory({
     },
     {
       tag: ['Baseline, v1', 'Utgångsläge, v1'],
-      title: ['Strong clusters appeared.', 'Tydliga kluster uppstod.'],
+      title: [
+        'Tightly separated clusters appeared (in UMAP space).',
+        'Tätt avgränsade kluster uppstod (i UMAP-rummet).',
+      ],
       body: [
-        'The embeddings separate the passages into well-defined groups.',
-        'Inbäddningarna delar upp ställena i väl avgränsade grupper.',
+        'In the 10-dimensional UMAP space the passages fall into tight, well-separated groups.',
+        'I det tiodimensionella UMAP-rummet faller ställena i täta, väl åtskilda grupper.',
       ],
       metrics: v1?.metrics,
     },
@@ -103,8 +126,8 @@ export default function ResearchStory({
         'Paratext var en andra störfaktor (pilot med tio böcker).',
       ],
       body: [
-        `Reading the clusters showed some were glossaries and indexes, not stories (${before?.suspected_paratext_clusters ?? 0} in the book-centred run, ${baselineBefore?.suspected_paratext_clusters ?? 0} in the baseline). Contents, glossaries, indexes, notes and footnotes are now removed before extraction${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} occurrences, ${c.documents_affected} of ${c.documents.length} books changed` : ''}. Afterwards no cluster reads as paratext.`,
-        `När klustren lästes visade sig några vara ordlistor och register, inte berättelser (${before?.suspected_paratext_clusters ?? 0} i den bokcentrerade körningen, ${baselineBefore?.suspected_paratext_clusters ?? 0} i utgångsläget). Innehållsförteckningar, ordlistor, register, noter och fotnoter tas nu bort före extraktionen${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} förekomster, ${c.documents_affected} av ${c.documents.length} böcker ändrades` : ''}. Efteråt läses inget kluster som paratext.`,
+        `Reading the clusters showed some were glossaries and indexes, not stories (${before?.suspected_paratext_clusters ?? 0} in the book-centred run, ${baselineBefore?.suspected_paratext_clusters ?? 0} in the baseline). Contents, glossaries, indexes, notes and footnotes are now removed before extraction${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} occurrences, ${c.documents_affected} of ${c.documents.length} books changed` : ''}. ${afterNote[0]}`,
+        `När klustren lästes visade sig några vara ordlistor och register, inte berättelser (${before?.suspected_paratext_clusters ?? 0} i den bokcentrerade körningen, ${baselineBefore?.suspected_paratext_clusters ?? 0} i utgångsläget). Innehållsförteckningar, ordlistor, register, noter och fotnoter tas nu bort före extraktionen${c ? `: ${c.old_occurrence_count ?? '–'} → ${c.new_occurrence_count} förekomster, ${c.documents_affected} av ${c.documents.length} böcker ändrades` : ''}. ${afterNote[1]}`,
       ],
       metrics: v3?.metrics,
     },
@@ -130,29 +153,24 @@ export default function ResearchStory({
     {
       tag: ['Review', 'Granskning'],
       title: [
-        'Cross-book clusters are read by a person.',
-        'Kluster över flera böcker läses av en människa.',
+        'An audit ranks the clusters worth reading.',
+        'En granskning av data rangordnar klustren som är värda att läsa.',
       ],
       body: [
-        `${r.candidate_cluster_count} of ${r.cluster_count} clusters pass the audit (spread over books, firm membership, no paratext) and are ranked for review; ${r.warning_cluster_count} are book-bound or weak and ${r.rejected_by_flags_count} are set aside as too small or paratext. The ranking says what is worth reading, not what anything means.`,
+        `${r.candidate_cluster_count} of ${r.cluster_count} clusters pass the audit (spread over books, firm membership, no paratext) and are ranked for reading; ${r.warning_cluster_count} are book-bound or weak and ${r.rejected_by_flags_count} are set aside as too small or paratext. The ranking says what is worth reading, not what anything means.`,
         `${r.candidate_cluster_count} av ${r.cluster_count} kluster klarar granskningen av data (spridda över böcker, stabilt medlemskap, ingen paratext) och rangordnas för läsning; ${r.warning_cluster_count} är bokbundna eller svaga och ${r.rejected_by_flags_count} läggs åt sidan som för små eller paratext. Rangordningen säger vad som är värt att läsa, inte vad något betyder.`,
       ],
     },
     {
       tag: ['Result', 'Resultat'],
       title: [
-        'Only reviewed clusters receive semantic labels.',
-        'Bara granskade kluster får semantiska namn.',
+        'Names come from reading, never from the model.',
+        'Namn kommer från läsning, aldrig från modellen.',
       ],
-      body: r.reviewed_cluster_count
-        ? [
-            `${r.reviewed_cluster_count} clusters have been reviewed and named by a person; every other cluster stays a number.`,
-            `${r.reviewed_cluster_count} kluster har granskats och namngetts av en människa; alla andra förblir nummer.`,
-          ]
-        : [
-            'No reviewed semantic clusters yet. Until a person has read the passages, every cluster stays a number.',
-            'Inga granskade semantiska kluster ännu. Tills en människa har läst ställena förblir varje kluster ett nummer.',
-          ],
+      body: [
+        'By design, clusters stay numbered and are shown by their symbol words: a name comes only from reading the passages, never from the model.',
+        'Med avsikt förblir klustren numrerade och visas med sina symbolord: ett namn kommer bara från läsning av ställena, aldrig från modellen.',
+      ],
     },
   ]
   return (
@@ -179,8 +197,8 @@ export default function ResearchStory({
                   'av ett kluster i utgångsläget kom i snitt från en och samma bok.',
                 )}
                 comparison={l(
-                  'The clustering was strong, but it was not measuring the intended construct: it grouped style and translation, not meaning.',
-                  'Klustringen var stark, men den mätte inte det som var avsett: den grupperade stil och översättning, inte betydelse.',
+                  'The clusters were well separated, but they were not measuring the intended construct: they grouped style and translation, not meaning.',
+                  'Klustren var väl åtskilda, men de mätte inte det som var avsett: de grupperade stil och översättning, inte betydelse.',
                 )}
               />
             </li>
@@ -196,14 +214,14 @@ export default function ResearchStory({
       </ol>
       <Interpretation
         notMeaning={l(
-          'A cluster that spans several books does not prove a universal symbolic meaning; it is a recurring context worth reading, and only a person’s review may name it.',
-          'Ett kluster som spänner över flera böcker bevisar inte en universell symbolisk betydelse; det är ett återkommande sammanhang värt att läsa, och bara en människas granskning får namnge det.',
+          'A cluster across books is a recurring context worth reading, not proof of a universal meaning.',
+          'Ett kluster över flera böcker är ett återkommande sammanhang värt att läsa, inget bevis för en universell betydelse.',
         )}
       >
         <p>
           {l(
-            'The negative findings are part of the result. Each version removed one thing the model had been measuring instead of symbols (the book, then the paratext) and tested whether what was left held up in a larger corpus. What survives is smaller than the first map suggested, and more plausible.',
-            'De negativa fynden är en del av resultatet. Varje version tog bort en sak som modellen mätte i stället för symboler (boken, sedan paratexten) och prövade om det som återstod höll i en större korpus. Det som överlever är mindre än den första kartan antydde, och mer trovärdigt.',
+            'Each version removed one thing the model measured instead of symbols: the book, then the paratext. What survives is smaller than the first map suggested, and more plausible.',
+            'Varje version tog bort en sak som modellen mätte i stället för symboler: boken, sedan paratexten. Det som överlever är mindre än den första kartan antydde, och mer trovärdigt.',
           )}
         </p>
       </Interpretation>
@@ -320,8 +338,8 @@ function ValidityBlock({ v }: { v: Validity }) {
       </div>
       <p className="atlas-note">
         {l(
-          'Not measured yet: whether a passage uses a word literally (“he drank water”) or symbolically. That needs a hand-labelled sample.',
-          'Inte mätt än: om ett ställe använder ordet bokstavligt (”han drack vatten”) eller symboliskt. Det kräver ett handmärkt urval.',
+          'Outside this study: whether a passage uses a word literally (“he drank water”) or symbolically. That needs a hand-labelled sample.',
+          'Utanför denna studie: om ett ställe använder ordet bokstavligt (”han drack vatten”) eller symboliskt. Det kräver ett handmärkt urval.',
         )}
       </p>
     </div>
@@ -337,113 +355,152 @@ const dec2 = (v: number | null | undefined) =>
       })
 
 /**
- * The research lesson in one comparison: the first run had the best-separated clusters and
- * measured the wrong thing; the last has weaker clusters and less dependence on the book. Model
- * quality and construct validity are different questions.
+ * The research lesson, in two comparisons that each change one thing. First the corpus (v1, 10
+ * books, to v4, 101 books, both baseline); then book-centring within v4 (baseline to
+ * book-centred, the same 101 books). Tight clusters in UMAP space (silhouette) and construct
+ * validity are different questions: the silhouette drop comes from centring, not the corpus.
  */
 function ValidityCase({ history }: { history: ResearchHistory }) {
   const first = history.steps[0]
   const last = history.steps.at(-1)
   const a = first?.metrics
+  const b0 = last?.baseline_metrics
   const b = last?.metrics
-  if (!first || !last || !a || !b || first === last) return null
+  if (!first || !last || !a || !b0 || !b || first === last) return null
   const base = history.validity?.experiments.baseline?.association_ami
   const centred = history.validity?.experiments.book_centered?.association_ami
   const row = (name: string, from: string, to: string, reading: string) => (
-    <tr>
+    <tr key={name}>
       <th scope="row">{name}</th>
       <td className="num">{from}</td>
       <td className="num">{to}</td>
       <td>{reading}</td>
     </tr>
   )
+  const table = (from: string, to: string, rows: ReactNode) => (
+    <div className="atlas-table-wrap" tabIndex={0}>
+      <table className="atlas-table">
+        <thead>
+          <tr>
+            <th scope="col">{l('Question', 'Fråga')}</th>
+            <th scope="col" className="num">
+              {from}
+            </th>
+            <th scope="col" className="num">
+              {to}
+            </th>
+            <th scope="col">{l('Reading', 'Tolkning')}</th>
+          </tr>
+        </thead>
+        <tbody>{rows}</tbody>
+      </table>
+    </div>
+  )
+  const bookShare = l(
+    'Validity: share of a cluster from its largest book',
+    'Validitet: andel av ett kluster från dess största bok',
+  )
+  const crossBook = l(
+    'Validity: clusters that span several books',
+    'Validitet: kluster som spänner över flera böcker',
+  )
+  const books = (n: number | undefined) =>
+    l(`${n ?? '–'} books`, `${n ?? '–'} böcker`)
   return (
     <section className="validity-case" aria-labelledby="validity-case-title">
       <p className="research-tag">{l('The lesson', 'Lärdomen')}</p>
       <h3 id="validity-case-title">
         {l(
-          'A good model can still measure the wrong thing',
-          'En bra modell kan fortfarande mäta fel sak',
+          'Tight clusters can still measure the wrong thing',
+          'Täta kluster kan fortfarande mäta fel sak',
         )}
       </h3>
       <p>
         {l(
-          `The first run (${first.id}) had the best-separated clusters and grouped books, not symbols. The latest (${last.id}) has weaker clusters and depends far less on the book. Whether the clusters hold together and whether they measure symbolic meaning are two different questions.`,
-          `Den första körningen (${first.id}) hade de tydligast avgränsade klustren och grupperade böcker, inte symboler. Den senaste (${last.id}) har svagare kluster och beror mycket mindre på boken. Om klustren håller ihop och om de mäter symbolisk betydelse är två olika frågor.`,
+          `The first run (${first.id}) had tight clusters that grouped books, not symbols. A larger corpus and book-centring loosened them and tied them far less to the book. Tight is not the same as meaningful.`,
+          `Den första körningen (${first.id}) hade täta kluster som grupperade böcker, inte symboler. En större korpus och bokcentrering gjorde dem lösare och mycket mindre bundna till boken. Tät är inte samma sak som meningsfull.`,
         )}
       </p>
-      <div className="atlas-table-wrap" tabIndex={0}>
-        <table className="atlas-table">
-          <thead>
-            <tr>
-              <th scope="col">{l('Question', 'Fråga')}</th>
-              <th scope="col" className="num">
-                {first.id}
-              </th>
-              <th scope="col" className="num">
-                {last.id}
-              </th>
-              <th scope="col">{l('Reading', 'Tolkning')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {row(
-              l(
-                'Model quality: do the clusters hold together? (silhouette)',
-                'Modellkvalitet: håller klustren ihop? (silhuett)',
-              ),
-              dec2(a.silhouette),
-              dec2(b.silhouette),
-              l('weaker', 'svagare'),
-            )}
-            {row(
-              l(
-                'Validity: share of a cluster from its largest book',
-                'Validitet: andel av ett kluster från dess största bok',
-              ),
-              pct(a.mean_largest_book_share),
-              pct(b.mean_largest_book_share),
-              l('less book-bound', 'mindre bokbundet'),
-            )}
-            {row(
-              l(
-                'Validity: clusters that span several books',
-                'Validitet: kluster som spänner över flera böcker',
-              ),
-              `${a.cross_book_cluster_count} / ${a.clusters}`,
-              `${b.cross_book_cluster_count} / ${b.clusters}`,
-              l('broader', 'bredare'),
-            )}
-            {base?.document_id != null &&
-              centred?.document_id != null &&
-              row(
-                l(
-                  'Validity: how much the clusters follow the book (AMI)',
-                  'Validitet: hur mycket klustren följer boken (AMI)',
-                ),
-                dec2(base.document_id),
-                dec2(centred.document_id),
-                l('baseline → book-centred', 'utgångsläge → bokcentrerat'),
-              )}
-            {base?.symbol_id != null &&
-              centred?.symbol_id != null &&
-              row(
-                l(
-                  'Validity: how much they follow the symbol (AMI)',
-                  'Validitet: hur mycket de följer symbolen (AMI)',
-                ),
-                dec2(base.symbol_id),
-                dec2(centred.symbol_id),
-                l('baseline → book-centred', 'utgångsläge → bokcentrerat'),
-              )}
-          </tbody>
-        </table>
-      </div>
+      <h4>
+        {l(
+          `The corpus: ${first.id} → ${last.id}, both baseline`,
+          `Korpusen: ${first.id} → ${last.id}, båda i utgångsläget`,
+        )}
+      </h4>
+      {table(
+        `${first.id}, ${books(first.documents ?? 10)}`,
+        `${last.id}, ${books(last.documents)}`,
+        [
+          row(
+            bookShare,
+            pct(a.mean_largest_book_share),
+            pct(b0.mean_largest_book_share),
+            l('less book-bound', 'mindre bokbundet'),
+          ),
+          row(
+            crossBook,
+            `${a.cross_book_cluster_count} / ${a.clusters}`,
+            `${b0.cross_book_cluster_count} / ${b0.clusters}`,
+            l('broader', 'bredare'),
+          ),
+        ],
+      )}
+      <h4>
+        {l(
+          `Book-centring: baseline → book-centred, both ${last.id} (${books(last.documents)})`,
+          `Bokcentrering: utgångsläge → bokcentrerat, båda ${last.id} (${books(last.documents)})`,
+        )}
+      </h4>
+      {table(l('Baseline', 'Utgångsläge'), l('Book-centred', 'Bokcentrerad'), [
+        row(
+          l(
+            'Cluster separation in the 10-D UMAP space (silhouette; geometry, not quality)',
+            'Klusteravgränsning i det tiodimensionella UMAP-rummet (silhuett; geometri, inte kvalitet)',
+          ),
+          dec2(b0.silhouette),
+          dec2(b.silhouette),
+          l('looser', 'lösare'),
+        ),
+        row(
+          bookShare,
+          pct(b0.mean_largest_book_share),
+          pct(b.mean_largest_book_share),
+          l('less book-bound', 'mindre bokbundet'),
+        ),
+        row(
+          crossBook,
+          `${b0.cross_book_cluster_count} / ${b0.clusters}`,
+          `${b.cross_book_cluster_count} / ${b.clusters}`,
+          l('broader', 'bredare'),
+        ),
+        base?.document_id != null &&
+          centred?.document_id != null &&
+          row(
+            l(
+              'Validity: how much the clusters follow the book (AMI)',
+              'Validitet: hur mycket klustren följer boken (AMI)',
+            ),
+            dec2(base.document_id),
+            dec2(centred.document_id),
+            l('less tied to the book', 'mindre bundet till boken'),
+          ),
+        base?.symbol_id != null &&
+          centred?.symbol_id != null &&
+          row(
+            l(
+              'Validity: how much they follow the symbol (AMI)',
+              'Validitet: hur mycket de följer symbolen (AMI)',
+            ),
+            dec2(base.symbol_id),
+            dec2(centred.symbol_id),
+            l('more tied to the symbol', 'mer bundet till symbolen'),
+          ),
+      ])}
       <p className="atlas-note">
         {l(
-          'Data quality, model quality and construct validity are checked separately.',
-          'Datakvalitet, modellkvalitet och begreppsvaliditet kontrolleras var för sig.',
-        )}{' '}
+          'Data quality, cluster geometry and construct validity are checked separately.',
+          'Datakvalitet, klustergeometri och begreppsvaliditet kontrolleras var för sig.',
+        )}
       </p>
     </section>
   )

@@ -1,39 +1,5 @@
-/* The board around the work area: the status line, the tabs, search, filters and chips.
+/* The board around the work area: the stale notes, the tabs, search, filters and chips.
    Loaded after job-assistant.css. */
-.ja-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-3) 0;
-  margin: var(--sp-4) 0 0;
-  padding-block: var(--sp-2);
-  border-block: 1px solid var(--color-border);
-}
-.ja-stats > div {
-  padding-inline: var(--sp-5);
-  border-inline-start: 1px solid var(--color-border);
-}
-.ja-stats > div:first-child {
-  padding-inline-start: 0;
-  border-inline-start: 0;
-}
-.ja-stats dt {
-  color: var(--color-ink-secondary);
-  font-size: var(--type-caption);
-}
-.ja-stats dd {
-  margin: 0;
-  font-size: var(--type-chart-title);
-  font-weight: var(--weight-ui);
-  font-variant-numeric: tabular-nums;
-}
-.ja-stats small {
-  color: var(--color-ink-secondary);
-  font-size: var(--type-caption);
-  font-weight: var(--weight-body);
-}
-.ja-stats.ja-skel {
-  min-height: 4.25rem;
-}
 .ja-stale {
   margin: var(--sp-3) 0 0;
   padding: var(--sp-2) var(--sp-3);
@@ -43,38 +9,44 @@
   font-size: var(--type-label);
 }
 
-/* Tabs: a selected text filter is weight and an underline (docs/design-system.md). */
+/* Tabs: the selected one takes the signature's gradient, the others are muted; no rule under them. */
 .ja-tabs {
   display: flex;
-  gap: var(--sp-5);
-  margin: var(--sp-3) 0 0;
-  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: var(--sp-2) clamp(var(--sp-5), 3vw, 2.5rem);
+  margin: clamp(3rem, 6vw, 6rem) 0 0;
 }
 .ja-tabs button {
   min-height: 44px;
-  margin-bottom: -1px;
   padding: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
   background: none;
   color: var(--color-ink-secondary);
   font: inherit;
-  font-weight: var(--weight-ui);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   cursor: pointer;
 }
 .ja-tabs button:hover {
   color: var(--color-ink);
 }
 .ja-tabs button[aria-pressed='true'] {
-  border-bottom-color: var(--color-ink);
-  color: var(--color-ink);
-  font-weight: var(--weight-heading);
+  background: linear-gradient(
+    to bottom right,
+    #ebe6da 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .ja-find {
   display: grid;
   gap: var(--sp-3);
-  margin: var(--sp-4) 0 var(--sp-3);
+  margin: var(--sp-6) 0 var(--sp-4);
 }
 .ja-find label {
   display: grid;
