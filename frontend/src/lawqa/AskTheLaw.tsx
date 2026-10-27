@@ -21,7 +21,8 @@ import {
   type Corpus,
 } from '../workersAi/corpus'
 import type { Law } from './LawData'
-import LawData from './LawData'
+import LawData, { SELECTED } from './LawData'
+import PageHead, { Method } from '../ui/PageHead'
 import './lawqa.css'
 
 type Item = {
@@ -245,17 +246,50 @@ export default function AskTheLaw({ route }: { route: Route }) {
     <ReportFrame>
       <div className="report lq">
         <section className="report-tab" aria-labelledby="lq-title">
-          <header className="lq-head">
-            <h1 id="lq-title" className="lq-sig">
-              Allegora
-            </h1>
-            <p className="lq-sig">
-              {l(
-                'Questions about Swedish law and the EU AI Act, answered with quotes checked word for word, then retold as an allegory',
-                'Frågor om svensk lag och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord och berättade som en allegori',
-              )}
-            </p>
-          </header>
+          <PageHead
+            title="Allegora"
+            sentence={l(
+              'Ask about Swedish law or the EU AI Act. The answer quotes the law word for word, then retells it as an allegory.',
+              'Fråga om svensk lag eller EU:s AI-förordning. Svaret citerar lagen ordagrant och berättar den sedan som en allegori.',
+            )}
+            kpis={[
+              {
+                label: l('Laws searchable', 'Sökbara lagar'),
+                value: num((laws.length ? laws : SELECTED).length),
+              },
+              ...(meta
+                ? [
+                    {
+                      label: l('Passages indexed', 'Indexerade passager'),
+                      value: num(meta.n),
+                    },
+                  ]
+                : []),
+              ...(evaluation?.verified_share != null &&
+              evaluation.questions != null
+                ? [
+                    {
+                      label: l(
+                        'Answers with every quote verified',
+                        'Svar med alla citat verifierade',
+                      ),
+                      value: `${Math.round(evaluation.verified_share * evaluation.questions)} ${l('of', 'av')} ${evaluation.questions}`,
+                    },
+                  ]
+                : []),
+              ...(evaluation?.recall_at_k != null
+                ? [
+                    {
+                      label: l(
+                        `Right passage in the top ${k}`,
+                        `Rätt passage bland de ${k} första`,
+                      ),
+                      value: decimal(evaluation.recall_at_k),
+                    },
+                  ]
+                : []),
+            ]}
+          />
           <div
             className="lq-switch"
             role="group"
@@ -278,31 +312,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
             ))}
           </div>
 
-          <div className="lq-notices">
-            <p>
-              {l(
-                'This is a search in legal text, not legal advice.',
-                'Det här är en sökning i lagtext, inte juridisk rådgivning.',
-              )}
-            </p>
-            <p>
-              {choice === 'sfs'
-                ? l(
-                    `The legal text comes from the Riksdag's open data ${fetched ? `(fetched ${fetched}) ` : ''}and is not the official version, which is at svenskforfattningssamling.se.`,
-                    `Lagtexten kommer från Riksdagens öppna data ${fetched ? `(hämtad ${fetched}) ` : ''}och är inte den officiella versionen; den finns på svenskforfattningssamling.se.`,
-                  )
-                : l(
-                    'The text of the AI Act comes from EUR-Lex. Only the version published in the Official Journal of the EU is authentic.',
-                    'AI-förordningens text kommer från EUR-Lex. Bara versionen i Europeiska unionens officiella tidning är giltig.',
-                  )}
-            </p>
-            <p>
-              {l(
-                'Your question goes to Cloudflare Workers AI and is not logged or stored.',
-                'Frågan skickas till Cloudflare Workers AI och loggas eller sparas inte.',
-              )}
-            </p>
-          </div>
+          <p className="lq-notices">
+            {l(
+              'Not legal advice · not the official text · questions are not logged',
+              'Inte juridisk rådgivning · inte den officiella texten · frågor loggas inte',
+            )}
+          </p>
 
           {corpus === 'missing' ? (
             <p className="lq-status">
@@ -516,6 +531,32 @@ export default function AskTheLaw({ route }: { route: Route }) {
                 )}
               </div>
             )}
+          </div>
+
+          <LawData laws={laws} />
+          <Method
+            summary={l(
+              'How it is made · sources · method',
+              'Så är det gjort · källor · metod',
+            )}
+          >
+            <p>
+              {choice === 'sfs'
+                ? l(
+                    `The legal text comes from the Riksdag's open data ${fetched ? `(fetched ${fetched}) ` : ''}and is not the official version, which is at svenskforfattningssamling.se.`,
+                    `Lagtexten kommer från Riksdagens öppna data ${fetched ? `(hämtad ${fetched}) ` : ''}och är inte den officiella versionen; den finns på svenskforfattningssamling.se.`,
+                  )
+                : l(
+                    'The text of the AI Act comes from EUR-Lex. Only the version published in the Official Journal of the EU is authentic.',
+                    'AI-förordningens text kommer från EUR-Lex. Bara versionen i Europeiska unionens officiella tidning är giltig.',
+                  )}
+            </p>
+            <p>
+              {l(
+                'Your question goes to Cloudflare Workers AI and is not logged or stored.',
+                'Frågan skickas till Cloudflare Workers AI och loggas eller sparas inte.',
+              )}
+            </p>
             {evaluation?.verified_share != null &&
               evaluation.questions != null && (
                 <section
@@ -531,35 +572,6 @@ export default function AskTheLaw({ route }: { route: Route }) {
                       `Frågan matchas mot de ${k} närmaste paragraferna i webbläsaren. En modell svarar bara utifrån dem, och svaret visas bara om varje citat står ord för ord i sin paragraf. Annars visas paragraferna, inte svaret.`,
                     )}
                   </p>
-                  <dl className="lq-figures">
-                    <div>
-                      <dt className="lq-sig">
-                        {Math.round(
-                          evaluation.verified_share * evaluation.questions,
-                        )}{' '}
-                        {l('of', 'av')} {evaluation.questions}
-                      </dt>
-                      <dd>
-                        {l(
-                          `answers with every quote verified (${pct(evaluation.verified_share)})`,
-                          `svar där varje citat verifierades (${pct(evaluation.verified_share)})`,
-                        )}
-                      </dd>
-                    </div>
-                    {evaluation.recall_at_k != null && (
-                      <div>
-                        <dt className="lq-sig">
-                          {decimal(evaluation.recall_at_k)}
-                        </dt>
-                        <dd>
-                          {l(
-                            `recall@${k}: the right paragraph is among the ${k} found`,
-                            `recall@${k}: rätt paragraf finns bland de ${k} som hittas`,
-                          )}
-                        </dd>
-                      </div>
-                    )}
-                  </dl>
                   <p className="lq-caption">
                     {l(
                       `Run on the night to ${evaluation.run ?? EVAL_RUN} (UTC)`,
@@ -583,108 +595,111 @@ export default function AskTheLaw({ route }: { route: Route }) {
                   </p>
                 </section>
               )}
-          </div>
-
-          <div className="lq-about">
-            {meta && (
-              <section className="lq-tech" aria-labelledby="lq-tech-title">
-                <h2 id="lq-tech-title">
-                  {l('How it works', 'Så fungerar det')}
-                </h2>
-                <dl>
-                  <dt>{l('Passages', 'Passager')}</dt>
-                  <dd>{num(meta.n)}</dd>
-                  <dt>{l('Embedding', 'Inbäddning')}</dt>
-                  <dd>
-                    {meta.model}, PCA {meta.dims} {l('dims', 'dim')}, int8
-                  </dd>
-                  {meta.recall_at_10 != null && (
-                    <>
-                      <dt>recall@10</dt>
-                      <dd>
-                        {meta.recall_at_10.toLocaleString(l('en-GB', 'sv-SE'), {
-                          maximumFractionDigits: 3,
-                        })}
-                      </dd>
-                    </>
-                  )}
-                  <dt>{l('Answers', 'Svar')}</dt>
-                  <dd>
-                    <span translate="no">
-                      {evaluation?.model ?? ANSWER_MODEL}
-                    </span>
-                    {evaluation?.setting && `, ${evaluation.setting}`}
-                  </dd>
-                  {chosen && neurons(chosen) && (
-                    <>
-                      <dt>{l('Cost per answer', 'Kostnad per svar')}</dt>
-                      <dd>
-                        {neurons(chosen)} {l('neurons', 'neuroner')}
-                        {evaluation?.tokens_per_answer != null &&
-                          `, ${num(evaluation.tokens_per_answer)} tokens`}
-                      </dd>
-                    </>
-                  )}
-                </dl>
-              </section>
-            )}
-            {compared.length > 0 && (
-              <section className="lq-models" aria-labelledby="lq-models-title">
-                <h2 id="lq-models-title">
-                  {l('Answer models compared', 'Svarsmodellerna jämförda')}
-                </h2>
-                <div className="lq-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th scope="col">{l('Model', 'Modell')}</th>
-                        <th scope="col" className="num">
-                          {l('Questions', 'Frågor')}
-                        </th>
-                        <th scope="col" className="num">
-                          {l('Quote check', 'Citatkontroll')}
-                        </th>
-                        <th scope="col" className="num">
-                          recall@{compared[0].k ?? TOP}
-                        </th>
-                        <th scope="col" className="num">
-                          {l('Neurons per answer', 'Neuroner per svar')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {compared.map((run) => (
-                        <tr
-                          key={`${run.model} ${run.setting}`}
-                          className={run === chosen ? 'lq-chosen' : undefined}
-                        >
-                          <th scope="row">
-                            <span translate="no">
-                              {run.model.split('/').pop()}
-                            </span>
-                            {run.setting && <small>{run.setting}</small>}
+            <div className="lq-about">
+              {meta && (
+                <section className="lq-tech" aria-labelledby="lq-tech-title">
+                  <h2 id="lq-tech-title">
+                    {l('How it works', 'Så fungerar det')}
+                  </h2>
+                  <dl>
+                    <dt>{l('Passages', 'Passager')}</dt>
+                    <dd>{num(meta.n)}</dd>
+                    <dt>{l('Embedding', 'Inbäddning')}</dt>
+                    <dd>
+                      {meta.model}, PCA {meta.dims} {l('dims', 'dim')}, int8
+                    </dd>
+                    {meta.recall_at_10 != null && (
+                      <>
+                        <dt>recall@10</dt>
+                        <dd>
+                          {meta.recall_at_10.toLocaleString(
+                            l('en-GB', 'sv-SE'),
+                            {
+                              maximumFractionDigits: 3,
+                            },
+                          )}
+                        </dd>
+                      </>
+                    )}
+                    <dt>{l('Answers', 'Svar')}</dt>
+                    <dd>
+                      <span translate="no">
+                        {evaluation?.model ?? ANSWER_MODEL}
+                      </span>
+                      {evaluation?.setting && `, ${evaluation.setting}`}
+                    </dd>
+                    {chosen && neurons(chosen) && (
+                      <>
+                        <dt>{l('Cost per answer', 'Kostnad per svar')}</dt>
+                        <dd>
+                          {neurons(chosen)} {l('neurons', 'neuroner')}
+                          {evaluation?.tokens_per_answer != null &&
+                            `, ${num(evaluation.tokens_per_answer)} tokens`}
+                        </dd>
+                      </>
+                    )}
+                  </dl>
+                </section>
+              )}
+              {compared.length > 0 && (
+                <section
+                  className="lq-models"
+                  aria-labelledby="lq-models-title"
+                >
+                  <h2 id="lq-models-title">
+                    {l('Answer models compared', 'Svarsmodellerna jämförda')}
+                  </h2>
+                  <div className="lq-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th scope="col">{l('Model', 'Modell')}</th>
+                          <th scope="col" className="num">
+                            {l('Questions', 'Frågor')}
                           </th>
-                          <td className="num">
-                            {run.questions != null && num(run.questions)}
-                          </td>
-                          <td className="num">
-                            {run.verified_share != null &&
-                              pct(run.verified_share)}
-                          </td>
-                          <td className="num">
-                            {run.recall_at_k != null && pct(run.recall_at_k)}
-                          </td>
-                          <td className="num">{neurons(run)}</td>
+                          <th scope="col" className="num">
+                            {l('Quote check', 'Citatkontroll')}
+                          </th>
+                          <th scope="col" className="num">
+                            recall@{compared[0].k ?? TOP}
+                          </th>
+                          <th scope="col" className="num">
+                            {l('Neurons per answer', 'Neuroner per svar')}
+                          </th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </section>
-            )}
-          </div>
-
-          <LawData laws={laws} />
+                      </thead>
+                      <tbody>
+                        {compared.map((run) => (
+                          <tr
+                            key={`${run.model} ${run.setting}`}
+                            className={run === chosen ? 'lq-chosen' : undefined}
+                          >
+                            <th scope="row">
+                              <span translate="no">
+                                {run.model.split('/').pop()}
+                              </span>
+                              {run.setting && <small>{run.setting}</small>}
+                            </th>
+                            <td className="num">
+                              {run.questions != null && num(run.questions)}
+                            </td>
+                            <td className="num">
+                              {run.verified_share != null &&
+                                pct(run.verified_share)}
+                            </td>
+                            <td className="num">
+                              {run.recall_at_k != null && pct(run.recall_at_k)}
+                            </td>
+                            <td className="num">{neurons(run)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+              )}
+            </div>
+          </Method>
         </section>
       </div>
     </ReportFrame>

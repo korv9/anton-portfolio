@@ -354,12 +354,12 @@ export default function Similarity({ route }: { route: Route }) {
       line={
         view === 'map'
           ? l(
-              'Every municipality on its map position, coloured by a descriptive four-group summary. Switch to Similarity to move each to its place in indicator space.',
-              'Varje kommun på sin plats på kartan, färgad efter sin likhetsgrupp. Byt till Likhet för att flytta varje kommun till sin plats i indikatorrummet.',
+              'Municipalities on the map, coloured by a descriptive four-group summary. 2024.',
+              'Kommuner på kartan, färgade efter en beskrivande sammanfattning i fyra grupper. 2024.',
             )
           : l(
-              'Each municipality placed by the first two principal components of 12 indicators: near means similar, wherever it lies.',
-              'Varje kommun placerad efter de två första principalkomponenterna av 12 indikatorer: nära betyder lika, var den än ligger.',
+              'Municipalities by the first two principal components of 12 indicators. 2024.',
+              'Kommuner efter de två första principalkomponenterna av 12 indikatorer. 2024.',
             )
       }
       legend={

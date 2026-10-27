@@ -308,8 +308,8 @@ export default function Welfare() {
     <Scene
       product={product}
       line={l(
-        'Mean answer per European Social Survey round, 0–10. Sweden’s line joins its interview rounds; the open ring is the one round it was self-completed. The axis covers only the range of the means.',
-        'Medelsvar per omgång av European Social Survey, 0–10. Sveriges linje binder ihop intervjuomgångarna; den öppna ringen är den enda omgång som fylldes i av de svarande själva. Axeln täcker bara medelvärdenas spann.',
+        'Mean answer per European Social Survey round, 0–10. Open ring: the self-completed round.',
+        'Medelsvar per omgång av European Social Survey, 0–10. Öppen ring: omgången som fylldes i av de svarande.',
       )}
       legend={
         <>

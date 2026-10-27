@@ -1,50 +1,5 @@
-/* The board around the work area: the status line, the tabs, search, filters and chips.
+/* The board around the work area: the stale notes, the tabs, search, filters and chips.
    Loaded after job-assistant.css. */
-.ja-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-5) clamp(var(--sp-5), 6vw, 6rem);
-  margin: clamp(2.5rem, 5vw, 4.5rem) 0 0;
-}
-/* Figure above its label, as on the hub: the dt stays first for screen readers. */
-.ja-stats > div {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: var(--sp-2);
-}
-.ja-stats dt {
-  color: var(--color-ink-secondary);
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-.ja-stats dd {
-  width: max-content;
-  margin: 0;
-  font-size: clamp(1.75rem, 3.4vw, 2.75rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  background: linear-gradient(
-    to bottom right,
-    #ebe6da 0%,
-    #c6c1b6 55%,
-    #9c978d 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-.ja-stats small {
-  color: var(--color-ink-secondary);
-  font-size: var(--type-caption);
-  font-weight: var(--weight-body);
-}
-.ja-stats.ja-skel {
-  min-height: 4.25rem;
-}
 .ja-stale {
   margin: var(--sp-3) 0 0;
   padding: var(--sp-2) var(--sp-3);

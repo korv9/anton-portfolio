@@ -34,8 +34,6 @@
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: var(--sp-5);
   margin: var(--sp-6) 0 var(--sp-section);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--line);
 }
 .page-head-kpis > div {
   display: flex;
@@ -90,8 +88,6 @@
 
 .page-method {
   margin-top: var(--sp-section);
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--line);
 }
 .page-method > summary {
   display: flex;

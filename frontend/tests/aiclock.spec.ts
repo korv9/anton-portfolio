@@ -1,6 +1,6 @@
 /**
- * When does a law arrive? (#lag-ankomst): five sections, each figure read from the committed
- * ai-act files at load time. Checks the page against the JSON, not against typed-in numbers.
+ * When does a law arrive? (#lag-ankomst): a KPI head and five sections, each figure read from the
+ * committed ai-act files at load time. Checks the page against the JSON, not against typed-in numbers.
  */
 import { test, expect } from './test'
 
@@ -29,7 +29,7 @@ test('the AI Act clock shows its sections with figures from the data @mobile', a
   const speeches = await get('politics/summary.json')
   const act = await get('summary.json')
 
-  // The lag test states the significant count from diffusion.json and that most are not.
+  // The KPI row reads the lag test and the speech count from the files.
   const sig = diffusion.lags.filter(
     (x: { placebo_p: number | null }) =>
       x.placebo_p !== null && x.placebo_p <= 0.05,
@@ -38,19 +38,16 @@ test('the AI Act clock shows its sections with figures from the data @mobile', a
     diffusion.diagnostics.primary.p_at_most_0_05 +
       diffusion.diagnostics.amended.p_at_most_0_05,
   )
-  const lags = page.locator('#aiclock-lags .ac-finding').first()
-  await expect(lags).toContainText(`${sig} reach p ≤ 0.05`)
-  await expect(lags).toContainText(`Of ${diffusion.lags.length} lags`)
-  await expect(page.locator('#aiclock-lags')).toContainText('no shorter than')
-
-  await expect(page.locator('#aiclock-riksdag .ac-finding')).toContainText(
-    `${speeches.counts.ai_act_speeches} name the AI Act`,
-  )
-  await expect(page.locator('#aiclock-law .ac-finding')).toContainText(
-    `${act.counts.articles_changed} of its ${act.counts.articles} articles`,
-  )
+  const kpis = page.locator('.page-head-kpis')
+  await expect(kpis).toContainText(`${sig} / ${diffusion.lags.length}`)
+  await expect(kpis).toContainText(String(speeches.counts.ai_act_speeches))
   await expect(page.locator('#aiclock-question li')).toHaveCount(
     diffusion.milestones.length,
+  )
+  // Legends only; the article count sits in the folded method.
+  await expect(page.locator('.ac-finding')).toHaveCount(0)
+  await expect(page.locator('details.page-method')).toContainText(
+    `${act.counts.articles_changed} of the Act’s ${act.counts.articles} articles`,
   )
 
   // Swedish copy through l().

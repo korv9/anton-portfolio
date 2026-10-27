@@ -142,13 +142,6 @@ const SPLITS: [string, string, string][] = [
   ['cold_cell', 'New cell line', 'Ny cellinje'],
   ['random', 'Random rows', 'Slumpade rader'],
 ]
-// The same splits as a phrase for the chart title.
-const ON: Record<string, [string, string]> = {
-  cold_pair: ['On a new drug pair', 'På ett nytt läkemedelspar'],
-  cold_drug: ['On a new drug', 'På ett nytt läkemedel'],
-  cold_cell: ['On a new cell line', 'På en ny cellinje'],
-  random: ['On random rows', 'På slumpade rader'],
-}
 // Swedish axis label short enough to sit under its column on a phone.
 const AXIS_SV: Record<string, string> = { cold_pair: 'Nytt par' }
 const MODELS: [string, string, string][] = [
@@ -327,12 +320,7 @@ export default function DrugCombReport({ route }: { route: Route }) {
     const s = SPLITS.find((x) => x[0] === id)
     return s ? l(s[1], s[2]) : id
   }
-  const best = metric(split, 'lgbm_all')
-  const baseline = metric(split, 'history_ridge')
-  const on = ON[split] ? l(...ON[split]) : splitName(split)
-  // Unseen pairs without and with each drug's own response, against the baseline.
-  const pairBase = metric('cold_pair', 'history_ridge')?.pearson
-  const pairChemBio = metric('cold_pair', 'lgbm_chem_bio')?.pearson
+  // The full model on unseen drug pairs: the headline KPI.
   const pairAll = metric('cold_pair', 'lgbm_all')?.pearson
   const source = l(
     'DrugCombDB screens with DepMap 24Q4; the published results of the pinned pipeline revision',
@@ -523,6 +511,27 @@ export default function DrugCombReport({ route }: { route: Route }) {
       slicerLabel={tab < 2 ? l('Test split', 'Testuppdelning') : undefined}
       slicer={tab < 2 ? splitChips : undefined}
       deeper={DEEPER()}
+      head={{
+        sentence: l(
+          'Predicting how two drugs work together on cancer cells, also for drugs the model has never seen.',
+          'Förutsäger hur två läkemedel samverkar på cancerceller, även för läkemedel modellen aldrig sett.',
+        ),
+        kpis: [
+          {
+            value: num(o.combinations),
+            label: l('drug-pair experiments', 'experiment med läkemedelspar'),
+          },
+          { value: num(o.drugs), label: l('drugs', 'läkemedel') },
+          { value: num(o.cell_lines), label: l('cell lines', 'cellinjer') },
+          {
+            value: pairAll == null ? '–' : num(pairAll, 2),
+            label: l(
+              'Pearson r, unseen drug pairs',
+              'Pearsons r, osedda läkemedelspar',
+            ),
+          },
+        ],
+      }}
     >
       {tab === 0 && (
         <>
@@ -530,8 +539,8 @@ export default function DrugCombReport({ route }: { route: Route }) {
             <Feature
               id="dc-splits"
               title={l(
-                `${on}, the model reaches a correlation of ${num(best?.pearson ?? 0, 2)} ± ${num(best?.pearson_sd ?? 0, 3)}, against ${num(baseline?.pearson ?? 0, 2)} for the baseline`,
-                `${on} når modellen en korrelation på ${num(best?.pearson ?? 0, 2)} ± ${num(best?.pearson_sd ?? 0, 3)}, mot ${num(baseline?.pearson ?? 0, 2)} för baslinjen`,
+                'Correlation per test split and model',
+                'Korrelation per testuppdelning och modell',
               )}
               lead={l(
                 'Predicted against measured ZIP, Pearson r (0 = none, 1 = perfect). Mean of three folds ± SD.',
@@ -556,37 +565,15 @@ export default function DrugCombReport({ route }: { route: Route }) {
                   'Korrelation per testuppdelning och modell',
                 )}
               />
-              {pairBase != null && pairChemBio != null && pairAll != null && (
-                <p className="dc-note">
-                  <strong>
-                    {l(
-                      'The edge comes from single-drug response.',
-                      'Försprånget kommer från effekten av varje läkemedel ensamt.',
-                    )}
-                  </strong>{' '}
-                  {l(
-                    `On unseen pairs, chemistry + biology alone reaches ${num(pairChemBio, 3)} and does not beat the baseline (${num(pairBase, 3)}). Each drug’s own response lifts it to ${num(pairAll, 3)}.`,
-                    `På osedda par når kemi + biologi ensamt ${num(pairChemBio, 3)} och slår inte baslinjen (${num(pairBase, 3)}). Varje läkemedels egen effekt lyfter den till ${num(pairAll, 3)}.`,
-                  )}
-                </p>
-              )}
             </Feature>
           </div>
           <div className="report-pair">
             <Feature
               id="dc-enrichment"
               title={l(
-                'Does it find the strongest pairs?',
-                'Hittar den de starkaste paren?',
+                'Hit rate among the top-ranked pairs',
+                'Träffsäkerhet bland de högst rankade paren',
               )}
-              lead={
-                enrichment[0]
-                  ? l(
-                      `In the top 1 %, ${pct(enrichment[0].hit_rate, 0)} are truly synergistic, against ${pct(enrichment[0].base_rate, 0)} overall.`,
-                      `Bland topp 1 % är ${pct(enrichment[0].hit_rate, 0)} verkligt synergistiska, mot ${pct(enrichment[0].base_rate, 0)} totalt.`,
-                    )
-                  : undefined
-              }
               source={source}
             >
               {enrichment.length ? (
@@ -622,8 +609,8 @@ export default function DrugCombReport({ route }: { route: Route }) {
             <Feature
               id="dc-calibration"
               title={l(
-                'Are the predictions calibrated?',
-                'Stämmer förutsägelserna i nivå?',
+                'Predicted against measured synergy',
+                'Förutsagd mot uppmätt synergi',
               )}
               lead={l(
                 'Mean predicted and measured ZIP per tenth of the predictions.',

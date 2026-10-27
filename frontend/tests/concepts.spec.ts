@@ -12,6 +12,8 @@ test('the Concept Lab draws typed relations and opens concept pages', async ({
   await expect(page.locator('.cc-leaders li').first()).toContainText('Death')
   await expect(page.locator('.cc-table tbody th').first()).toHaveText('Death')
   await expect(page.locator('.cc-table td.is-leader')).toHaveCount(4)
+  // The ways further in sit in the folded method at the foot.
+  await page.locator('.page-method > summary').click()
   await page.locator('.report-deeper a[href^="#concept-constellation"]').click()
   await expect(page).toHaveURL(/#concept-constellation/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(

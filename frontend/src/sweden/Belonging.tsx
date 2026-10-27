@@ -396,8 +396,8 @@ export default function Belonging({ route }: { route: Route }) {
     <Scene
       product={product}
       line={l(
-        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Points are public libraries registered in Biblioteksdatabasen.`,
-        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Punkterna är folkbibliotek registrerade i Biblioteksdatabasen.`,
+        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Points: public libraries, Biblioteksdatabasen.`,
+        `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Punkter: folkbibliotek, Biblioteksdatabasen.`,
       )}
       legend={
         <>

@@ -1,12 +1,12 @@
 /**
  * Every SWEDEN research product is one short section of the single #sweden page (SwedenPage.tsx):
- * letter and title, the question, the key findings with their values, one visual, and the
- * explore, method and readings folded away under one disclosure.
+ * letter and title, the question, one visual with its legend, and the findings, explore, method
+ * and readings folded away under one disclosure.
  *
  * Nothing here holds a finding: pages compute their statements from published data, and a
  * product without validated data shows an EmptyState instead.
  */
-import { createContext, useContext, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { l } from '../i18n'
 import { ExploreSection } from '../ui/Story'
 import type { Evidence, SwedenProduct } from './products'
@@ -57,8 +57,6 @@ function FindingItem({ finding }: { finding: Finding }) {
     </li>
   )
 }
-
-const FindingsContext = createContext<Finding[]>([])
 
 /** What a page would show, what it needs, and what to explore meanwhile. */
 export function EmptyState({
@@ -190,7 +188,7 @@ export function Interpretations({ readings }: { readings: Reading[] }) {
   )
 }
 
-/** A product's head and visual: the question, its findings, then the visual and its panels. */
+/** A product's head and visual: the question, then the visual, its legend and its panels. */
 export function Scene({
   product,
   line,
@@ -207,7 +205,6 @@ export function Scene({
   info?: ReactNode
   children: ReactNode
 }) {
-  const findings = useContext(FindingsContext)
   const titleId = `sw-title-${product.id}`
   return (
     <div className="sw-scene" role="group" aria-labelledby={titleId}>
@@ -217,13 +214,6 @@ export function Scene({
           {b(product.title)}
         </p>
         <h2 id={titleId}>{b(product.question)}</h2>
-        {findings.length > 0 && (
-          <ol className="sw-finds" aria-label={l('Findings', 'Resultat')}>
-            {findings.map((f) => (
-              <FindingItem key={f.key} finding={f} />
-            ))}
-          </ol>
-        )}
       </header>
       <div className="sw-scene-visual">{children}</div>
       <p className="sw-line">{line}</p>
@@ -268,16 +258,21 @@ export function SwedenResearchPage({
   ]
   return (
     <ProductSection product={product}>
-      <FindingsContext.Provider value={ordered}>
-        {scene}
-      </FindingsContext.Provider>
+      {scene}
       <ExploreSection
         title={l(
-          'Explore, method and readings',
-          'Utforska, metod och tolkningar',
+          'Findings, explore, method and readings',
+          'Resultat, utforska, metod och tolkningar',
         )}
         summary={exploreSummary}
       >
+        {ordered.length > 0 && (
+          <ol className="sw-finds" aria-label={l('Findings', 'Resultat')}>
+            {ordered.map((f) => (
+              <FindingItem key={f.key} finding={f} />
+            ))}
+          </ol>
+        )}
         {explore}
         <MethodDrawer method={method} />
         <Interpretations readings={readings} />

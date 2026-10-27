@@ -3,7 +3,8 @@
  * text, cluster ids or internal codes. Every figure is in FACTS below with its source.
  */
 import { currentLocale, l } from '../i18n'
-import { ProjectHero, ProjectSection } from '../ui/Project'
+import { ProjectSection } from '../ui/Project'
+import PageHead, { Method } from '../ui/PageHead'
 import './thesis.css'
 
 /** ER = docs/thesis-evidence-review.md; p. = page of the thesis PDF. */
@@ -42,42 +43,6 @@ const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
 const num = (n: number) => n.toLocaleString(locale())
 const pct = (n: number) =>
   l(`${n.toLocaleString('en-GB')}%`, `${n.toLocaleString('sv-SE')} %`)
-
-function Stats() {
-  const items: [string, string][] = [
-    [
-      num(FACTS.records),
-      l(
-        'incident records assessed, 2020-2026',
-        'incidentposter granskade, 2020-2026',
-      ),
-    ],
-    [
-      num(FACTS.clusters),
-      l(
-        `clusters from the ${num(FACTS.selectedRun)} tickets of the selected run`,
-        `kluster ur den valda körningens ${num(FACTS.selectedRun)} ärenden`,
-      ),
-    ],
-    [
-      num(FACTS.unlinked),
-      l(
-        'of those clusters without a link to a registered problem',
-        'av dem utan koppling till ett registrerat problem',
-      ),
-    ],
-  ]
-  return (
-    <dl className="thesis-stats">
-      {items.map(([value, label]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
 
 function ClusterGrid() {
   const { clusters, unlinked, unlinkedTickets, selectedRun, split } = FACTS
@@ -328,102 +293,115 @@ export function ThesisPage() {
   const { iso, silhouette, highlighted } = FACTS
   return (
     <article className="project-page thesis-page">
-      <ProjectHero
-        project="thesis"
-        title={l(
-          'Finding recurring problems in IT support data',
-          'Att hitta återkommande problem i IT-supportdata',
+      <PageHead
+        title="IT Incident Clustering"
+        sentence={l(
+          'Clustering 16,811 IT support tickets to find the problems that keep coming back.',
+          'Klustring av 16 811 IT-ärenden för att hitta problemen som återkommer.',
         )}
-        question={l(
-          'Using NLP and unsupervised learning to uncover recurring IT issues and explore how data quality affects the usefulness of AI.',
-          'Med NLP och oövervakad inlärning sökte jag återkommande IT-fel och undersökte hur datakvaliteten påverkar nyttan av AI.',
-        )}
-      >
-        <Stats />
-      </ProjectHero>
-      <ProjectSection
-        id="thesis-motivation"
-        title={l('Why I chose this project', 'Varför jag valde projektet')}
-      >
-        <p>
-          {l(
-            'Recurring IT problems can hide in thousands of tickets handled one at a time. For my degree project at Fora AB, I tested whether clustering could connect them, on real data with gaps in the documentation and personal data to protect.',
-            'Återkommande IT-fel kan gömma sig i tusentals ärenden som hanteras ett i taget. I mitt examensarbete hos Fora AB prövade jag om klustring kunde koppla ihop dem, på riktig data med luckor i dokumentationen och personuppgifter att skydda.',
-          )}
-        </p>
-      </ProjectSection>
-      <ProjectSection
-        id="thesis-workflow"
-        title={l('What I did', 'Vad jag gjorde')}
-      >
-        <p>
-          {l(
-            `I assessed ${num(FACTS.records)} incident records against five ISO/IEC 25012 data-quality dimensions, masked personal data locally, and clustered the ${num(FACTS.selectedRun)} tickets of the selected run.`,
-            `Jag granskade ${num(FACTS.records)} incidentposter mot fem datakvalitetsdimensioner ur ISO/IEC 25012, maskerade personuppgifter lokalt och klustrade den valda körningens ${num(FACTS.selectedRun)} ärenden.`,
-          )}
-        </p>
-        <p>
-          {l(
-            'A multilingual sentence model embedded each ticket, UMAP reduced it to ten dimensions and HDBSCAN grouped similar incidents. I compared the clusters with existing problem links.',
-            'En flerspråkig meningsmodell gjorde varje ärende till en vektor, UMAP reducerade till tio dimensioner och HDBSCAN grupperade liknande incidenter. Jag jämförde klustren med befintliga problemkopplingar.',
-          )}
-        </p>
-        <p>
-          {l(
-            `Silhouette in UMAP space: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} clusters) ${silhouette.kmeans.toLocaleString(locale())}. Not like for like: HDBSCAN scores only the tickets it clusters.`,
-            `Silhuett i UMAP-rymden: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} kluster) ${silhouette.kmeans.toLocaleString(locale())}. Inte jämförbart rakt av: HDBSCAN mäts bara på de ärenden det klustrar.`,
-          )}
-        </p>
-      </ProjectSection>
-      <ProjectSection
-        id="thesis-quality"
-        title={l('What I found', 'Vad jag fann')}
-      >
-        <p>
-          {l(
-            `${FACTS.clusters} clusters of related incidents. ${FACTS.unlinked} had no link to a problem record: candidates for review rather than confirmed root causes. The thesis highlighted ${highlighted.groups} groups with ${num(highlighted.tickets)} tickets.`,
-            `${FACTS.clusters} kluster av relaterade incidenter. ${FACTS.unlinked} saknade koppling till en problempost: kandidater att granska, inte bekräftade rotorsaker. Arbetet lyfte fram ${highlighted.groups} grupper med ${num(highlighted.tickets)} ärenden.`,
-          )}
-        </p>
+        kpis={[
+          {
+            value: num(FACTS.records),
+            label: l('records assessed', 'granskade poster'),
+          },
+          {
+            value: num(FACTS.clusters),
+            label: l('HDBSCAN clusters', 'HDBSCAN-kluster'),
+          },
+          {
+            value: FACTS.silhouette.hdbscan.toLocaleString(locale()),
+            label: l('silhouette', 'silhuett'),
+          },
+          {
+            value: pct(FACTS.noisePct),
+            label: l('tickets left as noise', 'ärenden som brus'),
+          },
+        ]}
+      />
+      <ProjectSection id="thesis-quality" title={l('Clusters', 'Kluster')}>
         <ClusterGrid />
-        <p>
-          {l(
-            `Documentation was the main limit. The root-cause field was filled in only ${pct(iso.analysis)} of records, so the text recipe weights it ×4. The solution field looked ${pct(iso.solutionFilled)} complete, but only ${pct(iso.solutionManual)} written by hand.`,
-            `Dokumentationen var den största begränsningen. Rotorsaksfältet var ifyllt i bara ${pct(iso.analysis)} av posterna, så textreceptet viktar det ×4. Lösningsfältet såg ${pct(iso.solutionFilled)} komplett ut, men bara ${pct(iso.solutionManual)} var skrivet för hand.`,
-          )}
-        </p>
-        <QualityStrip />
-        <p>
-          {l(
-            `Required fields went from almost empty to ${pct(FACTS.category[6])} filled. The voluntary root-cause field reached ${pct(FACTS.analysisByYear[5])} in 2025 and ${pct(FACTS.analysisByYear[6])} in 2026.`,
-            `Obligatoriska fält gick från nästan tomma till ${pct(FACTS.category[6])} ifyllda. Det frivilliga rotorsaksfältet nådde ${pct(FACTS.analysisByYear[5])} år 2025 och ${pct(FACTS.analysisByYear[6])} år 2026.`,
-          )}
-        </p>
-        <Maturity />
-        <p>
-          {l(
-            'Masking placeholders could pull unrelated tickets with the same subject template into one cluster.',
-            'Maskeringens platshållare kunde dra ihop orelaterade ärenden med samma ämnesmall i ett kluster.',
-          )}
-        </p>
       </ProjectSection>
       <ProjectSection
-        id="thesis-evaluation"
-        title={l('Why it matters', 'Varför det spelar roll')}
+        id="thesis-data"
+        title={l('Data quality, ISO/IEC 25012', 'Datakvalitet, ISO/IEC 25012')}
       >
-        <p>
-          {l(
-            'Useful AI depends on the information behind it. Better documentation and clearer problem links can matter as much as a better model.',
-            'Användbar AI beror på informationen bakom den. Bättre dokumentation och tydligare problemkopplingar kan betyda lika mycket som en bättre modell.',
-          )}
-        </p>
-        <p>
-          {l(
-            'The result is a pipeline and candidate patterns. Its effect on workload, costs and resolution times would need to be evaluated through operational use.',
-            'Resultatet är ett analysflöde och kandidatmönster. Effekten på arbetsbörda, kostnader och lösningstider skulle behöva utvärderas i verklig drift.',
-          )}
-        </p>
+        <QualityStrip />
       </ProjectSection>
+      <ProjectSection
+        id="thesis-years"
+        title={l('Fields filled per year', 'Ifyllda fält per år')}
+      >
+        <Maturity />
+      </ProjectSection>
+      <Method
+        summary={l(
+          'How it is made · sources · method',
+          'Så är det gjort · källor · metod',
+        )}
+      >
+        <div id="thesis-workflow">
+          <p>
+            {l(
+              'Recurring IT problems can hide in thousands of tickets handled one at a time. For my degree project at Fora AB, I tested whether clustering could connect them, on real data with gaps in the documentation and personal data to protect.',
+              'Återkommande IT-fel kan gömma sig i tusentals ärenden som hanteras ett i taget. I mitt examensarbete hos Fora AB prövade jag om klustring kunde koppla ihop dem, på riktig data med luckor i dokumentationen och personuppgifter att skydda.',
+            )}
+          </p>
+          <p>
+            {l(
+              `I assessed ${num(FACTS.records)} incident records against five ISO/IEC 25012 data-quality dimensions, masked personal data locally, and clustered the ${num(FACTS.selectedRun)} tickets of the selected run.`,
+              `Jag granskade ${num(FACTS.records)} incidentposter mot fem datakvalitetsdimensioner ur ISO/IEC 25012, maskerade personuppgifter lokalt och klustrade den valda körningens ${num(FACTS.selectedRun)} ärenden.`,
+            )}
+          </p>
+          <p>
+            {l(
+              'A multilingual sentence model embedded each ticket, UMAP reduced it to ten dimensions and HDBSCAN grouped similar incidents. I compared the clusters with existing problem links.',
+              'En flerspråkig meningsmodell gjorde varje ärende till en vektor, UMAP reducerade till tio dimensioner och HDBSCAN grupperade liknande incidenter. Jag jämförde klustren med befintliga problemkopplingar.',
+            )}
+          </p>
+          <p>
+            {l(
+              `Silhouette in UMAP space: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} clusters) ${silhouette.kmeans.toLocaleString(locale())}. Not like for like: HDBSCAN scores only the tickets it clusters.`,
+              `Silhuett i UMAP-rymden: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} kluster) ${silhouette.kmeans.toLocaleString(locale())}. Inte jämförbart rakt av: HDBSCAN mäts bara på de ärenden det klustrar.`,
+            )}
+          </p>
+          <p>
+            {l(
+              `${FACTS.clusters} clusters of related incidents. ${FACTS.unlinked} had no link to a problem record: candidates for review rather than confirmed root causes. The thesis highlighted ${highlighted.groups} groups with ${num(highlighted.tickets)} tickets.`,
+              `${FACTS.clusters} kluster av relaterade incidenter. ${FACTS.unlinked} saknade koppling till en problempost: kandidater att granska, inte bekräftade rotorsaker. Arbetet lyfte fram ${highlighted.groups} grupper med ${num(highlighted.tickets)} ärenden.`,
+            )}
+          </p>
+          <p>
+            {l(
+              `Documentation was the main limit. The root-cause field was filled in only ${pct(iso.analysis)} of records, so the text recipe weights it ×4. The solution field looked ${pct(iso.solutionFilled)} complete, but only ${pct(iso.solutionManual)} written by hand.`,
+              `Dokumentationen var den största begränsningen. Rotorsaksfältet var ifyllt i bara ${pct(iso.analysis)} av posterna, så textreceptet viktar det ×4. Lösningsfältet såg ${pct(iso.solutionFilled)} komplett ut, men bara ${pct(iso.solutionManual)} var skrivet för hand.`,
+            )}
+          </p>
+          <p>
+            {l(
+              `Required fields went from almost empty to ${pct(FACTS.category[6])} filled. The voluntary root-cause field reached ${pct(FACTS.analysisByYear[5])} in 2025 and ${pct(FACTS.analysisByYear[6])} in 2026.`,
+              `Obligatoriska fält gick från nästan tomma till ${pct(FACTS.category[6])} ifyllda. Det frivilliga rotorsaksfältet nådde ${pct(FACTS.analysisByYear[5])} år 2025 och ${pct(FACTS.analysisByYear[6])} år 2026.`,
+            )}
+          </p>
+          <p>
+            {l(
+              'Masking placeholders could pull unrelated tickets with the same subject template into one cluster.',
+              'Maskeringens platshållare kunde dra ihop orelaterade ärenden med samma ämnesmall i ett kluster.',
+            )}
+          </p>
+          <p>
+            {l(
+              'Useful AI depends on the information behind it. Better documentation and clearer problem links can matter as much as a better model.',
+              'Användbar AI beror på informationen bakom den. Bättre dokumentation och tydligare problemkopplingar kan betyda lika mycket som en bättre modell.',
+            )}
+          </p>
+          <p>
+            {l(
+              'The result is a pipeline and candidate patterns. Its effect on workload, costs and resolution times would need to be evaluated through operational use.',
+              'Resultatet är ett analysflöde och kandidatmönster. Effekten på arbetsbörda, kostnader och lösningstider skulle behöva utvärderas i verklig drift.',
+            )}
+          </p>
+        </div>
+      </Method>
     </article>
   )
 }

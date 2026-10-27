@@ -4,6 +4,8 @@
  * the ways further in. A tab is an address of its own.
  */
 import type { ReactNode } from 'react'
+import PageHead, { Method, type Kpi } from '../ui/PageHead'
+import { l } from '../i18n'
 import './theme.css'
 import './longread.css'
 import './report.css'
@@ -24,6 +26,7 @@ export default function ReportShell({
   slicerLabel,
   slicer,
   deeper,
+  head,
   children,
 }: {
   name: string
@@ -36,15 +39,34 @@ export default function ReportShell({
   slicerLabel?: string
   slicer?: ReactNode
   deeper: DeeperLink[]
+  /** The shared project head (ui/PageHead): the name as the h1, one sentence, KPIs. The tab's
+   * label then heads the tab and the ways further in fold into the method. */
+  head?: { sentence: string; kpis: Kpi[] }
   children: ReactNode
 }) {
   const tab = tabs.find((t) => t.path === path) ?? tabs[0]
+  const links = (
+    <ul>
+      {deeper.map((d) => (
+        <li key={d.href}>
+          <a href={hrefOf(d.href)}>
+            <b>{d.label}</b>
+            <span>{d.about}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
   return (
     <div className="report">
-      <header className="politik-intro">
-        <p className="politik-intro-name">{name}</p>
-        <p className="politik-intro-data">{intro}</p>
-      </header>
+      {head ? (
+        <PageHead title={name} sentence={head.sentence} kpis={head.kpis} />
+      ) : (
+        <header className="politik-intro">
+          <p className="politik-intro-name">{name}</p>
+          <p className="politik-intro-data">{intro}</p>
+        </header>
+      )}
       <nav className="report-tabs" aria-label="Report">
         {tabs.map((t) => (
           <a
@@ -58,7 +80,11 @@ export default function ReportShell({
       </nav>
       <section className="report-tab" aria-labelledby="report-question">
         <header className="report-head">
-          <h1 id="report-question">{tab.question}</h1>
+          {head ? (
+            <h2 id="report-question">{tab.label}</h2>
+          ) : (
+            <h1 id="report-question">{tab.question}</h1>
+          )}
           {slicer && (
             <div className="report-slicers">
               {slicerLabel && <p>{slicerLabel}</p>}
@@ -68,19 +94,26 @@ export default function ReportShell({
         </header>
         {children}
       </section>
-      <nav className="report-deeper" aria-labelledby="report-deeper">
-        <h2 id="report-deeper">Go deeper</h2>
-        <ul>
-          {deeper.map((d) => (
-            <li key={d.href}>
-              <a href={hrefOf(d.href)}>
-                <b>{d.label}</b>
-                <span>{d.about}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {head ? (
+        <Method
+          summary={l(
+            'How it is made · sources · method',
+            'Så är det gjort · källor · metod',
+          )}
+        >
+          <nav
+            className="report-deeper"
+            aria-label={l('Further in', 'Fördjupning')}
+          >
+            {links}
+          </nav>
+        </Method>
+      ) : (
+        <nav className="report-deeper" aria-labelledby="report-deeper">
+          <h2 id="report-deeper">Go deeper</h2>
+          {links}
+        </nav>
+      )}
     </div>
   )
 }

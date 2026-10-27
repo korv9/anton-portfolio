@@ -371,6 +371,31 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
           slicerLabel={tab === 2 ? l('Tension', 'Spänning') : l('Map', 'Karta')}
           slicer={slicer}
           deeper={deeper()}
+          head={{
+            sentence: l(
+              '2,600 passages from 13 works, Plato to Nietzsche, placed by meaning.',
+              '2 600 stycken ur 13 verk, från Platon till Nietzsche, placerade efter betydelse.',
+            ),
+            kpis: [
+              {
+                value: summary.run.passages_sampled.toLocaleString('en-GB'),
+                label: l('passages', 'stycken'),
+              },
+              { value: works.length, label: l('works', 'verk') },
+              {
+                value: clusters.filter((c) => c.variant === 'author_centered')
+                  .length,
+                label: l('meaning clusters', 'betydelsekluster'),
+              },
+              {
+                value: pct(ev.author_centered.same_work_neighbours),
+                label: l(
+                  'neighbours from the same work',
+                  'grannar ur samma verk',
+                ),
+              },
+            ],
+          }}
         >
           {tab === 0 && (
             <>
@@ -378,8 +403,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                 <Feature
                   id="kartan"
                   title={l(
-                    `Centring per work: ${ev.baseline.cross_work_clusters} → ${ev.author_centered.cross_work_clusters} groups across works, ${pct(ev.baseline.same_work_neighbours)} → ${pct(ev.author_centered.same_work_neighbours)} same-work neighbours (chance ${pct(ev.baseline.same_work_chance)})`,
-                    `Centrering per verk: ${ev.baseline.cross_work_clusters} → ${ev.author_centered.cross_work_clusters} grupper över flera verk, ${pct(ev.baseline.same_work_neighbours)} → ${pct(ev.author_centered.same_work_neighbours)} grannar från samma verk (slump ${pct(ev.baseline.same_work_chance)})`,
+                    'Passages by meaning, one dot per passage',
+                    'Stycken efter betydelse, en punkt per stycke',
                   )}
                   lead={
                     variant === 'author_centered'
@@ -444,8 +469,8 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
                 <Feature
                   id="verk-eller-ide"
                   title={l(
-                    `${points.length.toLocaleString('en-GB')} passages, two maps: how far each follows the works`,
-                    `${points.length} passager, två kartor: hur mycket var och en följer verken`,
+                    'Groups across works and same-work neighbours, raw and centred',
+                    'Grupper över flera verk och grannar ur samma verk, rått och centrerat',
                   )}
                   lead={l(
                     'How far the groups follow works instead of ideas, raw and centred.',

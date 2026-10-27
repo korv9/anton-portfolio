@@ -6,8 +6,9 @@ test('the Philosophy Lab maps passages, compares maps and reads tensions', async
 }) => {
   await page.goto('/#philosophy-atlas')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Do the passages gather by idea, or by the book they come from?',
+    'Philosophy Lab',
   )
+  await expect(page.locator('.page-head-kpis dd').first()).toHaveText('2,600')
   await expect(page.locator('.ph-map circle').first()).toBeAttached()
   await expect(page.locator('.ph-table').first()).toContainText(
     'Nearest neighbours from the same work',

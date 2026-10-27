@@ -51,8 +51,10 @@ test('one page holds the six research products and Connections', async ({
   await expect(page.locator('.sw-jump a')).toHaveCount(7)
   for (const href of ROUTES)
     await expect(page.locator(`.sw-jump a[href="${href}"]`)).toHaveCount(1)
-  // No header of its own: the projects index (or, on a phone, the back link) leads out.
+  // The shared head: the name, one sentence and the KPIs read from the coverage files.
   await expect(page.locator('.sw-header')).toHaveCount(0)
+  await expect(page.locator('.page-head-title')).toHaveText('SWEDEN')
+  await expect(page.locator('.page-head-kpis > div')).toHaveCount(4)
 })
 
 test(
@@ -95,6 +97,8 @@ test('politics of measurement computes its findings from the catalogue', async (
     (d: { id: string }) => d.id === 'culture',
   )
   const s = await section(page, '#sweden-matning?scen=2d', 'A')
+  // The findings sit in the fold, under the chart.
+  await more(s)
   const cards = s.locator('.sw-find')
   await expect(cards).not.toHaveCount(0)
   expect(await cards.count()).toBeLessThanOrEqual(2)
@@ -108,7 +112,6 @@ test('politics of measurement computes its findings from the catalogue', async (
   await page.goBack()
   await expect(page).not.toHaveURL(/domain=culture/)
   // A count that could not have come out against Porter does not support him.
-  await more(s)
   await expect(s.locator('.sw-reading', { hasText: 'Porter' })).toHaveAttribute(
     'data-verdict',
     'undetermined',
@@ -130,12 +133,12 @@ test('the invisible sweden moves municipalities into similarity space', async ({
   ).json()
   const s = await section(page, '#sweden-likhet?scen=2d', 'C')
   await expect(s.locator('.sw-map-dots circle')).toHaveCount(data.summary.total)
+  await more(s)
   await expect(s.locator('.sw-finds')).toContainText(
     `${data.summary.nearest_in_other_county} of ${data.summary.analysed}`,
   )
   // The groups are a summary, not a finding.
   await expect(s.locator('.sw-finds')).not.toContainText('of 21 counties')
-  await more(s)
   // Distance to the big cities is measured, and the verdict needs both variants' intervals.
   await expect(
     s.locator('.sw-reading', { hasText: 'Centre and periphery' }),
@@ -166,6 +169,7 @@ test('the ideal human counts language per word with the occupation mix fixed', a
   const years = trends.categories[0].rows.map((r: number[]) => r[0])
   const s = await section(page, '#sweden-arbete?scen=2d', 'B')
   await expect(s.locator('.sw-matrix thead th.sw-n')).toHaveCount(years.length)
+  await more(s)
   await expect(s.locator('.sw-find')).not.toHaveCount(0)
   // The years with no occupations say so instead of showing a standardised value.
   await s
@@ -176,7 +180,6 @@ test('the ideal human counts language per word with the occupation mix fixed', a
   await expect(page).toHaveURL(/kategori=passion/)
   // Every category and sub-term is shown in three measures with its direction; stated
   // qualifications rise as a share of ads and fall per word, so their reading is undetermined.
-  await more(s)
   await expect(s.locator('.sw-agree')).toHaveCount(
     trends.categories.length + trends.subterms.length,
   )
@@ -229,8 +232,8 @@ test('the lost futures reads every session and links its speeches', async ({
   expect(sessions.length).toBeGreaterThanOrEqual(33)
   const s = await section(page, '#sweden-framtid?scen=2d', 'E')
   await expect(s.locator('.sw-matrix tbody tr')).toHaveCount(9)
-  await expect(s.locator('.sw-find')).not.toHaveCount(0)
   await more(s)
+  await expect(s.locator('.sw-find')).not.toHaveCount(0)
   const theme = s.getByRole('combobox', { name: 'Theme' }).first()
   await theme.selectOption('alternatives')
   await expect(page).toHaveURL(/tema=alternatives/)
@@ -322,6 +325,7 @@ test('the welfare contract reads its numbers from the tax and survey files', asy
       r.unit_code === 'SE' && r.survey_mode === 'self_completion',
   )
   const s = await section(page, '#sweden-valfard', 'F')
+  await more(s)
   await expect(s.locator('.sw-find')).toHaveCount(2)
   await expect(s.locator('.sw-finds')).toContainText(
     `${se.tax_wedge_pct.toFixed(1)} %`,
@@ -330,7 +334,6 @@ test('the welfare contract reads its numbers from the tax and survey files', asy
   await expect(s.locator('.sw-find[data-contrary]')).toContainText(
     dip.ppltrst_mean.toFixed(2),
   )
-  await more(s)
   await expect(s.locator('.sw-method details')).toHaveCount(9)
   await noAxeViolations(page, s)
 })
