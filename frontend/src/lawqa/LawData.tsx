@@ -75,7 +75,7 @@ const SELECTION: [string, string][] = [
   ['1984:387', 'Polislagen'],
   ['2018:1200', 'Kamerabevakningslagen'],
 ]
-const SELECTED: Law[] = SELECTION.map(([sfs, title]) => ({
+export const SELECTED: Law[] = SELECTION.map(([sfs, title]) => ({
   sfs,
   title,
   url: `https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/_sfs-${sfs.replace(':', '-')}/`,
@@ -129,11 +129,7 @@ function StatuteBook({ laws }: { laws: Law[] }) {
   const peak = rows
     .filter((r) => r.all >= 100)
     .reduce((a, b) => (b.repealed / b.all > a.repealed / a.all ? b : a))
-  const old = rows.filter((r) => r.decade < 1980)
-  const oldAll = old.reduce((s, r) => s + r.all, 0)
-  const oldRepealed = old.reduce((s, r) => s + r.repealed, 0)
   const chosen = new Set(laws.map((x) => x.sfs))
-  const longIn = sfs.largest.filter((x) => chosen.has(x.sfs))
   const [W, H, left, bottom, top] = [600, 210, 4, 22, 8]
   const max = Math.max(...rows.map((r) => r.all))
   const band = (W - left) / rows.length
@@ -197,22 +193,6 @@ function StatuteBook({ laws }: { laws: Law[] }) {
           })}
         </svg>
       </figure>
-      <ul className="lq-findings">
-        <li>
-          {l(
-            `Repeal clusters in the ${decadeName(peak.decade)}: ${num(peak.repealed)} of the ${num(peak.all)} texts issued then are repealed (${pct(peak.repealed, peak.all)}). Of the ${num(oldAll)} issued before 1980 that the collection holds, ${num(oldRepealed)} are.`,
-            `De upphävda samlas på ${decadeName(peak.decade)}: ${num(peak.repealed)} av de ${num(peak.all)} texter som utfärdades då är upphävda (${pct(peak.repealed, peak.all)}). Av de ${num(oldAll)} från före 1980 som samlingen har är ${num(oldRepealed)} det.`,
-          )}
-        </li>
-        {longIn.length > 0 && (
-          <li>
-            {l(
-              `${longIn.length} of the ${sfs.largest.length} longest statutes are in Allegora's selection of ${laws.length}, among them ${longIn[0].title.replace(/ \(.*\)$/, '')}, ${num(longIn[0].sections)} sections.`,
-              `${longIn.length} av de ${sfs.largest.length} längsta författningarna finns i Allegoras urval på ${laws.length}, bland dem ${longIn[0].title.replace(/ \(.*\)$/, '')} med ${num(longIn[0].sections)} paragrafer.`,
-            )}
-          </li>
-        )}
-      </ul>
       <div className="lq-about">
         <section aria-labelledby="lq-long-title">
           <h3 id="lq-long-title">
@@ -263,10 +243,6 @@ function AiAct() {
   const dates = [...new Set(articles.map((a) => a.applies_from))].sort()
   const at = (d: string) => articles.filter((a) => a.applies_from === d)
   const changed = articles.filter((a) => a.amended_by.length > 0)
-  const inserted = changed.filter((a) => a.change_type === 'inserted')
-  const applying = articles.filter((a) => a.applies_from <= today).length
-  const last = at(dates.at(-1)!)
-  const second = last.find((a) => a.applies_from_second)?.applies_from_second
   const omnibus = summary.amended_by[0]
   const title = (a: Article) => l(a.title_en.replace(/'$/, ''), a.title_sv)
   const [W, H, bottom, top] = [600, 220, 40, 18]
@@ -342,20 +318,6 @@ function AiAct() {
           })}
         </svg>
       </figure>
-      <ul className="lq-findings">
-        <li>
-          {l(
-            `${applying} of the ${articles.length} articles apply today. The last ${last.length}, Articles ${last[0].article_number}–${last.at(-1)!.article_number} on high-risk systems, apply from ${day(last[0].applies_from)}${second ? `, and for Annex I products from ${day(second)}` : ''}.`,
-            `${applying} av de ${articles.length} artiklarna gäller i dag. De sista ${last.length}, artikel ${last[0].article_number}–${last.at(-1)!.article_number} om system med hög risk, gäller från ${day(last[0].applies_from)}${second ? `, och för produkter i bilaga I från ${day(second)}` : ''}.`,
-          )}
-        </li>
-        <li>
-          {l(
-            `${regulation(omnibus.celex)} of ${day(omnibus.published_at)}, the Digital Omnibus, changed ${changed.length} of the ${articles.length} articles: ${changed.length - inserted.length} amended and ${inserted.length} inserted.`,
-            `${regulation(omnibus.celex)} från ${day(omnibus.published_at)}, Digital Omnibus, ändrade ${changed.length} av de ${articles.length} artiklarna: ${changed.length - inserted.length} ändrade och ${inserted.length} nya.`,
-          )}
-        </li>
-      </ul>
       <section aria-labelledby="lq-changed-title">
         <h3 id="lq-changed-title">
           {l(

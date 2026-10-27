@@ -389,6 +389,27 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
             ) : undefined
           }
           deeper={deeper()}
+          head={{
+            sentence: l(
+              'Every use of 20 symbol words in 101 books, placed by the language around it.',
+              'Varje användning av 20 symbolord i 101 böcker, placerad efter språket runt den.',
+            ),
+            kpis: [
+              { value: summary.document_count, label: l('books', 'böcker') },
+              {
+                value: summary.symbol_count,
+                label: l('symbol words', 'symbolord'),
+              },
+              {
+                value: summary.occurrence_count.toLocaleString('en-GB'),
+                label: l('occurrences', 'förekomster'),
+              },
+              {
+                value: summary.cluster_count,
+                label: l('meaning clusters', 'betydelsekluster'),
+              },
+            ],
+          }}
         >
           {tab === 0 && (
             <div className="report-main">

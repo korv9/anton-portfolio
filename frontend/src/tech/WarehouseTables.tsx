@@ -16,7 +16,12 @@ export type Quality = {
     not_measured_count: number
     not_applicable_count: number
   }[]
-  run: { evaluated_at: string; checks: number; dbt: string }
+  run: {
+    evaluated_at: string
+    checks: number
+    dbt: string
+    check_statuses?: Record<string, number>
+  }
 }
 
 export function Checks({ quality }: { quality: Quality }) {

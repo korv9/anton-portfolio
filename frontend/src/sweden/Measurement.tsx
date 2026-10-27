@@ -226,8 +226,8 @@ export default function Measurement({ route }: { route: Route }) {
     <Scene
       product={product}
       line={l(
-        'Each bar counts the SCB tables that report a year in that decade, at the chosen geography or finer. More tables is taller and further along the scale, not more importance.',
-        'Varje stapel räknar SCB-tabeller som rapporterar ett år i det decenniet, på vald geografi eller finare. Fler tabeller är högre och längre ut på skalan, inte större vikt.',
+        'SCB tables reporting a year in each decade, at the chosen geography or finer. Count.',
+        'SCB-tabeller som rapporterar ett år i varje decennium, på vald geografi eller finare. Antal.',
       )}
       legend={
         <>

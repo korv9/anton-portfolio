@@ -74,10 +74,10 @@
   background: var(--sw-page, #242422);
 }
 /* The site's #main heading rule has an id in it; match it so SWEDEN's headings keep their weight. */
-.sweden h1,
+.sweden h1:not(.page-head-title),
 .sweden h2,
 .sweden h3,
-.project-shell #main .sweden h1,
+.project-shell #main .sweden h1:not(.page-head-title),
 .project-shell #main .sweden h2,
 .project-shell #main .sweden h3 {
   font-family: var(--sw-font-display);
@@ -143,36 +143,11 @@
   margin-left: 0;
 }
 
-/* One page: the intro, a sticky jump row, then a short section per product. */
+/* One page: the shared head (ui/PageHead), a sticky jump row, then a short section per product. */
 .sw-one {
   padding: 0 var(--gutter, 1rem) 4rem;
   max-width: 64rem;
   margin-inline: auto;
-}
-.sw-intro {
-  padding: 2.5rem 0 1rem;
-}
-.sw-intro h1 {
-  margin: 0;
-  font-size: clamp(1.75rem, 2.6vw, 2.25rem);
-  line-height: 1.08;
-}
-.sw-lead {
-  margin: 0.75rem 0 0;
-  max-width: 40rem;
-  color: var(--sw-muted);
-}
-.sw-back {
-  display: inline-block;
-  margin-bottom: 1rem;
-  font: 400 0.8125rem/1 var(--sw-font-mono);
-  color: var(--sw-muted);
-  text-decoration: none;
-}
-@media (min-width: 1024px) {
-  .sw-back {
-    display: none;
-  }
 }
 .sw-jump {
   position: sticky;

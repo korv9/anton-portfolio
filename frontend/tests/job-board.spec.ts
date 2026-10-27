@@ -52,7 +52,7 @@ test('search, a removable filter chip, an opened ad and the back button', async 
     sessionStorage.setItem('job-assistant-owner-token', 'fixture-token'),
   )
   await board(page)
-  await expect(page.locator('.ja-stats')).toContainText('Strong matches')
+  await expect(page.locator('.page-head-kpis')).toContainText('Strong matches')
   const before = await count(page)
 
   await page.getByRole('searchbox', { name: /Search jobs/ }).fill('dbt')
@@ -154,9 +154,13 @@ test('without a profile the board lists the open ads under a calm note, with no 
   await expect(
     page.getByRole('searchbox', { name: /Search jobs/ }),
   ).toHaveCount(0)
-  await expect(page.locator('.ja-stats')).not.toContainText('Strong matches')
+  await expect(page.locator('.page-head-kpis')).not.toContainText(
+    'Strong matches',
+  )
   // A visitor has no token: the owner-only Applications tab and stat are not offered.
-  await expect(page.locator('.ja-stats')).not.toContainText('Applications')
+  await expect(page.locator('.page-head-kpis')).not.toContainText(
+    'Applications',
+  )
   await expect(page.getByRole('button', { name: 'Applications' })).toHaveCount(
     0,
   )

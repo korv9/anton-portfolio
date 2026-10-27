@@ -21,13 +21,7 @@ export default function Unmatched({ ads, day, skipped }: Props) {
   return (
     <div className="ja-list-pane">
       <div className="ja-empty ja-calm" role="status">
-        <p>
-          {l(...note)}{' '}
-          {l(
-            'Below are all open Data/IT ads, newest first, as JobTech publishes them, without a match class.',
-            'Nedan finns alla öppna Data/IT-annonser, nyast först, som JobTech publicerar dem, utan matchningsklass.',
-          )}
-        </p>
+        <p>{l(...note)}</p>
       </div>
       <p className="ja-results-head" aria-live="polite">
         <span>

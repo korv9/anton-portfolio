@@ -15,7 +15,8 @@ import ClusterScatter, { type ClusterPoint, unnamed } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
 import SentencePlacer from './SentencePlacer'
-import ClusterGallery from './ClusterGallery'
+import ClusterGallery, { DATASETS } from './ClusterGallery'
+import PageHead from '../ui/PageHead'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -493,23 +494,49 @@ export function ProjectMaps({ ids }: { ids: string[] }) {
   )
 }
 
+type DebateRun = { observations: number; clusters: number; noise_share: number }
+
 export default function ClusterVisualsPage() {
   const maps = MAPS()
   const debates = maps.find((spec) => spec.id === 'research-debates')!
+  const [run, setRun] = useState<DebateRun | null>(null)
+  useEffect(() => {
+    fetchJson<DebateRun>('cluster-research/debate-topics.json').then(
+      setRun,
+      () => {},
+    )
+  }, [])
   // The local lab reads a dev-server export; it is asked for only when the address names it.
   const lab =
     import.meta.env.DEV && /[?&]lab(_|=|&|$)/.test(window.location.hash)
   return (
     <div className="cv">
-      <header className="cv-intro">
-        <h1>{l('Cluster visuals', 'Klustervisualiseringar')}</h1>
-        <p>
-          {l(
-            'The clearest clusterings on the site, drawn from their data.',
-            'De tydligaste klustringarna på sajten, ritade ur sin data.',
-          )}
-        </p>
-      </header>
+      <PageHead
+        title={l('Cluster visuals', 'Klustervisualiseringar')}
+        sentence={l(
+          'The clearest clusterings on the site, drawn from their data.',
+          'De tydligaste klustringarna på sajten, ritade ur sin data.',
+        )}
+        kpis={[
+          { label: l('Maps', 'Kartor'), value: num(DATASETS.length) },
+          ...(run
+            ? [
+                {
+                  label: l('Debate passages', 'Debattpassager'),
+                  value: num(run.observations),
+                },
+                {
+                  label: l('Debate subjects', 'Debattämnen'),
+                  value: num(run.clusters),
+                },
+                {
+                  label: l('Passages in no subject', 'Passager utan ämne'),
+                  value: pct(run.noise_share),
+                },
+              ]
+            : []),
+        ]}
+      />
       <SentencePlacer spec={debates} />
       <ClusterGallery />
       {lab && <ClusterLab />}

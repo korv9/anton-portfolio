@@ -1,11 +1,14 @@
 /**
- * SWEDEN on one page: the platform's question, a jump row, and every research product as a short
+ * SWEDEN on one page: the shared head (name, one sentence, KPIs), a jump row, and every research product as a short
  * section (template.tsx), A to F and Connections. A product's own address (router.ts
  * SWEDEN_PATHS) scrolls to its section. A product whose data cannot be read shows its question
  * and an EmptyState, never sample findings.
  */
-import { lazy, Suspense, useEffect } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { l } from '../i18n'
+import { fetchJson } from '../dataSource'
+import { count } from '../format'
+import PageHead, { type Kpi } from '../ui/PageHead'
 import type { Route } from '../router'
 import { SWEDEN_PRODUCTS } from './products'
 import { sectionId } from './template'
@@ -76,8 +79,51 @@ function useScrollToSection(path: string) {
   }, [path])
 }
 
+/** The page's KPIs, from the four small coverage files; a file that cannot be read drops its KPI. */
+function useKpis() {
+  const [kpis, setKpis] = useState<Kpi[]>([])
+  useEffect(() => {
+    const read = <T,>(
+      path: string,
+      pick: (d: T) => number,
+      label: string,
+    ): Promise<Kpi | null> =>
+      fetchJson<T>(path).then(
+        (d) => ({ value: count(pick(d)), label }),
+        () => null,
+      )
+    Promise.all([
+      read<{ totals: { items: number }[] }>(
+        'sweden/measurement/summary.json',
+        (d) => d.totals.reduce((n, t) => n + t.items, 0),
+        l(
+          'Official statistics catalogued',
+          'Officiell statistik katalogiserad',
+        ),
+      ),
+      read<{ archives: { distinct_texts: number }[] }>(
+        'sweden/language/coverage.json',
+        (d) => d.archives.reduce((n, a) => n + a.distinct_texts, 0),
+        l('Job-ad texts read', 'Annonstexter lästa'),
+      ),
+      read<{ sessions: { speeches: number }[] }>(
+        'sweden/futures/coverage.json',
+        (d) => d.sessions.reduce((n, s) => n + s.speeches, 0),
+        l('Riksdag speeches read', 'Riksdagsanföranden lästa'),
+      ),
+      read<{ public_libraries_registered: number }>(
+        'sweden/belonging/coverage.json',
+        (d) => d.public_libraries_registered,
+        l('Public libraries mapped', 'Folkbibliotek kartlagda'),
+      ),
+    ]).then((all) => setKpis(all.filter((k) => k !== null)))
+  }, [])
+  return kpis
+}
+
 export default function SwedenPage({ route }: { route: Route }) {
   useScrollToSection(route.path)
+  const kpis = useKpis()
   useEffect(() => {
     const events = ['pointerdown', 'keydown', 'change'] as const
     events.forEach((e) => document.addEventListener(e, noteInput, true))
@@ -86,24 +132,14 @@ export default function SwedenPage({ route }: { route: Route }) {
   }, [])
   return (
     <article className="sweden sw-one">
-      <header className="sw-intro">
-        <a className="sw-back" href="#projects">
-          ← {l('Projects', 'Projekt')}
-        </a>
-        <p className="sw-kicker">SWEDEN</p>
-        <h1>
-          {l(
-            'What do we measure, what do we value, and what do we overlook?',
-            'Vad mäter vi, vad värderar vi, och vad förbiser vi?',
-          )}
-        </h1>
-        <p className="sw-lead">
-          {l(
-            'Six research questions about Sweden, and the connections between them, on public data.',
-            'Sex forskningsfrågor om Sverige, och sambanden mellan dem, på offentliga data.',
-          )}
-        </p>
-      </header>
+      <PageHead
+        title="SWEDEN"
+        sentence={l(
+          'Six questions about Sweden, answered with public data.',
+          'Sex frågor om Sverige, besvarade med öppna data.',
+        )}
+        kpis={kpis}
+      />
       <nav className="sw-jump" aria-label={l('Sections', 'Avsnitt')}>
         {SWEDEN_PRODUCTS.map((p) => (
           <a

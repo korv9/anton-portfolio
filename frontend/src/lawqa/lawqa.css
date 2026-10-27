@@ -1,6 +1,6 @@
 /*
- * Ask the law (AskTheLaw.tsx): the name and one line, the corpus switch, the question box, then
- * the answer above the passages it quotes beside how it is checked, and the law list and numbers.
+ * Ask the law (AskTheLaw.tsx): the shared page head, the corpus switch, the question box, the
+ * answer above the passages it quotes, the law data, and the method folded at the foot.
  * No rules: space and a faint tint carry the structure.
  */
 .lq {
@@ -20,25 +20,6 @@
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-}
-.lq-head {
-  display: grid;
-  gap: var(--sp-3);
-  padding-top: var(--sp-6);
-}
-.project-shell #main .lq-head h1,
-.lq-head h1 {
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.05;
-}
-.lq-head p {
-  margin: 0;
-  max-width: 100%;
-  font-size: var(--body-large);
-  line-height: 1.45;
 }
 .lq-switch,
 .lq-examples {
@@ -137,25 +118,12 @@
   justify-content: space-between;
   gap: var(--sp-3);
 }
-/* The answer and its sources, with how it is checked beside them on a wide screen. */
+/* The answer and its sources. */
 .lq-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-7);
   align-items: start;
-}
-@media (min-width: 1000px) {
-  .lq-body {
-    grid-template-columns: minmax(0, 7fr) minmax(16rem, 4fr);
-  }
-  .lq-checked {
-    grid-column: 2;
-    grid-row: 1;
-  }
-  /* With no answer yet it takes the reading column. */
-  .lq-checked:only-child {
-    grid-column: 1;
-  }
 }
 .lq-result {
   display: grid;
@@ -246,24 +214,6 @@
   margin: 0 0 var(--sp-5);
   font-size: var(--small);
   line-height: 1.55;
-}
-.lq-figures {
-  display: grid;
-  gap: var(--sp-5);
-  margin: 0 0 var(--sp-5);
-}
-.lq-figures dt {
-  font-size: clamp(2.25rem, 4vw, 3rem);
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-}
-.lq-figures dd {
-  margin: var(--sp-2) 0 0;
-  color: var(--muted);
-  font-size: var(--small);
-  line-height: 1.45;
 }
 .lq-checked .lq-small {
   color: var(--muted);
@@ -404,14 +354,6 @@
 }
 .lq-key-out {
   margin-left: 1em;
-}
-.lq-findings {
-  display: grid;
-  gap: var(--sp-3);
-  max-width: var(--measure);
-  margin: 0;
-  padding-left: 1.1em;
-  line-height: 1.55;
 }
 .lq-long {
   margin: 0;

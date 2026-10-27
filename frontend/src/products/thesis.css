@@ -1,7 +1,6 @@
 /* The degree project (#thesis, ThesisCase.tsx): ivory on charcoal through the shared tokens,
    titles in the signature's gradient, space instead of rules between the sections. */
-#main .thesis-page :is(.project-hero-title, .project-section > h2),
-.thesis-stats dd {
+#main .thesis-page .project-section > h2 {
   background: linear-gradient(
     to bottom right,
     #ebe6da 0%,
@@ -15,37 +14,6 @@
 .thesis-page .project-section {
   border-top: 0;
 }
-.thesis-page .project-hero-summary {
-  max-width: none;
-}
-
-/* Hero: three figures, the label under each. */
-.thesis-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-  gap: var(--sp-5);
-  margin: var(--sp-5) 0 0;
-}
-.thesis-stats div {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: var(--sp-2);
-}
-.thesis-stats dd {
-  width: max-content;
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.thesis-stats dt {
-  max-width: 22ch;
-  color: var(--muted);
-  font-size: var(--small);
-  line-height: 1.4;
-}
-
 .thesis-figure {
   margin: var(--sp-5) 0 var(--sp-6);
 }

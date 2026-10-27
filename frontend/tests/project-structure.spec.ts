@@ -1,70 +1,39 @@
 import { test, expect } from './test'
 
 test(
-  'degree project presents the supplied narrative and navigable findings',
+  'degree project shows its KPIs and figures, the method folded',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#thesis')
     await expect(page.locator('.thesis-page h1')).toHaveText(
-      'Finding recurring problems in IT support data',
+      'IT Incident Clustering',
     )
-    await expect(page.locator('.thesis-page .project-section h2')).toHaveText([
-      'Why I chose this project',
-      'What I did',
-      'What I found',
-      'Why it matters',
-    ])
-    await expect(page.locator('.thesis-page .project-section p')).toHaveCount(
-      10,
-    )
-    await expect(page.locator('.thesis-stats dd')).toHaveText([
+    await expect(page.locator('.page-head-kpis dd')).toHaveText([
       '21,633',
       '121',
-      '72',
+      '0.706',
+      '27.7%',
     ])
-    await expect(page.locator('.thesis-stats')).toContainText('16,811')
+    await expect(page.locator('.thesis-page .project-section h2')).toHaveText([
+      'Clusters',
+      'Data quality, ISO/IEC 25012',
+      'Fields filled per year',
+    ])
     await expect(page.locator('.thesis-dot')).toHaveCount(121)
     await expect(page.locator('.thesis-dot.is-open')).toHaveCount(72)
     await expect(page.locator('.thesis-split-legend')).toContainText('27.7%')
-    await expect(page.locator('#thesis-workflow')).toContainText('21,633')
-    await expect(page.locator('#thesis-workflow')).toContainText(
-      'ISO/IEC 25012',
-    )
-    await expect(page.locator('#thesis-quality')).toContainText('121 clusters')
-    await expect(page.locator('#thesis-quality')).toContainText(
-      '72 had no link',
-    )
-    await expect(page.locator('#thesis-quality')).toContainText(
-      'rather than confirmed root causes',
-    )
-    await expect(page.locator('#thesis-quality')).toContainText(
-      '3.8% written by hand',
-    )
-    await expect(page.locator('#thesis-quality')).not.toContainText(
-      'helped the analysis distinguish',
-    )
+    // The narrative sits in the closed method, with the thesis's figures.
+    const method = page.locator('.page-method')
+    await expect(method.locator('#thesis-workflow')).toBeHidden()
+    await method.locator('summary').click()
+    await expect(method).toContainText('ISO/IEC 25012')
+    await expect(method).toContainText('72 had no link')
+    await expect(method).toContainText('3.8% written by hand')
     await expect(
       page.locator(
         'main a[href*="/private/"], main a[href*="Examensarbete.pdf"]',
       ),
     ).toHaveCount(0)
-    await page
-      .getByRole('navigation', { name: 'Project topics' })
-      .getByRole('link', { name: 'What I found', exact: true })
-      .click()
-    await expect(page.locator('#thesis-quality')).toBeInViewport()
-    await page.reload()
-    await expect(page.locator('#thesis-quality')).toBeInViewport()
-    await page
-      .getByRole('navigation', { name: 'Project topics' })
-      .getByRole('link', { name: 'Why it matters', exact: true })
-      .click()
-    await expect(page.locator('#thesis-evaluation')).toBeInViewport()
-    await expect(page.locator('#thesis-evaluation')).toContainText(
-      'would need to be evaluated through operational use',
-    )
-    await page.reload()
-    await expect(page.locator('#thesis-evaluation')).toBeInViewport()
   },
 )
 
@@ -72,10 +41,10 @@ test.describe('degree project in Swedish', () => {
   test.use({ language: 'sv' })
   test('renders the Swedish copy', async ({ page }) => {
     await page.goto('/#thesis')
-    await expect(page.locator('.thesis-page h1')).toHaveText(
-      'Att hitta återkommande problem i IT-supportdata',
+    await expect(page.locator('.page-head-sentence')).toContainText(
+      'Klustring av 16 811 IT-ärenden',
     )
-    await expect(page.locator('#thesis-quality')).toContainText(
+    await expect(page.locator('.page-method')).toContainText(
       'inte bekräftade rotorsaker',
     )
   })

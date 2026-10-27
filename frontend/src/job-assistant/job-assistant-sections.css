@@ -139,9 +139,6 @@
     flex-basis: calc(50% - var(--sp-3));
     max-width: none;
   }
-  .ja-stats > div {
-    flex: 1 1 40%;
-  }
   .ja-board {
     grid-template-columns: minmax(0, 1fr);
   }

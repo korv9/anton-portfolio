@@ -1,7 +1,6 @@
 /* Replik (#replik, ReplikPage.tsx): ivory on charcoal through the shared tokens, titles in the
    signature's gradient, space instead of rules between the sections. */
-#main .replik :is(.project-hero-title, .project-section > h2),
-.rk-stats dd {
+#main .replik .project-section > h2 {
   background: linear-gradient(
     to bottom right,
     #ebe6da 0%,
@@ -11,13 +10,6 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-#main .replik .project-hero-title {
-  width: max-content;
-  max-width: 100%;
-  font-size: var(--display-l);
-  letter-spacing: -0.04em;
-  line-height: 1;
 }
 .replik .project-section {
   border-top: 0;
@@ -29,47 +21,7 @@
   letter-spacing: -0.03em;
   line-height: 1.08;
 }
-.replik .project-hero-summary {
-  max-width: none;
-}
-.replik .project-hero-summary > p {
-  max-width: var(--measure);
-}
 
-.rk-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
-  gap: var(--sp-5);
-  margin: var(--sp-5) 0 0;
-}
-.rk-stats div {
-  display: flex;
-  flex-direction: column-reverse;
-  gap: var(--sp-2);
-}
-.rk-stats dd {
-  width: max-content;
-  margin: 0;
-  font-size: clamp(2.5rem, 6vw, 4rem);
-  font-weight: 750;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
-.rk-stats dt {
-  max-width: 22ch;
-  color: var(--muted);
-  font-size: var(--small);
-  line-height: 1.4;
-}
-
-.rk-finding {
-  max-width: var(--measure);
-  margin: 0 0 var(--sp-5);
-  color: var(--ink);
-  font-size: var(--body-large);
-  line-height: 1.5;
-}
-.rk-note,
 .rk-figure figcaption,
 .rk-spark-note {
   max-width: var(--measure);

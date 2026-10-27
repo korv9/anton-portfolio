@@ -7,19 +7,20 @@ test(
     const errors: string[] = []
     page.on('pageerror', (e) => errors.push(e.message))
     await page.goto('/#drugcomb')
-    const intro = page.locator('.politik-intro')
-    await expect(intro).toContainText('396,498')
+    await expect(page.locator('.page-head-kpis')).toContainText('396,498')
     // One question per tab: the splits, then what it finds and whether it is calibrated.
     await expect(page.locator('.report-tab .feature')).toHaveCount(3)
     // The default split is the one the tab asks about: an unseen drug pair.
-    await expect(page.locator('#dc-splits-title')).toContainText(
-      'new drug pair',
-    )
+    await expect(
+      page.getByRole('button', { name: 'New drug pair', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true')
     await page
       .getByRole('button', { name: 'New drug (one or both)', exact: true })
       .click()
     await expect(page).toHaveURL(/uppdelning=cold_drug/)
-    await expect(page.locator('#dc-splits-title')).toContainText('new drug')
+    await expect(
+      page.getByRole('button', { name: 'New drug (one or both)', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true')
     // What it learns: the tree trained on the screens, the features and a check against luck.
     const tree = await (
       await page.request.get('/data/products/drugcomb/tree.json')

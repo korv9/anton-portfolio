@@ -81,16 +81,11 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.locator('#lq-book-title')).toHaveText('The statute book')
   await expect(page.locator('.lq-laws li')).toHaveCount(40)
   await expect(page.locator('.lq-mark').first()).toHaveText('· in Allegora')
-  await expect(page.locator('.lq-findings').first()).toContainText(
-    'Repeal clusters in the',
-  )
   await expect(page.locator('#lq-act-title')).toHaveText('The AI Act')
-  await expect(page.locator('.lq-findings').last()).toContainText(
-    'Regulation (EU) 2026/1744',
-  )
   await expect(page.locator('.lq-articles li').first()).toBeVisible()
   expect(requested).not.toContain('sfs/meta.json')
   await page.getByRole('button', { name: 'Show the 8 passages found' }).click()
+  await page.getByText('How it is made').click()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)
   await expect(page.locator('.lq-passages li:visible')).toHaveCount(3)
@@ -123,12 +118,10 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.locator('.lq-passages li')).toHaveCount(8)
 
   // The evaluation: the chosen model's figures and the comparison, gpt-oss cost as a lower bound.
-  const checked = page.locator('.lq-checked')
-  await expect(checked).toContainText(
-    '15 of 20answers with every quote verified (75 %)',
-  )
-  await expect(checked).toContainText('0.85recall@8')
-  await expect(checked).toContainText('n = 20')
+  const kpis = page.locator('.page-head-kpis')
+  await expect(kpis).toContainText('Answers with every quote verified15 of 20')
+  await expect(kpis).toContainText('Right passage in the top 80.85')
+  await expect(page.locator('.lq-checked')).toContainText('n = 20')
   await expect(page.locator('.lq-tech')).toContainText(
     '30.2 neurons, 2,672 tokens',
   )

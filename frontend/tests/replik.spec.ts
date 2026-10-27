@@ -1,5 +1,5 @@
 /**
- * Replik (#replik): six sections, each finding read from its file at load
+ * Replik (#replik): a KPI head and six sections, each chart read from its file at load
  * time. Checks the page against the committed JSON, not against numbers typed into the test.
  */
 import { test, expect } from './test'
@@ -13,7 +13,7 @@ const SECTIONS = [
   'replik-now',
 ]
 
-test('Replik shows its six sections with findings from the data @mobile', async ({
+test('Replik shows its KPIs and six sections from the data @mobile', async ({
   page,
   request,
 }) => {
@@ -29,30 +29,23 @@ test('Replik shows its six sections with findings from the data @mobile', async 
   await expect(page.locator('#replik-parties .rk-party')).toHaveCount(8)
   await expect(page.locator('#replik-votes .rk-spark')).toHaveCount(8)
 
-  // R5 from parliament/sessions.json: the latest session's figure is on the page.
+  // The KPI row reads the roll calls from parliament/sessions.json.
   const sessions = await (
     await request.get('/data/parliament/sessions.json')
   ).json()
-  const last = sessions.sessions.at(-1).session
-  const outside = sessions.party_record
-    .filter(
-      (r: { session: string; role: string }) =>
-        r.session === last && r.role !== 'government',
-    )
-    .sort(
-      (
-        a: { with_government_pct: number },
-        b: { with_government_pct: number },
-      ) => b.with_government_pct - a.with_government_pct,
-    )[0]
-  await expect(page.locator('#replik-votes .rk-finding').first()).toContainText(
-    `${outside.with_government_pct.toFixed(1)}%`,
+  const calls = sessions.sessions.reduce(
+    (a: number, s: { roll_calls: number }) => a + s.roll_calls,
+    0,
   )
-
-  // R4 reads the same-debate AUC, never the all-party one.
-  await expect(page.locator('#replik-model .rk-finding')).toContainText(
+  await expect(page.locator('.page-head-kpis')).toContainText(
+    calls.toLocaleString('en-GB'),
+  )
+  // Charts carry a legend only; the method sits folded at the foot.
+  await expect(page.locator('.rk-finding')).toHaveCount(0)
+  await expect(page.locator('#replik-model .page-legend')).toContainText(
     'same debate',
   )
+  await expect(page.locator('details.page-method')).not.toHaveAttribute('open')
 
   // Unnamed topic groups get a description, field codes never show.
   const text = await page.locator('article.replik').innerText()

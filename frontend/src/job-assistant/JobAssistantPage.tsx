@@ -14,7 +14,8 @@ import AdList from './AdList'
 import Filters from './Filters'
 import Pipeline from './Pipeline'
 import Sections from './Sections'
-import Stats from './Stats'
+import { statKpis, StaleNotes } from './Stats'
+import PageHead from '../ui/PageHead'
 import Unmatched from './Unmatched'
 import { useListKeys } from './useListKeys'
 import { useJobData } from './useJobData'
@@ -140,32 +141,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const profile = data?.matches.profile
   return (
     <div className="ja ds-container">
-      <header className="ja-head">
-        <h1>Arbetsförmedla</h1>
-        <p className="ja-sub">
-          {l(
-            'My job search against every open Data/IT ad in Sweden',
-            'Mitt jobbsök mot varje öppen Data/IT-annons i Sverige',
-          )}
-        </p>
-        <p className="ja-lede">
-          {l(
-            'Data/IT ads, checked against my CV several times a day. Each match gets a class, not a percentage, with the ad sentence and CV line behind it.',
-            'Data/IT-annonser, jämförda med mitt cv flera gånger om dagen. Varje matchning får en klass, inte en procentsats, med annonsens mening och cv-raden bakom.',
-          )}
-        </p>
-        <p className="ja-mono">
-          {l(
-            'Not affiliated with Arbetsförmedlingen; uses its open JobTech data (CC0)',
-            'Inte knuten till Arbetsförmedlingen; använder dess öppna JobTech-data (CC0)',
-          )}
-        </p>
-        {data ? (
-          <Stats data={data} records={records} day={day} now={now} />
-        ) : (
-          !failed && <div className="ja-stats ja-skel" aria-hidden="true" />
+      <PageHead
+        title="Arbetsförmedla"
+        sentence={l(
+          'Every open Data/IT job ad in Sweden, checked against my CV several times a day.',
+          'Varje öppen Data/IT-annons i Sverige, prövad mot mitt CV flera gånger om dagen.',
         )}
-      </header>
+        kpis={data ? statKpis({ data, records, day }) : []}
+      />
+      {data && <StaleNotes data={data} now={now} />}
 
       <nav className="ja-tabs" aria-label={l('Job board', 'Jobbtavlan')}>
         {tabs.map((t) => (

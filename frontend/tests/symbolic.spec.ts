@@ -9,9 +9,8 @@ test('the Symbol Lab maps real occurrences and filters by symbol and tradition',
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Do symbol words gather by meaning, or by the book they come from?',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Symbol Lab')
+  await expect(page.locator('.page-head-kpis dd').first()).toHaveText('101')
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
   ).json()

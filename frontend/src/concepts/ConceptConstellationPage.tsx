@@ -309,6 +309,33 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
           deeper={deeper(
             concept ?? featured.find((c) => c.concept_id === followed),
           )}
+          head={{
+            sentence: l(
+              '28 concepts across myth, philosophy, Riksdag speeches and the EU AI Act.',
+              '28 begrepp i myter, filosofi, riksdagstal och EU:s AI-förordning.',
+            ),
+            kpis: [
+              {
+                value: summary.concepts.length,
+                label: l('concepts', 'begrepp'),
+              },
+              {
+                value: summary.corpora.length,
+                label: l('corpora', 'korpusar'),
+              },
+              {
+                value: passages.toLocaleString('en-GB'),
+                label: l('passages compared', 'jämförda stycken'),
+              },
+              {
+                value: `${Math.round(summary.run.evaluation.same_corpus_neighbours * 100)} %`,
+                label: l(
+                  'neighbours from the same corpus',
+                  'grannar ur samma korpus',
+                ),
+              },
+            ],
+          }}
         >
           {tab === 0 && <Profiles summary={summary} profiles={data.profiles} />}
           {tab === 1 && <Journey route={route} data={data} />}

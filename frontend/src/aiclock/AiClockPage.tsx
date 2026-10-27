@@ -1,20 +1,19 @@
 /**
  * When does a law arrive? (#lag-ankomst): how fast the EU AI Act reached Swedish job ads and the
- * Riksdag. Every figure is computed on load from the committed ai-act files (compute.ts).
+ * Riksdag. A head with KPIs, then charts with a legend only, computed on load from the committed
+ * ai-act files (compute.ts); method folds away at the foot.
  */
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fetchJson } from '../dataSource'
-import { ProjectHero, ProjectSection } from '../ui/Project'
+import { ProjectSection } from '../ui/Project'
+import PageHead, { Legend, Method, type Kpi } from '../ui/PageHead'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
 import {
   amendedArticles,
-  firstHit,
   jobYears,
   lagTest,
-  proposal,
-  sinceProposal,
   speechYears,
   type ActSummary,
   type Change,
@@ -50,41 +49,8 @@ const num = (v: number, digits = 0) =>
 /** A share between 0 and 1, as a percent. */
 const sh = (v: number, digits = 1) =>
   l(`${num(v * 100, digits)}%`, `${num(v * 100, digits)} %`)
-/** 'YYYY-MM' as "June 2023" / "juni 2023". */
-const monthName = (m: string) =>
-  new Date(`${m}-15`).toLocaleDateString(locale(), {
-    month: 'long',
-    year: 'numeric',
-  })
-const months = (n: number) => l(`${n} months`, `${n} månader`)
 
-function Finding({ children }: { children: ReactNode }) {
-  return <p className="ac-finding">{children}</p>
-}
-function Note({ children }: { children: ReactNode }) {
-  return <p className="ac-note">{children}</p>
-}
-
-// ---------------------------------------------------------------- the question
-
-function Timeline({ d, end }: { d: Diffusion; end: string }) {
-  return (
-    <ol
-      className="ac-timeline"
-      aria-label={l('The Act’s dates', 'Förordningens datum')}
-    >
-      {d.milestones.map((m) => (
-        <li
-          key={m.milestone_id}
-          className={m.month > end ? 'is-ahead' : undefined}
-        >
-          <time dateTime={m.date}>{m.date}</time>
-          <span>{l(m.title_en, m.title_sv)}</span>
-        </li>
-      ))}
-    </ol>
-  )
-}
+// ---------------------------------------------------------------- timeline
 
 function QuestionSection({
   d,
@@ -94,29 +60,31 @@ function QuestionSection({
   end: string | null
 }) {
   if (!d || !end) return null
-  const p = proposal(d)
   return (
     <ProjectSection
       id="aiclock-question"
-      label={l('The question', 'Frågan')}
-      title={l(
-        'A law is written in Brussels. When does it show up at work?',
-        'En lag skrivs i Bryssel. När syns den på jobbet?',
-      )}
+      title={l('The Act’s dates', 'Förordningens datum')}
     >
-      <Finding>
+      <ol
+        className="ac-timeline"
+        aria-label={l('The Act’s dates', 'Förordningens datum')}
+      >
+        {d.milestones.map((m) => (
+          <li
+            key={m.milestone_id}
+            className={m.month > end ? 'is-ahead' : undefined}
+          >
+            <time dateTime={m.date}>{m.date}</time>
+            <span>{l(m.title_en, m.title_sv)}</span>
+          </li>
+        ))}
+      </ol>
+      <Legend source="ai-act/diffusion.json">
         {l(
-          `The Commission proposed the AI Act in ${monthName(p.month)}. When did Swedish job ads and the Riksdag start using its words?`,
-          `Kommissionen föreslog AI-förordningen i ${monthName(p.month)}. När började svenska platsannonser och riksdagen använda dess ord?`,
+          `Proposal, adoption and application dates; grey after ${end}, the last counted month`,
+          `Förslag, antagande och tillämpning; grått efter ${end}, sista räknade månaden`,
         )}
-      </Finding>
-      <Timeline d={d} end={end} />
-      <Note>
-        {l(
-          `Grey dates are after ${monthName(end)}, the last counted month.`,
-          `Grå datum ligger efter ${monthName(end)}, den sista räknade månaden.`,
-        )}
-      </Note>
+      </Legend>
     </ProjectSection>
   )
 }
@@ -126,39 +94,16 @@ function QuestionSection({
 function JobsSection({
   rows,
   summary,
-  d,
 }: {
   rows: JobRow[] | null
   summary: JobSummary | null
-  d: Diffusion | null
 }) {
-  if (!rows || !summary || !d) return null
-  const ai = jobYears(rows, 'ai_any')
+  if (!rows || !summary) return null
   const act = jobYears(rows, 'ai_act')
-  const [first, last] = [ai[0], ai.at(-1)!]
-  const prev = ai.at(-2)!
-  const named = act.find((y) => y.year === prev.year)!
-  const actRows = rows.filter((r) => r.term_id === 'ai_act')
-  const firstAd = firstHit(actRows, (r) => r.mention_count)
-  const regular = firstHit(actRows, (r) => (r.mention_count >= 10 ? 1 : 0))
-  const times = num(last.share / first.share, 1)
   const partial = (y: { year: string; months: number }) =>
     y.months < 12 ? l(` (${y.months} months)`, ` (${y.months} månader)`) : ''
   return (
-    <ProjectSection
-      id="aiclock-jobs"
-      label={l('Job ads', 'Platsannonser')}
-      title={l(
-        `Employers write AI ${times} times as often. They rarely name the Act.`,
-        `Arbetsgivare skriver AI ${times} gånger så ofta. Förordningen nämner de sällan.`,
-      )}
-    >
-      <Finding>
-        {l(
-          `Of ${num(summary.ads)} Swedish job ads, ${sh(first.share, 2)} mentioned AI or machine learning in ${first.year} and ${sh(last.share, 2)} in ${last.year}${partial(last)}. The AI Act by name appeared in ${num(named.hits)} ads in ${prev.year}, ${sh(named.share, 2)} of them.`,
-          `Av ${num(summary.ads)} svenska platsannonser nämnde ${sh(first.share, 2)} AI eller maskininlärning ${first.year} och ${sh(last.share, 2)} ${last.year}${partial(last)}. AI-förordningen vid namn fanns i ${num(named.hits)} annonser ${prev.year}, ${sh(named.share, 2)} av dem.`,
-        )}
-      </Finding>
+    <ProjectSection id="aiclock-jobs" title={l('Job ads', 'Platsannonser')}>
       <MultiLineChart
         label={l(
           'Share of job ads mentioning AI or machine learning, three-month mean',
@@ -182,14 +127,14 @@ function JobsSection({
           },
         ]}
       />
+      <Legend source="ai-act/jobs/monthly.json">
+        {l(
+          `Share of job ads mentioning AI or machine learning, %, three-month mean, ${summary.first_month}–${summary.last_month}`,
+          `Andel platsannonser som nämner AI eller maskininlärning, %, tremånadersmedel, ${summary.first_month}–${summary.last_month}`,
+        )}
+      </Legend>
       <div className="ac-pair">
         <div>
-          <h3>
-            {l(
-              'Ads naming the AI Act, per year',
-              'Annonser som nämner AI-förordningen, per år',
-            )}
-          </h3>
           <RankBars
             label={l(
               'Ads naming the AI Act, per year',
@@ -202,22 +147,14 @@ function JobsSection({
               value: y.hits,
             }))}
           />
-        </div>
-        <div>
-          <Finding>
+          <Legend source="ai-act/jobs/monthly.json">
             {l(
-              `The first ad to name the Act came in ${monthName(firstAd)}, ${months(sinceProposal(d, firstAd))} after the proposal. Ten or more ads a month first came in ${monthName(regular)}, ${months(sinceProposal(d, regular))} after it.`,
-              `Den första annonsen som nämnde förordningen kom i ${monthName(firstAd)}, ${months(sinceProposal(d, firstAd))} efter förslaget. Tio eller fler annonser i månaden kom första gången i ${monthName(regular)}, ${months(sinceProposal(d, regular))} efter det.`,
+              'Job ads naming the AI Act, count per year',
+              'Platsannonser som nämner AI-förordningen, antal per år',
             )}
-          </Finding>
+          </Legend>
         </div>
       </div>
-      <Note>
-        {l(
-          `Arbetsförmedlingen ads, ${summary.first_month} to ${summary.last_month}. An ad can discuss the Act without naming it.`,
-          `Arbetsförmedlingens annonser, ${summary.first_month} till ${summary.last_month}. En annons kan handla om förordningen utan att nämna den.`,
-        )}
-      </Note>
     </ProjectSection>
   )
 }
@@ -227,40 +164,17 @@ function JobsSection({
 function RiksdagSection({
   rows,
   summary,
-  d,
 }: {
   rows: SpeechRow[] | null
   summary: SpeechSummary | null
-  d: Diffusion | null
 }) {
-  if (!rows || !summary || !d) return null
+  if (!rows || !summary) return null
   const years = speechYears(rows)
-  const firstSpeech = firstHit(rows, (r) => r.ai_act_speeches)
-  const top = [...years].sort((a, b) => b.act - a.act)[0]
-  const [first, last] = [years[0], years.at(-1)!]
+  const firstAct = years.find((y) => y.act > 0)?.year ?? years[0].year
   return (
-    <ProjectSection
-      id="aiclock-riksdag"
-      label={l('The Riksdag', 'Riksdagen')}
-      title={l(
-        'AI talk in the Riksdag grew. The Act by name stayed rare.',
-        'AI-talet i riksdagen växte. Förordningen vid namn förblev ovanlig.',
-      )}
-    >
-      <Finding>
-        {l(
-          `Of ${num(summary.counts.speeches)} speeches from ${summary.first_date.slice(0, 4)} to ${summary.last_date.slice(0, 4)}, ${num(summary.counts.ai_speeches)} mention AI and ${num(summary.counts.ai_act_speeches)} name the AI Act. The first came in ${monthName(firstSpeech)}, ${months(sinceProposal(d, firstSpeech))} after the proposal; the most in one year was ${num(top.act)}, in ${top.year}.`,
-          `Av ${num(summary.counts.speeches)} anföranden från ${summary.first_date.slice(0, 4)} till ${summary.last_date.slice(0, 4)} nämner ${num(summary.counts.ai_speeches)} AI och ${num(summary.counts.ai_act_speeches)} AI-förordningen vid namn. Det första kom i ${monthName(firstSpeech)}, ${months(sinceProposal(d, firstSpeech))} efter förslaget; flest på ett år var ${num(top.act)}, ${top.year}.`,
-        )}
-      </Finding>
+    <ProjectSection id="aiclock-riksdag" title={l('The Riksdag', 'Riksdagen')}>
       <div className="ac-pair">
         <div>
-          <h3>
-            {l(
-              'Speeches mentioning AI, share per year',
-              'Anföranden som nämner AI, andel per år',
-            )}
-          </h3>
           <MultiLineChart
             label={l(
               'Share of Riksdag speeches mentioning AI, per year',
@@ -280,14 +194,14 @@ function RiksdagSection({
               },
             ]}
           />
+          <Legend source="ai-act/politics/monthly.json">
+            {l(
+              `Share of Riksdag speeches mentioning AI, %, per year, ${years[0].year}–${years.at(-1)!.year}`,
+              `Andel riksdagsanföranden som nämner AI, %, per år, ${years[0].year}–${years.at(-1)!.year}`,
+            )}
+          </Legend>
         </div>
         <div>
-          <h3>
-            {l(
-              'Speeches naming the AI Act, per year',
-              'Anföranden som nämner AI-förordningen, per år',
-            )}
-          </h3>
           <RankBars
             label={l(
               'Speeches naming the AI Act, per year',
@@ -295,17 +209,17 @@ function RiksdagSection({
             )}
             format={(v) => num(v)}
             rows={years
-              .filter((y) => y.year >= firstSpeech.slice(0, 4))
+              .filter((y) => y.year >= firstAct)
               .map((y) => ({ key: y.year, label: y.year, value: y.act }))}
           />
+          <Legend source="ai-act/politics/monthly.json">
+            {l(
+              'Riksdag speeches naming the AI Act, count per year',
+              'Riksdagsanföranden som nämner AI-förordningen, antal per år',
+            )}
+          </Legend>
         </div>
       </div>
-      <Note>
-        {l(
-          `${first.year} and ${last.year} are partial years.`,
-          `${first.year} och ${last.year} är ofullständiga år.`,
-        )}
-      </Note>
     </ProjectSection>
   )
 }
@@ -315,25 +229,8 @@ function RiksdagSection({
 function LagSection({ d }: { d: Diffusion | null }) {
   if (!d) return null
   const t = lagTest(d)
-  const where = (c: string) =>
-    c === 'job_ads'
-      ? l('job ads', 'platsannonser')
-      : l('speeches', 'anföranden')
   return (
-    <ProjectSection
-      id="aiclock-lags"
-      label={l('The lag test', 'Fördröjningstestet')}
-      title={l(
-        'Most of the lags are no shorter than chance',
-        'De flesta fördröjningarna är inte kortare än slumpen',
-      )}
-    >
-      <Finding>
-        {l(
-          `Months from each of the Act’s dates until a term’s share jumps, against ${t.rounds} random dates. Of ${num(t.total)} lags, ${num(t.censored)} never jump, ${num(t.notSig)} are no shorter than at random dates, and ${num(t.sig)} reach p ≤ 0.05.`,
-          `Månader från förordningens datum tills ett begrepps andel tar ett skutt, mot ${t.rounds} slumpade datum. Av ${num(t.total)} fördröjningar tar ${num(t.censored)} aldrig något skutt, ${num(t.notSig)} är inte kortare än vid slumpade datum och ${num(t.sig)} når p ≤ 0,05.`,
-        )}
-      </Finding>
+    <ProjectSection id="aiclock-lags" title={l('Lag test', 'Fördröjningstest')}>
       <RankBars
         label={l('The lags by outcome', 'Fördröjningarna efter utfall')}
         format={(v) => num(v)}
@@ -356,18 +253,12 @@ function LagSection({ d }: { d: Diffusion | null }) {
           },
         ]}
       />
-      <Finding>
+      <Legend source="ai-act/diffusion.json">
         {l(
-          `The ${num(t.sig)} rest on little. ${num(t.solid)} point at one month, ${t.solidMonths.map(monthName).join(', ')}: “${t.solidTerms.join('” and “')}” in at most ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' and ')} each. The other ${num(t.thin)} rest on at most ${num(t.thinMatches)} match${t.thinMatches === 1 ? '' : 'es'} each. The Act’s own words have not arrived in a way the test can tell from chance.`,
-          `De ${num(t.sig)} vilar på lite. ${num(t.solid)} pekar på en månad, ${t.solidMonths.map(monthName).join(', ')}: ”${t.solidTerms.join('” och ”')}” i högst ${num(t.solidMatches)} ${t.solidCorpora.map(where).join(' och ')} vardera. De övriga ${num(t.thin)} vilar på högst ${num(t.thinMatches)} ${t.thinMatches === 1 ? 'träff' : 'träffar'} var. Förordningens egna ord har inte kommit fram på ett sätt som testet kan skilja från slumpen.`,
+          `Lags from the Act’s dates to a jump in a term’s share, by outcome against ${t.rounds} random dates, count of ${num(t.total)}`,
+          `Fördröjningar från förordningens datum till ett skutt i ett begrepps andel, efter utfall mot ${t.rounds} slumpade datum, antal av ${num(t.total)}`,
         )}
-      </Finding>
-      <Note>
-        {l(
-          `Pre-registered. No multiple-test adjustment: of ${num(t.tested)} p-values, about ${num(Math.round(t.tested * 0.05))} would reach 0.05 by chance. Timing, not cause.`,
-          `Förregistrerat. Ingen justering för många test: av ${num(t.tested)} p-värden skulle ungefär ${num(Math.round(t.tested * 0.05))} nå 0,05 av slump. Tidpunkt, inte orsak.`,
-        )}
-      </Note>
+      </Legend>
     </ProjectSection>
   )
 }
@@ -387,19 +278,8 @@ function LawSection({
   return (
     <ProjectSection
       id="aiclock-law"
-      label={l('The law itself', 'Lagen själv')}
-      title={l(
-        'The law moved faster than its words',
-        'Lagen rörde sig snabbare än dess ord',
-      )}
+      title={l('Inserted articles', 'Införda artiklar')}
     >
-      <Finding>
-        {l(
-          `${num(s.counts.articles_changed)} of its ${num(s.counts.articles)} articles are new or amended since ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} amended, ${num(inserted.length)} inserted, by Regulation ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}.`,
-          `${num(s.counts.articles_changed)} av dess ${num(s.counts.articles)} artiklar är nya eller ändrade sedan ${s.original_version.published_at.slice(0, 4)}: ${num(amended.length)} ändrade, ${num(inserted.length)} införda, genom förordning ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}.`,
-        )}
-      </Finding>
-      <h3>{l('The new articles', 'De nya artiklarna')}</h3>
       <ul className="ac-articles">
         {inserted.map((a) => (
           <li key={a.n}>
@@ -407,71 +287,17 @@ function LawSection({
           </li>
         ))}
       </ul>
-      <Note>
+      <Legend source="ai-act/changes.json">
         {l(
-          `Amended articles: ${amended.map((a) => a.n).join(', ')}.`,
-          `Ändrade artiklar: ${amended.map((a) => a.n).join(', ')}.`,
+          `Articles inserted by Regulation ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}; amended: ${amended.map((a) => a.n).join(', ')}`,
+          `Artiklar införda genom förordning ${by.celex.slice(1, 5)}/${Number(by.celex.slice(6))}; ändrade: ${amended.map((a) => a.n).join(', ')}`,
         )}
-      </Note>
+      </Legend>
     </ProjectSection>
   )
 }
 
 // ---------------------------------------------------------------- page
-
-function Stats({
-  jobs,
-  speeches,
-  act,
-  rows,
-}: {
-  jobs: JobSummary | null
-  speeches: SpeechSummary | null
-  act: ActSummary | null
-  rows: JobRow[] | null
-}) {
-  const items: [string, string][] = []
-  if (jobs)
-    items.push([num(jobs.ads), l('job ads read', 'lästa platsannonser')])
-  if (rows) {
-    const ai = jobYears(rows, 'ai_any')
-    const last = ai.at(-1)!
-    items.push([
-      sh(last.share, 1),
-      l(
-        `of ads mention AI in ${last.year}${last.months < 12 ? ` (${last.months} months)` : ''}, from ${sh(ai[0].share, 2)} in ${ai[0].year}`,
-        `av annonserna nämner AI ${last.year}${last.months < 12 ? ` (${last.months} månader)` : ''}, från ${sh(ai[0].share, 2)} ${ai[0].year}`,
-      ),
-    ])
-  }
-  if (speeches)
-    items.push([
-      num(speeches.counts.ai_act_speeches),
-      l(
-        `Riksdag speeches name the AI Act, of ${num(speeches.counts.speeches)}`,
-        `riksdagsanföranden nämner AI-förordningen, av ${num(speeches.counts.speeches)}`,
-      ),
-    ])
-  if (act)
-    items.push([
-      num(act.counts.articles_changed),
-      l(
-        'articles of the Act already new or amended',
-        'artiklar i förordningen redan nya eller ändrade',
-      ),
-    ])
-  if (!items.length) return null
-  return (
-    <dl className="ac-stats">
-      {items.map(([value, label]) => (
-        <div key={label}>
-          <dt>{label}</dt>
-          <dd>{value}</dd>
-        </div>
-      ))}
-    </dl>
-  )
-}
 
 export default function AiClockPage() {
   const d = useJson<Diffusion>('ai-act/diffusion.json')
@@ -481,27 +307,43 @@ export default function AiClockPage() {
   const speeches = useJson<SpeechSummary>('ai-act/politics/summary.json')
   const act = useJson<ActSummary>('ai-act/summary.json')
   const changes = useJson<Change[]>('ai-act/changes.json')
+  const kpis: Kpi[] = []
+  if (jobs)
+    kpis.push({
+      value: num(jobs.ads),
+      label: l('job ads read', 'lästa platsannonser'),
+    })
+  if (jobRows) {
+    const last = jobYears(jobRows, 'ai_any').at(-1)!
+    kpis.push({
+      value: sh(last.share, 1),
+      label: l(
+        `of ads mention AI, ${last.year}`,
+        `av annonserna nämner AI, ${last.year}`,
+      ),
+    })
+  }
+  if (speeches)
+    kpis.push({
+      value: num(speeches.counts.ai_act_speeches),
+      label: l('speeches name the Act', 'anföranden nämner förordningen'),
+    })
+  const t = d ? lagTest(d) : null
+  if (t)
+    kpis.push({
+      value: `${num(t.sig)} / ${num(t.total)}`,
+      label: l('lags beat chance', 'fördröjningar slår slumpen'),
+    })
   return (
     <article className="project-page aiclock">
-      <ProjectHero
-        eyebrow={l(
-          'The EU AI Act in Swedish job ads and the Riksdag',
-          'EU:s AI-förordning i svenska platsannonser och riksdagen',
-        )}
+      <PageHead
         title={l('When does a law arrive?', 'När kommer en lag fram?')}
-        question={l(
-          'How fast does a law reach working life and the Riksdag?',
-          'Hur snabbt når en lag arbetslivet och riksdagen?',
+        sentence={l(
+          'The EU wrote “AI system” into law in 2024. When did Swedish job ads and the Riksdag start using its words?',
+          'EU skrev in ”AI-system” i lag 2024. När började svenska jobbannonser och riksdagen använda dess ord?',
         )}
-      >
-        <p>
-          {l(
-            'The EU wrote “AI system” into law in 2024. When did Swedish employers and MPs start using the Act’s words?',
-            'EU skrev in ”AI-system” i lag 2024. När började svenska arbetsgivare och riksdagsledamöter använda förordningens ord?',
-          )}
-        </p>
-        <Stats jobs={jobs} speeches={speeches} act={act} rows={jobRows} />
-      </ProjectHero>
+        kpis={kpis}
+      />
       <QuestionSection
         d={d}
         end={
@@ -513,10 +355,39 @@ export default function AiClockPage() {
             : null
         }
       />
-      <JobsSection rows={jobRows} summary={jobs} d={d} />
-      <RiksdagSection rows={speechRows} summary={speeches} d={d} />
+      <JobsSection rows={jobRows} summary={jobs} />
+      <RiksdagSection rows={speechRows} summary={speeches} />
       <LagSection d={d} />
       <LawSection s={act} changes={changes} />
+      <Method
+        summary={l(
+          'How it is made · sources · method',
+          'Så är det gjort · källor · metod',
+        )}
+      >
+        <p>
+          {l(
+            'Sources: Arbetsförmedlingen job ads (JobTech), Riksdagen speeches, the AI Act on EUR-Lex. An ad or speech can discuss the Act without naming it. First and last years can be partial.',
+            'Källor: Arbetsförmedlingens platsannonser (JobTech), riksdagens anföranden, AI-förordningen på EUR-Lex. En annons eller ett anförande kan handla om förordningen utan att nämna den. Första och sista året kan vara ofullständiga.',
+          )}
+        </p>
+        {t && (
+          <p>
+            {l(
+              `Lag test: months from each of the Act’s dates until a term’s share jumps, against ${t.rounds} random dates. Pre-registered. No multiple-test adjustment: of ${num(t.tested)} p-values, about ${num(Math.round(t.tested * 0.05))} would reach 0.05 by chance. Timing, not cause.`,
+              `Fördröjningstest: månader från förordningens datum tills ett begrepps andel tar ett skutt, mot ${t.rounds} slumpade datum. Förregistrerat. Ingen justering för många test: av ${num(t.tested)} p-värden skulle ungefär ${num(Math.round(t.tested * 0.05))} nå 0,05 av slump. Tidpunkt, inte orsak.`,
+            )}
+          </p>
+        )}
+        {act && (
+          <p>
+            {l(
+              `${num(act.counts.articles_changed)} of the Act’s ${num(act.counts.articles)} articles are new or amended since ${act.original_version.published_at.slice(0, 4)}.`,
+              `${num(act.counts.articles_changed)} av förordningens ${num(act.counts.articles)} artiklar är nya eller ändrade sedan ${act.original_version.published_at.slice(0, 4)}.`,
+            )}
+          </p>
+        )}
+      </Method>
     </article>
   )
 }
