@@ -81,7 +81,7 @@ test('removed pages lead back to the projects and are absent from navigation', a
   ]) {
     await page.goto(`/#${path}`)
     await expect(page).toHaveURL(/#projects/)
-    await expect(page.locator('.hub')).toBeVisible()
+    await expect(page.locator('.hub-overview')).toBeVisible()
     await expect(page.locator(`a[href="#${path}"]`)).toHaveCount(0)
   }
 })

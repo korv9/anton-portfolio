@@ -61,12 +61,12 @@ export const REDIRECTS: Record<string, string> = {
   '#er-diagram': '#projects',
   '#tech': '#projects',
   '#diva': '#projects',
-  // The projects page (#projekt) and the platform page (#platform) are one hub now; Ask the
-  // platform and the DiVA lakehouse are sections of its platform part.
+  // The projects page and the platform page are the Overview now.
   '#projekt': '#projects',
-  '#platform': '#projects-platform',
-  '#ask-platform': '#platform-ask',
-  '#diva-lakehouse': '#platform-fabric',
+  '#platform': '#projects',
+  '#projects-platform': '#projects',
+  '#ask-platform': '#projects',
+  '#diva-lakehouse': '#projects',
   '#rag': '#projects',
   '#mimii': '#projects',
   '#rfc-drift': '#projects',

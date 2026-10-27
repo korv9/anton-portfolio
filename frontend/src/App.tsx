@@ -112,7 +112,7 @@ export default function App() {
                 }
               >
                 {page === 'home' && <HomePage path={path} />}
-                {page === 'projects' && <ProjectsHub path={path} />}
+                {page === 'projects' && <ProjectsHub />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}

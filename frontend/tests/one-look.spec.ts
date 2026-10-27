@@ -17,7 +17,6 @@ const ROUTES = [
   '#what-does-it-even-mean',
   '#fraga-lagen',
   '#cluster-visuals',
-  '#projects-platform',
   '#symbolic-atlas',
   '#philosophy-atlas',
   '#concept-journey',

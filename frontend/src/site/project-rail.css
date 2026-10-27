@@ -87,6 +87,10 @@
 }
 
 @media (max-width: 1023px) {
+  /* The page steps right so the tab never covers its text. */
+  .site-shell.project-shell #main {
+    padding-left: 46px;
+  }
   /* A faint tab on the left edge; it comes up when touched or focused. */
   .rail-toggle {
     display: block;
@@ -94,12 +98,13 @@
     left: 0;
     top: 50%;
     z-index: 70;
-    padding: 16px 3px 16px 2px;
+    padding: 28px 11px 28px 9px;
     border: 0;
-    background: linear-gradient(90deg, rgb(0 0 0 / 0.55), transparent);
-    color: #c6c1b6;
+    border-radius: 0 10px 10px 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 0.7), rgb(0 0 0 / 0.25));
+    color: #ebe6da;
     font-family: var(--font-mono);
-    font-size: 9px;
+    font-size: 13px;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     writing-mode: vertical-rl;

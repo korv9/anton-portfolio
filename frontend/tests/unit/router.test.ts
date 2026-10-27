@@ -26,13 +26,14 @@ test('observatory addresses land on the meaning feed', () => {
 test('kept pages keep their addresses', () => {
   assert.equal(parseHash('#sweden').page, 'sweden')
   assert.equal(parseHash('#fraga-lagen').page, 'lawqa')
-  // The projects page and the platform page are one hub; the old addresses lead into it.
+  // The projects page and the platform page are the Overview; the old addresses lead into it.
   assert.equal(parseHash('#projekt').path, '#projects')
   assert.equal(parseHash('#projects').page, 'projects')
-  assert.equal(parseHash('#platform').path, '#projects-platform')
+  assert.equal(parseHash('#platform').path, '#projects')
   assert.equal(parseHash('#platform').page, 'projects')
-  assert.equal(parseHash('#ask-platform').path, '#platform-ask')
-  assert.equal(parseHash('#diva-lakehouse').path, '#platform-fabric')
+  assert.equal(parseHash('#projects-platform').path, '#projects')
+  assert.equal(parseHash('#ask-platform').path, '#projects')
+  assert.equal(parseHash('#diva-lakehouse').path, '#projects')
   assert.equal(parseHash('#tech-er').page, 'projects')
   assert.equal(parseHash('#symbolic-findings').page, 'symbolic')
 })

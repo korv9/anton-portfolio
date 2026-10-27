@@ -28,11 +28,6 @@ const GROUPS: { en: string; sv: string; items: Item[] }[] = [
       { href: '#sweden', en: 'SWEDEN', sv: 'SWEDEN' },
       { href: '#fraga-lagen', en: 'Allegora', sv: 'Allegora' },
       { href: '#cluster-visuals', en: 'Cluster Visuals', sv: 'Klusterbilder' },
-      {
-        href: '#projects-platform',
-        en: 'The data platform',
-        sv: 'Dataplattformen',
-      },
     ],
   },
   {
@@ -67,9 +62,8 @@ const GROUPS: { en: string; sv: string; items: Item[] }[] = [
 
 /** The index entry a route belongs to; a report's tabs and a hub's sections light their page. */
 function activeHref(route: Route) {
-  const { page, path } = route
-  if (page === 'projects')
-    return path === '#projects-platform' ? path : '#projects'
+  const { page } = route
+  if (page === 'projects') return '#projects'
   const byPage: Partial<Record<Route['page'], string>> = {
     meaning: MEANING,
     jobs: '#jobs',
