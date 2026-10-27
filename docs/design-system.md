@@ -66,9 +66,9 @@ primitive cannot express the interaction. Use native links, buttons, selects and
 | Analytical chart, header, source and table | `charts/feature/Feature.tsx`, `Feature`                                       |
 | Visualization stage                        | `ui/Stage.tsx`, `Stage`, `StageBlock`, `StageFacts`                           |
 | Metrics and tables                         | `KpiRow`, `Feature` table alternatives and existing native `.dk-table` tables |
-| Ranked comparison and time series          | `charts/RankBars.tsx`, `MultiLineChart.tsx`, `TimeSeriesChart.tsx`            |
+| Ranked comparison and time series          | `charts/RankBars.tsx`, `MultiLineChart.tsx`                                   |
 | Filter bar and select                      | `Pick`, `report-chips`, `SlicerSelect` and existing project filters           |
-| Disclosure                                 | `ui/Disclosure.tsx`, native `details` for local methodology                   |
+| Disclosure                                 | Native `details` for local methodology                                        |
 | Loading, empty and error states            | Existing data-page states, `site/PageBoundary.tsx`                            |
 
 Shared layout rules live in `site/editorial.css`. Chart and stage internals live in their
@@ -80,21 +80,20 @@ between 16 and 28 pixels. Project sections use `--sp-section`; local gaps use `-
 through `--sp-7`. Charts have no global maximum width. Prose keeps a 68-character measure.
 Panels use thin borders, a 2-pixel radius and no elevation shadow. Navigation is compact.
 
-## Four workspace patterns
+## Workspace patterns
 
 `App` derives `data-workspace` from the existing registry groups. Changing visual layout
 does not change routes, analytical calculations, topic order or data loading.
 
-| Pattern          | Projects                                                 | Composition                                                                                                                       |
-| ---------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Observatory      | Political, Labour Market, Wellbeing, EU AI Act           | `ReportShell` and existing deep views; compact question, topic tabs, contextual filters, wide primary chart and supporting panels |
-| Lab              | Symbol, Philosophy, Concept, Drug Synergy                | Report tabs where already present; full-width maps, compact controls, legends and optional method/settings disclosures            |
-| Engineering      | IT Incident Clustering, DiVA Thesis Lakehouse, Homie API | `ProjectHero`, project sections, architecture and pipeline figures, validation, results and code links                            |
-| Interactive tool | Cluster Visuals                                          | Primary visualization and its controls; no added metric row                                                                       |
+| Pattern          | Projects                                                              | Composition                                                                                                            |
+| ---------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Lab              | Symbol, Philosophy, Concept, Ask the law, Drug Synergy                | Report tabs where already present; full-width maps, compact controls, legends and optional method/settings disclosures |
+| Engineering      | IT Incident Clustering, DiVA Thesis Lakehouse, Homie API              | `ProjectHero`, project sections, architecture and pipeline figures, validation, results and code links                 |
+| SWEDEN           | The SWEDEN pages and the chart feed (`#what-does-it-even-mean`)       | Scoped SWEDEN tokens (see below)                                                                                       |
+| Interactive tool | Cluster Visuals and other unlisted views                              | Primary visualization and its controls; no added metric row                                                            |
 
-Ask the Law has no active route in the current site. The retired RAG address redirects to
-the project index. A future focused application can use the tool pattern without restoring
-retired functionality as part of this migration.
+The Observatory pattern (`ReportShell` with topic tabs and supporting panels) went with the
+observatory pages, withdrawn on 2026-10-21. `ReportShell` remains in `report/`.
 
 The existing section-navigation model replaces a sidebar. Do not introduce a second global
 navigation hierarchy. Engineering content keeps its existing structure; metrics appear only
@@ -113,7 +112,6 @@ tokens. Actual error messages can use `--color-error` and must include readable 
 
 Heatmaps retain their values, order and scales. Pale ramps stop before dark text loses
 contrast; dark cells use inverse text. The technical stage inventory uses the same principle.
-Existing analytical review items remain in [chart-review.md](chart-review.md).
 
 `.plate` provides a component-scoped dark canvas (`#242422`) and locally rebinds semantic
 colors, compatibility aliases and chart aliases. It does not change the page or navigation.
@@ -159,11 +157,32 @@ and the boundary around a dark plate. Existing accessibility tests run axe on th
 pages, check overflow at three widths, keyboard focus and reduced motion. The broader
 Playwright suite checks the retained interactions and analytical contracts.
 
-See [design-system-audit.md](design-system-audit.md) for the migration inventory and review.
+## Chart form by question
 
-## Political workspace integration
+| Question                                 | Form                                       | Condition                                                                                              |
+| ---------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| One number for the latest state          | Large value with unit, period and comparison | A standalone count needs no chart.                                                                   |
+| One measure against a real reference     | Bullet: value with a reference marker      | The reference is a baseline, an earlier period or a target. Do not invent targets or status zones.     |
+| Two measurements for several categories  | Dumbbell: two joined points per row        | Keep bars around zero when only the change is ranked. Do not compare part-years with whole years.      |
+| Ranking categories                       | Horizontal bars (`RankBars`)               | One scale where the rows are compared.                                                                 |
+| Small differences between categories     | Ranked dot plot                            | Dots tolerate a bounded scale. Bars from a cut zero exaggerate the difference.                         |
+| Composition of a total                   | 100 % stacked bars                         | Only when the parts sum. Categories that can overlap, such as technology mentions, get separate bars. |
+| Change over time                         | Lines                                      | Direct labels and one selected series.                                                                 |
+| Many overlapping time series             | Small separate line charts                 | When the reader follows each trend. One shared chart suits comparing levels at the same time.          |
+| Patterns over many categories and years  | Heatmap                                    | Ordered light-to-dark scale, colour key, a mark for missing values.                                    |
+| Deviation from a reference               | Bars around zero                           | A waterfall only when the path from the starting total to the final total is the question.             |
+| Predicted against observed               | Scatter with a diagonal                    | The calibration's interquartile range is not a confidence interval.                                    |
+| Proximity in a representation            | Projection, with a list beside it          | Show cluster size, examples and quality measures. Map distance is not a KPI.                           |
 
-Political Observatory v2 reuses this token system and existing `Feature`, chart, control
-and party-identity components. `politik/workspace/workspace.css` owns its twelve-column
-layout, neutral position symbols, compact navigation and local matrix scrolling. No new
-global tokens or homepage styles were introduced. See [workspace implementation](political-observatory-v2.md).
+Near every main chart: the question, the measure and unit, the period, the comparison and a
+short interpretation. Show the denominator for shares and keep per cent apart from percentage
+points. Missing values read "missing", never zero. A rise is not coloured as good: more job
+ads, higher tax and more sick leave mean different things.
+
+Two open findings from the chart review of 11–16 October 2026:
+
+- `products/DrugCombReport.tsx` (`dc-learning`) draws the learning curve as grouped columns
+  per training size. Two lines on a numeric x-axis would show the plateau and the gap between
+  training and test.
+- `charts/MultiLineChart.tsx` labels line ends only for party series. Regions would also gain
+  a name and the latest value at the line's end, with collision handling.

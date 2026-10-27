@@ -25,14 +25,16 @@ only cue. The legend states each type's content type.
 
 | Type | Drawn as | Content type | Meaning |
 |---|---|---|---|
-| `semantic_similarity` | blue, solid, width by strength | derived | Two concepts' anchors are among each other's three nearest, in both languages. On a concept page, two passages from different corpora are closer than 95 % of random pairs. Similar wording; not influence. |
-| `shared_tension` | orange, dashed | interpretation | The two concepts are the poles of one Philosophy Atlas tension. This is an editorial choice. |
+| `semantic_similarity` | first series colour, solid, width by strength | derived | Two concepts' anchors are among each other's three nearest, in both languages. On a concept page, two passages from different corpora are closer than 95 % of random pairs. Similar wording; not influence. |
+| `shared_tension` | second series colour, dashed | interpretation | The two concepts are the poles of one Philosophy Atlas tension. This is an editorial choice. |
 | `shared_concept` | neutral, width by lift | derived | Shown as "prominent in corpus": the concept is a passage's closest at least twice as often as chance in that corpus. |
-| `documented_reference` | green, dotted | source | Riksdag speeches that name the AI Act. This is a corpus-to-corpus link counted from the speeches' own text. |
-| `temporal_overlap` | grey, dashed | derived | Two series change in the same period. Used on the AI governance timeline (Phase 8). Temporal overlap does not prove causation. |
+| `documented_reference` | third series colour, dotted | source | Riksdag speeches that name the AI Act. This is a corpus-to-corpus link counted from the speeches' own text. |
+| `temporal_overlap` | grey, dashed | derived | Two series change in the same period. The type is defined but no page draws it since the AI governance timeline view was withdrawn. Temporal overlap does not prove causation. |
 
-The three hues (`#3987e5`, `#d95926`, `#199e70`) pass the dataviz palette validator on the
-site's dark surface, including the colour-vision-deficiency checks. Corpora are identified by
+The three hues come from the site's series tokens: `--cc-semantic`, `--cc-tension` and
+`--cc-reference` map to `--series-1`, `--series-2` and `--series-3`
+(`frontend/src/concepts/concepts.css`). Each type also has its own stroke pattern, so colour is
+never the only cue. Corpora are identified by
 position and label, not colour.
 
 ## What a concept page includes, and leaves out
@@ -41,8 +43,9 @@ A concept page shows another domain's data only where a measure of the same idea
 (`seeds/concepts/concept_links.csv`). For example, *risk* links to the Riksdag framing group
 "risk", the job-ad terms `risk_management` and `model_risk`, the AI Act risk classes, and the
 progress ↔ precaution tension. *Autonomy* links only to the autonomy ↔ paternalism tension. Its
-page says that no Riksdag word group and no job-ad term measures autonomy, rather than filling
-the gap with a near match.
+page says that no Riksdag word group and no job-ad term measures autonomy, and leaves the gap
+unfilled. The job-ad and AI Act links now lead to `#what-does-it-even-mean`,
+because those pages were withdrawn on 2026-10-21.
 
 ## Limitations
 

@@ -1,7 +1,9 @@
 # Parliament: elections, government and the Riksdag's decisions
 
-The Political Observatory (`#politik` and its themes) is built from this model. It covers the
-following source periods, with additional workspace coverage limits documented below:
+The parliament exports (`frontend/public/data/parliament/*.json`) are built from this model.
+The Political Observatory pages that showed them were withdrawn on 2026-10-21; the chart feed
+reads some of the files. The model covers the following source periods, with further coverage
+limits documented below:
 
 | Part | Source | Period |
 |---|---|---|
@@ -51,12 +53,12 @@ model.
 
 ## Definitions
 
-- **Roll call.** One vote id can carry two roll calls: on the matter (sakfrågan) and on the
+- Roll call. One vote id can carry two roll calls: on the matter (sakfrågan) and on the
   reasons given for the decision (motivfrågan). `roll_call_id` is the vote id plus `:motiv`
   for the latter; `is_substantive` marks decisions. The marts count decisions only.
-- **A party's position** is what most of its present members voted; an even split is `split`.
-- **The government's position** is that of the prime minister's party that day.
-- **Role**: `government`, `agreement` (a written agreement with the government, such as the
+- A party's position is what most of its present members voted; an even split is `split`.
+- The government's position is that of the prime minister's party that day.
+- Role: `government`, `agreement` (a written agreement with the government, such as the
   Januari- and Tidö agreements) or `opposition`, on the date of the roll call.
 
 ## Tested against
@@ -98,9 +100,9 @@ proposal). Each link keeps the sentence that makes it.
 | `fct_bill_report` | a bill and a committee report it was dealt with in |
 | `fct_bill_study` | a bill and a study it names as preparation, with the sentence |
 
-The site shows the latest studies and what they led to on `#politik-utredningar`, and the studies
-behind every decision it lists. Budget and spring bills are left out of that per-decision
-link, since they name hundreds.
+`studies.json` holds the latest studies and what they led to, and the studies behind every
+decision it lists. Budget and spring bills are left out of that per-decision link, since they
+name hundreds.
 
 ### What counts as a complete session
 
@@ -132,7 +134,7 @@ Two cases are handled without failing the session:
 ## Parties: colours, logos and the party page
 
 `frontend/src/parties/identity.tsx` holds each party's identity, used everywhere a party is
-shown (seat bar, party pickers and charts, vote lists, tables, BudgetLab):
+shown in charts (`frontend/src/charts/`, `frontend/src/report/board/`):
 
 - `color`: the party colour as Swedish media and Wikipedia draw it (S #E8112D, M #52BDEC,
   SD #DDDD00, V #DA291C, C #009933, KD #000077, MP #83CF39, L #006AB3), for filled areas;
@@ -145,23 +147,60 @@ shown (seat bar, party pickers and charts, vote lists, tables, BudgetLab):
 Because every party has its own colour, charts of parties are no longer limited to five
 series.
 
-`#politik-partier` shows a card per party, sorted by the latest election. A party's page gathers
-what the other pages have on one party, from the same files: `now.json` (result, poll, role),
+The party pages were withdrawn with the observatory. What a party page gathered is in these
+files: `now.json` (result, poll, role),
 `elections.json` and `polls.json` (support over time), `sessions.json` (governments it sat
 in or supported, voting record, agreement with each other party in the latest session),
 `issues.json` (record per issue, speeches) and `taxes/decisions.json` (its vote on each tax
 decision).
 
-## Political Observatory v2 contracts
+## Prime-minister ballots and party context
 
 Four Gold models held source-backed appointment ballots and contextual party comparisons:
 `fct_prime_minister_ballot`, `fct_prime_minister_party_vote`, `mart_party_pair_context`,
 and `mart_party_cohesion_context`. Their workspace export was removed on 2026-10-22, and
 the models and their tests were deleted on 2026-10-23 because nothing read them. The
-ballot seeds stay; `ingest/riksdagen/formation_ingest.py` still reads them. The offline committed snapshot limits detailed party
-context to 2024/25?2025/26, while the
+ballot seeds stay; `ingest/riksdagen/formation_ingest.py` still reads them. The offline
+committed snapshot limited detailed party context to 2024/25–2025/26, while the
 existing session-pair mart still covers 1993/94 onward. Ten reviewed appointment/incumbent
-ballots cover selected dates in 2014?2026, with earlier gaps retained. See
-[definitions, sources and build commands](political-observatory-v2.md). Agreement metadata
-in the existing seed is not evidence of support on every date; the models keep it
-separate and join government membership by exact vote date.
+ballots cover selected dates in 2014–2026, with earlier gaps retained. Agreement metadata
+in the existing seed is not evidence of support on every date; the models kept it
+separate and joined government membership by exact vote date.
+
+The deleted tests covered appointment totals and the rule that a candidate is rejected by 175 no votes,
+pairwise denominator pooling, missing, tied and all-absent positions, half-open government
+dates and unique joins. Participation, cohesion and PM-party alignment used separate
+denominators. Similarity is not read as ideology or cooperation, and historical snapshots and
+candidate document relationships stay labelled.
+
+## Politics metrics
+
+The withdrawn Political Observatory computed these metrics; the definitions apply to the
+parliament exports and to any page that reads them again.
+
+| Metric                   | Definition                                                                                                                                                                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Party position           | The vote most of the party's members cast in a roll call, as Riksdagen reports it.                                                                                                  |
+| Party cohesion           | Cast votes (yes, no, abstain) by the party's members that match the party position, of all their cast votes.                                                                        |
+| Party similarity         | Of the roll calls where both parties had a position, the share where it was the same.                                                                                               |
+| Polarisation (roll call) | 1 − (members in the largest group of parties with the same position) / (members of all parties with a position). 0 when all parties agree, about 0.5 at an even split.              |
+| Polarisation (area)      | The mean polarisation of the roll calls prepared by that committee.                                                                                                                 |
+| Close vote               | A roll call where \|yes − no\| / (yes + no) < 10 %.                                                                                                                                 |
+| Topic share              | The learned issue lexicon (log-odds with an informative Dirichlet prior, about two thirds right on held-out speeches) applied to the words; each topic's share of the scored words. |
+| Distinctive words        | tf-idf per party and party-leader debate: term frequency per 10,000 words × log(documents / documents with the term); names left out.                                               |
+| Term growth              | Per 10,000 words in the issue debates, the latest riksmöte against the three before; ratio smoothed by +0.5 per 10,000 words; stems in at least 25 speeches.                        |
+| Member deviation         | Cast votes that differ from the party position, of the cast votes where the party had one. Absence and deviation are not opposition by themselves.                                  |
+| Voting map               | PCA of the parties' positions over the roll calls (yes 1, no −1, abstain 0), centred per roll call.                                                                                 |
+
+### Data quality
+
+Before any metric, the observatory's `cleanVotes` (removed with the page in 35b90a67) dropped
+duplicate decision points, roll calls where no party had a position, and roll calls with fewer
+than 100 cast votes, and the page reported how many of each it found. Members who changed party
+are compared with the party they belonged to at each vote.
+
+### Design decisions
+
+Heavy text processing runs once in Python and ships as compact JSON. The observatory computed
+the vote metrics in the browser from the per-session indexes, so they stayed transparent and
+testable. Party colours and logos come from one config (`frontend/src/parties/identity.tsx`).

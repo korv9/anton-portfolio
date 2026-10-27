@@ -3,8 +3,8 @@
 Implemented 2026-10-16: SCB register acquisition, local CSV/Parquet import,
 conservative legal-entity resolution, exploratory search and frozen 50-entity
 cohort bundles. On 2026-10-17 the real SCB population was acquired and the 50-member
-sample was frozen. See [current completion](completion.md) for exact inputs,
-private exports, membership hash and remaining publication review.
+sample was frozen. The [README](README.md#cohort) records the inputs, membership hash and remaining
+publication review.
 
 Run commands from the repository root with the existing Python requirements
 installed. No new dependency is needed. The entry point is
@@ -227,6 +227,5 @@ cases or sanctions through brands or group links.
 Provide the authorized key or actual CSV/Parquet and provenance, inspect the first
 real snapshot's conflicts/exclusions, complete source reviews, then build and verify
 the real cohort. Confirm actual API behavior under credentials and the population's
-coverage before treating the 50 as selected. Existing Phase 0
-[source limitations](source-feasibility.md) and [publication controls](risks.md)
-still apply. Enforcement ingestion and dashboard construction remain out of scope.
+coverage before treating the 50 as selected. The
+[source limitations and publication controls](risks.md) still apply. Enforcement ingestion and dashboard construction remain out of scope.

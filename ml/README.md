@@ -1,31 +1,41 @@
 # ml
 
-Models trained on the delivered data, each with a model card in `cards/` that records what
-the label means, how the data were split, what the model beat and what it cannot support.
+The analysis and ML layer. It reads the warehouse and the delivered data, and writes features
+under `warehouse/features/` or runs under `ml/runs/` (both gitignored). Results reach the site
+only through a pipeline export step in `platform/publish/`, never directly from here. Run every
+module from the repository root.
 
-| Task | Input | Split | Headline |
+## Packages
+
+| Package | What it does | Entry point | Documentation |
 |---|---|---|---|
-| `policy_area` | issue-debate speeches labelled by committee | temporal (last session held out), no debate on both sides | KB-BERT against TF-IDF, paired |
-| `polarization` | speeches with a party, per session | grouped by the Riksdag's person id | mean pairwise party AUC |
-| `seniority` | JobTech adverts, title removed | grouped by employer | AUC and calibrated junior share |
+| `mlkit/` | Supervised tasks with model cards in `cards/`: `policy_area`, `polarization`, `seniority` | `python -m ml.mlkit.overnight` | The cards |
+| `jobs/` | Unsupervised clustering of Swedish software and data job ads | `python -m ml.jobs.pipeline`, `sweep`, `feature_experiment` | [job-market clustering](../docs/job-market-clustering.md), [sweep](../docs/job-clustering-sweep.md), [ensemble](../docs/job-clustering-ensemble.md) |
+| `cluster_lab/` | Local, configuration-driven clustering experiments; never promotes results | `python -m ml.cluster_lab.cli` | [its README](cluster_lab/README.md) |
+| `research/` | Consensus subject groups in debates and philosophy, county profiles, the debate passages for Workers AI | `python -m ml.research.consensus`, `topics`, `export_workers_ai` | [public clustering](../docs/public-clustering-method.md), [Workers AI](../docs/workers-ai.md) |
+| `feature_study/` | Engineered features against the plain baseline, scored with one validation | `python -m ml.feature_study.job_ads` and siblings | [feature engineering](../docs/ml-feature-engineering.md) |
+| `ai_act/` | Monthly counts of the AI Act's own terms in Riksdag speeches and job ads | `python -m ml.ai_act.diffusion speeches\|ads` | [pre-registration](../docs/ai-act-diffusion-preregistration.md) |
+| `futures_topics/` | Topic pilot on future-marked sentences (Riksdag, DiVA) | `python -m ml.futures_topics.sentences`, `cluster`, `analyze` | [pre-registration](../docs/sweden-futures-topics-preregistration.md) |
+| `moral/` | Moral-foundation tagger, eMFD baseline, ETHICS check, Riksdag passages | `python -m ml.moral.mfrc`, `ethics`, `riksdag` | [pre-registration](../docs/philosophy-moral-preregistration.md) |
+| `oldbailey/` | Offence, verdict and punishment read by gemma on Workers AI, scored against hand tags | `python -m ml.oldbailey.trials`, `extract`, `score` | [pre-registration](../docs/oldbailey-extraction-preregistration.md) |
+| `three_swedens.py` | Whether social, job-ad and vote similarity of municipalities agree | `python -m ml.three_swedens` (pipeline subject `clusters`) | [pre-registration](../docs/sweden-three-spaces-preregistration.md) |
 
-## Running
+Pre-registered modules follow their document: unit, sample, metric and stop rule are fixed
+there, and a change is a dated amendment in that document.
 
-The separate `jobs/` package provides the unsupervised tech-advertisement pipeline. From
-the repository root, run `ml/.venv/Scripts/python.exe -m ml.jobs.pipeline`.
-It reads the existing enriched DuckDB ads and skill bridge, caches local multilingual
-embeddings and hands validated results to dbt as raw ML sources. See
-[job-market clustering](../docs/job-market-clustering.md) for source coverage, model choice,
-parameter controls, evaluation and delivery. It does not upload or promote automatically.
-For a resumable offline parameter search, run `python -m ml.jobs.sweep`; use `--review`
-to inspect shortlisted profiles and two additional seeds. The measured 417-candidate
-search and selected defaults are recorded in [sweep findings](../docs/job-clustering-sweep.md).
-The current default adds cleaned text, title/technology feature models and three-fit
-consensus. Run `python -m ml.jobs.feature_experiment` for its ablations; see
-[ensemble findings](../docs/job-clustering-ensemble.md) for the measured comparison and limitations.
+## Environment
 
 ```bash
-python -m venv ml/.venv && ml/.venv/bin/pip install -r ml/requirements.txt
+python -m venv ml/.venv --system-site-packages
+ml/.venv/Scripts/python.exe -m pip install -r ml/requirements.txt   # ml/.venv/bin/python on Linux
+```
+
+`--system-site-packages` reuses torch from the parent interpreter, so the environment does not
+download it a second time.
+
+## mlkit
+
+```bash
 cd ml
 .venv/bin/python -m mlkit.overnight                    # every job; unchanged ones are cached
 .venv/bin/python -m mlkit.overnight --only seniority
@@ -44,6 +54,14 @@ cd ml
     alone, because its headline and gate need KB-BERT.
   - `polarization` writes its card and states that the KB-BERT cross-check was not run.
 
-Output lands in `ml/runs/<run_id>/`, which is gitignored along with caches and weights. Only
-the cards are committed. Nothing reaches the site without a deliberate promotion of a
-passing run.
+Output lands in `ml/runs/<run_id>/`. Only the cards are committed. Nothing reaches the site
+without a deliberate promotion of a passing run (`mlkit/promote.py`).
+
+## Tests
+
+```bash
+python -m pytest ml/tests ml/jobs/tests -q
+```
+
+These tests are not part of `npm run verify:full` or the CI Python job, which run
+`platform/tests` only.

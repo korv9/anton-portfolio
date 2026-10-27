@@ -2,9 +2,14 @@
 
 Statistical audit, 2026-10-21, of `origin/main` at `4cf7d191` (after PR #77, the SWEDEN repairs,
 and PR #78, the medallion hardening). Nothing here changes code, data or published findings. It
-follows [sweden-research-alignment.md](sweden-research-alignment.md) and
-[sweden-research-roadmap.md](sweden-research-roadmap.md) and only repeats their findings where the
-repairs left something open.
+followed two Phase 0 documents (the alignment audit and the research roadmap, both removed on
+2026-10-23; see Git history) and only repeats their findings where the repairs left something
+open.
+
+Status, 2026-10-23: implemented in 3c185c71, 036861e0, 44d272f0 and eda71f5e. The method
+conventions from section 5 now live in [sweden-design.md](sweden-design.md#statistical-conventions).
+This plan is kept because [the connections pre-registration](sweden-connections-preregistration.md)
+cites it.
 
 The question throughout is what the data can legitimately show, and where the statistical
 representation and the social reality part ways.

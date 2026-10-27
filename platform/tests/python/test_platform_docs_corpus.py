@@ -45,8 +45,13 @@ def test_every_published_passage_is_a_tracked_public_file():
     tracked = set(git("ls-files", "-z").stdout.split("\0"))
     ids = [i["id"] for i in items]
     assert len(ids) == len(set(ids))
-    for path in {i["path"] for i in items}:
-        assert corpus.allowed(path, tracked), f"{path} must not be in the corpus"
+    # A passage pins its commit, so a file removed since then is still public at that commit.
+    pinned = {i["path"]: i["commit"] for i in items}
+    for path, commit in pinned.items():
+        if path not in tracked:
+            source(path, commit)
+            assert git("cat-file", "-e", f"{commit}:{path}").returncode == 0, path
+        assert corpus.allowed(path, tracked | {path}), f"{path} must not be in the corpus"
         assert path not in corpus.EXCLUDED, path
     for item in items:
         assert 0 < len(item["text"]) <= corpus.LONG
