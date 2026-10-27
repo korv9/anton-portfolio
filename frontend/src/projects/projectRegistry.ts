@@ -349,7 +349,7 @@ export const PROJECTS: ProjectEntry[] = [
       'Cloudflare R2',
       'Microsoft Fabric',
     ],
-    href: '#projects-platform',
+    href: '#projects',
     code: [
       'https://github.com/korv9/anton-portfolio',
       'https://github.com/korv9/diva-fabric-lakehouse',

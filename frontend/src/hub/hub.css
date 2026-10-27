@@ -1,126 +1,24 @@
-/*
- * The projects hub (hub/ProjectsHub.tsx), ivory on charcoal like the start page: big uppercase
- * display type in the signature's gradient for the page and its parts, mono for figures and
- * addresses, thin rules, generous space, no sidebar.
- */
-.hub {
-  padding-inline: clamp(var(--gutter), 6.5vw, 96px);
+/* Overview (hub/ProjectsHub.tsx): the shared page head, then how and why in two short lines. */
+.hub-overview {
+  padding-bottom: var(--sp-section);
 }
-.hub .tech {
-  padding-inline: 0;
-}
-/* The signature's ink on the page title, the part titles and every card's words. */
-#main .hub-head h1,
-#main .hub-group > h2,
-.hub-item-title,
-.hub-item-text {
-  background: linear-gradient(
-    to bottom right,
-    #ebe6da 0%,
-    #c6c1b6 55%,
-    #9c978d 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-/* No rules: space between the parts carries the structure, as on the start page. The tables keep
-   their row lines and the charts their axes. */
-.hub-main > section {
-  padding-top: clamp(4rem, 8vw, 8rem);
-}
-.hub :is(.tech > section, .runs > li, .er-card, .tables, .hub-flow-project) {
-  border-top: 0;
-}
-.hub .tables > li {
-  border-bottom: 0;
-}
-/* #main outranks editorial.css's page title and section heading rules. */
-#main .hub-main > section > h2 {
-  width: max-content;
-  max-width: 100%;
-  font-size: clamp(1.9rem, 3.4vw, 3rem);
-  font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: 1;
-  text-transform: uppercase;
-  text-wrap: balance;
-}
-/* The platform sections' subheadings as headings, not tracked labels (tech.css). */
-#main .hub-main > section:not(.hub-flow) h3 {
-  font-family: inherit;
-  font-size: var(--h3);
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-transform: none;
-}
-.hub ::selection {
-  background: var(--focal);
-  color: var(--page);
-}
-
-/* ---------- Header ---------- */
-.hub-head {
-  padding-block: clamp(4rem, 9vw, 128px) var(--sp-7);
-}
-#main .hub-main .hub-head h1 {
-  width: max-content;
-  max-width: 100%;
-  margin: 0;
-  font-size: clamp(2.6rem, 6vw, 5rem);
-  font-weight: 750;
-  letter-spacing: -0.045em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-/* The headline: the dbt project's size, the newest run under it, the files they come from. */
-.hub-headline {
+.hub-why {
   display: grid;
-  gap: var(--sp-3);
-}
-.hub-headline dl {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-4) 0;
+  gap: var(--sp-5);
+  max-width: var(--measure);
   margin: 0;
 }
-.hub-headline dl > div {
-  display: grid;
-  align-content: end;
-  padding-inline: 0 var(--sp-6);
-  margin-inline-end: var(--sp-6);
-}
-.hub-headline dt {
-  color: var(--ink-faded);
+.hub-why dt {
+  margin-bottom: var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-meta);
   font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.hub-headline dd {
+.hub-why dd {
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  white-space: nowrap;
-}
-
-@media (max-width: 760px) {
-  .hub-headline dl {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--sp-4);
-  }
-  .hub-headline dl > div {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-}
-.hub-headline-run {
-  margin: 0;
-  color: var(--ink-faded);
-}
-.hub-headline-run strong {
-  color: var(--ink);
-  font-family: var(--font-mono);
-  font-weight: 500;
+  color: var(--color-ink-secondary);
+  font-size: var(--body-large);
+  line-height: 1.55;
 }

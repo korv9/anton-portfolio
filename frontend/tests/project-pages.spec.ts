@@ -1,21 +1,20 @@
 /**
- * Every card on #projects opens a finished project page that ends with its own content.
+ * Every project in the index opens a finished project page that ends with its own content.
  */
 import { test, expect } from './test'
 
-test('every project card opens its page, which ends with its own content', async ({
+test('every project in the index opens its page, which ends with its own content', async ({
   page,
 }) => {
   test.setTimeout(120_000)
   await page.goto('/#projects')
-  await page.locator('main a.hub-item').first().waitFor()
-  const cards = await page
-    .locator('main a.hub-item[href^="#"]')
+  const links = await page
+    .locator('nav.project-rail a[href^="#"]')
     .evaluateAll((as) => [
       ...new Set(as.map((a) => a.getAttribute('href')!.split('?')[0])),
     ])
-  expect(cards.length).toBeGreaterThanOrEqual(13)
-  for (const href of cards) {
+  expect(links.length).toBeGreaterThanOrEqual(13)
+  for (const href of links) {
     await page.goto('/' + href)
     await expect(page.locator('main h1').first(), href).toBeVisible()
     // No shared close or pager: the index on the left is the way on.
@@ -26,9 +25,11 @@ test('every project card opens its page, which ends with its own content', async
   }
 })
 
-test('the Homie card opens its repository', async ({ page }) => {
+test('Homie in the index opens its repository', async ({ page }) => {
   await page.goto('/#projects')
   await expect(
-    page.locator('main a.hub-item[href="https://github.com/korv9/homie-api"]'),
+    page.locator(
+      'nav.project-rail a[href="https://github.com/korv9/homie-api"]',
+    ),
   ).toHaveCount(1)
 })
