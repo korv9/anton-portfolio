@@ -162,7 +162,7 @@ def main() -> int:
         from gold.dim_ai_act_guidance order by published_at desc nulls last, guidance_id""")
     for g in guidance:
         g["articles"] = json.loads(g.pop("articles_json") or "[]")
-    retrieved = con.sql("select max(retrieved_at) from gold.dim_ai_act_document").fetchone()[0]
+    retrieved = con.execute("select max(retrieved_at) from gold.dim_ai_act_document").fetchone()[0]
     counts = con.sql("""
         select
             (select count(*) from gold.dim_ai_act_article) as articles,

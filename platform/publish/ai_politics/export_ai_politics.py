@@ -74,7 +74,7 @@ def main() -> int:
                min(speech_date) as first_date, max(speech_date) as last_date,
                count(distinct session) as sessions
         from gold.fct_ai_speech""").df().iloc[0]
-    paragraphs = con.sql("select count(*) from silver.int_ai_speech_paragraphs").fetchone()[0]
+    paragraphs = con.execute("select count(*) from silver.int_ai_speech_paragraphs").fetchone()[0]
     concepts = rows(con, """
         select concept_id, kind, label_en, label_sv, pattern, case_sensitive, description_en,
                description_sv, caveat_en from seeds.ai_politics_concepts order by sort_order""")

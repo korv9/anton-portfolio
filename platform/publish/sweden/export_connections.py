@@ -192,7 +192,7 @@ def rejected_joins(b_years: set[int], e_years: set[int], rho: float | None, acad
 
 def main() -> int:
     con = db.warehouse(DATABASE)
-    year = con.sql("select max(year) from gold.fct_municipal_similarity").fetchone()[0]
+    year = con.execute("select max(year) from gold.fct_municipal_similarity").fetchone()[0]
     from export_similarity import FEATURES
 
     label = {f: (en, unit) for f, (en, _, unit) in FEATURES.items()}

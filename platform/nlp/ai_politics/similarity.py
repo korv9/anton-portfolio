@@ -63,7 +63,7 @@ def act_passages(text: str) -> list[str]:
 
 def main(if_stale: bool = False) -> int:
     con = duckdb.connect(str(DATABASE), read_only=True)
-    current = con.sql("select celex from silver.int_ai_act_documents where is_current").fetchone()[0]
+    current = con.execute("select celex from silver.int_ai_act_documents where is_current").fetchone()[0]
     articles = con.sql(f"""
         select number, title, text from silver.int_ai_act_provisions
         where version_celex = '{current}' and language = 'sv' and provision_kind = 'article'
