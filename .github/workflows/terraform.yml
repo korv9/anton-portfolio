@@ -57,7 +57,7 @@ jobs:
       GITHUB_TOKEN: ${{ matrix.stack == 'github' && secrets.TF_GITHUB_TOKEN || '' }}
       HAS_CREDENTIALS: ${{ secrets.TF_STATE_ACCESS_KEY_ID != '' }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
@@ -97,7 +97,7 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ inputs.stack == 'cloudflare' && secrets.CLOUDFLARE_API_TOKEN || '' }}
       GITHUB_TOKEN: ${{ inputs.stack == 'github' && secrets.TF_GITHUB_TOKEN || '' }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
