@@ -21,6 +21,9 @@ export type ClusterPoint = {
 }
 
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
+/** The name of a group that has none of its own: never its bare number. */
+export const unnamed = () => l('No clear theme', 'Inget tydligt tema')
+const SHOWN = 12
 
 export default function ClusterScatter({
   points,
@@ -42,6 +45,7 @@ export default function ClusterScatter({
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(900)
   const [picked, setPicked] = useState<number | null>(null)
+  const [all, setAll] = useState(false)
   const [hover, setHover] = useState<{
     p: ClusterPoint
     x: number
@@ -61,13 +65,19 @@ export default function ClusterScatter({
   const h = Math.min(height, Math.round(width * 0.62))
   const pad = 12
   const [glide, setGlide] = useState<[number, number] | null>(null)
-  const { sx, sy, sizes } = useMemo(() => {
+  const { sx, sy, sizes, tone } = useMemo(() => {
     const projection = projectClusterPoints(points, width, h, pad)
     const counts = new Map<number, number>()
     for (const p of points) counts.set(p.c, (counts.get(p.c) ?? 0) + 1)
+    const sizes = [...counts]
+      .filter(([c]) => c >= 0)
+      .sort((a, b) => b[1] - a[1])
+    // Colours go by size, so the largest groups never share one.
+    const rank = new Map(sizes.map(([c], i) => [c, i]))
     return {
       ...projection,
-      sizes: [...counts].filter(([c]) => c >= 0).sort((a, b) => b[1] - a[1]),
+      sizes,
+      tone: (c: number) => (rank.get(c) ?? c) % COLOURS.length,
     }
   }, [points, width, h])
 
@@ -94,7 +104,7 @@ export default function ClusterScatter({
     const noise = css.getPropertyValue('--color-chart-muted').trim()
     const draw = (p: ClusterPoint, alpha: number) => {
       ctx.globalAlpha = alpha
-      ctx.fillStyle = p.c < 0 ? noise : colours[p.c % colours.length]
+      ctx.fillStyle = p.c < 0 ? noise : colours[tone(p.c)]
       ctx.beginPath()
       ctx.arc(sx(p.x), sy(p.y), radius, 0, Math.PI * 2)
       ctx.fill()
@@ -105,7 +115,7 @@ export default function ClusterScatter({
       if (p.c >= 0 && p.c !== picked) draw(p, picked == null ? 0.85 : 0.18)
     if (picked != null) for (const p of points) if (p.c === picked) draw(p, 1)
     ctx.globalAlpha = 1
-  }, [points, width, h, picked, sx, sy, radius])
+  }, [points, width, h, picked, sx, sy, radius, tone])
 
   // The marker starts where it was, or in the middle, and moves to its place on the next frames.
   useEffect(() => {
@@ -153,9 +163,7 @@ export default function ClusterScatter({
     return [e.clientX - rect.left, e.clientY - rect.top] as const
   }
   const clusterName = (c: number) =>
-    c < 0
-      ? l('No cluster', 'Inget kluster')
-      : (name?.(c) ?? `${l('Cluster', 'Kluster')} ${c}`)
+    c < 0 ? l('No cluster', 'Inget kluster') : (name?.(c) ?? unnamed())
 
   return (
     <div className="cv-map" ref={box}>
@@ -199,7 +207,7 @@ export default function ClusterScatter({
         </div>
       )}
       <ul className="cv-legend" aria-label={l('Clusters', 'Kluster')}>
-        {sizes.slice(0, 12).map(([c, count]) => (
+        {(all ? sizes : sizes.slice(0, SHOWN)).map(([c, count]) => (
           <li key={c}>
             <button
               type="button"
@@ -207,16 +215,27 @@ export default function ClusterScatter({
               onClick={() => setPicked(picked === c ? null : c)}
             >
               <i
-                style={{ background: `var(${COLOURS[c % COLOURS.length]})` }}
+                style={{ background: `var(${COLOURS[tone(c)]})` }}
                 aria-hidden="true"
               />
               {clusterName(c)} <small>{num(count)}</small>
             </button>
           </li>
         ))}
-        {sizes.length > 12 && (
+        {sizes.length > SHOWN && (
           <li className="cv-more">
-            {l(`+ ${sizes.length - 12} more`, `+ ${sizes.length - 12} till`)}
+            <button
+              type="button"
+              aria-expanded={all}
+              onClick={() => setAll(!all)}
+            >
+              {all
+                ? l('Show fewer', 'Visa färre')
+                : l(
+                    `+ ${sizes.length - SHOWN} more`,
+                    `+ ${sizes.length - SHOWN} till`,
+                  )}
+            </button>
           </li>
         )}
       </ul>

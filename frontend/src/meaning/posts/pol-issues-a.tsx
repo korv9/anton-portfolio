@@ -1,4 +1,5 @@
 /** Fifteen policy issues: decisions, speeches and budget outturn. */
+import { l } from '../../i18n'
 import { useState } from 'react'
 import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
@@ -8,6 +9,7 @@ import { Bars, int, line, pc, Sub, sum, uniq } from './pol-kit'
 type Issue = {
   issue_key: string
   issue_name_en: string
+  issue_name_sv?: string
   per_session: { session: string; decisions: number }[]
   speeches: { session: string; party: string; speeches: number }[]
   budget_outturn_msek: { year: number; outturn_msek: number }[]
@@ -16,11 +18,16 @@ type Issues = { issues: Issue[] }
 
 const useIssues = () => useData<Issues>('parliament/issues.json')
 const keys = (d: Issues) => d.issues.map((i) => i.issue_key)
-/** An issue's English name, for its key. */
-const issueName = (d: Issues) => (k: string) =>
-  d.issues.find((i) => i.issue_key === k)?.issue_name_en ?? k
+/** An issue's name in the reader's language. */
+const nameOf = (i: Issue) =>
+  l(i.issue_name_en, i.issue_name_sv ?? i.issue_name_en)
+/** An issue's name, for its key. */
+const issueName = (d: Issues) => (k: string) => {
+  const i = d.issues.find((i) => i.issue_key === k)
+  return i ? nameOf(i) : k
+}
 /** "Social insurance and migration" → "Social insurance", to fit a small panel. */
-const shortName = (i: Issue) => i.issue_name_en.split(' and ')[0]
+const shortName = (i: Issue) => nameOf(i).split(l(' and ', ' och '))[0]
 const decisions = (i: Issue) => sum(i.per_session.map((s) => s.decisions))
 /** Every session any issue has, in order, so all panels share one time axis. */
 const sessions = (d: Issues) =>
@@ -53,7 +60,10 @@ function Multiples() {
           <svg
             viewBox="0 0 300 310"
             role="img"
-            aria-label="Decisions per session for each issue, one panel per issue"
+            aria-label={l(
+              'Decisions per session for each issue, one panel per issue',
+              'Beslut per riksmöte för varje sakområde, en panel per område',
+            )}
           >
             {ordered.map((iss, k) => (
               <g
@@ -65,7 +75,7 @@ function Multiples() {
                   <line x1={4} x2={92} y1={y(max)} y2={y(max)} />
                   {k === 2 && (
                     <text x={92} y={11} textAnchor="end">
-                      top {max}
+                      {l('top', 'max')} {max}
                     </text>
                   )}
                 </g>
@@ -117,13 +127,16 @@ function Outturn() {
     <Frame data={useIssues()}>
       {(d) => (
         <Bars
-          label={`Budget outturn per issue in ${latestYear(d)}, billion kronor`}
-          format={(v) => `${int(v)} bn`}
+          label={l(
+            `Budget outturn per issue in ${latestYear(d)}, billion kronor`,
+            `Budgetutfall per sakområde ${latestYear(d)}, miljarder kronor`,
+          )}
+          format={(v) => `${int(v)} ${l('bn', 'mdkr')}`}
           rows={outturn(d)
             .slice(0, 10)
             .map(({ i, bn }, k) => ({
               key: i.issue_key,
-              label: <span title={i.issue_name_en}>{i.issue_name_en}</span>,
+              label: <span title={nameOf(i)}>{nameOf(i)}</span>,
               value: bn,
               color: focal(k === 0),
             }))}
@@ -148,15 +161,18 @@ function Speeches() {
         return (
           <>
             <Slicer
-              label="Issue"
+              label={l('Issue', 'Sakområde')}
               options={keys(d)}
               format={issueName(d)}
               value={key}
               onChange={setKey}
             />
-            <Sub>{iss.issue_name_en}</Sub>
+            <Sub>{nameOf(iss)}</Sub>
             <Bars
-              label={`Speeches per party in debates on ${iss.issue_name_en}`}
+              label={l(
+                `Speeches per party in debates on ${nameOf(iss)}`,
+                `Anföranden per parti i debatter om ${nameOf(iss)}`,
+              )}
               format={int}
               rows={[...by]
                 .sort((a, b) => b[1] - a[1])
@@ -180,8 +196,14 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/issues.json'],
     title: (d: Issues) =>
-      `Riksdag decisions per session in ${d.issues.length} policy areas, ${sessionSpan(d)}`,
-    note: 'Decisions per session; every panel uses the same scale. Source: Riksdagen.',
+      l(
+        `Riksdag decisions per session in ${d.issues.length} policy areas, ${sessionSpan(d)}`,
+        `Riksdagens beslut per riksmöte inom ${d.issues.length} sakområden, ${sessionSpan(d)}`,
+      ),
+    note: [
+      'Decisions per session; every panel uses the same scale. Source: Riksdagen.',
+      'Beslut per riksmöte; alla paneler har samma skala. Källa: Riksdagen.',
+    ],
     render: () => <Multiples />,
   },
   {
@@ -191,10 +213,16 @@ export const posts: Post[] = [
     title: (d: Issues) => {
       const [top] = outturn(d)
       return top
-        ? `${top.i.issue_name_en} had the largest budget outturn in ${latestYear(d)}: ${int(top.bn)} billion kronor`
-        : 'Budget outturn per policy area'
+        ? l(
+            `${nameOf(top.i)} had the largest budget outturn in ${latestYear(d)}: ${int(top.bn)} billion kronor`,
+            `${nameOf(top.i)} hade störst budgetutfall ${latestYear(d)}: ${int(top.bn)} miljarder kronor`,
+          )
+        : l('Budget outturn per policy area', 'Budgetutfall per sakområde')
     },
-    note: 'Outturn of the expenditure areas behind each issue, SEK billion, ten largest. Source: Statskontoret.',
+    note: [
+      'Outturn of the expenditure areas behind each issue, SEK billion, ten largest. Source: Statskontoret.',
+      'Utfall för utgiftsområdena bakom varje sakområde, miljarder kronor, de tio största. Källa: Statskontoret.',
+    ],
     render: () => <Outturn />,
   },
   {
@@ -202,8 +230,14 @@ export const posts: Post[] = [
     domain: 'politics',
     sources: ['parliament/issues.json'],
     title: (d: Issues) =>
-      `Speeches per party in issue debates, ${sessionSpan(d)}`,
-    note: "Counts only debate speeches linked to the issue's committee reports by title. Source: Riksdagen.",
+      l(
+        `Speeches per party in issue debates, ${sessionSpan(d)}`,
+        `Anföranden per parti i debatter per sakområde, ${sessionSpan(d)}`,
+      ),
+    note: [
+      "Counts only debate speeches linked to the issue's committee reports by title. Source: Riksdagen.",
+      'Räknar bara debattanföranden som genom titeln kopplats till sakområdets betänkanden. Källa: Riksdagen.',
+    ],
     render: () => <Speeches />,
   },
 ]

@@ -56,8 +56,8 @@
 .ja-sections {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-6) var(--sp-6);
-  margin-top: var(--sp-5);
+  gap: clamp(3rem, 6vw, 5rem) var(--sp-6);
+  margin-top: var(--sp-6);
 }
 .ja-sections h2 {
   margin: 0 0 var(--sp-3);
@@ -77,8 +77,6 @@
 }
 .ja-owner {
   grid-column: 1 / -1;
-  padding-top: var(--sp-4);
-  border-top: 1px solid var(--color-border);
 }
 .ja-owner summary {
   min-height: 44px;
@@ -140,11 +138,6 @@
   .ja-filters label {
     flex-basis: calc(50% - var(--sp-3));
     max-width: none;
-  }
-  .ja-stats > div {
-    flex: 1 1 40%;
-    padding-inline: 0;
-    border-inline-start: 0;
   }
   .ja-board {
     grid-template-columns: minmax(0, 1fr);

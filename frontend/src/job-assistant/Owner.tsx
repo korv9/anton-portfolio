@@ -80,7 +80,7 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
         ),
       approval
         ? l(
-            'Saved. The next hourly run checks it against the CV and approves it or lists what to fix.',
+            'Saved. The next run checks it against the CV and approves it or lists what to fix.',
             'Sparat. Nästa körning kontrollerar det mot cv:t och godkänner det eller listar vad som ska rättas.',
           )
         : l('Draft saved.', 'Utkastet sparat.'),
@@ -104,7 +104,7 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
           }),
         ),
       l(
-        'Uploaded. The next hourly run reads it into a new draft.',
+        'Uploaded. The next run reads it into a new draft.',
         'Uppladdat. Nästa körning läser in det till ett nytt utkast.',
       ),
     )
@@ -113,7 +113,7 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
   return (
     <details className="ja-owner">
       <summary>{l('Owner tools', 'Ägarens verktyg')}</summary>
-      {!available && (
+      {owner && !available && (
         <p className="ja-muted">
           {l(
             'The record storage is not set up yet, so statuses, labels and the profile cannot be saved.',
@@ -219,7 +219,7 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
           ) : (
             <p className="ja-muted">
               {l(
-                'No draft yet. Upload the CV; the next hourly run makes one.',
+                'No draft yet. Upload the CV; the next run makes one.',
                 'Inget utkast än. Ladda upp cv:t; nästa körning skapar ett.',
               )}
             </p>

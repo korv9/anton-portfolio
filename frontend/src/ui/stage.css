@@ -43,7 +43,6 @@
   margin-top: 0;
 }
 .stage-details {
-  border-top: 1px solid var(--line);
   padding-top: var(--sp-4);
 }
 .stage-details > summary {
@@ -65,7 +64,6 @@
 }
 .stage-block-title {
   padding-bottom: var(--sp-2);
-  border-bottom: 1px solid var(--line);
 }
 .stage-block p {
   margin: 0 0 var(--sp-2);

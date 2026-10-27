@@ -2,6 +2,7 @@
 import { focal, Frame, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { Bars, change, D, linePath, pct, Svg } from './job-kit'
+import { l } from '../../i18n'
 
 /** [year, texts, texts_matching, matches, words, share, share_std, per_1000, per_1000_std] */
 type Row = [
@@ -18,12 +19,16 @@ type Row = [
 type Category = {
   id: string
   label_en: string
+  label_sv?: string
   rows: Row[]
   break: { first_year_after: number; mean_before: number; mean_after: number }
 }
 type Trends = { categories: Category[] }
 const TRENDS = 'sweden/language/trends.json'
-const short = (s: string) => s.split(' and ')[0]
+const name = (c: Category) => l(c.label_en, c.label_sv ?? c.label_en)
+/** The first half of a two-part name: 'Passion and enthusiasm' -> 'Passion'. */
+const short = (c: Category) =>
+  l(c.label_en.split(' and ')[0], (c.label_sv ?? c.label_en).split(' och ')[0])
 
 /** Change in the standardised rate per 1,000 words from before a category's break year to
  * after; categories without a rate before the break have no change to show and are left out. */
@@ -45,14 +50,20 @@ function Dumbbell() {
     <Frame data={data}>
       {(t) => (
         <Bars
-          label="Change in each category's rate per 1,000 words after its break year"
+          label={l(
+            "Change in each category's rate per 1,000 words after its break year",
+            'Förändring i varje kategoris frekvens per 1 000 ord efter dess brottår',
+          )}
           format={change}
           rows={byJump(t).map((c) => ({
             key: c.id,
-            label: short(c.label_en),
+            label: short(c),
             value: jump(c),
             color: focal(c === biggest(t)),
-            note: `from ${c.break.first_year_after}`,
+            note: l(
+              `from ${c.break.first_year_after}`,
+              `från ${c.break.first_year_after}`,
+            ),
           }))}
         />
       )}
@@ -76,7 +87,10 @@ function Multiples() {
           <Svg
             w={W}
             h={510}
-            label="Small multiples of each category's share of ad texts"
+            label={l(
+              "Small multiples of each category's share of ad texts",
+              'Småmultiplar av varje kategoris andel av annonstexterna',
+            )}
           >
             {cats.map((c, k) => {
               const x = linearScale([c.rows[0][0], c.rows.at(-1)![0]], [4, 236])
@@ -89,7 +103,7 @@ function Multiples() {
               )
               return (
                 <g key={c.id}>
-                  <title>{c.label_en}</title>
+                  <title>{name(c)}</title>
                   <path
                     d={`${linePath(pts)}L236,${y(0)}L4,${y(0)}Z`}
                     fill={focal(c === top)}
@@ -103,7 +117,7 @@ function Multiples() {
                     strokeWidth={3}
                     paintOrder="stroke"
                   >
-                    {short(c.label_en)}
+                    {short(c)}
                   </text>
                   <text
                     className="mean-job-v"
@@ -131,10 +145,19 @@ export const posts: Post[] = [
     title: (t: Trends) => {
       const c = biggest(t)
       return c
-        ? `${short(c.label_en)} words changed most at an estimated break: ${change(jump(c))} from ${c.break.first_year_after}`
-        : 'Change in ad wording around an estimated break year'
+        ? l(
+            `${short(c)} words changed most at an estimated break: ${change(jump(c))} from ${c.break.first_year_after}`,
+            `Ord om ${short(c).toLowerCase()} ändrades mest vid ett skattat brottår: ${change(jump(c))} från ${c.break.first_year_after}`,
+          )
+        : l(
+            'Change in ad wording around an estimated break year',
+            'Förändring i annonsernas ordval kring ett skattat brottår',
+          )
     },
-    note: "Matches per 1,000 words, field mix held fixed; mean after against before each category's break year (an exploratory split), 2006 on",
+    note: [
+      "Matches per 1,000 words, field mix held fixed; mean after against before each category's break year (an exploratory split), 2006 on",
+      'Träffar per 1 000 ord, med yrkesområdenas fördelning hållen fast; medelvärde efter mot före varje kategoris brottår (en utforskande delning), från 2006',
+    ],
     render: () => <Dumbbell />,
   },
   {
@@ -142,8 +165,14 @@ export const posts: Post[] = [
     domain: D,
     sources: ['sweden/language/trends.json'],
     size: 'tall',
-    title: 'Share of job-ad texts using each kind of wording, 2006 on',
-    note: 'Each panel 0–100 %; the latest year on the right; Arbetsförmedlingen ads',
+    title: [
+      'Share of job-ad texts using each kind of wording, 2006 on',
+      'Andel annonstexter med varje slags ordval, från 2006',
+    ],
+    note: [
+      'Each panel 0–100 %; the latest year on the right; Arbetsförmedlingen ads',
+      'Varje panel 0–100 %; senaste året till höger; annonser från Arbetsförmedlingen',
+    ],
     render: () => <Multiples />,
   },
 ]

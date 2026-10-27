@@ -1,4 +1,6 @@
 /** AI in Riksdag speeches: the share over time and by party, from ai-act/politics/*.json. */
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 import { focal, Frame, OTHER, useData, type Post } from '../kit'
 import { EndLabels, niceDomain, ticksBetween, YAxis } from '../axes'
 import { linearScale, niceStep, yearTicks } from '../../charts/scales'
@@ -13,20 +15,25 @@ type Month = {
   ai_share_rolling_3m: number
 }
 type Summary = { phases: { id: string; from?: string }[] }
-type PartyYear = { party: string; speeches: number; ai_speeches: number }[]
+type PartyYear = {
+  party: string
+  year: number
+  speeches: number
+  ai_speeches: number
+}[]
 
 const MONTHLY = 'ai-act/politics/monthly.json'
 const SUMMARY = 'ai-act/politics/summary.json'
 const PARTY_YEAR = 'ai-act/politics/party-year.json'
 
 /** The start of each phase after the first, named for the event that opened it. */
-const MILESTONE: Record<string, string> = {
-  negotiation: 'Proposed',
-  after_publication: 'Published',
+const MILESTONE: Record<string, () => string> = {
+  negotiation: () => l('Proposed', 'Föreslagen'),
+  after_publication: () => l('Published', 'Publicerad'),
 }
 
 const monthName = (m: string) =>
-  new Date(`${m}-01T12:00`).toLocaleString('en-GB', {
+  new Date(`${m}-01T12:00`).toLocaleString(l('en-GB', 'sv-SE'), {
     month: 'long',
     year: 'numeric',
   })
@@ -75,14 +82,17 @@ function SpeechLine() {
                 ? rows.findIndex((r) => r.month >= p.from!.slice(0, 7))
                 : -1
               return i >= 0 && MILESTONE[p.id]
-                ? [{ x: x(i), label: MILESTONE[p.id] }]
+                ? [{ x: x(i), label: MILESTONE[p.id]() }]
                 : []
             })
             return (
               <svg
                 viewBox="0 0 600 220"
                 role="img"
-                aria-label={`Share of Riksdag speeches that mention AI, three-month average, ${rows[0].month} to ${last.month}`}
+                aria-label={l(
+                  `Share of Riksdag speeches that mention AI, three-month average, ${rows[0].month} to ${last.month}`,
+                  `Andel av anförandena i riksdagen som nämner AI, glidande tremånadersmedel, ${rows[0].month} till ${last.month}`,
+                )}
               >
                 <YAxis
                   y={y}
@@ -139,11 +149,17 @@ function SpeechLine() {
   )
 }
 
-/** Each party's share of speeches naming AI over every year in the file, highest first. */
+/** The party comparison counts from 2023, the window the other AI posts compare over, so a
+ * party's early years with few AI speeches do not dilute its rate. */
+const FROM = 2023
+const span = (rows: PartyYear) =>
+  `${FROM}–${Math.max(FROM, ...rows.map((r) => r.year))}`
+
+/** Each party's share of speeches naming AI from FROM on, highest first. */
 const byParty = (rows: PartyYear) => {
   const m = new Map<string, { ai: number; all: number }>()
   for (const r of rows) {
-    if (!isParty(r.party)) continue
+    if (!isParty(r.party) || r.year < FROM) continue
     const t = m.get(r.party) ?? { ai: 0, all: 0 }
     t.ai += r.ai_speeches
     t.all += r.speeches
@@ -161,7 +177,10 @@ function PartyBars() {
       {(rows) => (
         <Bars
           wrap
-          label="Share of each party's Riksdag speeches that mention AI"
+          label={l(
+            "Share of each party's Riksdag speeches that mention AI",
+            'Andel av varje partis anföranden i riksdagen som nämner AI',
+          )}
           format={(v) => share(v, 2)}
           max={Math.max(1e-9, ...byParty(rows).map((p) => p.share))}
           rows={byParty(rows).map((p, i) => ({
@@ -186,10 +205,19 @@ export const posts: Post[] = [
       const first = firstYear(rows)
       const last = complete(rows).at(-1)
       return first && last
-        ? `The share of Riksdag speeches that mention AI went from ${share(first.share)} in ${first.year} to ${share(last.ai_share_rolling_3m)} by ${monthName(last.month)}`
-        : 'Riksdag speeches that mention AI'
+        ? l(
+            `The share of Riksdag speeches that mention AI went from ${share(first.share)} in ${first.year} to ${share(last.ai_share_rolling_3m)} by ${monthName(last.month)}`,
+            `Andelen anföranden i riksdagen som nämner AI gick från ${share(first.share)} år ${first.year} till ${share(last.ai_share_rolling_3m)} i ${monthName(last.month)}`,
+          )
+        : l(
+            'Riksdag speeches that mention AI',
+            'Anföranden i riksdagen som nämner AI',
+          )
     },
-    note: 'Share of all speeches per month, three-month average, to the last complete month; dashed lines mark the AI Act proposal and its publication. Source: Riksdagen open data',
+    note: [
+      'Share of speeches per month, three-month average. Dashed: the AI Act proposal and publication. Source: Riksdagen',
+      'Andel anföranden per månad, tremånadersmedel. Streckat: förslaget till AI-förordningen och publiceringen. Källa: Riksdagen',
+    ],
     render: () => <SpeechLine />,
   },
   {
@@ -200,10 +228,20 @@ export const posts: Post[] = [
       const ranked = byParty(rows)
       const [top, low] = [ranked[0], ranked.at(-1)]
       return top && low && low.share > 0
-        ? `The ${partyName(top.party)} mention AI in ${share(top.share, 2)} of their speeches, ${(top.share / low.share).toFixed(1)} times the rate of the ${partyName(low.party)}`
-        : 'Riksdag speeches that mention AI, by party'
+        ? l(
+            `The ${partyName(top.party)} mentions AI in ${share(top.share, 2)} of its speeches, ${fixed(top.share / low.share, 1)} times the rate of the ${partyName(low.party)}`,
+            `${partyName(top.party)} nämner AI i ${share(top.share, 2)} av sina anföranden, ${fixed(top.share / low.share, 1)} gånger så ofta som ${partyName(low.party)}`,
+          )
+        : l(
+            'Riksdag speeches that mention AI, by party',
+            'Anföranden i riksdagen som nämner AI, per parti',
+          )
     },
-    note: 'Share of each party’s speeches that mention AI, all years in the data pooled. Source: Riksdagen open data',
+    note: (rows: PartyYear) =>
+      l(
+        `Share of each party’s speeches that mention AI, ${span(rows)} pooled. Source: Riksdagen open data`,
+        `Andel av varje partis anföranden som nämner AI, ${span(rows)} sammanslagna. Källa: Riksdagens öppna data`,
+      ),
     render: () => <PartyBars />,
   },
 ]

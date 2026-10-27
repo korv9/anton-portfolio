@@ -1,8 +1,14 @@
 /** AI Act cross-references: the articles other articles cite most. */
 import { Frame, PALETTE, useData, type Post } from '../kit'
 import { Bars, heading, usable } from './txt-kit'
+import { l } from '../../i18n'
 
-type Article = { article_number: string; title_en: string; refers_to: string[] }
+type Article = {
+  article_number: string
+  title_en: string
+  title_sv?: string | null
+  refers_to: string[]
+}
 const ARTICLES = 'ai-act/articles.json'
 const d = 'ai-act'
 
@@ -26,11 +32,19 @@ function ReferenceBars() {
   return (
     <Frame data={data}>
       {(rows) => {
-        const title = new Map(rows.map((a) => [a.article_number, a.title_en]))
+        const title = new Map(
+          rows.map((a) => [
+            a.article_number,
+            l(a.title_en, a.title_sv || a.title_en),
+          ]),
+        )
         const ranked = cited(rows)
         return (
           <Bars
-            label="AI Act articles cited most often by other articles"
+            label={l(
+              'AI Act articles cited most often by other articles',
+              'Artiklar i AI-förordningen som andra artiklar hänvisar till oftast',
+            )}
             format={String}
             long
             focus={null}
@@ -56,11 +70,21 @@ export const posts: Post[] = [
       const ranked = cited(rows)
       if (!ranked.length) return ''
       const top = ranked.filter(([, n]) => n === ranked[0][1]).map(([k]) => k)
+      const n = ranked[0][1]
       return top.length === 1
-        ? `Article ${top[0]} is cited by ${ranked[0][1]} other articles, the most`
-        : `Articles ${top.slice(0, -1).join(', ')} and ${top.at(-1)} are each cited by ${ranked[0][1]} other articles`
+        ? l(
+            `Article ${top[0]} is cited by ${n} other articles, the most`,
+            `Artikel ${top[0]} hänvisas till av ${n} andra artiklar, flest av alla`,
+          )
+        : l(
+            `Articles ${top.slice(0, -1).join(', ')} and ${top.at(-1)} are each cited by ${n} other articles`,
+            `Artiklarna ${top.slice(0, -1).join(', ')} och ${top.at(-1)} hänvisas till av ${n} andra artiklar vardera`,
+          )
     }),
-    note: 'Other AI Act articles that refer to each article; the top ten show until opened',
+    note: [
+      'Other AI Act articles that refer to each article; the top ten show until opened',
+      'Andra artiklar i AI-förordningen som hänvisar till varje artikel; de tio främsta visas tills kortet öppnas',
+    ],
     render: () => <ReferenceBars />,
   },
 ]

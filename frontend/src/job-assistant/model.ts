@@ -100,7 +100,12 @@ export type Delivered = {
     runs: { day: string; runs: number; runs_ok: number; runs_failed: number }[]
     ads: Ad[]
   }
-  matches: { profile: Profile | null; matches: Match[] }
+  matches: {
+    profile: Profile | null
+    /** rank.py's note on the profile route (platform/job_assistant/export_matches.py). */
+    status?: { skipped?: RouteNote; kept?: RouteNote }
+    matches: Match[]
+  }
   texts: {
     texts: Record<string, { description: string; contact_redactions: number }>
   }
@@ -201,4 +206,36 @@ export const ROLE_NAMES: Record<string, [string, string]> = {
   fullstack: ['Full stack', 'Fullstack'],
   frontend: ['Frontend', 'Frontend'],
   other: ['Other', 'Annat'],
+}
+
+/** Why rank.py matched nothing or kept the last matches: the reason, the HTTP status (null when unreachable), when. */
+export type RouteNote = { reason: string; status: number | null; at: string }
+
+const utc = (at: string) => `${at.slice(0, 10)} ${at.slice(11, 16)} UTC`
+
+/**
+ * What the board says when nothing is matched, as [English, Swedish]. Only a 200 without an
+ * approved profile means the profile is still to be approved; any other reason reads as a calm
+ * pause. The HTTP status stays in matches.json, not in public copy.
+ */
+export function unmatchedNote(n?: RouteNote): [string, string] {
+  if (n?.status === 200)
+    return [
+      'Matching starts when the CV profile is approved.',
+      'Matchningen börjar när cv-profilen är godkänd.',
+    ]
+  return [
+    'Matching against my CV is paused for now.',
+    'Matchningen mot mitt cv är pausad just nu.',
+  ]
+}
+
+/** The notice when the last matches stand because the profile route could not be read. */
+export function keptNote(n: RouteNote): [string, string] {
+  const why = n.status == null ? 'could not be reached' : `answered ${n.status}`
+  const varfor = n.status == null ? 'gick inte att nå' : `svarade ${n.status}`
+  return [
+    `The profile route ${why} at ${utc(n.at)}, so these are the matches of the last run that read it.`,
+    `Profilen ${varfor} ${utc(n.at)}, så det här är matchningarna från den senaste körningen som läste den.`,
+  ]
 }

@@ -5,6 +5,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import worker, {
+  ALLEGORY_SYSTEM,
   canonical,
   checkQuotes,
   fold,
@@ -51,8 +52,10 @@ async function env(
     AI: {
       run: async (model, input) => {
         calls.push({ model, input })
-        if (reply instanceof Error) throw reply
-        return reply
+        // A list answers each call in turn: the law answer, then its allegory.
+        const next = Array.isArray(reply) ? reply[calls.length - 1] : reply
+        if (next instanceof Error) throw next
+        return next
       },
     },
     ASSETS: {
@@ -328,4 +331,37 @@ test('rate limit and methods', async () => {
   assert.equal(get.status, 405)
   const none = await worker.fetch(post('/api/nothing', {}), await env())
   assert.equal(none.status, 404)
+})
+
+test('answer: the checked law answer is retold as a moral allegory, and the answer stays', async () => {
+  const law = {
+    response: 'Den gäller [[sfs-1982-80-1]]"allmän och enskild tjänst".',
+  }
+  const fable =
+    'En räv och en hare arbetade i samma verkstad. Sensmoral: regeln gäller alla.'
+  const e = await env([law, { response: fable }])
+  const told = await (await worker.fetch(ask(), e)).json()
+  assert.equal(told.status, 'verified')
+  assert.equal(told.allegory, fable)
+  assert.equal(told.answer, law.response)
+  // The allegory is told from the checked answer, not from the passages.
+  const [, second] = e.calls as { input: { messages: { content: string }[] } }[]
+  assert.equal(second.input.messages[0].content, ALLEGORY_SYSTEM)
+  assert.match(
+    second.input.messages[1].content,
+    /Checked answer: Den gäller "allmän och enskild tjänst"/,
+  )
+  assert.doesNotMatch(second.input.messages[1].content, /arbetstagare/)
+  // A retelling that fails or cites leaves the checked answer without an allegory.
+  for (const story of [new Error('busy'), { response: 'Som [[x]] säger.' }]) {
+    const plain = await (
+      await worker.fetch(ask(), await env([law, story]))
+    ).json()
+    assert.equal(plain.status, 'verified')
+    assert.equal(plain.allegory, undefined)
+  }
+  // Nothing checked, nothing retold.
+  const none = await env([{ response: 'NO_ANSWER' }])
+  await worker.fetch(ask(), none)
+  assert.equal(none.calls.length, 1)
 })

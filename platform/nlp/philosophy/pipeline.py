@@ -61,6 +61,22 @@ TERMS = 10
 REVIEWS = Path(__file__).resolve().parent / "reviewed_clusters.json"
 
 
+def roman(n: int) -> str:
+    out = ""
+    for value, numeral in ((100, "c"), (90, "xc"), (50, "l"), (40, "xl"), (10, "x"), (9, "ix"),
+                           (5, "v"), (4, "iv"), (1, "i")):
+        while n >= value:
+            out, n = out + numeral, n - value
+    return out
+
+
+# Not distinctive words: chapter and proposition numbering ("xiv", "prop", "note"), the King
+# James register of older translations, and verbs that carry no content.
+STOPLIST = frozenset({roman(n) for n in range(1, 400)} | {
+    "prop", "note", "thou", "thy", "thee", "ye", "unto", "hath", "doth", "shalt",
+    "did", "does", "say", "said"})
+
+
 def balanced_sample(frame: pd.DataFrame, per_document: int = PER_DOCUMENT) -> pd.DataFrame:
     """At most `per_document` passages per work, evenly spaced through it (deterministic)."""
     parts = []
@@ -98,13 +114,13 @@ def chance_rate(groups: list[str]) -> float:
 
 
 def ctfidf_terms(texts: list[str], labels: np.ndarray, top: int = TERMS) -> dict[int, list[str]]:
-    from sklearn.feature_extraction.text import CountVectorizer
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, CountVectorizer
 
     clusters = sorted(set(labels) - {-1})
     docs = [" ".join(t for t, l in zip(texts, labels) if l == c) for c in clusters]
     if not docs:
         return {}
-    vectorizer = CountVectorizer(stop_words="english", min_df=2, token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]{2,}\b")
+    vectorizer = CountVectorizer(stop_words=sorted(ENGLISH_STOP_WORDS | STOPLIST), min_df=2, token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z]{2,}\b")
     counts = vectorizer.fit_transform(docs).toarray().astype(float)
     tf = counts / counts.sum(axis=1, keepdims=True).clip(min=1)
     idf = np.log(1 + counts.sum(axis=1).mean() / counts.sum(axis=0).clip(min=1))
@@ -152,6 +168,7 @@ def main(if_stale: bool = False) -> int:
     works = sample["document_id"].tolist()
     translators = [t if isinstance(t, str) else "" for t in sample["translator"]]
     inputs = digest([MULTILINGUAL, TENSIONS.read_text(encoding="utf-8"), REVIEWS.read_text(encoding="utf-8"),
+                     " ".join(sorted(STOPLIST)),
                      *(f"{i}\t{t}" for i, t in zip(sample["passage_id"], sample["text"]))])
     if if_stale and stands(OUT / "run.json", "input_sha256", inputs):
         print("The sample, the tensions and the reviews are unchanged since the last run; the maps stand.")

@@ -12,7 +12,6 @@ test('project themes survive navigation between all workspace types', async ({
     ['#concept-constellation', 'labs'],
     ['#drugcomb', 'labs'],
     ['#thesis', 'engineering'],
-    ['#diva-lakehouse', 'engineering'],
     ['#homie', 'engineering'],
     ['#cluster-visuals', 'tool'],
   ]
@@ -25,54 +24,74 @@ test('project themes survive navigation between all workspace types', async ({
       workspace,
     )
     await expect(page.locator('main h1').first()).toBeVisible()
+    // Ivory on charcoal on every page, the header included.
     await expect(page.locator('body')).toHaveCSS(
       'background-color',
-      'rgb(241, 239, 231)',
+      'rgb(36, 36, 34)',
     )
     await expect(page.locator('body')).toHaveCSS('font-family', /Helvetica/)
-    await expect(page.locator('.site-header')).toHaveCSS(
-      'background-color',
-      'rgb(226, 223, 214)',
-    )
-    expect(
-      (await page.locator('.site-header').boundingBox())!.height,
-    ).toBeLessThanOrEqual(80)
+    // Wide screens show the projects index beside the page; phones keep the header.
+    if (page.viewportSize()!.width >= 1024) {
+      await expect(page.locator('.project-rail')).toBeVisible()
+      await expect(page.locator('.site-header')).toBeHidden()
+    } else {
+      await expect(page.locator('.site-header')).toHaveCSS(
+        'background-color',
+        'rgb(36, 36, 34)',
+      )
+      expect(
+        (await page.locator('.site-header').boundingBox())!.height,
+      ).toBeLessThanOrEqual(80)
+    }
   }
   await page.goto('/#start')
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
-    'rgb(244, 240, 230)',
+    'rgb(36, 36, 34)',
   )
   await expect(page.locator('.home-name')).toBeVisible()
 })
 
-test('the homepage retains its name scale, placement and palette', async ({
+test('the homepage keeps the signature, name scale, placement and palette', async ({
   page,
   isMobile,
 }) => {
   test.skip(isMobile, 'checks the protected desktop composition')
-  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.setViewportSize({ width: 1440, height: 900 })
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#start')
   const name = page.locator('.home-name')
-  await expect(name).toHaveCSS('font-size', '112px')
-  await expect(name).toHaveCSS('line-height', '103.04px')
-  await expect(name).toHaveCSS('color', 'rgb(47, 40, 54)')
+  await expect(name).toHaveCSS('font-size', '64px')
+  await expect(name).toHaveCSS('color', 'rgb(241, 239, 231)')
+  const centre = await page.evaluate(
+    () => document.documentElement.clientWidth / 2,
+  )
   const bounds = (await name.boundingBox())!
-  expect(bounds.x + bounds.width / 2).toBeCloseTo(720, 0)
-  expect(bounds.y).toBeCloseTo(372.5, 0)
+  expect(bounds.x + bounds.width / 2).toBeCloseTo(centre, 0)
+  // The signature, 440 px wide and lifted 24 px above the centre; the name overlaps it by 8 px.
+  const signature = (await page.locator('.home-signature').boundingBox())!
+  expect(signature.width).toBeCloseTo(440, 0)
+  expect(signature.x + signature.width / 2).toBeCloseTo(centre, 0)
+  expect(signature.y + signature.height / 2).toBeCloseTo(450 - 24, 0)
+  expect(signature.y + signature.height - bounds.y).toBeCloseTo(8, 0)
+  await expect(page.locator('.home-role')).toHaveCSS(
+    'color',
+    'rgb(155, 150, 140)',
+  )
 })
 
-test('dark visualization colors stay inside the plate', async ({ page }) => {
+test('a dark plate reads the same tokens as the charcoal page', async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/#symbolic-atlas')
   const plate = page.locator('main .plate').first()
   await expect(plate).toBeVisible()
   await expect(plate).toHaveCSS('color-scheme', 'dark')
   await expect(plate).toHaveCSS('background-color', 'rgb(36, 36, 34)')
-  await expect(page.locator('body')).toHaveCSS('color-scheme', 'light')
+  await expect(page.locator('body')).toHaveCSS('color-scheme', 'dark')
   await expect(page.locator('body')).toHaveCSS(
     'background-color',
-    'rgb(241, 239, 231)',
+    'rgb(36, 36, 34)',
   )
 })

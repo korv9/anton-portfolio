@@ -1,26 +1,28 @@
 /*
- * The chart feed reads --mean-* properties only. On the meaning page they come from the SWEDEN
- * dark theme (.sweden tokens); on the home page .mean-light maps them to the home palette.
+ * The chart feed reads --mean-* properties only; they map to the site's shared ivory-on-charcoal
+ * tokens (tokens.css), so the feed looks like the rest of the site. Series hues are the site's
+ * --series-*, focal first; every one is a light tint that reads on the card.
  */
 .mean-feed {
-  --mean-bg: var(--sw-bg);
-  --mean-card: var(--sw-solid);
-  --mean-ink: var(--sw-ink);
-  --mean-muted: var(--sw-muted);
-  --mean-line: var(--sw-line);
-  --mean-grid: color-mix(in srgb, var(--sw-ink) 12%, transparent);
-  --mean-accent: var(--sw-accent);
-  --mean-pill: var(--sw-pill);
-  --mean-font: var(--sw-font-mono);
-  --mean-s1: var(--sw-accent);
-  --mean-s2: var(--sw-div-pos);
-  --mean-s3: var(--sw-div-neg);
-  --mean-s4: var(--sw-stamp);
-  --mean-s5: var(--sw-seq-hi);
-  --mean-s6: var(--series-4);
-  --mean-seq-lo: var(--sw-seq-lo);
-  --mean-seq-hi: var(--sw-seq-hi);
-  --mean-other: color-mix(in srgb, var(--sw-ink) 30%, transparent);
+  --mean-bg: var(--page);
+  --mean-card: var(--wash);
+  --mean-ink: var(--ink);
+  --mean-muted: var(--color-ink-secondary);
+  --mean-line: var(--line);
+  --mean-grid: color-mix(in srgb, var(--ink) 12%, transparent);
+  --mean-accent: var(--focus);
+  --mean-pill: var(--ink);
+  --mean-font: var(--font);
+  --mean-s1: var(--series-3);
+  --mean-s2: var(--series-4);
+  --mean-s3: var(--series-2);
+  --mean-s4: var(--series-5);
+  --mean-s5: var(--color-chart-neutral);
+  --mean-s6: var(--color-chart-muted);
+  --mean-seq-lo: color-mix(in oklab, var(--series-3) 22%, var(--page));
+  --mean-seq-hi: color-mix(in oklab, var(--series-3) 45%, var(--ink));
+  --mean-other: color-mix(in srgb, var(--ink) 30%, transparent);
+  /* Party colours are data, not chrome: each party keeps its own hue, toned for the dark card. */
   --mean-party-v: #c06a5c;
   --mean-party-s: #e0806f;
   --mean-party-mp: #9cb873;
@@ -32,60 +34,51 @@
   --mean-party-nyd: #b49a6a;
   /* Posts separate marks with the card colour and mix tints towards it. */
   --paper: var(--mean-card);
-  /* charts/RankBars and Compare read the site's ink roles; .sweden and the home page set
-     --ink, --muted and --line, so only the two they leave out are mapped here. */
-  --ink-2: var(--mean-ink);
-  --line-strong: color-mix(in srgb, var(--mean-ink) 32%, transparent);
   --mean-ease: cubic-bezier(0.3, 0.7, 0.2, 1);
   --mean-glide: 0.42s;
 }
-/* Home page: paper slips a whisper above the ivory page, olive as the focal series, deeper pastels after it. */
-.mean-light .mean-feed {
-  --mean-bg: var(--page);
-  --mean-card: #fbf9f3;
-  --mean-ink: var(--ink);
-  --mean-muted: var(--muted);
-  --mean-line: var(--line);
-  --mean-grid: rgba(15, 15, 16, 0.09);
-  --mean-accent: var(--cv-olive);
-  --mean-pill: var(--cv-olive);
-  --mean-font: var(--font);
-  --mean-s1: var(--cv-olive);
-  --mean-s2: #4c716b;
-  --mean-s3: #b8704a;
-  --mean-s4: #b0903a;
-  --mean-s5: var(--cv-ground);
-  --mean-s6: #a7777e;
-  --mean-seq-lo: #efeadf;
-  --mean-seq-hi: #3d4232;
-  --mean-other: #8f897d;
-  --mean-party-v: #8c3a33;
-  --mean-party-s: #c0574a;
-  --mean-party-mp: #98b56a;
-  --mean-party-c: #2b5238;
-  --mean-party-l: #6f97c2;
-  --mean-party-kd: #2f4c7c;
-  --mean-party-m: #3f6a9e;
-  --mean-party-sd: #c9a02c;
-  --mean-party-nyd: #8a7a52;
-  --wash: #f3efe6;
-  --line-strong: rgba(15, 15, 16, 0.32);
-}
-
 .mean-page {
-  padding: clamp(10px, 1.6vw, 20px);
+  padding: 0 0 var(--sp-7);
+  background: var(--page);
+  color: var(--ink);
 }
-.sweden .mean-title {
-  font-family: var(--sw-font-display);
-  font-size: var(--display-l);
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  color: var(--sw-ink);
-  margin: 0.2em 0 clamp(10px, 1.6vw, 20px);
+/* The page title in the signature's gradient, as on the projects hub. The id outranks
+   editorial.css's page title rule. */
+.project-shell #main .mean-title,
+.project-shell #main .mean-section-head :is(h2, h3) {
+  background: linear-gradient(
+    to bottom right,
+    var(--color-accent-focal) 0%,
+    var(--color-ink-secondary) 55%,
+    var(--muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.project-shell #main .mean-title {
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  padding-block: clamp(3rem, 7vw, 96px) var(--sp-4);
+  font-family: var(--font);
+  font-size: clamp(2.2rem, 6vw, 5rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+.mean-lede {
+  margin: 0 0 var(--sp-section);
+  max-width: var(--measure);
+  color: var(--color-ink-secondary);
+  font-size: var(--body-large);
+  line-height: 1.6;
 }
 /* One grid per subject, so dense packing never pulls a post above its section heading. */
 .mean-section + .mean-section {
-  margin-top: var(--sp-5);
+  margin-top: var(--sp-section);
 }
 /* Touch targets reach 44 px where the pointer is a finger. */
 @media (pointer: coarse) {
@@ -125,22 +118,12 @@
       animation-timeline: view();
       animation-range: entry 0% entry 35%;
     }
-    .mean-section-head::after {
-      animation: mean-rule linear both;
-      animation-timeline: view();
-      animation-range: entry 10% entry 70%;
-    }
   }
 }
 @keyframes mean-card-in {
   from {
     opacity: 0;
     translate: 0 12px;
-  }
-}
-@keyframes mean-rule {
-  from {
-    transform: scaleX(0);
   }
 }
 .mean-wide {
@@ -553,7 +536,7 @@
 }
 /* A thumbnail shows the rows that fit whole and counts the rest (fit.ts sets data-more). */
 .mean-post:not(.mean-open) .mean-bars[data-more]::after {
-  content: attr(data-more) ' more when opened';
+  content: attr(data-more);
   display: block;
   margin-top: 4px;
   color: var(--mean-muted);

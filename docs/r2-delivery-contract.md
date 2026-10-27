@@ -1,9 +1,10 @@
 # Versionsbunden dataleverans från R2
 
 Hur `platform/publish/release.py` publicerar en leveransgrupp som en version i R2.
-Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser dem inte:
+Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser i regel inte dem:
 produktionen läser den incheckade datan under `frontend/public/data`, vars
-`delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte.
+`delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte. Undantaget är
+`live` i `delivery.json`: paths under dess `prefixes` (`job-assistant/`) löses via aktivmanifestet.
 Vilka ämnen som hör till vilken grupp och när de
 körs står i [pipeline.md](pipeline.md). Hur sajten hittar sina filer står i
 [storage-and-serving.md](storage-and-serving.md). Innehållskontrollerna för jobb,

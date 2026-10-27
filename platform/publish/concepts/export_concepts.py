@@ -22,16 +22,15 @@ every passage is source text with its URL.
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 
-import duckdb
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, FEATURES as FEATURE_ROOT, PUBLIC, ROOT
+from portfolio.publish.catalog import register
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features")) / "concepts"
-OUT = ROOT / "frontend/public/data/concepts"
+FEATURES = FEATURE_ROOT / "concepts"
+OUT = PUBLIC / "concepts"
 EXCERPT = 360
 PASSAGES_PER_CORPUS = 3
 
@@ -68,9 +67,7 @@ def rows(con, sql: str) -> list[dict]:
 
 
 def dump(name: str, payload) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def has_table(con, schema: str, table: str) -> bool:
@@ -79,7 +76,7 @@ def has_table(con, schema: str, table: str) -> bool:
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     OUT.mkdir(parents=True, exist_ok=True)
     run = json.loads((FEATURES / "run.json").read_text(encoding="utf-8"))
 
@@ -165,10 +162,7 @@ def main() -> int:
     written = [dump("summary.json", summary), dump("profiles.json", profiles),
                dump("relations.json", {"concepts": concept_relations, "corpora": corpus_relations}),
                dump("passages.json", passages), dump("pairs.json", pairs), dump("links.json", links)]
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register(written)
+    register(written)
     print(f"Concept layer: {len(concepts)} concepts, {sum(c['chunks'] for c in corpora)} chunks, "
           f"{len(pairs)} cross-corpus pairs -> {OUT.relative_to(ROOT)}")
     return 0

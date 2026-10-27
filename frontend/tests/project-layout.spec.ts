@@ -6,7 +6,7 @@ const pages = [
   '#drugcomb',
   '#thesis',
   '#homie',
-  '#diva-lakehouse',
+  '#projects',
   '#cluster-visuals',
   '#what-does-it-even-mean',
 ]

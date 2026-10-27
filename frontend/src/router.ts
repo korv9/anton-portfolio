@@ -14,7 +14,6 @@ export type Page =
   | 'drugcomb'
   | 'thesis'
   | 'homie'
-  | 'lakehouse'
   | 'symbolic'
   | 'philosophy'
   | 'concepts'
@@ -22,7 +21,8 @@ export type Page =
   | 'meaning'
   | 'lawqa'
   | 'jobs'
-  | 'askplatform'
+  | 'replik'
+  | 'aiclock'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -52,42 +52,46 @@ export const REDIRECTS: Record<string, string> = {
   '#now': MEANING,
   // The SWEDEN component kit was a development page.
   '#sweden-kit': '#sweden',
-  '#data-constellation': '#projekt',
-  '#data-catalogue': '#projekt',
-  '#idea-lineage': '#projekt',
-  '#quality': '#projekt',
-  '#data-model': '#projekt',
-  '#er': '#projekt',
-  '#er-diagram': '#projekt',
-  '#tech': '#projekt',
-  '#diva': '#projekt',
-  '#rag': '#projekt',
-  '#mimii': '#projekt',
-  '#rfc-drift': '#projekt',
+  '#data-constellation': '#projects',
+  '#data-catalogue': '#projects',
+  '#idea-lineage': '#projects',
+  '#quality': '#projects',
+  '#data-model': '#projects',
+  '#er': '#projects',
+  '#er-diagram': '#projects',
+  '#tech': '#projects',
+  '#diva': '#projects',
+  // The projects page and the platform page are the Overview now.
+  '#projekt': '#projects',
+  '#platform': '#projects',
+  '#projects-platform': '#projects',
+  '#ask-platform': '#projects',
+  '#diva-lakehouse': '#projects',
+  '#rag': '#projects',
+  '#mimii': '#projects',
+  '#rfc-drift': '#projects',
   '#now-election': MEANING,
   '#politik-debatter': MEANING,
   '#politics-page': MEANING,
   '#about': '#om-mig',
-  '#projects': '#projekt',
-  '#alla-projekt': '#projekt',
+  '#alla-projekt': '#projects',
   // The semantic-drift report is withdrawn while it is reworked.
-  '#contact': '#om-mig',
-  '#kontakt': '#om-mig',
+  '#contact': '#kontakt',
   '#experience': '#erfarenhet',
-  '#work': '#projekt',
+  '#work': '#projects',
   '#teknik': '#om-mig',
   '#kompetenser': '#om-mig',
   // The architecture page is the Data Constellation now.
-  '#technical': '#projekt',
-  '#teknisk': '#projekt',
+  '#technical': '#projects',
+  '#teknisk': '#projects',
   '#design': '#start',
-  '#tallman': '#projekt',
+  '#tallman': '#projects',
   '#job-market': MEANING,
   '#job-market-occupations': MEANING,
   '#job-market-regions': MEANING,
   '#job-market-conditions': MEANING,
   '#job-market-clusters': MEANING,
-  '#status': '#projekt',
+  '#status': '#projects',
   '#symbolic-map': '#symbolic-atlas',
   // The politics product's older detailed views.
   '#now-seats': MEANING,
@@ -99,12 +103,16 @@ export const REDIRECTS: Record<string, string> = {
   '#data-explorer': MEANING,
   '#debates': MEANING,
   '#raw-data': MEANING,
+  // When does a law arrive? (the AI Act diffusion clock) under its English name.
+  '#ai-act-clock': '#lag-ankomst',
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
 const PREFIX_REDIRECTS: [string, string][] = [
-  ['#quality-', '#projekt'],
-  ['#data-model-', '#projekt'],
+  ['#quality-', '#projects'],
+  ['#data-model-', '#projects'],
+  // The SWEDEN 3D atlas is offline (docs/roadmap.md); its addresses lead to the hub.
+  ['#sweden-atlas', '#sweden'],
   // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
   // and the statute book, with every tab, deep dive and older address of theirs.
   ...[
@@ -120,9 +128,10 @@ const PREFIX_REDIRECTS: [string, string][] = [
     '#job-',
     '#wellbeing',
     '#compliance',
-    '#ai-act',
-    '#lagboken',
   ].map((prefix): [string, string] => [prefix, MEANING]),
+  // The statute book and the AI Act now live on Allegora's page.
+  ['#ai-act', '#fraga-lagen'],
+  ['#lagboken', '#fraga-lagen'],
 ]
 
 /** Where an address leads now, if it has moved. */
@@ -137,7 +146,7 @@ export function redirectOf(path: string): string | undefined {
  * The reports: three tabs each, every tab an address of its own. All of them are laid out like
  * the start page: edge to edge, no breadcrumb or topic rows.
  */
-/** The SWEDEN research platform: the hub, the five research products and Connections. */
+/** The SWEDEN research platform on one page: its top and a section per product and Connections. */
 export const SWEDEN_PATHS = [
   '#sweden',
   '#sweden-matning',
@@ -145,14 +154,8 @@ export const SWEDEN_PATHS = [
   '#sweden-likhet',
   '#sweden-tillhorighet',
   '#sweden-framtid',
+  '#sweden-valfard',
   '#sweden-samband',
-  '#sweden-atlas',
-  '#sweden-atlas-a',
-  '#sweden-atlas-b',
-  '#sweden-atlas-c',
-  '#sweden-atlas-d',
-  '#sweden-atlas-e',
-  '#sweden-atlas-x',
 ]
 export const PHILOSOPHY_TABS = [
   '#philosophy-atlas',
@@ -170,7 +173,14 @@ export const CONCEPT_TABS = [
   '#concept-constellation',
 ]
 export const DRUGCOMB_TABS = ['#drugcomb', '#drugcomb-model', '#drugcomb-cells']
-const REPORTS = [PHILOSOPHY_TABS, SYMBOLIC_TABS, CONCEPT_TABS, DRUGCOMB_TABS]
+// SWEDEN is one page now: its addresses scroll to a section, like a report's tabs.
+const REPORTS = [
+  PHILOSOPHY_TABS,
+  SYMBOLIC_TABS,
+  CONCEPT_TABS,
+  DRUGCOMB_TABS,
+  SWEDEN_PATHS,
+]
 export function isLongRead(path: string) {
   return (
     REPORTS.flat().includes(path) ||
@@ -189,19 +199,21 @@ export function sameReport(a: string, b: string) {
 }
 
 export function pageOf(path: string): Page {
-  if (path === '#projekt') return 'projects'
+  // The projects hub and the addresses of its sections (#projects-jobs, #platform-health,
+  // #tech-er).
+  if (path === '#projects' || /^#(projects|platform|tech)-/.test(path))
+    return 'projects'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
-  if (path === '#diva-lakehouse') return 'lakehouse'
   if (SWEDEN_PATHS.includes(path)) return 'sweden'
   if (path === '#cluster-visuals') return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
-  // Ask the platform on its own, for its tests until the feed's closing chapter mounts it.
-  if (path === '#ask-platform') return 'askplatform'
+  if (path === '#replik') return 'replik'
+  if (path === '#lag-ankomst') return 'aiclock'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

@@ -80,8 +80,8 @@ export type Cells = { rows: [string, string, number, number, number][] }
 export type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/futures/'
-// DiVA years whose rise in the future share is marked as not yet explained while the
-// per-word counts (academic.jump) are absent.
+// DiVA years whose rise in the future share gets a scope note while the per-word counts
+// (academic.jump) are absent.
 const UNEXPLAINED = [2024, 2025]
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
 export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
@@ -176,7 +176,7 @@ export default function Explore({
         colorOf={(k) => lines.findIndex((s) => s.key === k) + 1}
         yFrom={0}
       />
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l(
@@ -260,7 +260,7 @@ export default function Explore({
                 ),
                 points: trends.academic.future_share.map(([y, v, n]) => ({
                   date: `${y}-01-01`,
-                  label: `${y} (${num(n)})${!trends.academic?.jump && UNEXPLAINED.includes(y) ? l(', rise not yet explained', ', ökningen ännu oförklarad') : ''}`,
+                  label: `${y} (${num(n)})`,
                   value: v * 100,
                 })),
               },
@@ -290,8 +290,8 @@ export default function Explore({
             ) && (
               <p className="sw-note">
                 {l(
-                  `The rise in ${UNEXPLAINED.join(' and ')} is not yet explained. Counting which words of the marker the abstracts use needs a new harvest.`,
-                  `Ökningen ${UNEXPLAINED.join(' och ')} är ännu inte förklarad. Att räkna vilka av markörens ord sammanfattningarna använder kräver en ny skörd.`,
+                  `The rise in ${UNEXPLAINED.join(' and ')} is shown as counted. This harvest records whether an abstract uses the future marker, not which of its words, so the rise is not attributed to particular words.`,
+                  `Ökningen ${UNEXPLAINED.join(' och ')} visas som den räknats. Den här skörden registrerar om en sammanfattning använder framtidsmarkören, inte vilka av dess ord, så ökningen tillskrivs inte särskilda ord.`,
                 )}
               </p>
             )

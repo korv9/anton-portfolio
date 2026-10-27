@@ -49,11 +49,12 @@ Components ask for logical paths such as `gold/overview.json`, never URLs.
 
 The production site reads the data committed under `frontend/public/data`. The committed
 `delivery.json` has schema version 1, JSON base `data/`, and the bucket's `r2.dev` address for
-Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not set, so the
-site does not read the versioned releases the workflows publish to R2
-([r2-delivery-contract.md](r2-delivery-contract.md)). The production build renders only the
-home page (`START_ONLY` in `frontend/src/router.ts`), so it fetches only the files that page
-and its chart feed use.
+Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not used, so the
+site reads most groups from these bases, not from the versioned releases the workflows publish
+to R2 ([r2-delivery-contract.md](r2-delivery-contract.md)). The exception is `live`: paths under
+its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `build_catalog.py`) are resolved through its
+`manifest_url`, the active R2 manifest. That group is never committed under `frontend/public/data`,
+so it exists only as a release. Use `VITE_DELIVERY_MODE=local` to read a local export instead.
 
 `VITE_DELIVERY_MODE=local` reads everything from `data/`, for development and offline
 fixtures. On localhost a missing `delivery.json` is tolerated the same way.

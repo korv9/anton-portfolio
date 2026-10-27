@@ -14,6 +14,7 @@ import {
   XLabels,
   type Market,
 } from './job-kit'
+import { l } from '../../i18n'
 
 /** The latest full year's share of ads asking for experience, of the ads that answer yes or
  * no; null when that year has no answers. */
@@ -33,7 +34,10 @@ function ExperienceWaffle() {
         return e ? (
           <Big
             value={pct(e.share)}
-            unit={`of ${e.year} ads ask for work experience`}
+            unit={l(
+              `of ${e.year} ads ask for work experience`,
+              `av annonserna ${e.year} kräver arbetslivserfarenhet`,
+            )}
           />
         ) : null
       }}
@@ -43,6 +47,9 @@ function ExperienceWaffle() {
 
 /** Hours keys in a fixed order: full time at the base of each column, not stated on top. */
 const HOURS = ['Heltid', 'Deltid', 'Okänd']
+/** The data's Swedish hours keys, in the reader's language. */
+const hoursName = (k: string) =>
+  l(HOURS_EN[k] ?? k, k === 'Okänd' ? 'Ej angivet' : k)
 /** A year's share of ads with these hours, or null when the year has no hours counted. */
 const hoursShare = (m: Market, yr: number, k: string) => {
   const h = m.conditions[yr]?.all?.hours ?? {}
@@ -55,11 +62,12 @@ function HoursStack() {
   return (
     <Frame data={data}>
       {(m) => {
+        // Full years only, so the last bar and its labels are the year the title names.
         const years = m.years.filter(
-          (yr) => hoursShare(m, yr, 'Heltid') != null,
+          (yr) => yr <= fullYear(m) && hoursShare(m, yr, 'Heltid') != null,
         )
-        const lastYr = years.at(-1)
-        if (lastYr == null) return null
+        const yr = years.at(-1)
+        if (yr == null) return null
         const W = 300,
           H = 220,
           L = 34,
@@ -73,7 +81,10 @@ function HoursStack() {
           <Svg
             w={W}
             h={H}
-            label="Shares of full-time, part-time and unstated hours in ads per year"
+            label={l(
+              'Shares of full-time, part-time and unstated hours in ads per year',
+              'Andel annonser med heltid, deltid och ej angiven arbetstid per år',
+            )}
           >
             <YAxis
               ticks={[0, 0.5, 1]}
@@ -82,15 +93,15 @@ function HoursStack() {
               x1={R}
               format={(v) => pct(v)}
             />
-            {years.map((yr, i) => {
+            {years.map((year, i) => {
               let top = B
               return HOURS.map((k, j) => {
-                const s = hoursShare(m, yr, k)!
+                const s = hoursShare(m, year, k)!
                 const hh = s * (B - 8)
                 top -= hh
                 return (
                   <rect
-                    key={`${yr}${k}`}
+                    key={`${year}${k}`}
                     x={L + i * bw + 2}
                     y={top}
                     width={bw - 4}
@@ -99,7 +110,7 @@ function HoursStack() {
                     stroke="var(--paper)"
                     strokeWidth={0.5}
                   >
-                    <title>{`${yr} ${HOURS_EN[k] ?? k}: ${pct(s, 1)}`}</title>
+                    <title>{`${year} ${hoursName(k)}: ${pct(s, 1)}`}</title>
                   </rect>
                 )
               })
@@ -109,21 +120,21 @@ function HoursStack() {
               top={8}
               bottom={B}
               items={HOURS.map((k, j) => {
-                const s = hoursShare(m, lastYr, k)!
+                const s = hoursShare(m, yr, k)!
                 const v = s * (B - 8)
                 mid -= v
                 return {
                   y: mid + v / 2,
-                  label: `${HOURS_EN[k] ?? k} ${pct(s)}`,
+                  label: `${hoursName(k)} ${pct(s)}`,
                   color: j ? 'var(--mean-muted)' : focal(true),
                 }
               })}
             />
             <XLabels
               y={H - 4}
-              items={years.map((yr, i) => ({
+              items={[0, years.length - 1].map((i) => ({
                 x: L + i * bw + bw / 2,
-                label: i % 2 ? '' : String(yr),
+                label: String(years[i]),
               }))}
             />
           </Svg>
@@ -141,10 +152,19 @@ export const posts: Post[] = [
     title: (m: Market) => {
       const e = experience(m)
       return e
-        ? `${pct(e.share)} of ads ask for work experience`
-        : 'Ads that ask for work experience'
+        ? l(
+            `${pct(e.share)} of ads ask for work experience`,
+            `${pct(e.share)} av annonserna kräver arbetslivserfarenhet`,
+          )
+        : l(
+            'Ads that ask for work experience',
+            'Annonser som kräver arbetslivserfarenhet',
+          )
     },
-    note: 'Share of ads in the latest full year that state whether experience is needed; Arbetsförmedlingen',
+    note: [
+      'Share of ads in the latest full year that state whether experience is needed; Arbetsförmedlingen',
+      'Andel av annonserna under senaste helåret som anger om erfarenhet krävs; Arbetsförmedlingen',
+    ],
     render: () => <ExperienceWaffle />,
   },
   {
@@ -155,10 +175,19 @@ export const posts: Post[] = [
       const yr = fullYear(m)
       const s = hoursShare(m, yr, 'Heltid')
       return s == null
-        ? 'Full-time and part-time job ads per year'
-        : `${pct(s)} of ${yr} ads were for full-time work`
+        ? l(
+            'Full-time and part-time job ads per year',
+            'Platsannonser på heltid och deltid per år',
+          )
+        : l(
+            `${pct(s)} of ${yr} ads were for full-time work`,
+            `${pct(s)} av annonserna ${yr} gällde heltid`,
+          )
     },
-    note: 'Share of ads per year by working hours; the latest year is January to the latest full month',
+    note: [
+      'Share of ads per full year by working hours; Arbetsförmedlingen',
+      'Andel annonser per helår efter arbetstid; Arbetsförmedlingen',
+    ],
     render: () => <HoursStack />,
   },
 ]

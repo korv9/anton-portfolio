@@ -5,12 +5,12 @@
  * Worker. The vectors load when the reader first focuses the box or picks an example. Shown only
  * when the export is published.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
 import RankBars from '../charts/RankBars'
-import ClusterScatter from './ClusterScatter'
-import type { Loaded } from './ClusterVisualsPage'
+import ClusterScatter, { unnamed } from './ClusterScatter'
+import { type Loaded, type MapSpec } from './ClusterVisualsPage'
 import {
   embed,
   loadCorpus,
@@ -47,10 +47,15 @@ const cut = (text: string, n = 220) =>
   text.length > n ? `${text.slice(0, n).trimEnd()}…` : text
 
 export default function SentencePlacer({
-  loadMap,
+  spec,
+  instead,
 }: {
-  loadMap: () => Promise<Loaded>
+  /** The debate map; its first view is the one the sentence lands on. */
+  spec: MapSpec
+  /** Shown instead when the examples are not published. */
+  instead?: ReactNode
 }) {
+  const loadMap = spec.variants[0].load
   const [examples, setExamples] = useState<Example[] | null>(null)
   const [map, setMap] = useState<Loaded | null>(null)
   const [text, setText] = useState('')
@@ -100,7 +105,7 @@ export default function SentencePlacer({
   const group = placed
     ? placed.cluster < 0
       ? l('no clear group', 'ingen tydlig grupp')
-      : (map?.name?.(placed.cluster) ?? String(placed.cluster))
+      : (map?.name?.(placed.cluster) ?? unnamed())
     : ''
   const marker = useMemo(
     () =>
@@ -120,7 +125,9 @@ export default function SentencePlacer({
       .map(([party, value]) => ({ key: party, label: party, value, party }))
   }, [placed])
 
-  if (!examples?.length) return null
+  // Holds the hero's place, so the gallery below does not start loading under it.
+  if (!examples) return <div className="cv-status" aria-busy="true" />
+  if (!examples.length) return instead ?? null
   return (
     <section
       className="cv-place"
@@ -130,7 +137,7 @@ export default function SentencePlacer({
       <header className="cv-head">
         <p className="cv-project">
           <a href="#what-does-it-even-mean">
-            Political Observatory · Workers AI
+            {l('Riksdag debates', 'Riksdagsdebatter')} · Workers AI
           </a>
         </p>
         <h2 id="cv-place-title">
@@ -141,8 +148,8 @@ export default function SentencePlacer({
         </h2>
         <p className="cv-meaning">
           {l(
-            'Write a sentence about politics. It lands among the debate passages that are closest to it in meaning, and the panel shows which group they form, what was said and by which parties. Your text goes to Cloudflare Workers AI to be embedded and is not logged or stored.',
-            'Skriv en mening om politik. Den hamnar bland de debattpassager som ligger närmast i betydelse, och panelen visar vilken grupp de bildar, vad som sades och av vilka partier. Texten skickas till Cloudflare Workers AI för inbäddning och loggas eller sparas inte.',
+            'Write a sentence about politics and see where it lands among 108 party-leader debates. Cloudflare Workers AI embeds it; nothing is stored.',
+            'Skriv en mening om politik och se var den hamnar bland 108 partiledardebatter. Cloudflare Workers AI bäddar in den; inget sparas.',
           )}
         </p>
       </header>
@@ -205,17 +212,17 @@ export default function SentencePlacer({
           <ClusterScatter
             points={map.points}
             name={map.name}
-            label={l(
-              'Party-leader debates by subject',
-              'Partiledardebatter efter ämne',
-            )}
+            label={spec.title}
             height={620}
             marker={marker ?? undefined}
           />
         ) : (
-          <p className="cv-status" role="status">
-            {l('Loading…', 'Laddar…')}
-          </p>
+          <p
+            className="cv-status"
+            role="status"
+            aria-busy="true"
+            aria-label={l('Loading', 'Laddar')}
+          />
         )}
         <div className="cv-place-panel" aria-live="polite">
           {placed ? (
@@ -264,12 +271,6 @@ export default function SentencePlacer({
           )}
         </div>
       </div>
-      <p className="cv-specs">
-        {l(
-          'The sentence is embedded with bge-m3 and placed among its 15 nearest passages. The placement is an approximation, not a new UMAP run.',
-          'Meningen bäddas in med bge-m3 och placeras bland sina 15 närmaste passager. Placeringen är en approximation, inte en ny UMAP-körning.',
-        )}
-      </p>
     </section>
   )
 }

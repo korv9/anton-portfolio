@@ -9,7 +9,8 @@ import {
   type Review,
 } from './data'
 
-export function useJobData() {
+/** `owner` reloads the records: statuses and notes are owner-only reads. */
+export function useJobData(owner: boolean) {
   const [data, setData] = useState<Delivered | null>(null)
   const [records, setRecords] = useState<Records>({
     reviews: {},
@@ -22,8 +23,10 @@ export function useJobData() {
   useEffect(() => {
     setFailed('')
     loadDelivered().then(setData, (e) => setFailed(String(e?.message ?? e)))
-    loadRecords().then(setRecords)
   }, [attempt])
+  useEffect(() => {
+    loadRecords().then(setRecords)
+  }, [attempt, owner])
 
   const retry = useCallback(() => setAttempt((n) => n + 1), [])
 

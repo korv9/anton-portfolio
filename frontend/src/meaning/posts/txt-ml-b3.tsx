@@ -2,6 +2,8 @@
 import { Frame, OTHER, PALETTE, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { Svg, XGrid, heading, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Pair = {
   concept_id: string
@@ -12,6 +14,15 @@ type Pair = {
 }
 const PAIRS = 'concepts/pairs.json'
 const d = 'ml'
+/** The corpora in words. */
+const CORPUS: Record<string, [string, string]> = {
+  law: ['law', 'juridik'],
+  myth: ['myth', 'myter'],
+  philosophy: ['philosophy', 'filosofi'],
+  politics: ['politics', 'politik'],
+}
+const corpus = (c: string) => (CORPUS[c] ? l(...CORPUS[c]) : c)
+const pair = (p: string) => p.split(' · ').map(corpus).join(' · ')
 
 const median = (xs: number[]) => {
   const s = [...xs].sort((a, b) => a - b)
@@ -51,14 +62,17 @@ function PairDots() {
           <Svg
             w={W}
             h={H}
-            label="Similarity of matched passages per corpus pair, against the chance level"
+            label={l(
+              'Similarity of matched passages per corpus pair, against the chance level',
+              'Likhet mellan matchade stycken per korpuspar, mot slumpnivån',
+            )}
           >
             <XGrid
               x={x}
               ticks={ticks}
               y0={top - 4}
               y1={H - bottom}
-              format={(t) => t.toFixed(2)}
+              format={(t) => fixed(t, 2)}
             />
             <text
               className="mean-txt-t"
@@ -66,10 +80,10 @@ function PairDots() {
               y={top - 7}
               textAnchor="end"
             >
-              chance
+              {l('chance', 'slump')}
             </text>
             <text className="mean-txt-v" x={x(pairs[0].sim) + 6} y={top - 7}>
-              matched
+              {l('matched', 'matchade')}
             </text>
             {pairs.map((r, i) => (
               <g key={r.p}>
@@ -79,7 +93,7 @@ function PairDots() {
                   y={cy(i) + 3.5}
                   textAnchor="end"
                 >
-                  {r.p}
+                  {pair(r.p)}
                 </text>
                 <line
                   x1={x(r.lo)}
@@ -98,7 +112,12 @@ function PairDots() {
                   strokeWidth={1.5}
                 />
                 <circle cx={x(r.sim)} cy={cy(i)} r={4} fill={PALETTE[0]}>
-                  <title>{`${r.p}: median ${r.sim.toFixed(2)} over ${r.n} concepts, chance ${r.chance.toFixed(2)}`}</title>
+                  <title>
+                    {l(
+                      `${r.p}: median ${fixed(r.sim, 2)} over ${r.n} concepts, chance ${fixed(r.chance, 2)}`,
+                      `${pair(r.p)}: median ${fixed(r.sim, 2)} över ${r.n} begrepp, slump ${fixed(r.chance, 2)}`,
+                    )}
+                  </title>
                 </circle>
               </g>
             ))}
@@ -117,10 +136,19 @@ export const posts: Post[] = [
       if (!rows.length) return ''
       const above = rows.filter((r) => r.similarity > r.baseline_p95).length
       return above === rows.length
-        ? `All ${rows.length} matched passage pairs are more similar than 95% of random pairs`
-        : `${above} of ${rows.length} matched passage pairs are more similar than 95% of random pairs`
+        ? l(
+            `All ${rows.length} matched passage pairs are more similar than 95% of random pairs`,
+            `Alla ${rows.length} matchade styckepar är mer lika än 95 % av slumpvisa par`,
+          )
+        : l(
+            `${above} of ${rows.length} matched passage pairs are more similar than 95% of random pairs`,
+            `${above} av ${rows.length} matchade styckepar är mer lika än 95 % av slumpvisa par`,
+          )
     }),
-    note: 'Cosine similarity of passages matched per concept across two corpora: median, range and the 95th percentile of random pairs',
+    note: [
+      'Cosine similarity of passages matched per concept across two corpora: median, range and the 95th percentile of random pairs',
+      'Cosinuslikhet mellan stycken som matchats per begrepp i två korpusar: median, spridning och 95:e percentilen för slumpvisa par',
+    ],
     render: () => <PairDots />,
   },
 ]

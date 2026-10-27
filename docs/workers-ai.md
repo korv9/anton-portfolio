@@ -1,8 +1,8 @@
 # Workers AI
 
 Tre demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
-partiledardebatterna (`#cluster-visuals`), frågor med citat över ett urval av SFS och EU:s AI-förordning (Fråga lagen)
-och frågor om hur plattformen själv är byggd (Fråga plattformen).
+partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Allegora,
+`#fraga-lagen`, här kallad Fråga lagen) och frågor om hur plattformen själv är byggd (Fråga plattformen).
 
 ## Regeln
 
@@ -134,8 +134,17 @@ Raderna per fråga, med modellens råa text, ligger i `warehouse/features/worker
 Exempelfrågorna på sidan är tre av Gemmas verifierade svar per korpus, för `sfs` och `ai-act-sv`,
 tagna direkt från evalraderna utan nya anrop. Frågornas vektorer bäddades in lokalt med samma
 bge-m3. En fråga togs bara med när den lokala vektorn gav exakt samma åtta stycken som vektorn från
-Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel än, eftersom inga engelska frågor
-har körts.
+Workers AI, vilket gällde sex av sju. `ai-act-en` har inga exempel, eftersom inga engelska frågor
+har körts; där ber sidan läsaren fråga med egna ord.
+
+Exemplet "När börjar AI-förordningen gälla?" besvarades från skäl 179 ("bör tillämpas") i stället
+för artikel 113. Sidan visar därför inte exempel vars citat bara kommer ur skäl (`rct_`); filtret
+ligger i `frontend/src/lawqa/AskTheLaw.tsx` tills frågan körs om och exporten skrivs på nytt.
+
+Sidan öppnar på det första exemplets svar, som bara kräver `examples.json`. Korpusen (`pca.json`,
+`vectors.bin` och `sfs/meta.json` från R2, sammanlagt cirka 12 MB) hämtas först när läsaren går
+till fältet, väljer ett exempel eller öppnar källorna. Mätt på utvecklingsservern 2026-10-25 sjönk
+första laddningen av `#fraga-lagen` från 14,1 MB till 2,3 MB.
 
 ## Neurons per steg
 
@@ -159,8 +168,8 @@ räknades in innan körningarna startade.
 Provanropen från Workern och sidorna kostade 13,2 neurons till. Loggen räknar från tokenantalen.
 För gpt-oss underskattar den kostnaden, som avsnittet om modellvalet visar.
 
-Exemplen för `ai-act-en`, ungefär 180 neurons, saknas fortfarande: det finns ingen
-`workers-ai/ai-act-en/examples.json`, så den engelska sidan visar att exempel saknas.
+Exemplen för `ai-act-en` (ungefär 180 neurons) kördes aldrig. Den engelska sidan har därför inga
+exempel och ber läsaren fråga med egna ord.
 
 ## Hela författningssamlingen
 
@@ -287,7 +296,10 @@ fältet. Varje citat länkar till sin fil vid sin commit på GitHub. När ett ci
 nod i grafen som är en källa, rådata, en silver- eller guldmodell eller en publicerad fil ritas en
 väg i fem steg: källa, rådata, silver, guld och publicerad fil (`frontend/src/ask/lineage.ts`).
 En modell väljs före andra noder. Ett steg som vägen inte passerar visas som saknat. Komponenten är
-inte monterad i flödet än; den nås på testadressen `#ask-platform`.
+monterad på plattformssidan (`frontend/src/tech/PlatformSections.tsx`) och öppnar där på det första
+exemplets svar; innan korpusen laddats visas citatens filnamn, lästa ur styckets id. Den nås också
+på testadressen `#ask-platform`. Fältets platshållare är exempelfrågan om datafilernas adress, som
+verifierades, inte fråga 1 om juniorandelen, som inte gör det.
 
 Är kvoten slut svarar Workern 503 med `reason: quota`, och komponenten visar då tre förberäknade
 exempel (`examples.json`, frågorna 2, 7 och 10 i evalen, med sina vektorer och kontrollerade svar).

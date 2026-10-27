@@ -1,7 +1,6 @@
 /** Project pages that are a single report: DrugComb, Allegoria, the degree project and Homie. */
 import { lazy } from 'react'
 import { l, t } from '../i18n'
-import { ProjectHero, ProjectSection } from '../ui/Project'
 import { ProjectDepth } from '../projects/ProjectStructure'
 import ProjectTech from '../projects/ProjectTech'
 import { Stage, StageBlock, StageFacts, StageTools } from '../ui/Stage'
@@ -33,83 +32,7 @@ export function DrugCombPage({ route }: { route: Route }) {
   )
 }
 
-export function ThesisPage() {
-  return (
-    <article className="project-page thesis-page" lang="en">
-      <ProjectHero
-        project="thesis"
-        title="Finding recurring problems in IT support data"
-        question="Using NLP and unsupervised learning to uncover recurring IT issues and explore how data quality affects the usefulness of AI."
-      />
-      <ProjectSection id="thesis-motivation" title="Why I chose this project">
-        <p>
-          When an IT issue occurs, the immediate priority is to get people
-          working again. But when similar incidents are handled separately,
-          recurring problems can remain hidden in thousands of support tickets.
-        </p>
-        <p>
-          For my thesis, I explored whether clustering could connect these
-          incidents and highlight patterns worth investigating. I also wanted to
-          understand how well this approach works with real operational data,
-          where documentation is often incomplete and personal information needs
-          to be protected.
-        </p>
-      </ProjectSection>
-      <ProjectSection id="thesis-workflow" title="What I did">
-        <p>
-          I built an analysis pipeline that processed more than 21,000 support
-          tickets and removed personal information before analysis.
-        </p>
-        <p>
-          Using natural language processing (NLP), I converted ticket
-          descriptions into numerical representations of their meaning. I then
-          applied unsupervised learning to group similar incidents without
-          predefined categories.
-        </p>
-        <p>
-          Finally, I compared these clusters with existing problem records and
-          assessed the underlying data quality using the ISO 25012 framework.
-        </p>
-      </ProjectSection>
-      <ProjectSection id="thesis-quality" title="What I found">
-        <p>
-          The analysis identified 121 clusters of related incidents. Of these,
-          72 had no link to an existing problem record, providing candidates for
-          further investigation rather than confirmed root causes.
-        </p>
-        <p>
-          Documentation was a major limitation. The field intended to describe
-          the underlying cause was empty in around 96% of tickets. Where this
-          information was available, it helped the analysis distinguish between
-          issues more clearly.
-        </p>
-        <p>
-          I also found that removing personal information could introduce
-          artificial patterns into the text, affecting how some clusters formed.
-        </p>
-      </ProjectSection>
-      <ProjectSection id="thesis-evaluation" title="Why it matters">
-        <p>
-          Clustering can help IT teams see connections across incidents that
-          would be difficult to review manually. These connections could support
-          investigation, prioritisation and efforts to prevent recurring
-          disruptions.
-        </p>
-        <p>
-          The main lesson was that useful AI depends on the quality of the
-          information behind it. Better documentation and clearer links between
-          incidents and known problems can be just as valuable as improving the
-          model.
-        </p>
-        <p>
-          The project produced an analysis pipeline and a set of candidate
-          patterns for further review. Its impact on support workload, costs and
-          resolution times would need to be evaluated through operational use.
-        </p>
-      </ProjectSection>
-    </article>
-  )
-}
+export { ThesisPage } from './ThesisCase'
 
 export function HomiePage() {
   return (
@@ -117,14 +40,17 @@ export function HomiePage() {
       <Stage
         id="homie-stage"
         level={1}
-        kicker={l('Homie API, work in progress', 'Homie API, pågående')}
+        kicker={l(
+          'Homie API · contract-first backend',
+          'Homie API · kontraktsdriven backend',
+        )}
         title={l(
           'A backend for household events',
           'En backend för hushållets händelser',
         )}
         lead={l(
-          'Chore completions are stored as immutable events and aggregated into weekly workload, fairness and cadence. The contract is explicit; several routes are still documented stubs.',
-          'Utförda sysslor sparas som oföränderliga händelser och aggregeras till veckobelastning, rättvisa och rytm. Kontraktet är tydligt; flera rutter är fortfarande dokumenterade stubbar.',
+          'A 16-operation OpenAPI contract, fixed first. Chore completions are immutable events, aggregated in SQL into five materialized views. Auth and health are live, CI migrates and seeds PostgreSQL 16 and passes, and the remaining routes return contract-exact previews.',
+          'Ett OpenAPI-kontrakt med 16 operationer, fastlagt först. Utförda sysslor är oföränderliga händelser som aggregeras i SQL till fem materialiserade vyer. Inloggning och hälsa är live, CI migrerar och seedar PostgreSQL 16 och går igenom, och övriga rutter returnerar kontraktsexakta förhandsvisningar.',
         )}
         figure={<HomieFlow />}
         left={
@@ -152,17 +78,31 @@ export function HomiePage() {
                 </li>
               </ol>
             </StageBlock>
-            <StageBlock title={l('Status', 'Status')}>
+            <StageBlock title={l('Contract', 'Kontrakt')}>
               <StageFacts
                 rows={[
-                  [l('Implemented route groups', 'Klara ruttgrupper'), '3'],
-                  [l('Documented stubs', 'Dokumenterade stubbar'), '4'],
+                  [
+                    l('Operations in contract', 'Operationer i kontraktet'),
+                    '16',
+                  ],
+                  [l('Built and tested', 'Byggda och testade'), '4'],
+                  [
+                    l('CI on PostgreSQL 16', 'CI mot PostgreSQL 16'),
+                    <a
+                      key="ci"
+                      href="https://github.com/korv9/homie-api/actions/runs/34777312347"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {l('passing', 'godkänd')}
+                    </a>,
+                  ],
                 ]}
               />
               <p>
                 {l(
-                  'Stub routes return documented previews; no real household data is shown.',
-                  'Stubbrutter returnerar dokumenterade förhandsvisningar; ingen riktig hushållsdata visas.',
+                  'CI migrates the schema, runs the seed twice to prove it idempotent, then passes all 7 tests. Previews carry no real household data.',
+                  'CI migrerar schemat, kör seeden två gånger för att visa att den är idempotent och klarar sedan alla 7 tester. Förhandsvisningarna innehåller ingen riktig hushållsdata.',
                 )}
               </p>
             </StageBlock>

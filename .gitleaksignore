@@ -161,3 +161,17 @@ e989d898705b37cd7868527954d79f70ea2ae2a4:frontend/public/data/parliament/workspa
 6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/d7.json:generic-api-key:1
 6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/f6.json:generic-api-key:1
 6a05e00be76885d04956e0c6ea71e7567726b069:frontend/public/data/workers-ai/platform/verify/ff.json:generic-api-key:1
+# Export refresh 2026-10-26: the same reviewed keys in their new commit (indicator_key slugs such
+# as kolada_N00906 and dbt column names such as government_key), reviewed 2026-10-26.
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/parliament/issues.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/parliament/issues.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/parliament/issues.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/schema/models.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/headlines.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/headlines.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/headlines.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/headlines.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/indicators.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/indicators.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/indicators.json:generic-api-key:1
+fa45f9095abea405f822090938d72c7e407dd1f9:frontend/public/data/welfare/indicators.json:generic-api-key:1

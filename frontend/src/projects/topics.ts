@@ -84,21 +84,11 @@ export const PROJECT_TOPICS: Record<string, Topic[]> = {
     },
   ],
   thesis: [
+    { title: t('Kluster', 'Clusters'), href: '#thesis?section=quality' },
+    { title: t('Datakvalitet', 'Data quality'), href: '#thesis?section=data' },
     {
-      title: t('Varför jag valde projektet', 'Why I chose this project'),
-      href: '#thesis?section=motivation',
-    },
-    {
-      title: t('Vad jag gjorde', 'What I did'),
-      href: '#thesis?section=workflow',
-    },
-    {
-      title: t('Vad jag fann', 'What I found'),
-      href: '#thesis?section=quality',
-    },
-    {
-      title: t('Varför det spelar roll', 'Why it matters'),
-      href: '#thesis?section=evaluation',
+      title: t('Ifyllda fält per år', 'Fields per year'),
+      href: '#thesis?section=years',
     },
   ],
 }

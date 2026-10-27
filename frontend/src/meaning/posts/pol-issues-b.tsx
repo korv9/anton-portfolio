@@ -1,4 +1,5 @@
 /** Fifteen policy issues: who votes with the government, and decisions per issue. */
+import { l } from '../../i18n'
 import { useState } from 'react'
 import { focal, Frame, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
@@ -7,6 +8,7 @@ import { Bars, int, pct, Sub, sum, uniq } from './pol-kit'
 type Issue = {
   issue_key: string
   issue_name_en: string
+  issue_name_sv?: string
   per_session: { session: string; decisions: number }[]
   parties: { party: string; role: string; with_government_pct: number }[]
 }
@@ -14,9 +16,14 @@ type Issues = { issues: Issue[] }
 
 const useIssues = () => useData<Issues>('parliament/issues.json')
 const keys = (d: Issues) => d.issues.map((i) => i.issue_key)
-/** An issue's English name, for its key. */
-const issueName = (d: Issues) => (k: string) =>
-  d.issues.find((i) => i.issue_key === k)?.issue_name_en ?? k
+/** An issue's name in the reader's language. */
+const nameOf = (i: Issue) =>
+  l(i.issue_name_en, i.issue_name_sv ?? i.issue_name_en)
+/** An issue's name, for its key. */
+const issueName = (d: Issues) => (k: string) => {
+  const i = d.issues.find((i) => i.issue_key === k)
+  return i ? nameOf(i) : k
+}
 
 /** One row per party, sorted: how often it voted with the government on the issue. Government
  * parties take the accent, the rest are grey. */
@@ -39,17 +46,20 @@ function WithGov() {
         return (
           <>
             <Slicer
-              label="Issue"
+              label={l('Issue', 'Sakområde')}
               options={keys(d)}
               format={issueName(d)}
               value={key}
               onChange={setKey}
             />
-            <Sub>{iss.issue_name_en}</Sub>
+            <Sub>{nameOf(iss)}</Sub>
             <svg
               viewBox={`0 0 300 ${bottom + 20}`}
               role="img"
-              aria-label={`How often each party voted with the government: ${iss.issue_name_en}`}
+              aria-label={l(
+                `How often each party voted with the government: ${nameOf(iss)}`,
+                `Hur ofta varje parti röstade med regeringen: ${nameOf(iss)}`,
+              )}
             >
               <g className="mean-axis">
                 {[0, 50, 100].map((v) => (
@@ -79,7 +89,7 @@ function WithGov() {
                       r={5}
                       fill={focal(gov)}
                     >
-                      <title>{`${r.party} (${r.role}): ${r.with_government_pct} %`}</title>
+                      <title>{`${r.party} (${gov ? l('government', 'regeringsparti') : l('opposition', 'opposition')}): ${pct(r.with_government_pct)}`}</title>
                     </circle>
                     <g className="mean-end">
                       <text x={0} y={row(i) + 4}>
@@ -114,13 +124,16 @@ function DecisionBars() {
     <Frame data={useIssues()}>
       {(d) => (
         <Bars
-          label={`Decisions per issue, ${sessionSpan(d)}, ten most`}
+          label={l(
+            `Decisions per issue, ${sessionSpan(d)}, ten most`,
+            `Beslut per sakområde, ${sessionSpan(d)}, de tio flesta`,
+          )}
           format={int}
           rows={ranked(d)
             .slice(0, 10)
             .map((i, k) => ({
               key: i.issue_key,
-              label: <span title={i.issue_name_en}>{i.issue_name_en}</span>,
+              label: <span title={nameOf(i)}>{nameOf(i)}</span>,
               value: total(i),
               color: focal(k === 0),
             }))}
@@ -135,8 +148,14 @@ export const posts: Post[] = [
     id: 'pol-issue-withgov',
     domain: 'politics',
     sources: ['parliament/issues.json'],
-    title: 'How often each party voted with the government, by issue',
-    note: 'Decisions under the current government, %. Accent: parties in government. Source: Riksdagen.',
+    title: [
+      'How often each party voted with the government, by issue',
+      'Hur ofta varje parti röstade med regeringen, per sakområde',
+    ],
+    note: [
+      'Decisions under the current government, %. Accent: parties in government. Source: Riksdagen.',
+      'Beslut under den sittande regeringen, %. Markerade: regeringspartier. Källa: Riksdagen.',
+    ],
     render: () => <WithGov />,
   },
   {
@@ -146,10 +165,19 @@ export const posts: Post[] = [
     title: (d: Issues) => {
       const [top] = ranked(d)
       return top
-        ? `${top.issue_name_en} had the most Riksdag decisions, ${int(total(top))} in ${sessionSpan(d)}`
-        : 'Riksdag decisions per policy area'
+        ? l(
+            `${nameOf(top)} had the most Riksdag decisions, ${int(total(top))} in ${sessionSpan(d)}`,
+            `${nameOf(top)} hade flest beslut i riksdagen, ${int(total(top))} under ${sessionSpan(d)}`,
+          )
+        : l(
+            'Riksdag decisions per policy area',
+            'Riksdagens beslut per sakområde',
+          )
     },
-    note: 'Decisions per policy area, ten most. Source: Riksdagen.',
+    note: [
+      'Decisions per policy area, ten most. Source: Riksdagen.',
+      'Beslut per sakområde, de tio flesta. Källa: Riksdagen.',
+    ],
     render: () => <DecisionBars />,
   },
 ]

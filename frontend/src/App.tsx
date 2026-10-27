@@ -1,8 +1,9 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { sameReport, useRoute } from './router'
-import { pageTitle, ProjectContext, ProjectPager } from './site/Header'
+import { pageTitle, ProjectContext } from './site/Header'
 import SiteHeader from './site/SiteHeader'
+import ProjectRail from './site/ProjectRail'
 import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
@@ -13,11 +14,8 @@ import './site/site.css'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
-const ProjectsPage = lazy(() => import('./tech/TechPanel'))
+const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
-const SwedenHeader = lazy(() =>
-  import('./sweden/Header').then((m) => ({ default: m.SwedenHeader })),
-)
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
   () => import('./philosophy/PhilosophyAtlasPage'),
@@ -29,14 +27,14 @@ const ClusterVisualsPage = lazy(() => import('./clusters/ClusterVisualsPage'))
 const MeaningPage = lazy(() => import('./meaning/MeaningPage'))
 const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
-const AskThePlatform = lazy(() => import('./ask/AskThePlatform'))
+const ReplikPage = lazy(() => import('./replik/ReplikPage'))
+const AiClockPage = lazy(() => import('./aiclock/AiClockPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
 const ThesisPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.ThesisPage })),
 )
-const LakehousePage = lazy(() => import('./products/LakehousePage'))
 const HomiePage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.HomiePage })),
 )
@@ -60,13 +58,14 @@ export default function App() {
       : 'ANTON ERNSTSSON DATA & AI'
   }, [route.path, route.page, language])
 
-  // A new address scrolls to its section on the start page, or to the top elsewhere. Changing
-  // only a view's filters (the query) keeps the reader where they are.
+  // A new address scrolls to its section on the start page or in the projects hub, or to the
+  // top elsewhere. Changing only a view's filters (the query) keeps the reader where they are.
   const cameFrom = useRef(route.path)
   useEffect(() => {
     const from = cameFrom.current
     cameFrom.current = route.path
     if (route.page === 'home' && route.path !== '#start') return
+    if (route.page === 'projects' && route.path !== '#projects') return
     // A tab of a report opens where the reader stands, like a tab.
     if (sameReport(from, route.path)) return
     requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
@@ -75,7 +74,7 @@ export default function App() {
   const { page, path } = route
   const project = projectForRoute(route)
   const workspace =
-    page === 'sweden' || page === 'meaning'
+    page === 'sweden'
       ? 'sweden'
       : (PROJECT_GROUPS.find((group) =>
           group.ids.includes(project?.id ?? ''),
@@ -90,23 +89,19 @@ export default function App() {
         <a className="skip-link" href="#main">
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
-        {/* SWEDEN pages carry their own header (sweden/Header.tsx); the meaning page shares it. */}
-        {page === 'meaning' ? (
-          <div className="sweden sw-header-host">
-            <Suspense fallback={null}>
-              <SwedenHeader current="" />
-            </Suspense>
-          </div>
-        ) : (
-          page !== 'sweden' && <SiteHeader route={route} />
-        )}
+        {/* The start page has no header: it opens on the name alone. Project pages sit beside
+            the index; the header stays for phones and is hidden on wide screens
+            (project-rail.css). */}
+        {page !== 'home' && <ProjectRail route={route} />}
+        {page !== 'home' && <SiteHeader />}
         <main
           id="main"
           tabIndex={-1}
-          key={language}
+          // A new page enters with the projects-start motion: up from below, out of a blur.
+          key={`${language}-${page}`}
           style={{ background: 'transparent' }}
         >
-          {page !== 'meaning' && <ProjectContext route={route} />}
+          <ProjectContext route={route} />
           <PageBoundary key={page}>
             <ProjectStructure route={route}>
               <Suspense
@@ -117,30 +112,25 @@ export default function App() {
                 }
               >
                 {page === 'home' && <HomePage path={path} />}
-                {page === 'projects' && <ProjectsPage />}
+                {page === 'projects' && <ProjectsHub />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}
                 {page === 'meaning' && <MeaningPage />}
                 {page === 'lawqa' && <AskTheLaw route={route} />}
                 {page === 'jobs' && <JobAssistantPage route={route} />}
-                {page === 'askplatform' && (
-                  <div className="ds-container">
-                    <AskThePlatform />
-                  </div>
-                )}
                 {page === 'philosophy' && <PhilosophyAtlasPage route={route} />}
                 {page === 'concepts' && (
                   <ConceptConstellationPage route={route} />
                 )}
                 {page === 'drugcomb' && <DrugCombPage route={route} />}
                 {page === 'thesis' && <ThesisPage />}
-                {page === 'lakehouse' && <LakehousePage />}
                 {page === 'homie' && <HomiePage />}
+                {page === 'replik' && <ReplikPage />}
+                {page === 'aiclock' && <AiClockPage />}
               </Suspense>
             </ProjectStructure>
           </PageBoundary>
-          <ProjectPager route={route} />
         </main>
       </div>
     </CvViewerProvider>

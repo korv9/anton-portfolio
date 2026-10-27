@@ -36,7 +36,7 @@ jobs:
       - run: pip install --require-hashes -r platform/requirements-security.lock
       - name: Audit each locked Python environment
         run: |
-          for lock in platform/requirements-{ci,ml,news,security}.lock; do
+          for lock in platform/requirements-{ci,dev,ml,news,security}.lock; do
             pip-audit --require-hashes --disable-pip -r "$lock"
           done
       # pip-audit skips direct wheel URLs; check the CPU wheel's upstream version too.

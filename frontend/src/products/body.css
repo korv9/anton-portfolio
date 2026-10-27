@@ -166,18 +166,18 @@
 }
 .body-map.is-on .body-node > circle,
 .body-map.is-on .body-node > .body-index {
-  animation: body-fade 500ms ease calc(1.6s + var(--i) * 110ms) both;
+  animation: body-fade 400ms ease calc(0.1s + var(--i) * 50ms) both;
 }
 .body-map.is-on .body-node > .body-arc {
   animation:
-    body-fade 500ms ease calc(1.9s + var(--i) * 110ms) both,
-    body-pulse 3.2s ease-in-out calc(3.5s + var(--i) * 200ms) infinite alternate;
+    body-fade 400ms ease calc(0.3s + var(--i) * 50ms) both,
+    body-pulse 3.2s ease-in-out calc(1.5s + var(--i) * 200ms) infinite alternate;
 }
 .body-map.is-on .body-lead {
-  animation: body-fade 900ms ease calc(2s + var(--i) * 110ms) both;
+  animation: body-fade 700ms ease calc(0.4s + var(--i) * 50ms) both;
 }
 .body-map.is-on .body-label {
-  animation: body-fade 600ms ease calc(2.3s + var(--i) * 110ms) both;
+  animation: body-fade 500ms ease calc(0.5s + var(--i) * 50ms) both;
 }
 @keyframes body-draw {
   from {

@@ -1,7 +1,7 @@
 /**
- * Cluster visuals: every clustering on the site on one page, each drawn from its own data and
- * interactive (ClusterScatter): the UMAP maps of the Symbol Lab, the Philosophy Lab, the job
- * ads and the Riksdag debates. A map loads when it comes near the screen.
+ * Cluster visuals: the sentence demo on the party-leader debate map, then every clustering
+ * dataset as a large map (ClusterGallery), with the method notes folded away at the bottom.
+ * MAPS and ProjectMaps keep the interactive maps for the project reports and the UMAP gallery.
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
@@ -11,11 +11,12 @@ import {
   loadAtlasSummary,
   loadBookCenteredAtlas,
 } from '../symbolic/atlasData'
-import ClusterScatter, { type ClusterPoint } from './ClusterScatter'
+import ClusterScatter, { type ClusterPoint, unnamed } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
-import { loadDebateMap } from './debateData'
 import SentencePlacer from './SentencePlacer'
+import ClusterGallery, { DATASETS } from './ClusterGallery'
+import PageHead from '../ui/PageHead'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -51,6 +52,26 @@ const umap = (u: Umap) =>
 const hdbscan = (h: Hdbscan) =>
   `HDBSCAN min_cluster_size ${h.min_cluster_size}, min_samples ${h.min_samples}`
 
+/** Names each cluster by the most common key among its points, for maps without written names. */
+function mostCommon<T>(
+  items: T[],
+  cluster: (t: T) => number,
+  key: (t: T) => string,
+) {
+  const counts = new Map<number, Map<string, number>>()
+  for (const t of items) {
+    const c = cluster(t)
+    if (c < 0) continue
+    const m = counts.get(c) ?? new Map<string, number>()
+    m.set(key(t), (m.get(key(t)) ?? 0) + 1)
+    counts.set(c, m)
+  }
+  const names = new Map(
+    [...counts].map(([c, m]) => [c, [...m].sort((a, b) => b[1] - a[1])[0][0]]),
+  )
+  return (c: number) => names.get(c) ?? unnamed()
+}
+
 // ---------- Symbol Lab ----------
 type SymbolicRun = {
   embedding_model: string
@@ -76,6 +97,8 @@ const symbolicLabel = (p: {
   title: string
   context: string
 }) => `${p.symbol_id} · ${p.title} · “${cut(p.context, 90)}”`
+const symbolBook = (p: { symbol_id: string; title: string }) =>
+  `${p.symbol_id} · ${cut(p.title, 40)}`
 
 // ---------- Philosophy Lab ----------
 type PhilosophySummary = {
@@ -94,13 +117,19 @@ async function loadPhilosophy(
     fetchJson<Record<string, PhilosophyPoint[]>>('philosophy/atlas.json'),
   ])
   const [summary, atlas] = await philosophy
+  const points = atlas[variant].map(([, work, x, y, c]) => ({
+    x,
+    y,
+    c,
+    label: `${summary.works[work].author}, ${summary.works[work].title}`,
+  }))
   return {
-    points: atlas[variant].map(([, work, x, y, c]) => ({
-      x,
-      y,
-      c,
-      label: `${summary.works[work].author}, ${summary.works[work].title}`,
-    })),
+    points,
+    name: mostCommon(
+      points,
+      (p) => p.c,
+      (p) => p.label,
+    ),
     method: [
       summary.run.model.replace('sentence-transformers/', ''),
       umap(summary.run.umap_map),
@@ -148,27 +177,12 @@ async function loadJobs(): Promise<Loaded> {
   const c = summary.config
   return {
     points,
-    name: (id) => names.get(id) ?? String(id),
+    name: (id) => names.get(id) ?? unnamed(),
     method: [
       c.model.replace('sentence-transformers/', ''),
       `UMAP ${c.dimensions}D, n_neighbors ${c.neighbors}`,
       `HDBSCAN min_cluster_size ${c.min_cluster_size}, min_samples ${c.min_samples}`,
     ],
-  }
-}
-
-// ---------- Riksdag debates ----------
-async function loadDebates(): Promise<Loaded> {
-  const [map, overview] = await Promise.all([
-    loadDebateMap(),
-    fetchJson<{ parliament: { topic_method: string; umap_note: string } }>(
-      'politics/overview.json',
-    ),
-  ])
-  return {
-    points: map.points,
-    name: (id) => map.names.get(id) ?? String(id),
-    method: [overview.parliament.topic_method, overview.parliament.umap_note],
   }
 }
 
@@ -179,7 +193,7 @@ async function loadResearch(slug: string): Promise<Loaded> {
     noise_share: number
     /** The method, written by the export from the run's own record. */
     method: string[]
-    /** Reviewed names, English then Swedish; a group without one keeps its number. */
+    /** Model-proposed names, English then Swedish; a group without one has no clear theme. */
     names: Record<string, [string, string]>
     points: [string, number, number, number, string][]
   }>(`cluster-research/${slug}.json`)
@@ -188,26 +202,27 @@ async function loadResearch(slug: string): Promise<Loaded> {
     population: data,
     name: (id) => {
       const named = data.names[id]
-      return named ? l(named[0], named[1]) : String(id)
+      return named ? l(named[0], named[1]) : unnamed()
     },
     method: data.method,
   }
 }
 
+// One function, so the lead map's loader keeps its identity across renders.
 const debateTopics = () => loadResearch('debate-topics')
 
 export const MAPS = (): MapSpec[] => [
   {
     id: 'research-debates',
-    project: 'Political Observatory',
+    project: l('Riksdag debates', 'Riksdagsdebatter'),
     href: '#what-does-it-even-mean',
     title: l(
       'Party-leader debates by subject',
       'Partiledardebatter efter ämne',
     ),
     meaning: l(
-      'Each point is a passage of whole sentences, 80 to 150 words, from 108 party-leader debates 1993–2026. The address to the Speaker, applause notes and endorsement lists were removed before embedding. Grey points belong to no group. A group has a name only after its passages were read.',
-      'Varje punkt är en passage med hela meningar, 80 till 150 ord, ur 108 partiledardebatter 1993–2026. Tilltalet till talmannen, applådnoteringar och instämmandelistor togs bort före inbäddningen. Grå punkter hör inte till någon grupp. En grupp har namn först när dess passager har lästs.',
+      'Each point is a passage of 80 to 150 words from 108 party-leader debates, 1993–2026. Grey points belong to no group. Group names are a language model’s labels.',
+      'Varje punkt är en passage på 80 till 150 ord ur 108 partiledardebatter, 1993–2026. Grå punkter hör inte till någon grupp. Gruppnamnen är en språkmodells etiketter.',
     ),
     variants: [
       {
@@ -226,8 +241,8 @@ export const MAPS = (): MapSpec[] => [
       'Passager ur 113 filosofiska verk',
     ),
     meaning: l(
-      'Each point is a passage, at most 200 per work, from 113 works by 66 authors on Project Gutenberg. The search penalises groups that follow one author or translator, so a group here runs across works.',
-      'Varje punkt är en passage, högst 200 per verk, ur 113 verk av 66 författare på Project Gutenberg. Sökningen ger avdrag för grupper som följer en författare eller översättare, så en grupp här spänner över flera verk.',
+      'Each point is a passage from 113 works by 66 authors. Groups that follow one author or translator are penalised, so groups run across works. Names are a language model’s labels.',
+      'Varje punkt är en passage ur 113 verk av 66 författare. Grupper som följer en författare eller översättare får avdrag, så grupperna spänner över verk. Namnen är en språkmodells etiketter.',
     ),
     variants: [
       {
@@ -246,8 +261,8 @@ export const MAPS = (): MapSpec[] => [
       'Kommunprofiler: tolv indikatorer 2024',
     ),
     meaning: l(
-      'Each point is one of 280 municipalities, placed by the first two principal components of twelve indicators. Ten municipalities are left out: seven lack a value for social assistance and three for Riksdag turnout. The groups describe similar profiles; they do not rank wellbeing.',
-      'Varje punkt är en av 280 kommuner, placerad efter de två första principalkomponenterna av tolv indikatorer. Tio kommuner är inte med: sju saknar värde för ekonomiskt bistånd och tre för valdeltagande. Grupperna beskriver liknande profiler och rangordnar inte välmående.',
+      'Each point is a municipality, placed by twelve indicators. The groups are similar profiles, not a ranking. Weak stability (bootstrap ARI 0.78, 0.50 in the worst 5 %): a summary, not a finding.',
+      'Varje punkt är en kommun, placerad efter tolv indikatorer. Grupperna är liknande profiler, ingen rangordning. Svag stabilitet (bootstrap-ARI 0,78, 0,50 i de sämsta 5 %): en sammanfattning, inget fynd.',
     ),
     variants: [
       {
@@ -282,6 +297,11 @@ export const MAPS = (): MapSpec[] => [
               c: p.is_noise ? -1 : p.cluster_id,
               label: symbolicLabel(p),
             })),
+            name: mostCommon(
+              points,
+              (p) => (p.is_noise ? -1 : p.cluster_id),
+              symbolBook,
+            ),
             method,
           }
         },
@@ -297,6 +317,14 @@ export const MAPS = (): MapSpec[] => [
           ])
           const byId = new Map(base.map((p) => [p.occurrence_id, p]))
           return {
+            name: mostCommon(
+              book ?? [],
+              (p) => (p.is_noise ? -1 : p.cluster_id),
+              (p) => {
+                const b = byId.get(p.occurrence_id)
+                return b ? symbolBook(b) : unnamed()
+              },
+            ),
             points: (book ?? []).map((p) => {
               const b = byId.get(p.occurrence_id)
               return {
@@ -353,27 +381,21 @@ export const MAPS = (): MapSpec[] => [
       { key: 'all', label: l('All ads', 'Alla annonser'), load: loadJobs },
     ],
   },
-  {
-    id: 'debates',
-    project: l('Political Observatory', 'Political Observatory'),
-    href: '#what-does-it-even-mean',
-    title: l(
-      'What the Riksdag debates are about',
-      'Vad riksdagsdebatterna handlar om',
-    ),
-    meaning: l(
-      'Each point is a text segment from a debate, at most 400 per session over 33 sessions; the colour is the topic the model found.',
-      'Varje punkt är ett textsegment ur en debatt, högst 400 per riksmöte under 33 riksmöten; färgen är ämnet modellen hittade.',
-    ),
-    variants: [
-      {
-        key: 'all',
-        label: l('All sessions', 'Alla riksmöten'),
-        load: loadDebates,
-      },
-    ],
-  },
 ]
+
+/** Points, clusters, noise and the run's method, as one line under a map's title. */
+export function specLine(shown: Loaded) {
+  const clusters = new Set(shown.points.filter((p) => p.c >= 0).map((p) => p.c))
+    .size
+  const noise =
+    shown.points.filter((p) => p.c < 0).length / (shown.points.length || 1)
+  return [
+    `${num(shown.population?.observations ?? shown.points.length)} ${l('points', 'punkter')}`,
+    `${shown.population?.clusters ?? clusters} ${l('clusters', 'kluster')}`,
+    `${l('noise', 'brus')} ${pct(shown.population?.noise_share ?? noise)}`,
+    ...shown.method,
+  ].join(' · ')
+}
 
 function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
   const ref = useRef<HTMLElement>(null)
@@ -385,7 +407,7 @@ function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
     if (!el || typeof IntersectionObserver === 'undefined') return setNear(true)
     const observer = new IntersectionObserver(
       ([entry]) => entry.isIntersecting && setNear(true),
-      { rootMargin: '800px 0px' },
+      { rootMargin: '300px 0px' },
     )
     observer.observe(el)
     return () => observer.disconnect()
@@ -399,22 +421,6 @@ function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
     )
   }, [near, variant, data, spec])
   const shown = data[variant]
-  const stats =
-    shown && shown !== 'error'
-      ? (() => {
-          const clusters = new Set(
-            shown.points.filter((p) => p.c >= 0).map((p) => p.c),
-          ).size
-          const noise =
-            shown.points.filter((p) => p.c < 0).length /
-            (shown.points.length || 1)
-          return [
-            `${num(shown.population?.observations ?? shown.points.length)} ${l('points', 'punkter')}`,
-            `${shown.population?.clusters ?? clusters} ${l('clusters', 'kluster')}`,
-            `${l('noise', 'brus')} ${pct(shown.population?.noise_share ?? noise)}`,
-          ]
-        })()
-      : []
   return (
     <section
       className="cv-section"
@@ -431,7 +437,7 @@ function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
         <h2 id={`cv-${spec.id}-title`}>{spec.title}</h2>
         <p className="cv-meaning">{spec.meaning}</p>
         {shown && shown !== 'error' && (
-          <p className="cv-specs">{[...stats, ...shown.method].join(' · ')}</p>
+          <p className="cv-specs">{specLine(shown)}</p>
         )}
         {spec.variants.length > 1 && (
           <div
@@ -464,9 +470,12 @@ function MapSection({ spec, own }: { spec: MapSpec; own?: boolean }) {
           label={`${spec.project}: ${spec.title}`}
         />
       ) : (
-        <p className="cv-status" role="status">
-          {l('Loading…', 'Laddar…')}
-        </p>
+        <p
+          className="cv-status"
+          role="status"
+          aria-busy="true"
+          aria-label={l('Loading', 'Laddar')}
+        />
       )}
     </section>
   )
@@ -485,23 +494,52 @@ export function ProjectMaps({ ids }: { ids: string[] }) {
   )
 }
 
+type DebateRun = { observations: number; clusters: number; noise_share: number }
+
 export default function ClusterVisualsPage() {
+  const maps = MAPS()
+  const debates = maps.find((spec) => spec.id === 'research-debates')!
+  const [run, setRun] = useState<DebateRun | null>(null)
+  useEffect(() => {
+    fetchJson<DebateRun>('cluster-research/debate-topics.json').then(
+      setRun,
+      () => {},
+    )
+  }, [])
+  // The local lab reads a dev-server export; it is asked for only when the address names it.
+  const lab =
+    import.meta.env.DEV && /[?&]lab(_|=|&|$)/.test(window.location.hash)
   return (
     <div className="cv">
-      <header className="cv-intro">
-        <h1>{l('Cluster visuals', 'Klustervisualiseringar')}</h1>
-        <p>
-          {l(
-            'Every clustering on the site, drawn from its data. Point at a dot to read it; click it, or a cluster in the list, to pick out its cluster.',
-            'Alla klustringar på sajten, ritade ur sin data. Peka på en prick för att läsa den; klicka på den, eller på ett kluster i listan, för att lyfta fram klustret.',
-          )}
-        </p>
-      </header>
-      <SentencePlacer loadMap={debateTopics} />
-      {MAPS().map((spec) => (
-        <MapSection key={spec.id} spec={spec} />
-      ))}
-      {import.meta.env.DEV && <ClusterLab />}
+      <PageHead
+        title={l('Cluster visuals', 'Klustervisualiseringar')}
+        sentence={l(
+          'The clearest clusterings on the site, drawn from their data.',
+          'De tydligaste klustringarna på sajten, ritade ur sin data.',
+        )}
+        kpis={[
+          { label: l('Maps', 'Kartor'), value: num(DATASETS.length) },
+          ...(run
+            ? [
+                {
+                  label: l('Debate passages', 'Debattpassager'),
+                  value: num(run.observations),
+                },
+                {
+                  label: l('Debate subjects', 'Debattämnen'),
+                  value: num(run.clusters),
+                },
+                {
+                  label: l('Passages in no subject', 'Passager utan ämne'),
+                  value: pct(run.noise_share),
+                },
+              ]
+            : []),
+        ]}
+      />
+      <SentencePlacer spec={debates} />
+      <ClusterGallery />
+      {lab && <ClusterLab />}
     </div>
   )
 }

@@ -139,7 +139,7 @@ export default function Explore({
         colorOf={(k) => lines.findIndex((s) => s.key === k) + 1}
         yFrom={0}
       />
-      <div className="sw-table-wrap">
+      <div className="sw-table-wrap" tabIndex={0}>
         <table className="sw-table">
           <caption>
             {l('Every category and year', 'Varje kategori och år')}

@@ -41,6 +41,18 @@ const TOP = 8
 const MAX = 500
 // As the Worker's parser: a colon or white space may sit between [[id]] and its quote.
 const QUOTE = /\[\[([^\]]+)\]\]\s*:?\s*"([^"]+)"/g
+/**
+ * A passage's file read from its id, for quotes shown before the corpus has loaded: graph and
+ * catalogue nodes live in one file each, a dbt model is named, a document passage drops its anchor.
+ */
+const fileOfId = (id: string) =>
+  id.startsWith('graph:')
+    ? 'architecture/graph.json'
+    : id.startsWith('catalog:')
+      ? 'catalog.json'
+      : id.startsWith('dbt:')
+        ? `dbt ${id.slice(4)}`
+        : id.split('#')[0]
 /** The answer with each [[id]]"quote" as a quote followed by its file and commit. */
 function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
   const parts: ReactNode[] = []
@@ -57,7 +69,7 @@ function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
           </a>
         ) : (
           <span className="ap-cite" translate="no">
-            {m[1]}
+            {fileOfId(m[1])}
           </span>
         )}
       </span>,
@@ -68,7 +80,8 @@ function Quoted({ text, items }: { text: string; items: Map<string, Item> }) {
   return <p className="ap-answer">{parts}</p>
 }
 
-export default function AskThePlatform() {
+/** With `ready`, the first precomputed example's answer shows before anything is asked. */
+export default function AskThePlatform({ ready = false }: { ready?: boolean }) {
   const [corpus, setCorpus] = useState<Corpus<Item> | 'missing' | null>(null)
   const [examples, setExamples] = useState<Example[]>([])
   const [graph, setGraph] = useState<Graph | null>(null)
@@ -153,6 +166,12 @@ export default function AskThePlatform() {
       fetchJson<Graph>('architecture/graph.json').then(setGraph, () => {})
   }, [named.length, graph])
 
+  const first = examples[0]?.answer
+  const sample =
+    ready && first?.status === 'verified'
+      ? { question: examples[0].question, answer: first.answer }
+      : null
+
   return (
     <section className="ap" aria-labelledby="ap-title">
       <h3 id="ap-title">{l('Ask the platform', 'Fråga plattformen')}</h3>
@@ -187,8 +206,8 @@ export default function AskThePlatform() {
               maxLength={MAX}
               value={question}
               placeholder={l(
-                'How is the junior share tested?',
-                'Hur testas juniorandelen?',
+                'How does the site find the address of a data file?',
+                'Hur hittar sajten adressen till en datafil?',
               )}
               onFocus={() => corpus || load().then((c) => c && setNotice(null))}
               onChange={(e) => setQuestion(e.target.value)}
@@ -240,6 +259,13 @@ export default function AskThePlatform() {
                   'Letar fram de närmaste passagerna…',
                 )}
           </p>
+        ) : sample && !reply && !hits ? (
+          <>
+            <p className="ap-status">
+              {l('Example:', 'Exempel:')} {sample.question}
+            </p>
+            <Quoted text={sample.answer} items={items} />
+          </>
         ) : reply?.status === 'verified' ? (
           <>
             <Quoted text={reply.answer} items={items} />

@@ -15,6 +15,8 @@ import {
   path,
   scale,
 } from './wel-kit'
+import { l } from '../../i18n'
+import { count } from '../../format'
 
 type Connections = {
   relationships: {
@@ -51,17 +53,33 @@ type Rate =
   | 'service_points_rate'
 
 /** The rates' units, as export_belonging.py writes them. */
-const LIBRARY_RATES: Record<Rate, string> = {
-  active_borrowers_rate: 'Active borrowers per 100 inhabitants',
-  visits_rate: 'Library visits per inhabitant',
-  activities_rate: 'Public activities per 1,000 inhabitants',
-  service_points_rate: 'Service points per 10,000 inhabitants',
+const LIBRARY_RATES: Record<Rate, [string, string]> = {
+  active_borrowers_rate: [
+    'Active borrowers per 100 inhabitants',
+    'Aktiva låntagare per 100 invånare',
+  ],
+  visits_rate: [
+    'Library visits per inhabitant',
+    'Biblioteksbesök per invånare',
+  ],
+  activities_rate: [
+    'Public activities per 1,000 inhabitants',
+    'Publika aktiviteter per 1 000 invånare',
+  ],
+  service_points_rate: [
+    'Service points per 10,000 inhabitants',
+    'Serviceställen per 10 000 invånare',
+  ],
 }
+const rate = (k: Rate) => l(...LIBRARY_RATES[k])
 
 /** KB's library types in plain words; the combined type is the focal one. */
-const TYPES: Record<string, string> = {
-  folkbib: 'Public library',
-  folkskolbib: 'Public and school library in one',
+const TYPES: Record<string, [string, string]> = {
+  folkbib: ['Public library', 'Folkbibliotek'],
+  folkskolbib: [
+    'Public and school library in one',
+    'Kombinerat folk- och skolbibliotek',
+  ],
 }
 
 /** The one relationship tested on municipality points, which a scatter can show. */
@@ -77,14 +95,17 @@ function Relation() {
         return (
           <Scatter
             r={2.2}
-            label={`${r.x!.name} against ${r.y!.name}, one dot per municipality`}
-            xFormat={(v) => `${fmt(v / 1000, 0)}k`}
+            label={l(
+              `${r.x!.name} against ${r.y!.name}, one dot per municipality`,
+              `${r.x!.name} mot ${r.y!.name}, en punkt per kommun`,
+            )}
+            xFormat={(v) => `${fmt(v / 1000, 0)}${l('k', '\u00a0tkr')}`}
             yFormat={(v) => fmt(v, 1)}
             dots={r.result
               .points!.filter((p) => num(p[1]) && num(p[2]))
               .map((p) => ({
                 key: p[0],
-                name: `Municipality code ${p[0]}`,
+                name: l(`Municipality code ${p[0]}`, `Kommunkod ${p[0]}`),
                 x: p[1],
                 y: p[2],
               }))}
@@ -114,7 +135,10 @@ function LibraryMap() {
             <Svg
               w={300}
               h={600}
-              label="Every public library in Sweden as a dot"
+              label={l(
+                'Every public library in Sweden as a dot',
+                'Varje folkbibliotek i Sverige som en punkt',
+              )}
             >
               {/* The focal type is drawn last, on top. */}
               {[...libs]
@@ -131,7 +155,7 @@ function LibraryMap() {
                 ))}
             </Svg>
             <Legend
-              items={types.map((t) => TYPES[t])}
+              items={types.map((t) => l(...TYPES[t]))}
               colors={types.map(fill)}
             />
           </>
@@ -183,14 +207,17 @@ function LibraryTrend() {
         return (
           <>
             <Slicer
-              label="Rate"
+              label={l('Rate', 'Mått')}
               options={Object.keys(LIBRARY_RATES) as Rate[]}
-              format={(k) => LIBRARY_RATES[k]}
+              format={rate}
               value={m}
               onChange={setM}
             />
             <Svg
-              label={`${LIBRARY_RATES[m]} across municipalities: median with the middle 50 and 80 percent`}
+              label={l(
+                `${rate(m)} across municipalities: median with the middle 50 and 80 percent`,
+                `${rate(m)} i kommunerna: median med mittersta 50 och 80 procent`,
+              )}
             >
               <YAxis
                 y={ax.y}
@@ -222,7 +249,11 @@ function LibraryTrend() {
               />
             </Svg>
             <Legend
-              items={['Median', 'Middle 50%', 'Middle 80%']}
+              items={[
+                l('Median', 'Median'),
+                l('Middle 50%', 'Mittersta 50 %'),
+                l('Middle 80%', 'Mittersta 80 %'),
+              ]}
               colors={[BANDS[2], BANDS[1], BANDS[0]]}
             />
           </>
@@ -240,11 +271,18 @@ export const posts: Post[] = [
     size: 'tall',
     title: (d: Libraries) => {
       const libs = located(d)
-      if (!libs.length) return 'Public libraries in Sweden'
-      const both = libs.filter((l) => l.type === 'folkskolbib').length
-      return `${libs.length.toLocaleString('en-GB')} public libraries on the map; ${both} of them are combined public and school libraries`
+      if (!libs.length)
+        return l('Public libraries in Sweden', 'Folkbibliotek i Sverige')
+      const both = libs.filter((b) => b.type === 'folkskolbib').length
+      return l(
+        `${count(libs.length)} public libraries on the map; ${both} of them are combined public and school libraries`,
+        `${count(libs.length)} folkbibliotek på kartan; ${both} av dem är kombinerade folk- och skolbibliotek`,
+      )
     },
-    note: 'One dot per library; accent: combined public and school libraries. Source: KB library statistics',
+    note: [
+      'One dot per library; accent: combined public and school libraries. Source: KB library statistics',
+      'En punkt per bibliotek; markerade: kombinerade folk- och skolbibliotek. Källa: KB:s biblioteksstatistik',
+    ],
     render: () => <LibraryMap />,
   },
   {
@@ -254,16 +292,27 @@ export const posts: Post[] = [
     title: (d: Connections) => {
       const r = scattered(d)
       const rho = r?.result.rho
-      if (!r || !num(rho)) return 'Library visits and income by municipality'
+      if (!r || !num(rho))
+        return l(
+          'Library visits and income by municipality',
+          'Biblioteksbesök och inkomst per kommun',
+        )
       const how =
         Math.abs(rho) < 0.3
-          ? 'barely track'
+          ? l('barely track', 'följer knappt')
           : rho > 0
-            ? 'rise with'
-            : 'fall with'
-      return `Library visits ${how} median income across ${r.result.n ?? r.result.points!.length} municipalities (ρ = ${fmt(rho, 2)})`
+            ? l('rise with', 'ökar med')
+            : l('fall with', 'minskar med')
+      const n = r.result.n ?? r.result.points!.length
+      return l(
+        `Library visits ${how} median income across ${n} municipalities (ρ = ${fmt(rho, 2)})`,
+        `Biblioteksbesöken ${how} medianinkomsten i ${n} kommuner (ρ = ${fmt(rho, 2)})`,
+      )
     },
-    note: 'Across: median earned income, SEK. Up: library visits per inhabitant. ρ: rank correlation. Sources: Kolada, KB',
+    note: [
+      'Across: median earned income, SEK. Up: library visits per inhabitant. ρ: rank correlation. Sources: Kolada, KB',
+      'Vågrätt: medianförvärvsinkomst, kr. Lodrätt: biblioteksbesök per invånare. ρ: rangkorrelation. Källor: Kolada, KB',
+    ],
     render: () => <Relation />,
   },
   {
@@ -272,16 +321,30 @@ export const posts: Post[] = [
     sources: ['sweden/belonging/municipalities.json'],
     title: (d: Belonging) => {
       const qs = quantiles(d, 'active_borrowers_rate')
-      if (qs.length < 2) return 'Active library borrowers per municipality'
+      if (qs.length < 2)
+        return l(
+          'Active library borrowers per municipality',
+          'Aktiva låntagare per kommun',
+        )
       const [a, b] = [qs[0], qs.at(-1)!]
       const [from, to] = [fmt(a.q[2], 1), fmt(b.q[2], 1)]
+      const fell = b.q[2] < a.q[2]
       const change =
         from === to
-          ? `stayed at ${to}`
-          : `${b.q[2] < a.q[2] ? 'fell' : 'rose'} from ${from} to ${to}`
-      return `Across municipalities, the median number of active borrowers ${change} per 100 inhabitants, ${a.yr}–${b.yr}`
+          ? l(`stayed at ${to}`, `låg kvar på ${to}`)
+          : l(
+              `${fell ? 'fell' : 'rose'} from ${from} to ${to}`,
+              `${fell ? 'minskade' : 'ökade'} från ${from} till ${to}`,
+            )
+      return l(
+        `Library borrowers per 100 people ${change}, ${a.yr}–${b.yr}`,
+        `Låntagare per 100 invånare ${change}, ${a.yr}–${b.yr}`,
+      )
     },
-    note: 'Median across municipalities by year; bands: the middle 50% and 80%. Source: KB library statistics',
+    note: [
+      'Active borrowers, median across municipalities by year; bands: the middle 50% and 80%. Source: KB library statistics',
+      'Aktiva låntagare, median över kommunerna per år; band: mittersta 50 % och 80 %. Källa: KB:s biblioteksstatistik',
+    ],
     render: () => <LibraryTrend />,
   },
 ]

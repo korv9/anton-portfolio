@@ -8,22 +8,7 @@
   gap: 2rem;
   padding: 1.25rem var(--gutter);
   background: var(--page);
-  border-bottom: 1px solid var(--line);
   font-family: var(--font);
-}
-.home-shell .site-header {
-  position: fixed;
-  inset: 0 0 auto;
-  transition:
-    opacity var(--dur) var(--ease),
-    transform var(--dur) var(--ease),
-    visibility var(--dur);
-}
-.site-header[data-hidden='true'] {
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(-12px);
-  pointer-events: none;
 }
 .site-identity {
   display: grid;
@@ -223,4 +208,12 @@
     justify-self: start;
     grid-row: 3;
   }
+}
+
+/* The signature stands in for the name, as on the projects start. */
+.site-signature {
+  display: block;
+  height: 46px;
+  width: auto;
+  filter: drop-shadow(0 2px 10px rgb(0 0 0 / 0.4));
 }

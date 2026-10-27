@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "publish"))
 sys.path.insert(0, str(ROOT / "nlp"))
 
-from politics_story import member_stats, per_10k, rising_terms, tfidf_terms  # noqa: E402
+from politics_story import ARTIFACT_STEMS, STEM, member_stats, per_10k, rising_terms, tfidf_terms  # noqa: E402
 
 
 def test_member_stats_counts_votes_and_deviation():
@@ -52,6 +52,15 @@ def test_tfidf_prefers_words_only_one_document_uses():
     out = tfidf_terms(docs, df, 2, exclude={"vård"})
     assert [k["stem"] for k in out["a"]] == ["skatt"]  # 'gemensam' is in every document
     assert out["b"] == []  # 'vård' excluded
+
+
+def test_word_field_codes_are_not_keywords():
+    field = STEM.stemWord("kantrubrik")
+    assert {field, STEM.stemWord("mergeformat"), STEM.stemWord("styleref")} <= ARTIFACT_STEMS
+    docs = {"a": Counter({field: 50, "skatt": 10}), "b": Counter({"vård": 10})}
+    df = Counter({field: 1, "skatt": 1, "vård": 1})
+    out = tfidf_terms(docs, df, 2, exclude=set() | ARTIFACT_STEMS)
+    assert [k["stem"] for k in out["a"]] == ["skatt"]
 
 
 def test_rising_terms_normalises_for_text_length():

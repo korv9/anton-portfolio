@@ -5,8 +5,18 @@ import { jobAssistantFixture } from './fixtures/job-assistant'
 
 const shots = process.env.JOBS_SCREENSHOTS
 
-async function board(page: Page, hash = '#jobs') {
-  const f = jobAssistantFixture()
+type Fixture = ReturnType<typeof jobAssistantFixture>
+
+async function board(
+  page: Page,
+  hash = '#jobs',
+  f: Fixture = jobAssistantFixture(),
+) {
+  // The committed delivery reads job-assistant/ from R2; these fixtures stand in for it locally.
+  await page.route('**/data/delivery.json', async (route) => {
+    const { live: _, ...local } = await (await route.fetch()).json()
+    return route.fulfill({ json: local })
+  })
   await page.route('**/data/job-assistant/*.json', (route) => {
     const name = new URL(route.request().url()).pathname.split('/').pop()!
     return route.fulfill({
@@ -17,6 +27,12 @@ async function board(page: Page, hash = '#jobs') {
   })
   await page.route('**/api/jobs/**', (route) => {
     const what = new URL(route.request().url()).pathname.split('/').pop()
+    // Like worker/jobs.ts: statuses, notes and labels only with the owner token.
+    if (!route.request().headers()['authorization'])
+      return route.fulfill({
+        status: 401,
+        json: { error: 'owner token required' },
+      })
     if (what === 'reviews') return route.fulfill({ json: f.reviews })
     if (what === 'labels') return route.fulfill({ json: f.labels })
     return route.fulfill({ status: 404, json: { error: 'not found' } })
@@ -31,8 +47,12 @@ test('search, a removable filter chip, an opened ad and the back button', async 
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
+  // The Applications pipeline shows the owner's statuses, so this visit carries the token.
+  await page.addInitScript(() =>
+    sessionStorage.setItem('job-assistant-owner-token', 'fixture-token'),
+  )
   await board(page)
-  await expect(page.locator('.ja-stats')).toContainText('Strong matches')
+  await expect(page.locator('.page-head-kpis')).toContainText('Strong matches')
   const before = await count(page)
 
   await page.getByRole('searchbox', { name: /Search jobs/ }).fill('dbt')
@@ -101,4 +121,47 @@ test('on a phone the ad replaces the list and the back button returns to it', as
     () => document.documentElement.scrollWidth > window.innerWidth,
   )
   expect(overflow).toBe(false)
+})
+
+test('without a profile the board lists the open ads under a calm note, with no classes, filters or error codes', async ({
+  page,
+}) => {
+  const f = jobAssistantFixture()
+  const at = '2026-10-25T11:13:24+00:00'
+  const unmatched = {
+    ...f,
+    matches: {
+      ...f.matches,
+      profile: null,
+      status: {
+        skipped: { reason: 'profile route answered 403', status: 403, at },
+      },
+      matches: [],
+    },
+    texts: { ...f.texts, texts: {} },
+  }
+  await board(page, '#jobs', unmatched as unknown as Fixture)
+  await expect(page.locator('.ja-empty')).toContainText(
+    'Matching against my CV is paused for now.',
+  )
+  await expect(page.locator('.ja-empty')).not.toContainText('403')
+  await expect(page.locator('.ja-empty')).not.toContainText('starts when')
+  await expect(page.locator('.ja-results-head')).toContainText(
+    `${f.ads.ads.length} open ads`,
+  )
+  await expect(page.locator('.ja-card')).toHaveCount(20)
+  await expect(page.locator('.ja-badge')).toHaveCount(0)
+  await expect(
+    page.getByRole('searchbox', { name: /Search jobs/ }),
+  ).toHaveCount(0)
+  await expect(page.locator('.page-head-kpis')).not.toContainText(
+    'Strong matches',
+  )
+  // A visitor has no token: the owner-only Applications tab and stat are not offered.
+  await expect(page.locator('.page-head-kpis')).not.toContainText(
+    'Applications',
+  )
+  await expect(page.getByRole('button', { name: 'Applications' })).toHaveCount(
+    0,
+  )
 })

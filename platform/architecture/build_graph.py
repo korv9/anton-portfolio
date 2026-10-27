@@ -103,7 +103,14 @@ def dbt_domain(path: str) -> str:
 def load_manifest(path: Path = MANIFEST) -> dict:
     if not path.is_file():
         subprocess.run(["dbt", "parse", "--profiles-dir", "."], cwd=PLATFORM, check=True)
-    return json.loads(path.read_text(encoding="utf-8"))
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    # dbt on Windows writes paths with backslashes; layers and domains are read from posix paths.
+    for group in (manifest["nodes"].values(), manifest["sources"].values(),
+                  *manifest.get("disabled", {}).values()):
+        for n in group:
+            if "original_file_path" in n:
+                n["original_file_path"] = n["original_file_path"].replace("\\", "/")
+    return manifest
 
 
 def public_files(root: Path = PUBLIC) -> list[str]:
@@ -208,7 +215,11 @@ def build(manifest: dict, er: dict, files: list[str], frontend_paths=code_paths)
         layer = dbt_layer(n["original_file_path"], n["resource_type"])
         t = er_tables.get(n["name"], {})
         columns = [c["name"] for c in t.get("columns", [])] or list(n.get("columns", {}))
-        node(f"dbt:{n['name']}", label=n["name"], type=layer, layer="raw" if layer == "seed" else layer,
+        # Bronze staging of an ML stage's output sits in that stage's column, after the ML run.
+        ml_inputs = [ml_layer[ml_raw[d.split(".")[2]]] for d in n.get("depends_on", {}).get("nodes", [])
+                     if d.startswith("source.") and d.split(".")[2] in ml_raw]
+        position = "raw" if layer == "seed" else ml_inputs[0] if layer == "bronze" and ml_inputs else layer
+        node(f"dbt:{n['name']}", label=n["name"], type=layer, layer=position,
              domain=dbt_domain(n["original_file_path"]), path=f"platform/{n['original_file_path']}",
              description=(n.get("description") or t.get("description") or "").strip(),
              materialized=n.get("config", {}).get("materialized") if n["resource_type"] == "model" else "seed",
@@ -358,7 +369,8 @@ def main() -> int:
     graph["generated_at"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
     graph["dbt_version"] = manifest.get("metadata", {}).get("dbt_version")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(graph, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+    OUT.write_text(json.dumps(graph, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8",
+                   newline="\n")
     register(OUT)
     count = Counter(n["type"] for n in graph["nodes"])
     edge_count = Counter(e["type"] for e in graph["edges"])

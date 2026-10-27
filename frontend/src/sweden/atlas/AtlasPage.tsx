@@ -13,7 +13,6 @@
  * which file would produce it, never a sample sentence.
  */
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { SwedenHeader } from '../Header'
 import { webgl } from '../stage'
 import { DataDrawer } from './DataDrawer'
 import type { SlotState } from './slots'
@@ -174,7 +173,6 @@ export function AtlasPage({
 
   return (
     <article className="sweden sw-atlas">
-      <SwedenHeader current="#sweden" />
       <div className="sw-atlas-stage" ref={host} aria-hidden="true">
         {!ok && <p className="sw-atlas-nogl">This view needs WebGL.</p>}
       </div>

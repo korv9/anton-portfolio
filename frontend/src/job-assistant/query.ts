@@ -232,8 +232,11 @@ export function facetCounts(all: Row[], q: Query, day: string) {
   return out
 }
 
-/** The hourly run writes the files; older than this, the board says the sync may have stopped. */
-export const STALE_HOURS = 3
+/**
+ * The run is scheduled hourly, but GitHub has started it every 2.4 to 5.7 hours; past sla.fresh_within
+ * of job_assistant in platform/pipeline.yml the board says the sync may have stopped.
+ */
+export const STALE_HOURS = 8
 
 export function syncAge(generatedAt: string | undefined, now: Date) {
   const t = Date.parse(generatedAt ?? '')

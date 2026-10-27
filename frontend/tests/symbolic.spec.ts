@@ -9,9 +9,8 @@ test('the Symbol Lab maps real occurrences and filters by symbol and tradition',
   page,
 }) => {
   await page.goto('/#symbolic-atlas')
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Do symbol words gather by meaning, or by the book they come from?',
-  )
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Symbol Lab')
+  await expect(page.locator('.page-head-kpis dd').first()).toHaveText('101')
   const summary = await (
     await page.request.get('/data/symbolic/summary.json')
   ).json()
@@ -80,7 +79,7 @@ test('the embedding models are compared by their nearest neighbours', async ({
   )
 })
 
-test('the cross-book view mutes book-bound clusters and opens a cluster for review', async ({
+test('the map opens on the cross-book view and opens a cluster by its symbol words', async ({
   page,
 }) => {
   const clusters = await (
@@ -99,15 +98,19 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
       ) => b.review_priority_score - a.review_priority_score,
     )[0]
   await page.goto('/#symbolic-atlas')
-  await page.getByRole('button', { name: 'Cross-book', exact: true }).click()
-  await expect(page).toHaveURL(/view=cross-book/)
+  await expect(
+    page.getByRole('button', { name: 'Cross-book', exact: true }),
+  ).toHaveAttribute('aria-pressed', 'true')
   await page
     .locator('.atlas-select select')
     .selectOption(String(top.cluster_id))
   const panel = page.locator('.sym-side')
-  // Unreviewed clusters are numbered, never named.
-  await expect(panel).toContainText(`Cluster ${top.cluster_id}`)
-  await expect(panel).toContainText('Not reviewed')
+  // Unreviewed clusters go by their symbol words and number, never "Cluster n".
+  await expect(panel).toContainText(
+    `${top.top_symbols[0].symbol_id}, ${top.top_symbols[1].symbol_id} · #${top.cluster_id}`,
+  )
+  await expect(panel).not.toContainText(`Cluster ${top.cluster_id}`)
+  await expect(panel).not.toContainText('Not reviewed')
   await expect(panel).toContainText(String(top.book_count))
   await expect(panel.locator('.cluster-passages li').first()).toBeVisible()
   // The diverse representatives come from different books.
@@ -115,20 +118,47 @@ test('the cross-book view mutes book-bound clusters and opens a cluster for revi
   expect(new Set(books.map((b) => b.split(', ')[1])).size).toBeGreaterThan(1)
 })
 
-test('the reviewed view shows only human-reviewed clusters, and says when there are none', async ({
+test('the Reviewed view and its key appear only once a cluster is reviewed', async ({
   page,
 }) => {
   const reviewed = await (
     await page.request.get('/data/symbolic/reviewed-clusters.json')
   ).json()
   await page.goto('/#symbolic-atlas?view=reviewed')
+  const chip = page.getByRole('button', { name: 'Reviewed', exact: true })
   if (reviewed.clusters.length === 0) {
-    await expect(page.locator('.atlas-empty')).toHaveText(
-      'No reviewed semantic clusters yet.',
+    await expect(
+      page.getByRole('button', { name: 'Cross-book', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true')
+    await expect(chip).toHaveCount(0)
+    await expect(page.locator('.atlas-key')).not.toContainText(
+      'Reviewed and named',
     )
-    // Nothing is lit: no unreviewed cluster stands in for a reviewed one.
-    await expect(page.locator('.atlas-status')).toContainText(/^0 of /)
-  } else await expect(page.locator('.atlas-empty')).toHaveCount(0)
+  } else await expect(chip).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('the top-ranked cross-book clusters are shown with two passages each', async ({
+  page,
+}) => {
+  const cross = await (
+    await page.request.get('/data/symbolic/cross-book-clusters.json')
+  ).json()
+  const top = cross.clusters
+    .filter((c: { review_class: string }) => c.review_class === 'candidate')
+    .sort(
+      (
+        a: { review_priority_score: number },
+        b: { review_priority_score: number },
+      ) => b.review_priority_score - a.review_priority_score,
+    )[0]
+  await page.goto('/#symbolic-atlas')
+  const cards = page.locator('.cross-card')
+  await expect(cards).toHaveCount(6)
+  await expect(cards.first().locator('h3')).toContainText(
+    `#${top.cluster_id} · ${top.largest_symbol}`,
+  )
+  await expect(cards.first()).toContainText(`${top.book_count} books`)
+  await expect(cards.first().locator('.cluster-passages li')).toHaveCount(2)
 })
 
 test('the investigation is told step by step with its numbers', async ({
@@ -153,6 +183,13 @@ test('the investigation is told step by step with its numbers', async ({
   await expect(page.locator('#symbolic-validity')).toContainText(
     'What the clusters follow',
   )
+  // Silhouette is geometry in UMAP space, compared within v4 only.
+  const lesson = page.locator('.validity-case')
+  await expect(lesson).toContainText(
+    'Cluster separation in the 10-D UMAP space',
+  )
+  await expect(lesson).not.toContainText('Model quality')
+  await expect(steps.nth(4)).not.toContainText('no cluster reads as paratext')
   await page.goto('/#symbolic-method')
   await expect(page.locator('#symbolic-method')).toContainText('Diagnostics')
 })

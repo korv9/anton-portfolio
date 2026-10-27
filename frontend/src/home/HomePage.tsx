@@ -1,7 +1,11 @@
-/** Homepage: About, work history and selected projects on GitHub. */
+/**
+ * The start page, about Anton for a recruiter: the signature, name and role on the first screen,
+ * then About with the contact links, experience above education beside the cluster maps, and the way on to the projects
+ * (#projects) beside the job-ads map.
+ */
 import { useEffect } from 'react'
 import { profile } from '../content'
-import { ABOUT, CONTACT } from './content'
+import { ABOUT } from './content'
 import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
 import {
@@ -14,24 +18,15 @@ import {
 } from './orbitContent'
 import { PROJECTS } from '../projects/projectRegistry'
 import LanguageToggle from '../site/LanguageToggle'
+import ClusterDepth from './ClusterDepth'
+import JobsMap from './JobsMap'
+import Signature from './Signature'
 import './home.css'
-import './flagships.css'
-import { useSlowScroll } from './useSlowScroll'
-import HomeFeed from './HomeFeed'
-import { PlatformFlagship } from './Flagships'
-import { OtherProjects, Research } from './Projects'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The sections a global address points at; the header's links scroll to them. */
-const SECTIONS = [
-  '#erfarenhet',
-  '#om-mig',
-  '#utbildning',
-  '#platform',
-  '#jobbassistent',
-  '#research',
-]
+const SECTIONS = ['#kontakt', '#om-mig', '#erfarenhet', '#utbildning']
 
 function Identity() {
   return (
@@ -40,36 +35,48 @@ function Identity() {
       id="start"
       aria-labelledby="home-name"
     >
-      <h1 id="home-name" className="home-name">
-        Anton Ernstsson
-      </h1>
-      <p className="home-roles">
-        <span>SOFTWARE</span> <span>DATA</span> <span>AI</span>
-      </p>
-      <p className="home-links home-hero-links">
-        {profile.email && (
+      <div className="home-mark">
+        <Signature />
+        <div className="home-byline">
+          <h1 id="home-name" className="home-name">
+            Anton Ernstsson
+          </h1>
+          <p className="home-role">Data &amp; AI Engineering</p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/** The email and profiles, directly under the About paragraphs. */
+function Contact() {
+  return (
+    <div className="home-contact" id="kontakt">
+      {profile.email && (
+        <p className="home-contact-email">
           <a href={`mailto:${profile.email}`}>{profile.email}</a>
-        )}
-        <a
-          href="https://github.com/korv9/anton-portfolio"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {l('Code for this site', 'Koden för sidan')}
-        </a>
+        </p>
+      )}
+      <nav
+        className="home-links"
+        aria-label={l('CV and profiles', 'CV och profiler')}
+      >
         {profile.linkedin && (
           <a href={profile.linkedin} target="_blank" rel="noreferrer">
             LinkedIn
           </a>
         )}
+        <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+          GitHub
+        </a>
         {profile.cv && <CvButton />}
         <LanguageToggle />
-      </p>
-    </section>
+      </nav>
+    </div>
   )
 }
 
-/** About above the work history, with space between experience and education. */
+/** About, then experience above education in one column, with the cluster maps beside them. */
 function Profile() {
   const thesis = PROJECTS.find((p) => p.id === 'thesis')
   return (
@@ -88,28 +95,7 @@ function Profile() {
             {l(text.en, text.sv)}
           </p>
         ))}
-        <div className="home-contact">
-          <p className="home-contact-intro">{l(CONTACT.en, CONTACT.sv)}</p>
-          {profile.email && (
-            <p className="home-contact-email">
-              <a href={`mailto:${profile.email}`}>{profile.email}</a>
-            </p>
-          )}
-          <nav
-            className="home-links"
-            aria-label={l('CV and profiles', 'CV och profiler')}
-          >
-            {profile.cv && <CvButton />}
-            {profile.linkedin && (
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn
-              </a>
-            )}
-            <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-          </nav>
-        </div>
+        <Contact />
       </div>
       <div className="home-column home-experience" id="erfarenhet">
         <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
@@ -123,7 +109,14 @@ function Profile() {
                 <p className="home-job-period">{b(job.period)}</p>
               </div>
               <p className="home-job-role">{b(job.kind)}</p>
-              <p className="home-job-role">{b(job.did)}</p>
+              <div className="home-job-parts">
+                {job.parts.map((part) => (
+                  <div key={part.heading.en}>
+                    <h4 className="home-job-part">{b(part.heading)}</h4>
+                    <p className="home-job-text">{b(part.text)}</p>
+                  </div>
+                ))}
+              </div>
               <p className="home-job-tech">{job.tech.join(' | ')}</p>
             </li>
           ))}
@@ -141,6 +134,7 @@ function Profile() {
           <p className="home-job-role">{b(ADDITIONAL.text)}</p>
         </div>
       </div>
+      <ClusterDepth />
       <div className="home-column home-education" id="utbildning">
         <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
         {EDUCATION.map((e) => (
@@ -151,55 +145,43 @@ function Profile() {
               </h3>
               <p className="home-job-period">{e.period}</p>
             </div>
-            <p className="home-job-role">{b(e.note)}</p>
+            <p className="home-job-text">{b(e.note)}</p>
           </div>
         ))}
+        <div className="home-job">
+          <div className="home-job-head">
+            <h3 className="home-job-org">
+              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
+            </h3>
+            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
+          </div>
+          <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
+        </div>
         {thesis && (
           <div className="home-job">
             <div className="home-job-head">
               <h3 className="home-job-org">{b(THESIS.title)}</h3>
             </div>
             <p className="home-job-role">{b(THESIS.kind)}</p>
-            <p className="home-job-role">{THESIS.points.map(b).join(' ')}</p>
+            <div className="home-job-parts">
+              {THESIS.parts.map((part) => (
+                <div key={part.heading.en}>
+                  <h4 className="home-job-part">{b(part.heading)}</h4>
+                  <p className="home-job-text">{b(part.text)}</p>
+                </div>
+              ))}
+            </div>
             <p className="home-job-role">
               {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
             </p>
           </div>
         )}
-        <div className="home-job home-job-additional">
-          <h3 className="home-label">
-            {l('Additional education', 'Övrig utbildning')}
-          </h3>
-          <div className="home-job-head">
-            <p className="home-job-org-small">
-              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
-            </p>
-            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
-          </div>
-          <p className="home-job-role">{b(ADDITIONAL_EDUCATION.text)}</p>
-        </div>
       </div>
     </section>
   )
 }
 
-/**
- * The flagships first, then other projects and the profile. The feed comes after the profile, so
- * its late height never moves a section link's target.
- */
-function Work() {
-  return (
-    <section className="home-screen home-work">
-      <PlatformFlagship />
-      <OtherProjects />
-      <Profile />
-      <HomeFeed />
-    </section>
-  )
-}
-
 export default function HomePage({ path }: { path: string }) {
-  useSlowScroll()
   // A section address (from the header, the footer or a shared link) scrolls to its section.
   useEffect(() => {
     if (!SECTIONS.includes(path)) return
@@ -213,18 +195,12 @@ export default function HomePage({ path }: { path: string }) {
   return (
     <div className="home" lang={currentLocale()}>
       <Identity />
-      <Work />
-      <Research />
+      <Profile />
       <footer className="home-cta">
-        <a
-          className="home-cta-link"
-          href="https://github.com/korv9"
-          target="_blank"
-          rel="noreferrer"
-        >
-          {l('More on GitHub', 'Mer på GitHub')}{' '}
-          <span aria-hidden="true">↗</span>
+        <a className="home-cta-link" href="#projects">
+          {l('Projects', 'Projekt')} <span aria-hidden="true">→</span>
         </a>
+        <JobsMap />
       </footer>
     </div>
   )

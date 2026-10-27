@@ -1,18 +1,8 @@
-/* The job assistant (#jobs): a job board in the warm-grey workspace. Result cards beside the
-   open ad, thin rules, no shadows; the open card is the one focal mark on the screen. */
+/* Arbetsförmedla (#jobs): a job board, ivory on charcoal through the shared tokens. The head is
+   ui/PageHead; space instead of rules between the parts; result cards beside the open ad, no
+   shadows; the open card is the one focal mark on the screen. */
 .ja {
-  padding-block: var(--sp-5) var(--sp-section);
-}
-.ja h1 {
-  margin: 0;
-  font-size: var(--type-page-title);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.015em;
-}
-.ja-lede {
-  max-width: var(--measure);
-  margin: var(--sp-2) 0 0;
-  color: var(--color-ink-secondary);
+  padding-block: 0 var(--sp-section);
 }
 .ja-muted {
   color: var(--color-ink-secondary);

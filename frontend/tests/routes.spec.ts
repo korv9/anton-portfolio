@@ -91,7 +91,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (
       (await crumbs.count()) < 2 &&
       !(await page.locator('.project-context [aria-current]').count()) &&
-      href !== '#projekt' &&
+      // The Overview (#projects) is placed by the index, not a breadcrumb.
+      !href.startsWith('#projects') &&
       !(await page.locator('.politik-long, .tech, .sweden').count())
     )
       unplaced.push(href)
@@ -111,16 +112,16 @@ test('old addresses redirect and the back button returns', async ({
   test.skip(isMobile, 'routing is the same on a phone')
   for (const [from, to, section] of [
     ['/#about', '#om-mig', '#om-mig'],
-    ['/#contact', '#om-mig', '#om-mig'],
-    ['/#work', '#projekt', '#projekt'],
+    ['/#contact', '#kontakt', '#kontakt'],
+    ['/#work', '#projects', '#projects'],
     ['/#experience', '#erfarenhet', '#erfarenhet'],
   ]) {
     await page.goto(from)
     await expect(page).toHaveURL(new RegExp(`${to}$`))
     await expect(page.locator(section)).toBeInViewport()
   }
-  await page.goto('/#projects')
-  await expect(page).toHaveURL(/#projekt$/)
+  await page.goto('/#projekt')
+  await expect(page).toHaveURL(/#projects$/)
   await page.goto('/#symbolic-atlas')
   await page.goto('/#philosophy-atlas')
   await page.goBack()
@@ -134,7 +135,7 @@ test('observatory addresses land on the meaning feed', async ({
   isMobile,
 }) => {
   test.skip(isMobile, 'routing is the same on a phone')
-  for (const from of ['/#politik', '/#jobb-lan', '/#ai-act-roles', '/#now']) {
+  for (const from of ['/#politik', '/#jobb-lan', '/#now']) {
     await page.goto(from)
     await expect(page).toHaveURL(/#what-does-it-even-mean$/)
   }

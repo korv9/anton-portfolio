@@ -77,7 +77,7 @@ export default function Futures({ route }: { route: Route }) {
 
   if (trends === null)
     return (
-      <p className="sweden sw-note" role="status">
+      <p className="sw-section sw-note" role="status">
         {l('Loading…', 'Laddar…')}
       </p>
     )
@@ -135,6 +135,9 @@ export default function Futures({ route }: { route: Route }) {
   const alternatives = themes.find((t) => t.id === 'alternatives')
   const faded = fisher.filter((t) => relative(t) < -0.2)
   const held = fisher.filter((t) => relative(t) >= -0.2)
+  // "fell 84 %, from 2.9 % to 0.5 %": each faded theme with its own numbers.
+  const fell = (t: Theme, en: boolean) =>
+    `${name(t)} ${en ? 'fell' : 'föll'} ${Math.round(-relative(t) * 100)}\u00a0%, ${en ? 'from' : 'från'} ${pct(meanOf(t, head))} ${en ? 'to' : 'till'} ${pct(meanOf(t, tail))}`
 
   const findings: Finding[] = [
     {
@@ -205,8 +208,8 @@ export default function Futures({ route }: { route: Route }) {
       key: 'fisher',
       contrary: held.length > 0,
       statement: l(
-        `${faded.length ? `${faded.map(name).join(', ')} lost more than a fifth of their share of future-oriented speeches` : 'None of the three lost more than a fifth of its share of future-oriented speeches'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} did not` : ''}.`,
-        `${faded.length ? `${faded.map(name).join(', ')} tappade mer än en femtedel av sin andel av de framtidsinriktade anförandena` : 'Inget av de tre tappade mer än en femtedel av sin andel av de framtidsinriktade anförandena'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} gjorde det inte` : ''}.`,
+        `${faded.length ? `${faded.map((t) => fell(t, true)).join('; ')} of future-oriented speeches between ${span(head)} and ${span(tail)}` : 'None of the three lost more than a fifth of its share of future-oriented speeches'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} did not lose more than a fifth` : ''}.`,
+        `${faded.length ? `${faded.map((t) => fell(t, false)).join('; ')} av de framtidsinriktade anförandena mellan ${span(head)} och ${span(tail)}` : 'Inget av de tre tappade mer än en femtedel av sin andel av de framtidsinriktade anförandena'}${held.length ? `; ${held.map((t) => name(t).toLowerCase()).join(', ')} tappade inte mer än en femtedel` : ''}.`,
       ),
       values: (
         <ul>
@@ -571,7 +574,10 @@ export default function Futures({ route }: { route: Route }) {
       : ''
   const readings: Reading[] = [
     {
-      theory: 'Fisher: the slow cancellation of the future',
+      theory: l(
+        'Fisher: the slow cancellation of the future',
+        'Fisher: framtidens långsamma upphävande',
+      ),
       expects: l(
         'Collective, utopian and alternative futures recede.',
         'Kollektiva, utopiska och alternativa framtider drar sig tillbaka.',

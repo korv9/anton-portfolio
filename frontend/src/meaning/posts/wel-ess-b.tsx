@@ -1,6 +1,8 @@
 /** The latest welfare headline figures: population and the labour market. */
-import { Frame, useData, type Post } from '../kit'
+import { Frame, tx, useData, type Post } from '../kit'
 import { Kpi, fmt, month, num, signed } from './wel-kit'
+import { l } from '../../i18n'
+import { count } from '../../format'
 
 type Headline = {
   indicator_key: string
@@ -20,40 +22,40 @@ const LABOUR = [
   {
     key: 'aku_unemployment_rate_sa',
     unit: '%',
-    label: 'Unemployed, % of labour force',
-    change: ' points',
+    label: ['Unemployed, % of labour force', 'Arbetslösa, % av arbetskraften'],
+    change: [' points', ' procentenheter'],
   },
   {
     key: 'aku_employment_rate_sa',
     unit: '%',
-    label: 'Employed, % of ages 15–74',
-    change: ' points',
+    label: ['Employed, % of ages 15–74', 'Sysselsatta, % av 15–74 år'],
+    change: [' points', ' procentenheter'],
   },
   {
     key: 'fk_sick_pay_rate',
-    unit: 'days',
-    label: 'Sick-pay days per insured',
-    change: ' days',
+    unit: ['days', 'dagar'],
+    label: ['Sick-pay days per insured', 'Sjukpenningdagar per försäkrad'],
+    change: [' days', ' dagar'],
   },
-]
+] as const
 
 function Labour() {
   return (
     <Frame data={useHeadlines()}>
       {(rows) => (
         <div className="mean-wel-grid">
-          {LABOUR.map((l) => {
-            const h = find(rows, l.key)
+          {LABOUR.map((m) => {
+            const h = find(rows, m.key)
             if (!h) return null
             return (
               <Kpi
-                key={l.key}
+                key={m.key}
                 value={fmt(h.value, 1)}
-                unit={l.unit}
-                label={`${l.label}, ${month(h.period_label)}`}
+                unit={tx(m.unit)}
+                label={`${tx(m.label)}, ${month(h.period_label)}`}
                 delta={
                   num(h.previous_value)
-                    ? signed(h.value - h.previous_value, l.change)
+                    ? signed(h.value - h.previous_value, tx(m.change))
                     : undefined
                 }
                 since={
@@ -77,11 +79,15 @@ function Population() {
         const h = find(rows, 'scb_population')
         return h ? (
           <Kpi
-            value={h.value.toLocaleString('en-GB')}
-            label="Registered residents"
+            value={count(h.value)}
+            label={l('Registered residents', 'Folkbokförda invånare')}
             delta={
               num(h.previous_value)
-                ? signed(h.value - h.previous_value, ' people', 0)
+                ? signed(
+                    h.value - h.previous_value,
+                    l(' people', ' personer'),
+                    0,
+                  )
                 : undefined
             }
             since={h.previous_period_label ?? undefined}
@@ -99,9 +105,17 @@ export const posts: Post[] = [
     sources: ['welfare/headlines.json'],
     title: (rows: Headline[]) => {
       const h = find(rows, 'scb_population')
-      return h ? `Sweden's population in ${h.period_label}` : 'Population'
+      return h
+        ? l(
+            `Sweden's population in ${h.period_label}`,
+            `Sveriges befolkning ${h.period_label}`,
+          )
+        : l('Population', 'Befolkning')
     },
-    note: 'Source: Statistics Sweden (SCB)',
+    note: [
+      'Source: Statistics Sweden (SCB)',
+      'Källa: Statistiska centralbyrån (SCB)',
+    ],
     render: () => <Population />,
   },
   {
@@ -112,10 +126,16 @@ export const posts: Post[] = [
     title: (rows: Headline[]) => {
       const h = find(rows, 'aku_unemployment_rate_sa')
       return h
-        ? `Unemployment was ${fmt(h.value, 1)}% in ${month(h.period_label)}`
-        : 'The labour market'
+        ? l(
+            `Unemployment was ${fmt(h.value, 1)}% in ${month(h.period_label)}`,
+            `Arbetslösheten var ${fmt(h.value, 1)} % i ${month(h.period_label)}`,
+          )
+        : l('The labour market', 'Arbetsmarknaden')
     },
-    note: 'Ages 15–74, seasonally adjusted; sick pay from Försäkringskassan. Source: SCB Labour Force Survey',
+    note: [
+      'Ages 15–74, seasonally adjusted; sick pay from Försäkringskassan. Source: SCB Labour Force Survey',
+      '15–74 år, säsongsrensat; sjukpenning från Försäkringskassan. Källa: SCB:s arbetskraftsundersökningar (AKU)',
+    ],
     render: () => <Labour />,
   },
 ]

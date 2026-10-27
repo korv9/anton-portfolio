@@ -357,7 +357,10 @@ def _json(path: Path) -> dict | None:
 
 
 def _experiments(path: Path | None = None) -> dict[str, dict] | None:
-    data = _json(path or FEATURES / "symbolic/experiments/comparison.json")
+    # The scheduled build has no symbolic experiment run of its own; it reads the published
+    # comparison, the same rows export_symbolic.py wrote from that run.
+    data = _json(path) if path else (_json(FEATURES / "symbolic/experiments/comparison.json")
+                                     or _json(PUBLIC / "symbolic/experiment-comparison.json"))
     return {e["experiment"]: e for e in data["experiments"]} if data else None
 
 

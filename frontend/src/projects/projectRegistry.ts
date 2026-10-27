@@ -41,12 +41,78 @@ export type ProjectEntry = {
 
 export const PROJECTS: ProjectEntry[] = [
   {
+    id: 'ai-act-clock',
+    title: t('När kommer en lag fram?', 'When does a law arrive?'),
+    descriptor: t(
+      'EU:s AI-förordning i platsannonser och riksdagen',
+      'The EU AI Act in job ads and the Riksdag',
+    ),
+    summary: t(
+      'Hur snabbt når en EU-lag svenskt arbetsliv och riksdagen? AI-förordningens ord räknade i 4,9 miljoner platsannonser och 129 000 anföranden, med förregistrerat placebotest av fördröjningarna.',
+      'How fast does an EU law reach Swedish working life and the Riksdag? The AI Act’s words counted in 4.9 million job ads and 129,000 speeches, with a pre-registered placebo test of the lags.',
+    ),
+    question: t(
+      'Hur snabbt når en lag arbetslivet och riksdagen?',
+      'How fast does a law reach working life and the Riksdag?',
+    ),
+    built: t(
+      'Förordningens begrepp valda med viktade log-odds mot SFS och granskade för hand; ordförrådsmatchning av 4 925 716 platsannonser (2020–2026) och 129 110 riksdagsanföranden; 266 fördröjningar, var och en mot 200 slumpade datum; artikelvis jämförelse av EUT-texten med den konsoliderade texten.',
+      'The Act’s terms chosen by weighted log-odds against the Swedish statute book and reviewed by hand; dictionary matching of 4,925,716 job ads (2020–2026) and 129,110 Riksdag speeches; 266 lags, each tested against 200 random dates; an article-by-article comparison of the Official Journal text with the consolidated text.',
+    ),
+    result: t(
+      'AI i platsannonser gick från 0,77 % till 2,8 %, men förordningen nämns vid namn i 95 annonser 2025 och 26 anföranden totalt. Lagen själv har redan ändrats: 42 av 119 artiklar.',
+      'AI in job ads rose from 0.77% to 2.8%, but the Act is named in 95 ads in 2025 and 26 speeches in all. The law itself has already changed: 42 of 119 articles.',
+    ),
+    tech: ['Python', 'dbt', 'DuckDB', 'placebo test', 'React'],
+    href: '#lag-ankomst',
+    category: 'data',
+    status: 'live',
+    pages: ['aiclock'],
+  },
+  {
+    id: 'replik',
+    title: t('Replik', 'Replik'),
+    descriptor: t(
+      'Riksdagsdata, NLP och voteringar',
+      'Riksdag data, NLP and roll calls',
+    ),
+    summary: t(
+      '33 år av partiledardebatter och voteringar i riksdagen, lästa av en maskin: vad partierna talar om, vem som sätter dagordningen och vilka som röstar ihop.',
+      '33 years of Riksdag party-leader debates and roll calls, read by machine: what the parties talk about, who sets the agenda, and who votes together.',
+    ),
+    question: t(
+      'Vad talar Sveriges partier om när de möts, och betyder att tala lika att rösta lika?',
+      'What do Sweden’s parties talk about when they face each other, and does talking alike mean voting alike?',
+    ),
+    built: t(
+      '108 partiledardebatter 1993–2026 delade i 33 023 inlägg, inbäddade och klustrade i 33 ämnen (UMAP och HDBSCAN, konsensus över 12 frön); 23 024 voteringar över 33 riksmöten; en klassificerare med maskerade partinamn och personvis uppdelning.',
+      '108 party-leader debates 1993–2026 split into 33,023 passages, embedded and clustered into 33 topics (UMAP and HDBSCAN, consensus over 12 seeds); 23,024 roll calls over 33 sessions; a classifier with party names masked and a person-grouped split.',
+    ),
+    result: t(
+      'SD ägde migrationsfrågan på 2010-talet; energin tog över debatterna 2022; partiernas språk blev lättare att skilja åt 2006. Att tala lika säger inget om att rösta lika.',
+      'SD owned migration in the 2010s; energy took over the debates in 2022; party language became easier to tell apart in 2006. Talking alike says nothing about voting alike.',
+    ),
+    tech: [
+      'Python',
+      'dbt',
+      'sentence-transformers',
+      'UMAP',
+      'HDBSCAN',
+      'scikit-learn',
+      'React',
+    ],
+    href: '#replik',
+    category: 'data',
+    status: 'live',
+    pages: ['replik'],
+  },
+  {
     id: 'symbolic-atlas',
     title: t('Symbol Lab', 'Symbol Lab'),
     descriptor: t('NLP, oövervakad inlärning', 'NLP, unsupervised learning'),
     summary: t(
-      'En oövervakad utforskning av återkommande symbolisk mening i mytologi, folksagor och litteratur.',
-      'An unsupervised exploration of recurring symbolic meaning in mythology, folklore and literature.',
+      'En oövervakad utforskning av återkommande symboliska sammanhang i mytologi, folksagor och litteratur.',
+      'An unsupervised exploration of recurring symbolic contexts in mythology, folklore and literature.',
     ),
     question: t(
       'Kan symbolisk mening träda fram ur datan utan att kategorierna bestäms först?',
@@ -119,8 +185,8 @@ export const PROJECTS: ProjectEntry[] = [
     title: t('Philosophy Lab', 'Philosophy Lab'),
     descriptor: t('NLP, semantisk utforskning', 'NLP, semantic exploration'),
     summary: t(
-      'En semantisk atlas över fri filosofi med inbäddningar, klustring och mänskligt granskade begrepp.',
-      'A semantic atlas of public-domain philosophy using embeddings, clustering and human-reviewed concepts.',
+      'En semantisk atlas över fri filosofi med inbäddningar och klustring, korrigerad för varje verks egen röst.',
+      'A semantic atlas of public-domain philosophy using embeddings and clustering, corrected for each work’s own voice.',
     ),
     question: t(
       'Hur organiserar återkommande moraliska och filosofiska spänningar texter över tänkare och traditioner?',
@@ -131,8 +197,8 @@ export const PROJECTS: ProjectEntry[] = [
       'Thirteen works from Plato to Nietzsche, stripped of translators’ introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control.',
     ),
     result: t(
-      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 19. Inga grupper namnges utan granskning.',
-      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 19. No group is named without review.',
+      'Den råa kartan följer verken mer än idéerna; centrering per verk ökar antalet tvärgående grupper från 6 till 21. Varje grupp visas med sina mest utmärkande ord.',
+      'The raw map follows the works more than the ideas; centring per work raises the groups across works from 6 to 21. Each group is shown by its most distinctive words.',
     ),
     tech: [
       'Python',
@@ -166,8 +232,8 @@ export const PROJECTS: ProjectEntry[] = [
       'A balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type.',
     ),
     result: t(
-      'Korpusarna skiljer sig mer än deras ämnen (93 % av grannarna i samma korpus), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
-      'The corpora differ more than their subjects do (93 % of neighbours in the same corpus), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
+      'Korpusarna skiljer sig mer än deras ämnen (93 % av grannarna i samma korpus, delvis en språkeffekt eftersom riksdagen är den enda svenska), så de jämförs bara genom begreppen: död och natur i myterna, omsorg och ansvar i riksdagen, säkerhet och transparens i lagen.',
+      'The corpora differ more than their subjects do (93 % of neighbours in the same corpus, partly a language effect since the Riksdag is the only Swedish one), so they are compared only through the concepts: death and nature in myth, care and responsibility in the Riksdag, safety and transparency in the law.',
     ),
     home: {
       question: t(
@@ -176,7 +242,7 @@ export const PROJECTS: ProjectEntry[] = [
       ),
     },
     tech: ['Python', 'Sentence Transformers', 'dbt', 'DuckDB', 'React'],
-    href: '#concept-journey',
+    href: '#concepts-profiles',
     category: 'ai',
     status: 'experimental',
     research: true,
@@ -185,14 +251,14 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'ask-the-law',
-    title: t('Fråga lagen', 'Ask the law'),
+    title: t('Allegora', 'Allegora'),
     descriptor: t(
       'Workers AI, sökning med kontrollerade citat',
       'Workers AI, search with checked quotes',
     ),
     summary: t(
-      'Frågor över ett urval av svenska lagar och EU:s AI-förordning, besvarade med citat som kontrolleras ord för ord mot lagtexten.',
-      'Questions over a selection of Swedish statutes and the EU AI Act, answered with quotes checked word for word against the legal text.',
+      'Frågor över ett urval av svenska lagar och EU:s AI-förordning: svaret kontrolleras ord för ord mot lagtexten och berättas sedan som en allegori med sensmoral.',
+      'Questions over a selection of Swedish statutes and the EU AI Act: the answer is checked word for word against the legal text, then retold as an allegory with a moral.',
     ),
     question: t(
       'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan?',
@@ -206,7 +272,15 @@ export const PROJECTS: ProjectEntry[] = [
       'Varje citat i ett svar kontrolleras mot sin paragraf innan svaret visas. Ett svar som inte klarar kontrollen visas inte, bara de hittade paragraferna.',
       'Every quote in an answer is checked against its paragraph before the answer is shown. An answer that fails the check is withheld, and only the paragraphs found are shown.',
     ),
-    tech: ['Cloudflare Workers AI', 'bge-m3', 'TypeScript', 'React', 'Python'],
+    tech: [
+      'Cloudflare Workers AI',
+      'Gemma 4',
+      'bge-m3',
+      'PCA + int8',
+      'TypeScript',
+      'React',
+      'Python',
+    ],
     href: '#fraga-lagen',
     category: 'ai',
     status: 'experimental',
@@ -216,7 +290,10 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'drugcomb',
     title: t('Drug Synergy Lab', 'Drug Synergy Lab'),
-    descriptor: t('Multimodal maskininlärning', 'Multimodal machine learning'),
+    descriptor: t(
+      'LightGBM på läkemedels-, RNA- och cellinjedata',
+      'LightGBM on drug, RNA and cell-line features',
+    ),
     summary: t(
       'Molekylfingeravtryck, RNA-uttryck och cellinjedata kombinerade för att förutsäga synergi, med skydd mot dataläckage.',
       'Drug fingerprints, RNA expression and cell-line data combined to predict synergy, with leakage prevention.',
@@ -230,10 +307,10 @@ export const PROJECTS: ProjectEntry[] = [
       'Drug and cell-line entity resolution, a DuckDB warehouse and evaluation under four cross-validation strategies.',
     ),
     result: t(
-      'Ensemblemetoder och djupinlärning jämförda under fyra sätt att dela upp datan.',
-      'Ensemble methods and deep learning compared under four cross-validation strategies.',
+      'LightGBM mot enkla baslinjer, utvärderad på par, läkemedel och cellinjer som modellen inte sett.',
+      'LightGBM against simple baselines, evaluated on pairs, drugs and cell lines the model has not seen.',
     ),
-    tech: ['Python', 'scikit-learn', 'LightGBM', 'TensorFlow', 'DuckDB'],
+    tech: ['Python', 'scikit-learn', 'LightGBM', 'DuckDB'],
     href: '#drugcomb',
     category: 'ai',
     status: 'live',
@@ -242,36 +319,51 @@ export const PROJECTS: ProjectEntry[] = [
   },
 
   {
-    id: 'diva-lakehouse',
-    title: t('DiVA Thesis Lakehouse', 'DiVA Thesis Lakehouse'),
-    descriptor: t('Lakehouse i Microsoft Fabric', 'Microsoft Fabric lakehouse'),
+    id: 'platform',
+    title: t('Dataplattformen', 'The data platform'),
+    descriptor: t(
+      'dbt, DuckDB, GitHub Actions, R2',
+      'dbt, DuckDB, GitHub Actions, R2',
+    ),
     summary: t(
-      'Inkrementell inläsning av uppsatsmetadata från DiVA till Bronze, Silver och Gold, med PySpark, Delta MERGE och kvalitetskontroller före publicering.',
-      'An incremental pipeline for DiVA thesis metadata, with Bronze, Silver and Gold layers, PySpark, Delta MERGE and quality checks before publishing.',
+      'Offentlig data hämtas på schema, byggs och testas med dbt i bronze, silver och gold och släpps till Cloudflare R2 när alla kontroller har gått igenom. Samma mönster finns i Microsoft Fabric för DiVA.',
+      'Public data fetched on a schedule, built and tested with dbt in bronze, silver and gold, and released to Cloudflare R2 once every check has passed. The same pattern runs on Microsoft Fabric for DiVA.',
     ),
     question: t(
-      'Hur läser man in metadata som ändras och raderas utan dubletter eller osäkra återkörningar?',
-      'How do you ingest changing and deleted metadata without duplicates or unsafe reruns?',
+      'Hur håller man många offentliga källor färska utan att publicera en felaktig siffra?',
+      'How do you keep many public sources fresh without publishing a wrong number?',
     ),
     built: t(
-      'En OAI-PMH-klient, spårbar rå XML, en Delta Lake-pipeline och genererade Fabric-notebooks.',
-      'An OAI-PMH client, traceable raw XML, a Delta Lake pipeline and generated Fabric notebooks.',
+      'Python-hämtning med proveniens, dbt-modeller med kontrakt och tester, schemalagda körningar i GitHub Actions och releaser till R2.',
+      'Python ingestion with provenance, dbt models with contracts and tests, scheduled runs in GitHub Actions and releases to R2.',
     ),
     result: t(
-      'Verifierad lokalt med Spark och Delta. Körning i Fabric och mot DiVA:s levande endpoint återstår att bekräfta.',
-      'Verified locally with Spark and Delta. Execution in Fabric and against the live DiVA endpoint remains to be confirmed.',
+      'Levande körstatus, 30 dagars körhistorik med orsaken till varje röd körning och incidentrapporter.',
+      'Live run status, 30 days of run history with the cause of each red run, and incident reports.',
     ),
-    tech: ['Microsoft Fabric', 'PySpark', 'Delta Lake', 'OAI-PMH', 'Python'],
-    href: '#diva-lakehouse',
-    pages: ['lakehouse'],
-    code: 'https://github.com/korv9/diva-fabric-lakehouse',
+    tech: [
+      'dbt',
+      'DuckDB',
+      'Python',
+      'GitHub Actions',
+      'Cloudflare R2',
+      'Microsoft Fabric',
+    ],
+    href: '#projects',
+    code: [
+      'https://github.com/korv9/anton-portfolio',
+      'https://github.com/korv9/diva-fabric-lakehouse',
+    ],
     category: 'data',
-    status: 'study',
+    status: 'live',
   },
   {
     id: 'homie',
     title: t('Homie API', 'Homie API'),
-    descriptor: t('Python-backend, pågående', 'Python backend, in progress'),
+    descriptor: t(
+      'Python-backend, kontrakt först',
+      'Python backend, contract first',
+    ),
     summary: t(
       'FastAPI- och PostgreSQL-tjänst med autentisering, migreringar och ett OpenAPI-kontrakt för en separat frontend.',
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract for a separate frontend.',
@@ -285,8 +377,8 @@ export const PROJECTS: ProjectEntry[] = [
       'FastAPI and PostgreSQL service with authentication, migrations and an OpenAPI contract.',
     ),
     result: t(
-      'pytest, Ruff, GitHub Actions, Dockerfile i flera steg och Docker Compose.',
-      'pytest, Ruff, GitHub Actions, a multi-stage Dockerfile and Docker Compose.',
+      '16 operationer i OpenAPI-kontraktet, 4 byggda; testerna går igenom i CI mot PostgreSQL 16.',
+      '16 operations in the OpenAPI contract, 4 built; the tests pass in CI against PostgreSQL 16.',
     ),
     tech: ['FastAPI', 'PostgreSQL', 'SQLAlchemy', 'Alembic', 'Docker Compose'],
     href: '#homie',
@@ -306,9 +398,11 @@ export const PROJECT_GROUPS = [
       'concept-constellation',
       'ask-the-law',
       'drugcomb',
+      'replik',
+      'ai-act-clock',
     ],
   },
-  { label: 'Engineering', ids: ['thesis', 'homie', 'diva-lakehouse'] },
+  { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },
 ]
 
 /** Public project listings; the thesis remains available through Education and its URL. */
@@ -326,17 +420,4 @@ export function projectForRoute(
     PROJECTS.find((p) => p.paths?.(route.path)) ??
     PROJECTS.find((p) => p.pages?.includes(route.page))
   )
-}
-
-/** Previous and next project in menu order, without wrapping. */
-export function neighbours(id: string): {
-  previous?: ProjectEntry
-  next?: ProjectEntry
-} {
-  const ordered = PROJECT_GROUPS.flatMap((group) => group.ids).map((id) =>
-    PROJECTS.find((p) => p.id === id)!,
-  )
-  const i = ordered.findIndex((p) => p.id === id)
-  if (i < 0) return {}
-  return { previous: ordered[i - 1], next: ordered[i + 1] }
 }

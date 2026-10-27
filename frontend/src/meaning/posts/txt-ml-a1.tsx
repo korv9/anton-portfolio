@@ -3,13 +3,14 @@ import { useState } from 'react'
 import { Frame, OTHER, PALETTE, Slicer, useData, type Post } from '../kit'
 import { linearScale } from '../../charts/scales'
 import { Svg, uniq, usable } from './txt-kit'
+import { l } from '../../i18n'
 
 type Atlas = Record<string, [string, number, number, number, number][]>
 const ATLAS = 'philosophy/atlas.json'
 const VARIANTS = ['baseline', 'author_centered'] as const
 const MAP_NAME = {
-  baseline: 'As embedded',
-  author_centered: 'Author style removed',
+  baseline: () => l('As embedded', 'Som inbäddad'),
+  author_centered: () => l('Author style removed', 'Författarstil borttagen'),
 }
 const d = 'ml'
 const extent = (xs: number[]) =>
@@ -36,25 +37,28 @@ function PhilAtlas() {
         return (
           <>
             <Slicer
-              label="Map"
+              label={l('Map', 'Karta')}
               cycles={false}
               options={VARIANTS}
-              format={(v) => MAP_NAME[v]}
+              format={(v) => MAP_NAME[v]()}
               value={variant}
               onChange={setVariant}
             />
             <Slicer
-              label="Work"
+              label={l('Work', 'Verk')}
               cycles={false}
               options={works}
               value={pick}
               onChange={setWork}
             />
-            <p className="mean-cap">{`${pick.replace(/-/g, ' ')} · ${MAP_NAME[variant].toLowerCase()}`}</p>
+            <p className="mean-cap">{`${pick.replace(/-/g, ' ')} · ${MAP_NAME[variant]().toLowerCase()}`}</p>
             <Svg
               w={400}
               h={400}
-              label={`Philosophy passages on an embedding map, ${pick} highlighted`}
+              label={l(
+                `Philosophy passages on an embedding map, ${pick} highlighted`,
+                `Filosofiska stycken på en inbäddningskarta, ${pick} markerat`,
+              )}
             >
               {order.map((r) => {
                 const on = workOf(r[0]) === pick
@@ -85,8 +89,14 @@ export const posts: Post[] = [
     domain: d,
     sources: ['philosophy/atlas.json'],
     size: 'tall',
-    title: 'Philosophy passages placed by text similarity, one work in colour',
-    note: 'Each dot is a passage; passages with similar text embeddings sit close (UMAP, two dimensions)',
+    title: [
+      'Philosophy passages placed by text similarity, one work in colour',
+      'Filosofiska stycken placerade efter textlikhet, ett verk i färg',
+    ],
+    note: [
+      'Each dot is a passage; passages with similar text embeddings sit close (UMAP, two dimensions)',
+      'Varje prick är ett stycke; stycken med liknande textinbäddningar hamnar nära varandra (UMAP, två dimensioner)',
+    ],
     render: () => <PhilAtlas />,
   },
 ]

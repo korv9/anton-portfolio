@@ -30,10 +30,10 @@ import duckdb
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from language_stats import baselines, composition  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[3]
-DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
-FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"))
-OUT = ROOT / "frontend/public/data/sweden/language"
+from portfolio.core import db, io
+from portfolio.core.config import DATABASE, FEATURES, PUBLIC, ROOT
+from portfolio.publish.catalog import register
+OUT = PUBLIC / "sweden/language"
 # A break is reported only with this many years on each side.
 MIN_SEGMENT = 3
 # A publication year with fewer distinct texts is the edge of a neighbouring archive (ads from
@@ -44,10 +44,7 @@ CONTACT = re.compile(r"kontakt|frågor|ring |nås |mejla|\[e-post\]|\[telefon\]|
 
 
 def write(name: str, payload: dict) -> Path:
-    path = OUT / name
-    path.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n",
-                    encoding="utf-8", newline="\n")
-    return path
+    return io.write_json(OUT / name, payload)
 
 
 def one_break(years: list[int], values: list[float]) -> dict | None:
@@ -73,7 +70,7 @@ def one_break(years: list[int], values: list[float]) -> dict | None:
 
 
 def main() -> int:
-    con = duckdb.connect(str(DATABASE), read_only=True)
+    con = db.warehouse(DATABASE)
     terms = con.sql("""select term_id as id, family, label_en, label_sv, description_en, pattern
                        from seeds.ad_language_terms order by sort_order""").fetchall()
     categories = [dict(zip(["id", "family", "label_en", "label_sv", "description_en", "pattern"], t))
@@ -153,10 +150,7 @@ def main() -> int:
         "archive", "source_url", "sha256", "ads", "distinct_texts", "duplicate_ids",
         "dictionary_sha256", "bands", "counted_at", "from")} for m in coverage],
         "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")})
-    sys.path.insert(0, str(ROOT / "platform/publish/symbolic"))
-    import export_symbolic
-
-    export_symbolic.register([OUT / n for n in ("trends.json", "composition.json", "fields.json",
+    register([OUT / n for n in ("trends.json", "composition.json", "fields.json",
                                                 "regions.json", "examples.json", "coverage.json")])
     print(f"SWEDEN language: {len(coverage)} archives, {len(rows)} year × category rows -> "
           f"{OUT.relative_to(ROOT)}")

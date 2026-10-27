@@ -3,6 +3,8 @@ import { focal, Frame, OTHER, useData, type Post } from '../kit'
 import { XAxis } from '../axes'
 import { linearScale } from '../../charts/scales'
 import { Svg } from './txt-kit'
+import { l } from '../../i18n'
+import { fixed } from '../../format'
 
 type Subset = {
   subset: string
@@ -28,7 +30,23 @@ const FOUNDATIONS = 'philosophy/moral/foundations.json'
 
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1)
 const pc = (v: number) => `${Math.round(v * 100)} %`
-const f1 = (v: number) => v.toFixed(2)
+const f1 = (v: number) => fixed(v, 2)
+/** Swedish names for the ETHICS subsets and the moral foundations; the files' are English. */
+const SV: Record<string, string> = {
+  commonsense: 'sunt förnuft',
+  deontology: 'deontologi',
+  justice: 'rättvisa',
+  utilitarianism: 'utilitarism',
+  virtue: 'dygd',
+  authority: 'auktoritet',
+  care: 'omsorg',
+  equality: 'jämlikhet',
+  loyalty: 'lojalitet',
+  proportionality: 'proportionalitet',
+  purity: 'renhet',
+  fairness: 'rättvisa',
+}
+const name = (s: string) => cap(l(s, SV[s] ?? s))
 
 /** Subsets in file order: the benchmark's parts differ in format, so they are not ranked. */
 const subsets = (d: Ethics) => [...new Set(d.subsets.map((s) => s.subset))]
@@ -48,7 +66,10 @@ function EthicsDots() {
           <Svg
             w={300}
             h={200}
-            label="Model accuracy on five ETHICS subsets, two wordings, against always guessing the most common label"
+            label={l(
+              'Model accuracy on five ETHICS subsets, two wordings, against always guessing the most common label',
+              'Modellens träffsäkerhet på fem delar av ETHICS, två formuleringar, mot att alltid gissa den vanligaste etiketten',
+            )}
           >
             <g className="mean-axis">
               {[0.5, 0.75, 1].map((v) => (
@@ -68,7 +89,7 @@ function EthicsDots() {
                     textAnchor="end"
                     style={{ fill: 'var(--mean-ink)' }}
                   >
-                    {cap(n)}
+                    {name(n)}
                   </text>
                   <line
                     x1={x(base)}
@@ -101,7 +122,7 @@ function EthicsDots() {
                   })}
                   {i === 0 && (
                     <text x={x(base)} y={cy - 12} textAnchor="middle">
-                      guess
+                      {l('guess', 'gissning')}
                     </text>
                   )}
                 </g>
@@ -139,7 +160,10 @@ function CeilingDumbbell() {
           <Svg
             w={300}
             h={200}
-            label="F1 of the moral-foundations tagger against single annotators, beside annotators against each other"
+            label={l(
+              'F1 of the moral-foundations tagger against single annotators, beside annotators against each other',
+              'F1 för taggaren av moraliska grunder mot enskilda annoterare, bredvid annoterare mot varandra',
+            )}
           >
             <g className="mean-axis">
               {[0, 0.25, 0.5].map((v) => (
@@ -158,7 +182,7 @@ function CeilingDumbbell() {
                     textAnchor="end"
                     style={{ fill: 'var(--mean-ink)' }}
                   >
-                    {cap(r.foundation)}
+                    {name(r.foundation)}
                   </text>
                   <line
                     x1={x(h)}
@@ -178,10 +202,10 @@ function CeilingDumbbell() {
                         textAnchor="start"
                         style={{ fill: focal(true) }}
                       >
-                        tagger
+                        {l('tagger', 'taggare')}
                       </text>
                       <text x={x(h) - 2} y={cy - 10} textAnchor="end">
-                        people
+                        {l('people', 'människor')}
                       </text>
                     </>
                   )}
@@ -206,7 +230,11 @@ export const posts: Post[] = [
     domain: 'ml',
     sources: ['philosophy/moral/ethics.json'],
     title: (d: Ethics) => {
-      if (!d.subsets.length) return 'A model against human moral labels'
+      if (!d.subsets.length)
+        return l(
+          'A model against human moral labels',
+          'En modell mot människors moraliska etiketter',
+        )
       const beat = subsets(d).filter((n) =>
         d.subsets
           .filter((s) => s.subset === n)
@@ -215,9 +243,15 @@ export const posts: Post[] = [
       const lo = Math.min(...d.subsets.map((s) => s.accuracy))
       const hi = Math.max(...d.subsets.map((s) => s.accuracy))
       const all = subsets(d).length
-      return `An open model agreed with human moral labels ${Math.round(lo * 100)}–${pc(hi)} of the time, above guessing in ${beat.length === all ? `all ${all}` : `${beat.length} of ${all}`} tests`
+      return l(
+        `An open model agreed with human moral labels ${Math.round(lo * 100)}–${pc(hi)} of the time, above guessing in ${beat.length === all ? `all ${all}` : `${beat.length} of ${all}`} tests`,
+        `En öppen modell höll med människors moraliska etiketter i ${Math.round(lo * 100)}–${pc(hi)} av fallen, bättre än gissning i ${beat.length === all ? `alla ${all}` : `${beat.length} av ${all}`} test`,
+      )
     },
-    note: 'Accuracy over all 200 items per test and wording, unparsed answers counted as wrong; 95 % intervals; grey tick: always the most common label. Gemma on Workers AI',
+    note: [
+      'Accuracy on 200 items per test, 95 % intervals. Grey tick: always guessing the most common label. Gemma on Workers AI',
+      'Träffsäkerhet på 200 uppgifter per test, 95 %-intervall. Grått streck: att alltid gissa den vanligaste etiketten. Gemma på Workers AI',
+    ],
     render: () => <EthicsDots />,
   },
   {
@@ -226,15 +260,25 @@ export const posts: Post[] = [
     sources: ['philosophy/moral/foundations.json'],
     title: (d: Foundations) => {
       const n = d.english.length
-      if (!n) return 'A moral-foundations tagger beside human annotators'
+      if (!n)
+        return l(
+          'A moral-foundations tagger beside human annotators',
+          'En taggare av moraliska grunder bredvid mänskliga annoterare',
+        )
       // Counted by the 95 % interval of the gap, not by point estimates.
       const above = d.english.filter((r) => r.ceiling_gap_low > 0).length
       const close = d.english.filter(
         (r) => r.ceiling_gap_low <= 0 && r.ceiling_gap_high >= 0,
       ).length
-      return `In ${above} of ${n} moral foundations, a tagger agrees with one annotator more than two annotators agree${close ? `; ${close} too close to call` : ''}`
+      return l(
+        `In ${above} of ${n} moral foundations, a tagger agrees with one annotator more than two annotators agree${close ? `; ${close} too close to call` : ''}`,
+        `I ${above} av ${n} moraliska grunder håller en taggare med en annoterare mer än två annoterare håller med varandra${close ? `; ${close} för jämna för att avgöra` : ''}`,
+      )
     },
-    note: 'F1 from 0 to 1 on English Reddit comments (MFRC): tagger against each annotator, and annotator against annotator; both are low. Counts use the 95 % interval of the gap',
+    note: [
+      'F1 on English Reddit comments (MFRC): tagger against annotators, and annotators against each other. Both are low',
+      'F1 på engelska Reddit-kommentarer (MFRC): taggaren mot annoterare, och annoterare mot varandra. Båda är låga',
+    ],
     render: () => <CeilingDumbbell />,
   },
 ]

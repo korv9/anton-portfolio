@@ -3,7 +3,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   evaluation,
+  keptNote,
   rows,
+  unmatchedNote,
   statusOf,
   type Ad,
   type Delivered,
@@ -249,4 +251,30 @@ test('labels give precision of the list, misses outside it and every disagreemen
     [4, 1, 2, 1, 2],
   )
   assert.deepEqual(ev.disagreements.map((x) => x.id).sort(), ['b', 'c'])
+})
+
+test('the unmatched note says approval only when the Worker answered without a profile, and a calm pause otherwise', () => {
+  const at = '2026-10-25T11:13:24+00:00'
+  const [none] = unmatchedNote({
+    reason: 'no approved profile',
+    status: 200,
+    at,
+  })
+  assert.match(none, /starts when the CV profile is approved/)
+  for (const status of [403, 500, null, 503]) {
+    const [en, sv] = unmatchedNote({ reason: 'x', status, at })
+    assert.doesNotMatch(en, /starts when/, `status ${status}`)
+    assert.ok(sv.length > 0)
+  }
+  // Public copy reads as a pause: no HTTP status, no time, no "could not".
+  for (const status of [403, 500, null, 503]) {
+    const [en] = unmatchedNote({ reason: 'x', status, at })
+    assert.match(en, /paused/)
+    assert.doesNotMatch(en, /\d{3}|UTC|could not/)
+  }
+  assert.doesNotMatch(unmatchedNote()[0], /starts when/)
+  assert.match(
+    keptNote({ reason: 'x', status: 500, at })[0],
+    /answered 500 at 2026-10-25 11:13 UTC/,
+  )
 })

@@ -699,3 +699,97 @@
   letter-spacing: -0.02em;
   text-transform: none;
 }
+
+/* ---------- The platform page (PlatformPage.tsx) ---------- */
+.platform-status dd + dd {
+  font-size: var(--caption);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.platform-runs .runs-strip {
+  flex-wrap: wrap;
+}
+.platform-causes,
+.platform-links {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.platform-steps {
+  margin: var(--sp-1) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  white-space: pre-wrap;
+  color: var(--ink-faded);
+}
+
+/* ---------- Model cards (ModelCards.tsx): metric, interval, gate, verdict ----------
+   A held model is method, not an error: muted, never red. */
+.model-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: var(--sp-5) var(--sp-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.model-card {
+  display: grid;
+  gap: var(--sp-3);
+  align-content: start;
+  padding-top: var(--sp-3);
+}
+.model-card h3,
+.model-card p {
+  margin: 0;
+}
+.model-verdict {
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  text-transform: uppercase;
+}
+.model-verdict.is-pass {
+  color: var(--ink);
+}
+.model-verdict.is-held {
+  color: var(--muted);
+}
+.model-results {
+  display: grid;
+  gap: var(--sp-2);
+  margin: 0;
+}
+.model-results dt {
+  color: var(--ink-faded);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+}
+.model-results dd {
+  margin: 0;
+}
+.model-value {
+  font-family: var(--font-meta);
+  font-weight: 650;
+}
+.model-ci {
+  position: relative;
+  display: block;
+  height: 0.5rem;
+  margin-top: var(--sp-1);
+  background: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+.model-ci-range {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+.model-ci-dot {
+  position: absolute;
+  top: -0.125rem;
+  width: 2px;
+  height: 0.75rem;
+  background: var(--ink);
+}

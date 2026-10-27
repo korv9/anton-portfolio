@@ -13,6 +13,7 @@
     "test:e2e": "playwright test --config frontend/playwright.config.ts",
     "test:security": "npm run build && npm run test:security:built",
     "test:security:built": "playwright test --config frontend/security.playwright.config.ts",
+    "goals": "node scripts/goals.mjs",
     "verify:quick": "node scripts/verify.mjs quick",
     "verify:full": "node scripts/verify.mjs full",
     "verify:delivery": "node scripts/verify.mjs delivery",

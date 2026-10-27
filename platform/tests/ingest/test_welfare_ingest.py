@@ -1,10 +1,15 @@
 """The welfare ingestion helpers: PxWeb query planning, the bronze store and ESS metadata."""
 import gzip
 import json
+import sys
+from pathlib import Path
 
 import pytest
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest" / "fk"))
+
 import ess_ingest
+import fk_ingest
 import pxweb
 import rawstore
 
@@ -81,6 +86,47 @@ def test_store_rewrites_when_content_changes(raw):
     rawstore.store("src", "d.json", b"2", url="u")
     assert path.read_bytes() == b"2"
     assert [line["changed"] for line in manifest(raw, "src")] == [True, True]
+
+
+class Answer:
+    def __init__(self, content: bytes):
+        self.content, self.status_code = content, 200
+        self.headers = {"Content-Type": "application/json"}
+
+    def raise_for_status(self):
+        pass
+
+
+class Http:
+    def __init__(self, *answers: bytes):
+        self.answers = list(answers)
+
+    def get(self, url, timeout=None, headers=None):
+        return Answer(self.answers.pop(0))
+
+
+GOOD_META = json.dumps({"filter": {"dimension": [{"key": "diagnoskapitel_kod", "values": []}]}}).encode()
+
+
+@pytest.mark.parametrize("bad", [GOOD_META + GOOD_META, b"<html>Service unavailable</html>",
+                                 b'{"error": "maintenance"}'])
+def test_fk_meta_that_is_not_one_valid_document_is_rejected_and_the_good_copy_kept(raw, bad):
+    url, relative = "https://example.test/meta.json", "sjp-startade-diagnos/meta.json"
+    path = rawstore.fetch(Http(GOOD_META), "fk", relative, url, validate=fk_ingest.validate_meta)
+    with pytest.raises(ValueError, match="rejected the answer"):
+        rawstore.fetch(Http(bad), "fk", relative, url, validate=fk_ingest.validate_meta)
+    assert path.read_bytes() == GOOD_META
+    assert len(manifest(raw, "fk")) == 1
+
+
+def test_json_paths_are_checked_by_default_and_a_poisoned_copy_is_replaced(raw):
+    url = "https://example.test/meta.json"
+    with pytest.raises(ValueError):
+        rawstore.fetch(Http(b"{}{}"), "src", "meta.json", url)
+    assert not (raw / "src" / "meta.json").exists()
+    poisoned = rawstore.store("src", "meta.json", b"{}\n<html>", url=url)  # stored before this check
+    rawstore.fetch(Http(GOOD_META), "src", "meta.json", url)
+    assert poisoned.read_bytes() == GOOD_META
 
 
 def test_ess_variable_names_reads_nested_groups():

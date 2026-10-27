@@ -5,15 +5,19 @@
 import { test, expect } from './test'
 
 test('the Symbol Lab view chips explain their colours', async ({ page }) => {
-  await page.goto('/#symbolic-atlas?view=cross-book')
+  await page.goto('/#symbolic-atlas?view=baseline')
   const key = page.locator('.atlas-key')
-  await expect(key).toContainText('Cross-book candidate')
-  await expect(key).toContainText('Reviewed and named')
-  await page.getByRole('button', { name: 'Reviewed', exact: true }).click()
-  await expect(page).toHaveURL(/view=reviewed/)
-  await expect(key).not.toContainText('Cross-book candidate')
-  await page.reload()
+  // The empty review view stays hidden until a cluster has been reviewed.
+  await expect(page.locator('main')).not.toContainText('Reviewed and named')
   await expect(
     page.getByRole('button', { name: 'Reviewed', exact: true }),
+  ).toHaveCount(0)
+  await page.getByRole('button', { name: 'Cross-book', exact: true }).click()
+  // Cross-book is the default view, so the address drops the view.
+  await expect(page).not.toHaveURL(/view=baseline/)
+  await expect(key).toContainText('Cross-book candidate')
+  await page.reload()
+  await expect(
+    page.getByRole('button', { name: 'Cross-book', exact: true }),
   ).toHaveAttribute('aria-pressed', 'true')
 })

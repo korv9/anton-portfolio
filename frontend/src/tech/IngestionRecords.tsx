@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { objectStorageUrl } from '../dataSource'
+import { l } from '../i18n'
 import { num, day, size, ago, reading } from './techData'
 
 type Fetched = {
@@ -34,13 +35,8 @@ export function Fetches() {
       .then(setStatus, () => setStatus('error'))
   }, [])
   if (status === null) return reading
-  if (status === 'error')
-    return (
-      <p className="tech-note">
-        No ingestion has been recorded here yet. The pipeline writes
-        status/ingestion.json after each subject’s ingest steps.
-      </p>
-    )
+  // The status lives in object storage; where it cannot be read the table is left out.
+  if (status === 'error') return null
   const subjects = Object.entries(status.subjects).sort((a, b) =>
     b[1].recorded_at.localeCompare(a[1].recorded_at),
   )
@@ -49,19 +45,24 @@ export function Fetches() {
       <table className="tech-table fetches">
         <thead>
           <tr>
-            <th scope="col">Subject</th>
-            <th scope="col">Ingest</th>
-            <th scope="col">Source</th>
-            <th scope="col">Last fetched</th>
-            <th scope="col">Content last changed</th>
-            <th scope="col" className="num">
-              Files
+            <th scope="col">{l('Subject', 'Ämne')}</th>
+            <th scope="col">{l('Ingest', 'Inläsning')}</th>
+            <th scope="col">{l('Source', 'Källa')}</th>
+            <th scope="col">{l('Last fetched', 'Senast hämtad')}</th>
+            <th scope="col">
+              {l('Content last changed', 'Innehållet senast ändrat')}
             </th>
             <th scope="col" className="num">
-              Size
+              {l('Files', 'Filer')}
             </th>
             <th scope="col" className="num">
-              This run: fetched, changed, failed
+              {l('Size', 'Storlek')}
+            </th>
+            <th scope="col" className="num">
+              {l(
+                'This run: fetched, changed, failed',
+                'Den här körningen: hämtade, ändrade, misslyckade',
+              )}
             </th>
           </tr>
         </thead>
@@ -131,24 +132,25 @@ export function RunRecord({ run }: { run: WelfareRun }) {
   return (
     <>
       <p className="tech-meta">
-        Exported {day(run.exported_at)} · dbt {run.dbt.command}{' '}
-        {run.dbt.dbt_version}, {run.dbt.elapsed_seconds} s ·{' '}
-        {num(run.dbt.nodes.model ?? 0)} models, {num(run.dbt.nodes.seed ?? 0)}{' '}
-        seeds · tests: {t.pass} passed, {t.fail} failed, {t.error} errors,{' '}
-        {t.warn} warnings
+        {l(
+          `Exported ${day(run.exported_at)} · dbt ${run.dbt.command} ${run.dbt.dbt_version}, ${run.dbt.elapsed_seconds} s · the subject's ${num(run.dbt.nodes.model ?? 0)} models and ${num(run.dbt.nodes.seed ?? 0)} seeds · tests: ${t.pass} passed, ${t.fail} failed, ${t.error} errors, ${t.warn} warnings`,
+          `Exporterad ${day(run.exported_at)} · dbt ${run.dbt.command} ${run.dbt.dbt_version}, ${run.dbt.elapsed_seconds} s · ämnets ${num(run.dbt.nodes.model ?? 0)} modeller och ${num(run.dbt.nodes.seed ?? 0)} seeds · tester: ${t.pass} godkända, ${t.fail} underkända, ${t.error} fel, ${t.warn} varningar`,
+        )}
       </p>
       <div className="tech-scroll" tabIndex={0}>
         <table className="tech-table">
           <thead>
             <tr>
-              <th scope="col">Source</th>
-              <th scope="col">Fetched</th>
-              <th scope="col">Content last changed</th>
-              <th scope="col" className="num">
-                Files
+              <th scope="col">{l('Source', 'Källa')}</th>
+              <th scope="col">{l('Fetched', 'Hämtad')}</th>
+              <th scope="col">
+                {l('Content last changed', 'Innehållet senast ändrat')}
               </th>
               <th scope="col" className="num">
-                Size
+                {l('Files', 'Filer')}
+              </th>
+              <th scope="col" className="num">
+                {l('Size', 'Storlek')}
               </th>
             </tr>
           </thead>
