@@ -3,9 +3,9 @@
 Correct data and valid measurement are different problems. This platform tests both, and keeps
 them apart.
 
-- **Data quality** asks whether the data correctly represents what it claims to represent. Did
+- Data quality asks whether the data correctly represents what it claims to represent. Did
   I build the dataset correctly?
-- **Analytical (construct) validity** asks whether an analysis or model measures the construct
+- Analytical (construct) validity asks whether an analysis or model measures the construct
   it is meant to measure. Does the analysis answer the question it claims to answer?
 
 A dataset can pass every quality check and still support an invalid conclusion. In the Symbolic
@@ -14,8 +14,8 @@ which book a passage comes from more than its symbolic meaning.
 
 ```
 npm run quality            # evaluate, dbt build --select tag:quality, publish
-npm run quality:build      # python platform/quality/evaluate.py && dbt build --select tag:quality
-npm run quality:publish    # frontend/public/data/quality/*.json
+npm run quality:build      # pipeline.py run quality --only ingest,dbt
+npm run quality:publish    # pipeline.py run quality --only export: frontend/public/data/quality/*.json
 ```
 
 Pages:
@@ -25,8 +25,6 @@ Pages:
   showed: product matrix, the Symbolic Atlas case study, every
   analysis, every check, method and limitations.
 - Each major product has a compact *Quality & validity* section.
-- Data Constellation has a *Quality* view, and the node panel shows quality and validity for
-  products and models.
 
 ## Standards: what is and is not claimed
 
@@ -175,7 +173,7 @@ runs `evaluate.py --gate`, which fails the run if a **gated** check failed. Gate
 structural: keys, relations, reconciliation, provenance, required sources. Validity
 diagnostics never block a build.
 
-## Current results (6 October 2026)
+## Current results (7 October 2026)
 
 There are 42 checks across seven products, built on 259 existing dbt tests:
 
@@ -183,22 +181,22 @@ There are 42 checks across seven products, built on 259 existing dbt tests:
 - 1 is not measured;
 - 2 are not applicable.
 
-There are 14 analyses with 27 diagnostics: 8 supported, 11 warning, 8 insufficient evidence.
+There are 14 analyses with 27 diagnostics: 9 supported, 10 warning, 8 insufficient evidence.
 
-- **Fixed.** `politics_keys_and_relations` failed in the first run: 4 roll calls had a
+- Fixed. `politics_keys_and_relations` failed in the first run: 4 roll calls had a
   committee key that does not exist (`''` three times in 2025/26, `'p'` once in 1994/95),
   because their designations (`0604-1`, `p19`) name no committee. They now go to the committee
   `ovrigt` (Övriga omröstningar), which has no policy issue, and the check passes.
-- **Manual reviews (6 October 2026, by the project owner).** Each value is sample-based:
+- Manual reviews (6 October 2026, by the project owner). Each value is sample-based:
   - Symbolic occurrences: 18 of 20 random occurrences are a symbolic use of the word (0.90,
     threshold 0.90). The two that are not: "bloody" describing a fillet, and "child" said of a
     warrior;
   - job ads: occupation group and field match Platsbanken for 10 of 10 ads;
   - welfare: one value per source matches the agency's own table, 5 of 5.
-- **Not measured.** Riksdag vote totals against member votes: the totals Riksdagen publishes
+- Not measured. Riksdag vote totals against member votes: the totals Riksdagen publishes
   are not yet reconciled with the member-level votes in a test.
-- **Not applicable.** Currentness for the historical text corpora (Symbolic, Philosophy).
-- **Symbolic Atlas (flagship).**
+- Not applicable. Currentness for the historical text corpora (Symbolic, Philosophy).
+- Symbolic Atlas (flagship).
   - Baseline: largest book's share of a cluster 0.69; 11 % of occurrences in cross-book
     clusters.
   - After book centring: 0.58 and 32 %.
@@ -208,16 +206,16 @@ There are 14 analyses with 27 diagnostics: 8 supported, 11 warning, 8 insufficie
     kinship, waters, wild beasts and the hunt, lights of the sky, trees), so the review
     diagnostic is now supported. The analysis stays a warning: centring reduced book
     dominance but did not remove it.
-- **Politics vote model.** Training and test sessions differ, which is supported. The model
+- Politics vote model. Training and test sessions differ, which is supported. The model
   beats the majority baseline for 4 of 8 parties, which is a warning.
-- **Concept layer.** Same-corpus neighbours are 3.8 × chance (warning); Swedish and English
+- Concept layer. Same-corpus neighbours are 3.8 × chance (warning); Swedish and English
   anchors agree for every concept (supported).
 
 ## On the product pages
 
 Each product shows the quality points that matter for it in *Quality in brief*
 (`QualityBrief` in `frontend/src/ui/Story.tsx`), each a dimension with its evidence, and links
-here for the full profile. The AI Act states accuracy (quotes tested verbatim against the
+here for the full profile. The AI Act export, whose page was withdrawn on 2026-10-21, states accuracy (quotes tested verbatim against the
 official text, `assert_ai_act_quotes_in_current_text`), currentness, traceability and the
 navigator's limits. The Concept Journey states traceability, model quality, validity and
 review status.
@@ -231,7 +229,7 @@ construct validity are reported side by side, from `research-history.json`.
 
 1. Add the product to `products` in `quality_registry.yml`.
 2. Register checks. Prefer existing dbt tests (`method: dbt_test`). Add a Python measure only
-   for what dbt cannot check. Use `not_measured` with a reason rather than inventing a
+   for what dbt cannot check. Use `not_measured` with a reason; never invent a
    measurement.
 3. Register its analyses in `validity_registry.yml`, with diagnostics that read existing
    artefacts.
@@ -242,16 +240,14 @@ construct validity are reported side by side, from `research-history.json`.
 - Accuracy against an independent copy of the source is measured for some products only.
 - Thresholds are editorial and stated with every check.
 - Freshness depends on the fetch logs and the job stream's manifest. Job ads, parliament,
-  welfare, taxes and news refresh each morning; the other sources only when the warehouse is
-  rebuilt by hand, so their currentness ages between builds.
+  welfare, taxes and news refresh each morning; the other sources weekly, when
+  `build-warehouse.yml` rebuilds the warehouse (Saturday 21:13 UTC), so their currentness ages
+  between builds.
 - A supported diagnostic means one test did not find a problem, not that a conclusion is
   proven.
 - Diagnostic labels and interpretations are in English.
 
-## Political workspace v2 validity boundary
+## Parliament validity boundary
 
-The workspace tests appointment totals and the 175-no rejection rule, pairwise denominator
-pooling, missing/tied/all-absent positions, half-open government dates and unique joins.
-Participation, cohesion and PM-party alignment use separate denominators. Similarity is
-not interpreted as ideology or cooperation. Historical snapshots and candidate document
-relationships stay labelled. See [Political Observatory v2](political-observatory-v2.md).
+The rules for participation, cohesion, PM-party alignment and government dates are in
+[parliament-data-model.md](parliament-data-model.md).

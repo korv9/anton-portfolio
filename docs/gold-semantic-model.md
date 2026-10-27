@@ -39,10 +39,10 @@ npm run test:e2e
 | `fact_motion_vote_link` | 5,367 | `vote_id + motion_id`; citation, not the motion's outcome |
 | `fact_proposition_point_link` | 393 | `point_id + proposition_id`; document-level evidence only |
 | `fact_law_mention_candidate` | 21 | `speech_id + sfs_document_id`; unverified lexical match |
-| `fact_budget_frame` | 1,104 | `session + actor + expenditure_area`; corrected year selection |
+| `fact_budget_frame` | 1,161 | `session + actor + expenditure_area`; corrected year selection |
 | `fact_budget_outturn` | 783 | `budget_year + expenditure_area`; no automatic historical-area join |
 | `fact_language_area` | 10,368 | `corpus + method + session + party + expenditure_area` |
-| `mart_budget_language_gap` | 2,700 | Same language grain, **only** where a party has all 27 budget areas |
+| `mart_budget_language_gap` | 3,780 | Same language grain, **only** where a party has all 27 budget areas |
 | `fact_job_month_role` | 192 | `month + role`; unique ad IDs, not hires |
 | `fact_topic_session_party` | 4,285 | `model_id + session + party + topic_id` |
 | `fact_umap_sample` | 14,800 | `model_id + chunk_id`; sample points, not a population count |
@@ -66,18 +66,18 @@ erDiagram
     DIM_LAW_SNAPSHOT ||--o{ FACT_LAW_PROVISION : pool_document_id
 ```
 
-- **Party position** is the largest recorded yes/no/abstain member-vote group for that party and roll call. This normalizes a damaged `Avstår` source label without changing vote counts. A yes refers to the *committee proposal*, which may reject a cited motion.
-- **Party agreement** is same yes/no position divided by roll calls where both parties recorded yes/no. Abstentions are excluded. The published ordered-party matrix contains its numerator and denominator.
-- **Cohesion** is the sum of each party's largest cast-vote group per roll call divided by all its cast member votes. **Recorded attendance** is cast votes divided by cast plus recorded absences. Pairing arrangements are unknown.
-- **Budget–language difference** is `keyword_share_pct - budget_share_pct` in percentage points, keyed by session, party and expenditure area, *plus* a chosen corpus and matching method. It excludes incomplete party frames and missing party proposals. It is descriptive language attention, not support, intention or causal influence; speeches can postdate proposals.
-- **Topic share** belongs to one named model run. Never join old and new topics on `topic_id` alone. UMAP is a deterministic sample with axes that have no direct political meaning.
-- **Law direction** has no validated vote→versioned-provision→reviewed-annotation chain. The semantic model explicitly marks `validated_vote_direction_pairs` unavailable at zero; no tightening/loosening party score is published.
+- Party position is the largest recorded yes/no/abstain member-vote group for that party and roll call. This normalizes a damaged `Avstår` source label without changing vote counts. A yes refers to the *committee proposal*, which may reject a cited motion.
+- Party agreement is same yes/no position divided by roll calls where both parties recorded yes/no. Abstentions are excluded. The published ordered-party matrix contains its numerator and denominator.
+- Cohesion is the sum of each party's largest cast-vote group per roll call divided by all its cast member votes. **Recorded attendance** is cast votes divided by cast plus recorded absences. Pairing arrangements are unknown.
+- Budget–language difference is `keyword_share_pct - budget_share_pct` in percentage points, keyed by session, party and expenditure area, *plus* a chosen corpus and matching method. It excludes incomplete party frames and missing party proposals. It is descriptive language attention, not support, intention or causal influence; speeches can postdate proposals.
+- Topic share belongs to one named model run. Never join old and new topics on `topic_id` alone. UMAP is a deterministic sample with axes that have no direct political meaning.
+- Law direction has no validated vote→versioned-provision→reviewed-annotation chain. The semantic model explicitly marks `validated_vote_direction_pairs` unavailable at zero; no tightening/loosening party score is published.
 
-The frontend reads the gold vote, budget, job, UMAP and RFC marts. Original member votes, citations, law text and full speeches are loaded on demand from their versioned source files. This keeps the initial interface responsive while preserving drill-down evidence.
+The chart feed reads `gold/overview.json` (`frontend/src/meaning/posts/txt-plat-a1.tsx` to `a3`). The data explorer on the case-study pages (`frontend/src/products/DataExplorer.tsx`) reads `gold/semantic-model.json` and loads a gold table only when the reader opens it.
 
 ## Refresh and checks
 
-`build-gold.py` is deterministic: it writes no wall-clock build timestamp. It refuses duplicate or missing primary keys, unknown parties, orphaned vote points, incomplete eight-party roll calls, orphaned citations/reservations, unknown topic/model pairs and provisions without law snapshots. `validate-gold.py` independently checks source/output hashes, every table's declared key and row count, key relationships, party positions, corrected budget arithmetic, eligible budget-language joins, law provision totals and monthly/yearly job-ad reconciliation. Source-text hashes normalize CRLF to LF across operating systems; checked-in gold JSON is pinned to LF.
+`build_gold.py` is deterministic: it writes no wall-clock build timestamp. It refuses duplicate or missing primary keys, unknown parties, orphaned vote points, incomplete eight-party roll calls, orphaned citations/reservations, unknown topic/model pairs and provisions without law snapshots. `validate_gold.py` independently checks source/output hashes, every table's declared key and row count, key relationships, party positions, corrected budget arithmetic, eligible budget-language joins, law provision totals and monthly/yearly job-ad reconciliation. Source-text hashes normalize CRLF to LF across operating systems; checked-in gold JSON is pinned to LF.
 
 Gold keeps **facts, dimensions and marts distinct**. Do not add their row counts together: marts are materialized views of the facts. Legacy source exports stay available for reproducibility but are not interchangeable with the corrected and versioned gold tables.
 

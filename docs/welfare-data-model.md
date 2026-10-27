@@ -1,4 +1,4 @@
-# Välfärd: hur Sverige mår — datamodell
+# Välfärd: datamodellen för hur Sverige mår
 
 Fem öppna källor i ett star schema med gemensamma nycklar, så att jobb, arbetsliv, hälsa,
 mående och tillit kan läsas mot varandra per region och period. Urvalet av indikatorer
@@ -28,11 +28,11 @@ bara viktade aggregat lämnar det.
 ## Lager
 
 ```
-platform/ingest/{scb,fohm,fk,ess,kolada}   hämtar till warehouse/raw/<källa>/, med _manifest.jsonl
-models/bronze/welfare/stg_*                 en rad per källpost, typad, inget annat
-models/silver/welfare/int_welfare_*         källans koder översatta till de gemensamma nycklarna
-models/gold/shared/dim_*                    gemensamma dimensioner
-models/gold/welfare/fct_*, mart_*           fakta på deklarerad grain, samt en översikt per län och år
+platform/ingest/{scb,fohm,fk,ess,kolada}             hämtar till warehouse/raw/<källa>/, med _manifest.jsonl
+platform/models/bronze/welfare/stg_*                 en rad per källpost, typad, inget annat
+platform/models/silver/welfare/int_welfare_*         källans koder översatta till de gemensamma nycklarna
+platform/models/gold/shared/dim_*                    gemensamma dimensioner
+platform/models/gold/welfare/fct_*, mart_*           fakta på deklarerad grain, samt en översikt per län och år
 ```
 
 Varje hämtad fil har en rad i `warehouse/raw/<källa>/_manifest.jsonl`: URL, metod,
@@ -116,27 +116,27 @@ order by i.indicator_name, p.start_date;
 
 ## Det man måste veta innan man läser siffrorna
 
-- **Folkhälsomyndighetens länsresultat är fyra år sammanslagna** (`2021-2024`), eftersom ett
+- Folkhälsomyndighetens länsresultat är fyra år sammanslagna (`2021-2024`), eftersom ett
   års urval per län är för litet. De jämförs mot andra källor via `reference_year` (sista
   året), inte som ettårsvärden.
-- **SCB:s folkmängd för 2025 är skyddad med cell key method.** Varje cell har ett litet
+- SCB:s folkmängd för 2025 är skyddad med cell key method. Varje cell har ett litet
   slumpmässigt brus, så länen summerar inte exakt till riket. `is_perturbed` markerar dem;
   testet tillåter högst 0,01 % avvikelse för de åren och kräver exakt summa för övriga.
-- **ESS10 i Sverige samlades in med självifyllnad**, inte intervju. Tilliten faller då till
+- ESS10 i Sverige samlades in med självifyllnad, inte intervju. Tilliten faller då till
   5,3 från 6,0–6,3 i alla andra omgångar. Det är sannolikt en metodeffekt, inte en verklig
   förändring. `survey_mode` finns på varje ESS-rad.
-- **ESS-intervallen är för smala.** De bygger på Kish effektiva urvalsstorlek och bortser
+- ESS-intervallen är för smala. De bygger på Kish effektiva urvalsstorlek och bortser
   från klustring och stratifiering. Vikt: `pspwght` (rätt vikt inom ett land).
-- **ESS-regioner:** NUTS3 i omgång 5–8 och NUTS2 från omgång 9, båda förda till NUTS2.
+- ESS-regioner: NUTS3 i omgång 5–8 och NUTS2 från omgång 9, båda förda till NUTS2.
   Omgång 1–4 har en nationell regionkod som inte är dokumenterad nog att översätta; de
   omgångarna finns bara för riket.
-- **Försäkringskassan undertrycker små tal** (`rojd`). De blir NULL med en flagga, aldrig noll.
-- **F43 ligger inuti F00–F99** i `dim_diagnosis`. Summera aldrig de två.
-- **Sjukpenningtal 2.0 är ett rullande tolvmånadersmått**; decembervärdet motsvarar
+- Försäkringskassan undertrycker små tal (`rojd`). De blir NULL med en flagga, aldrig noll.
+- F43 ligger inuti F00–F99 i `dim_diagnosis`. Summera aldrig de två.
+- Sjukpenningtal 2.0 är ett rullande tolvmånadersmått; decembervärdet motsvarar
   kalenderåret. Det finns från 2021. Sjukpenningtal 1.0 med längre historik finns via Kolada.
-- **Åldersband skiljer sig mellan källor** (AKU 15–74, FK 15–69, Folkhälsomyndigheten 16–84).
+- Åldersband skiljer sig mellan källor (AKU 15–74, FK 15–69, Folkhälsomyndigheten 16–84).
   De hålls isär i `dim_age_group` och jämförs bara med samma band.
-- **Kolada** återpublicerar andra källors siffror; ursprungskällan står i nyckeltalets
+- Kolada återpublicerar andra källors siffror; ursprungskällan står i nyckeltalets
   beskrivning i `dim_indicator`.
 
 ## Köra

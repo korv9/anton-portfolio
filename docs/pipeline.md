@@ -59,7 +59,7 @@ Rules the command keeps:
   needs the R2 credentials in the environment. In Actions it is part of a normal run.
 
 `pull` and `push` need the R2 credentials too. `push` deletes remote raw files that are gone
-locally only for subjects marked `prune: true` (welfare, parliament, taxes).
+locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden).
 
 ## Subjects
 
@@ -76,13 +76,20 @@ Sunday morning.
 | news | `refresh-news.yml` | daily 05:17 | `run news` | news | yes |
 | politics | `build-warehouse.yml` | weekly | `run politics` | baseline | yes |
 | ai_act | `build-warehouse.yml` | weekly | `run ai_act` | baseline | yes |
+| sfs | `build-warehouse.yml` | weekly | `run sfs` | baseline | yes |
 | ai_politics | `build-warehouse.yml` | weekly | `run ai_politics` | baseline | yes |
 | symbolic | `build-warehouse.yml` | weekly | `run symbolic` | baseline | yes |
 | philosophy | `build-warehouse.yml` | weekly | `run philosophy` | baseline | yes |
 | job_ai_governance | `build-warehouse.yml` | weekly | `run job_ai_governance` | baseline | yes |
 | concepts | `build-warehouse.yml` | weekly | `run concepts` | baseline | yes |
 | cross_domain | `build-warehouse.yml` | weekly | `run cross_domain` | baseline | yes |
+| philosophy_moral | `build-warehouse.yml` | weekly | `run philosophy_moral` | baseline | yes |
+| sweden | `build-warehouse.yml` | weekly | `run sweden` | sweden | yes |
+| sweden_language | `build-warehouse.yml` | weekly | `run sweden_language` | sweden | yes |
+| sweden_futures | `build-warehouse.yml` | weekly | `run sweden_futures` | sweden | yes |
+| clusters | `build-warehouse.yml` | weekly | `run clusters` | sweden | yes |
 | quality | `build-warehouse.yml` | weekly | `run quality` | baseline | yes |
+| ai_act_diffusion | none | by hand | `run ai_act_diffusion` | baseline | no |
 | diva | `refresh-diva.yml` | by hand | `run diva` | diva | one click |
 | jobs_analysis | `refresh-job-analysis.yml` | by hand | `run jobs_analysis` | jobs-analysis | one click |
 | legacy | none | by hand | `run legacy` | baseline | no |
@@ -137,7 +144,7 @@ After a subject's ingest steps, successful or not, `pipeline.py` records the out
 run, and per raw source the last fetch, the last content change, files, size and this run's
 fetches, changes and failed requests, read from `raw/<source>/_manifest.jsonl`. In Actions the
 file is merged into an uncached copy in R2 outside every release; locally it is written to
-`frontend/public/data/status/` (git-ignored). The projects page (`#projekt`) reads it. The sources
+`frontend/public/data/status/` (git-ignored). The tech panel (`frontend/src/tech/IngestionRecords.tsx`) and the feed's freshness labels (`frontend/src/meaning/freshness.ts`) read it. The sources
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
 
@@ -172,8 +179,9 @@ parliament and taxes.
 
 ## ML stages
 
-Four subjects have one: ai_politics (similarity to the Act), symbolic, philosophy and concepts.
-Each hashes what it is about to embed and records the hash in its `run.json`
+Five subjects have one: ai_politics (similarity to the Act), symbolic, philosophy, concepts and
+clusters. The clusters stages have no staleness check: each is skipped when its `marker` exists,
+unless `--ml always` is given. Each of the other four hashes what it is about to embed and records the hash in its `run.json`
 (`platform/nlp/text/staleness.py`). With `--ml stale` the stage runs with `--if-stale` and does
 nothing when the hash is unchanged. The scheduled weekly run uses `stale`; a run started by hand
 defaults to `missing`.

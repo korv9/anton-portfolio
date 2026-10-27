@@ -1,12 +1,12 @@
 # Architecture
 
-Status: Phase 0 design, 2026-10-16. The subsequent
-[Phase 1 implementation](phase-1.md) adds register acquisition, identity resolution
-and private frozen-cohort bundles. [Phase 2](phase-2.md) now implements private
-source acquisition and candidate extraction in a separate Bronze/Silver/Gold
-database. [Phase 3](phase-3.md) adds scoped extraction, decision links, human review,
-reverification and approved release staging. Actual approvals and public deployment
-remain pending. Production legal-domain tables are not populated from parser output.
+Status: designed 2026-10-16 and implemented through Phase 5 (see the
+[README](README.md)). [Phase 1](phase-1.md) adds register acquisition, identity
+resolution and private frozen-cohort bundles. Phase 2 adds private source acquisition
+and candidate extraction in a separate Bronze/Silver/Gold database. Phase 3 adds scoped
+extraction, decision links, human review, reverification and approved release staging.
+No legal record has human approval. Production legal-domain tables are not populated
+from parser output.
 
 ## Storage and execution boundaries
 
@@ -74,8 +74,11 @@ mention cannot enter sanctioned-party metrics.
 ## Fixed cohort design
 
 The proposed population is active, Swedish-registered limited companies (`AB`,
-legal entities) with a primary SNI 2025 code in the six segments in
-[source feasibility](source-feasibility.md). Foreign-owned Swedish subsidiaries
+legal entities) with a primary SNI 2025 code in one of six segments: 58290 other
+software publishing, 62100 computer programming, 62201 computer consultancy, 62202
+computer facilities management, 62900 other IT and computer services, and 63100 data
+infrastructure, processing and hosting. Codes are stored as five digits with the
+classification version. Foreign-owned Swedish subsidiaries
 qualify; foreign parents, branches and pure holding entities do not qualify merely
 because their groups operate IT businesses. Multiple qualifying subsidiaries may
 appear because the unit is a legal entity, not a corporate group.
@@ -170,7 +173,7 @@ actions, typed keys, monetary constraints and several legal category guards.
 It does not enforce independent reviewers, evidence completeness, all cross-table
 semantics, immutable cohorts or actual publish rights. Phase 1 now adds identity
 validation and application-level cohort freezing. Enforcement evidence and publication
-controls now have a separate private [Phase 3 implementation](phase-3.md). Passing
+controls now have a separate private Phase 3 implementation (`review_cli.py`). Passing
 SQL tests is insufficient approval to publish; its human gates, source freshness
 and release validation must also pass.
 
@@ -203,7 +206,7 @@ or sanction probability from missing results.
 
 ## Phase 4 analytical boundary
 
-The [analytics CLI](phase-4.md) reads only current-valid Phase 3 approved Gold and
+The analytics CLI (`analytics.py`) reads only current-valid Phase 3 approved Gold and
 a verified fixed 50-member Phase 1 cohort. It rechecks legal-entity identities and
 original-document hashes/excerpts before writing six isolated `gold` tables as
 DuckDB, JSON and Parquet. No private candidate becomes an analytical fact. A status
@@ -234,8 +237,8 @@ independent human review binds the sealed projection and presentation-source has
 Promotion rechecks current approvals and writes only the designated public JSON
 envelope. Original documents, excerpts and review-store records remain private.
 
-The static portfolio reads this same-origin envelope without the private warehouse
-or a new R2 delivery group. Its build gate and browser validate approval, integrity
+The explorer (unrouted since 2026-10-21) reads this same-origin envelope without the
+private warehouse or a new R2 delivery group. Its build gate and browser validate approval, integrity
 and expiry. Pending, invalid, unavailable and expired data never fall back to mock
 company metrics. Active pages poll the current envelope and check it on focus;
 operators must withdraw/redeploy when underlying reviews are revoked. Offline

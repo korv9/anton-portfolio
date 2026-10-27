@@ -1,8 +1,9 @@
 # Political news
 
-`#politik-nyheter` lists political news from **SVT Nyheter**, **Sveriges Radio Ekot** and the
-**Government Offices**, tagged by party and topic. The party view (`#politik-partier`) shows the
-news naming each party.
+`frontend/public/data/parliament/news.json` holds political news from **SVT Nyheter**,
+**Sveriges Radio Ekot** and the **Government Offices**, tagged by party and topic. The news pages
+of the Political Observatory were withdrawn on 2026-10-21; the chart feed reads the file
+(`frontend/src/meaning/posts/pol-docs-a.tsx`).
 
 ## What is kept
 
@@ -88,4 +89,4 @@ The summary's wording still needs a human read.
   parties is tagged with all five), and a topic word can match in passing.
 - No history before collection started; the feeds cannot be read backwards. Until the
   archive is 30 days old, the count by each party covers the time since collection started,
-  and the page says so.
+  and the export says so (`collected_since`).

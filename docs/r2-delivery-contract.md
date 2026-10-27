@@ -41,11 +41,13 @@ behåller även `--prefer-active` en befintlig lokal export.
 `warehouse_store.git_commit()`. Resultatet är JSON på stdout och fel ger exitkod 1.
 Uppladdningsklienten läser samma R2-miljövariabler som `upload.py`.
 
-Grupperna ersätts som helheter. Den dagliga gruppen `jobs` äger endast
-`jobs/market.json`; årsrapporter och ML-filer får en separat grupp, exempelvis
+Grupperna ersätts som helheter. Den dagliga gruppen `jobs` äger
+`jobs/market.json`, `jobs/company-intelligence.json`, `jobs/workspace.json` och
+`jobs/workspace-remaining.json`; årsrapporter och ML-filer får en separat grupp, exempelvis
 `jobs-analysis`. `news` äger `parliament/news.json` och, om den finns, tidigare
 godkänd `parliament/news-summaries.json`. `public-data` omfattar välfärd,
 parlamentets sex publika kontrakt, skatter, deras Parquet och exporterade schemas.
+`sweden` äger `sweden/*` och `clusters/*`.
 `diva` och andra manuella grupper använder samma kontrakt. `baseline` kan hålla
 övriga godkända exporter. Varje grupps urval ligger i `configs/delivery/`.
 
@@ -270,6 +272,8 @@ Varje release läses tillbaka och verifieras före den enda aktiveringen.
 
 Obligatoriska grupper är `baseline`, `jobs`, `jobs-analysis`, `news` och
 `public-data`. `diva` tas med först när en verklig export eller katalogpost finns.
+`sweden` saknas i workflowets grupplista (`publish-r2.yml`) och publiceras bara av
+pipelinekörningar.
 Materialisering och verifiering kör fyra oberoende operationer åt gången, och
 köat arbete avbryts vid fel. Materialiseringen jämför binärfilers storlek mot
 de råa bytesen och behåller den historiska hashregeln för äldre katalogposter.

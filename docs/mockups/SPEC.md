@@ -4,58 +4,7 @@ Ur mockuperna i canvasen (8–9 okt 2026). Värdena visar vad som räknades fram
 
 Specen gäller de projekt som finns på webbplatsen i dag (`frontend/src/projects/projectRegistry.ts`). Sidor som tagits bort sedan mockuperna står inte med; vilka de är och vart deras adresser leder står i [site-structure.md](../site-structure.md). DiVA Lakehouse (`#diva-lakehouse`) har ingen spec här.
 
-### Arbetsmarknaden i jobbannonser (JobbDashboard.dc.html)
-- KPI:er: Nya annonser jan–sep 2026: 416 139 | Data/IT jan–sep 2026: 23 534 | Annonser räknade av pipelinen: 5 059 005
-- Huvudgraf: Annonser per månad (dots), slicer: Bransch
-- Mätare: Arbetstid i annonserna, jan–sep 2026, mart_market_conditions_yearly
-- Stapelkort 1: Yrkesfält som rör sig mest, jan–sep 2026 mot 2025, av 21 fält
-- Stapelkort 2: Störst län, Annonser jan–sep 2026, mart_market_region_yearly
-- Tekniskt kort: 11 dbt-modeller i DuckDB och 18 tester, taggade market; fakta: stg_market_ads; dims: dim_market_field, dim_market_occupation_group; marts: mart_market_field_monthly, mart_market_daily, mart_market_occupation_yearly, mart_market_region_yearly, mart_market_conditions_yearly, mart_market_archives
-- Lista: Senast lästa källfiler, Proveniens per arkiv: URL, SHA-256 och antal
-- Fördjupning, KPI-rutor: Annonser 2020–2026, Platser jan–sep 2026, Annonser 2023, Annonser 2024, Annonser 2025, Annonser 2026, Yrkesgrupper (SSYK 4), Län, Heltid, Erfarenhet krävs, Arkiv lästa, Rader i exporten
-- Fördjupning, grafer: Yrkesgrupper som växer och krymper (slicer: Bransch) | Anställningsform (slicer: Bransch)
-- Fördjupning, grafer: Annonser per län (slicer: År) | Annonser per år
-- Utforska-tabeller: Yrkesgrupper, Län × yrkesfält, Dagliga annonser, Arkiv
-
-### Svensk politik i siffror (DashPolitik.dc.html)
-- KPI:er: Anföranden i modellen: 246 350 | Voteringar med partiposition: 1 436 | Opinionsmätningar: 104
-- Huvudgraf: Väljarstöd per mätning (dots), slicer: Parti
-- Mätare: Riksdagen efter valet 2026, Mandat per parti, fct_election
-- Stapelkort 1: Mandat 2022 till 2026, Förändring per parti, fct_election
-- Stapelkort 2: Röstar som Moderaterna, Andel voteringar 2025/26 där partiet tog samma ställning som M
-- Tekniskt kort: 25 parlamentsmodeller och 12 politikmodeller i dbt, exporten kontrolleras byte för byte; fakta: fct_party_roll_call; dims: dim_parliament_session, dim_government; marts: fct_roll_call, mart_party_session_record, mart_party_pair_session, fct_party_poll, fct_election
-- Lista: Levererade dataset, Det som sajten läser, per källa
-- Fördjupning, KPI-rutor: Kammardebatter, Inlägg i debatterna, Anföranden totalt, Analyserade segment, Voteringar, Reservationer, Budgetrader, Utgiftsområden, Skattebeslut, Kommunalskatter, Lagbestämmelser, Betydelsetester
-- Fördjupning, grafer: Statsbudgetens utfall (slicer: År) | Skatteintäkter över tid (slicer: Skatt)
-- Fördjupning, grafer: Vem tar ordet i kammaren (slicer: Riksmöte) | Röstar med regeringen, per sakområde (slicer: Sakområde)
-- Fördjupning, grafer: Vad debatterna handlar om
-- Utforska-tabeller: Debatter, Sakområden, Budgetmotioner, Skattebeslut, Kommunalskatt, Partiaktivitet
-
-### EU AI Act Observatory (DashAiAct.dc.html)
-- KPI:er: Artiklar tolkade: 119 | Skyldigheter med källcitat: 51 | Artiklar ändrade sedan 2024: 42
-- Huvudgraf: Hur ofta AI nämns (dots), slicer: Signal
-- Mätare: Skyldigheter per riskklass, mart_ai_act_obligations
-- Stapelkort 1: Vem ska göra vad, Skyldigheter per aktör, bridge_ai_act_article_actor
-- Stapelkort 2: Ändringar som följs, Per typ, mart_ai_act_changes
-- Tekniskt kort: 4 bronze-, 6 silver- och 13 gold-modeller. Silver är dbt Python-modeller som tolkar XHTML; fakta: mart_ai_act_obligations; dims: dim_ai_act_actor, dim_ai_act_risk_class, dim_ai_act_article; marts: mart_ai_act_changes, mart_ai_act_timeline, bridge_ai_act_article_actor, bridge_ai_act_article_reference, bridge_ai_act_article_guidance
-- Lista: Lagtextens versioner, CELEX-nummer från EUR-Lex och Cellar
-- Fördjupning, KPI-rutor: Artiklar, Skäl, Bilagor, Aktörer, Skyldigheter, Milstolpar, Dokument, Vägledningar, Ändrade artiklar, Nya artiklar, Oförändrade, Tecken i artiklarna
-- Fördjupning, grafer: Vilka skyldigheter (slicer: Aktör) | När artiklarna börjar gälla
-- Fördjupning, grafer: Artiklar per kapitel
-- Utforska-tabeller: Artiklar, Skyldigheter, Ändringar, Tidslinje, Signaler per månad
-
-### Hur mår Sverige? (DashValfard.dc.html)
-- KPI:er: Indikatorer på gemensam axel: 80 | Rader i fct_indicator: 1 271 081 | dbt-tester gröna: 141 / 141
-- Huvudgraf: Riket per månad (dots), slicer: Mått
-- Mätare: Indikatorer per källa, dim_indicator, dim_source
-- Stapelkort 1: Arbetslöshet 2025 per län, Skillnad mot befolkningsvägt snitt 8,9 %, mart_county_year_overview
-- Stapelkort 2: Rådata per källa, Megabyte vid senaste hämtning
-- Tekniskt kort: 45 modeller och 141 tester, dbt 1.12.4; fakta: fct_indicator; dims: dim_region, dim_period, dim_indicator; marts: fct_labour_force, fct_sick_pay_rate, fct_sick_leave_cases, fct_kolada, mart_county_year_overview
-- Lista: Senaste hämtning per källa, Ur run.json: filer, storlek och tid
-- Fördjupning, KPI-rutor: fct_indicator, fct_sick_pay_rate, fct_labour_force, fct_sick_leave_cases, fct_kolada, fct_population, fct_social_survey_country, fct_health_survey, Källor, Seeds, Tabeller i katalogen, Byggtid
-- Fördjupning, grafer: Län för län (slicer: Mått) | Arbetslöshet över tid (slicer: Län)
-- Fördjupning, grafer: Tillit till andra människor i Europa
-- Utforska-tabeller: Län × år, Indikatorer, Riket per månad, Datakatalog
+Mockuperna för Arbetsmarknaden, Politik, EU AI Act och Välfärd togs bort i commit a2e25222, och de sidorna drogs tillbaka 2026-10-21. De två kvarvarande filerna, `DashSymbolic.dc.html` och `DashThesis.dc.html`, laddar `support.js`, som inte längre finns, så de renderar inte som de gjorde. `frontend/src/ui/dash/Dash.tsx` bygger fortfarande på kortrutnätet som specen beskriver.
 
 ### Symbolic Atlas (DashSymbolic.dc.html)
 - KPI:er: Symbolförekomster: 72 926 | Största boks andel per kluster: 0,36 | Kluster: 130

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 968 328" role="img" aria-labelledby="pipeline-flow-title pipeline-flow-desc" font-family="Geist, 'Segoe UI', Helvetica, Arial, sans-serif">
   <title id="pipeline-flow-title">From source to site</title>
-  <desc id="pipeline-flow-desc">A subject is fetched to the raw store, built and tested with dbt, optionally passed through an ML stage, and exported; its delivery group is then checked and published as a versioned release in R2, which the site reads.</desc>
+  <desc id="pipeline-flow-desc">A subject is fetched to the raw store, built and tested with dbt, optionally passed through an ML stage, and exported; its delivery group is then checked and published as a versioned release in R2. The site serves the exported files committed under frontend/public/data and does not read the release.</desc>
   <defs>
     <marker id="pipeline-flow-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#4A4A4D"/>
@@ -19,7 +19,7 @@
     <line x1="752" y1="72" x2="790" y2="72" marker-end="url(#pipeline-flow-arrow)"/>
     <path d="M868,104 V144 a8,8 0 0 1 -8,8 H108 a8,8 0 0 0 -8,8 V190" marker-end="url(#pipeline-flow-arrow)"/>
     <line x1="176" y1="224" x2="214" y2="224" stroke="#1F4F73" marker-end="url(#pipeline-flow-arrow-accent)"/>
-    <line x1="368" y1="224" x2="406" y2="224" marker-end="url(#pipeline-flow-arrow)"/>
+    <line x1="484" y1="152" x2="484" y2="190" marker-end="url(#pipeline-flow-arrow)"/>
   </g>
 
   <!-- row 1: one subject -->
@@ -52,7 +52,7 @@
     <text x="616" y="88">warehouse/features</text>
     <text x="808" y="88">frontend/public/data</text>
     <text x="40" y="240" fill="#F2EFE9">release.py publish</text>
-    <text x="232" y="240">R2 manifests/current</text>
+    <text x="232" y="240">R2, not read by site</text>
     <text x="424" y="240">antonernstsson.com</text>
   </g>
 

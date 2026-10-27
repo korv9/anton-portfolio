@@ -64,10 +64,13 @@ jobs:
       # The news subject writes the week's summary only when this is set (platform/pipeline.yml).
       ANTHROPIC_API_KEY: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY || '' }}
       # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
-      # A token with Workers AI only. The scheduled run never gets CLOUDFLARE_API_TOKEN, whose D1 and
-      # Workers Scripts rights could rewrite the Worker and its secrets (setup-job-assistant.yml).
-      CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && secrets.CLOUDFLARE_AI_TOKEN || '' }}
+      # A Workers-AI-only CLOUDFLARE_AI_TOKEN when it exists; otherwise the owner's choice of one token,
+      # CLOUDFLARE_API_TOKEN (docs/job-assistant.md, Secrets).
+      CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
       CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
+      # The job assistant reads the Worker through workers.dev: the zone's bot protection on
+      # antonernstsson.com answers GitHub's runners with 403 (docs/job-assistant.md).
+      JOB_ASSIST_API: https://anton-portfolio.anton-ernstson.workers.dev/api/jobs
       SUBJECTS: ${{ inputs.subjects }}
       STORE: ${{ inputs.store }}
     steps:

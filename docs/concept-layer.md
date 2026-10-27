@@ -21,9 +21,9 @@ Riksdag AI models; build those first.
 
 Every row is marked:
 
-- **source**: a chunk's text, exactly as it stands in the source, with its URL;
-- **derived**: similarity, rank, z-score, shares, pairs; computed, reproducible, model-dependent;
-- **interpretation**: the concepts, their anchor sentences, the tensions and the links to other
+- source: a chunk's text, exactly as it stands in the source, with its URL;
+- derived: similarity, rank, z-score, shares, pairs; computed, reproducible, model-dependent;
+- interpretation: the concepts, their anchor sentences, the tensions and the links to other
   measures; chosen by a person, and named as such.
 
 No label is produced by a language model. A link between an atlas cluster and a concept exists
@@ -39,7 +39,8 @@ names how the concept is read (the anchor embedded with the shared model).
 `concept_tensions.csv` pairs concepts with the Philosophy Atlas tensions they are poles of (or
 nearest to). `concept_links.csv` links a concept to a measure elsewhere on the site only where
 the target measures the same idea: a Riksdag framing group, a job-ad term, an AI Act view or a
-tension. *Autonomy* has no Riksdag group or job term, and gets none.
+tension. The AI Act views were withdrawn on 2026-10-21, so those links redirect to
+`#what-does-it-even-mean`. *Autonomy* has no Riksdag group or job term, and gets none.
 
 ## Corpora and sampling
 
@@ -64,17 +65,17 @@ URL, the hash of the source version it was read from and its retrieval time
 
 1. Every chunk is embedded; each concept's anchor is embedded in both languages, and a chunk is
    compared with the anchor in its own language.
-2. **Alignment** (`gold.fct_concept_alignment`, chunk × concept): cosine similarity, the
+2. Alignment (`gold.fct_concept_alignment`, chunk × concept): cosine similarity, the
    concept's **rank** among the 28 for that chunk, and a **z-score** against the same concept in
    the same corpus.
-3. **Profiles** (`gold.mart_concept_profiles`): how often a concept is a chunk's closest
+3. Profiles (`gold.mart_concept_profiles`): how often a concept is a chunk's closest
    (rank-1 share; chance is 1/28 ≈ 3.6 %) and among its three closest.
-4. **Representative passages** (`gold.mart_concept_passages`): chunks where the concept ranks
+4. Representative passages (`gold.mart_concept_passages`): chunks where the concept ranks
    in the top three, ordered by z-score within the corpus; eight per concept and corpus.
-5. **Cross-corpus pairs** (`gold.fct_cross_domain_similarity`): per concept and pair of
+5. Cross-corpus pairs (`gold.fct_cross_domain_similarity`): per concept and pair of
    corpora, the closest pair among the representatives, kept only above the 95th percentile of
    4,000 random pairs between those corpora.
-6. **Concept relations** (`gold.mart_concept_relations`): `semantic_similarity` where two
+6. Concept relations (`gold.mart_concept_relations`): `semantic_similarity` where two
    anchors are among each other's three nearest in both languages; `shared_tension` from the
    editorial seed.
 
@@ -87,25 +88,25 @@ chunk and a z-score compares chunks *within* one corpus, so neither carries that
 
 ## Evaluation (`run.json`)
 
-- **Corpus dominance.** 93 % of each chunk's ten nearest neighbours come from its own corpus
+- Corpus dominance. 93 % of each chunk's ten nearest neighbours come from its own corpus
   (chance 25 %); with each corpus's mean removed, still 80 %. The four corpora differ in genre,
   period and language far more than in subject, so the layer never places chunks from different
   corpora on one map or clusters them together. It compares them only through the concepts.
-- **Language.** 98 % of neighbours share the chunk's language (chance 63 %); Swedish is one
+- Language. 98 % of neighbours share the chunk's language (chance 63 %); Swedish is one
   corpus, so this is mostly the corpus effect again.
-- **Anchor agreement.** Each Swedish anchor's nearest English anchor is the same concept for 28
+- Anchor agreement. Each Swedish anchor's nearest English anchor is the same concept for 28
   of 28 concepts: the two languages' anchors say the same thing to the model.
-- **Concentration.** No corpus is absorbed by one concept: the largest rank-1 share is death in
+- Concentration. No corpus is absorbed by one concept: the largest rank-1 share is death in
   myth (38 %); normalised entropy of rank-1 concepts is 0.68–0.82.
 
 ## Results (7 October 2026)
 
 The concepts most often closest, per corpus (rank-1 share, chance 3.6 %):
 
-- **myth** (101 books since 7 October 2026; 10 before): death 38 %, nature 15 %, freedom 7 %;
-- **philosophy**: dignity 19 %, truth 11 %, order 11 %;
-- **politics**: care 24 %, responsibility 18 %, duty and innovation 8 % each;
-- **law**: safety 16 %, authority 13 %, transparency 13 %, duty 12 %.
+- myth (101 books since 7 October 2026; 10 before): death 38 %, nature 15 %, freedom 7 %;
+- philosophy: dignity 19 %, truth 11 %, order 11 %;
+- politics: care 24 %, responsibility 18 %, duty and innovation 8 % each;
+- law: safety 16 %, authority 13 %, transparency 13 %, duty 12 %.
 
 150 of 159 concept × corpus-pair combinations have a representative pair above the random-pair
 baseline. That says the closest passages of two corpora are closer than chance, not that they

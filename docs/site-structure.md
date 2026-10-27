@@ -1,6 +1,8 @@
 # Site structure
 
-How the site is organised and which file decides what. The visual direction is in
+How the site is organised and which file decides what. The production build shows only the
+home page: `START_ONLY` in `frontend/src/router.ts` sends every other address to `#start`. The
+dev server and the browser tests keep the full site described here. The visual direction is in
 [design-system.md](design-system.md); how a page orders its content is in
 [data-storytelling.md](data-storytelling.md).
 
@@ -18,30 +20,30 @@ Connections page, and its design is described in [sweden-design.md](sweden-desig
 | `#sweden-framtid` | E The Lost Futures | Findings (Riksdag speeches 1993/94–2025/26; DiVA not yet counted) |
 | `#sweden-samband` | Connections | Three relationships computed, two joins rejected |
 
-The header links to SWEDEN first. Its project menu is titled Other projects, and on the homepage and
-`#projekt` a featured SWEDEN card stands above the other projects. The Wellbeing Observatory moved from `#sweden*` to `#wellbeing*`. Its old addresses
-(`#sweden-health`, `#sweden-counties` and the others) redirect.
+On `#projekt` a featured SWEDEN card stands above the other projects. The Wellbeing
+Observatory's old addresses (`#sweden-health`, `#sweden-counties` and the others) and
+`#wellbeing*` redirect to `#what-does-it-even-mean`.
 
 ## Projects and navigation
 
-The homepage holds the identity, profile, experience and project index. A shared header
-replaces the old sidebar. Its project menu groups the twelve projects, and Cluster Visuals sits
-beside them as a separate tool.
+The homepage holds the identity, profile, experience, the project list, a cluster preview and
+the chart feed. The shared header (`frontend/src/site/SiteHeader.tsx`) links to About and
+GitHub. The project index `#projekt` groups the projects (`PROJECT_GROUPS` in
+`projectRegistry.ts`):
 
-| Group         | Projects                                                                                       |
-| ------------- | ---------------------------------------------------------------------------------------------- |
-| Observatories | Political Observatory, Labour Market Observatory, Compliance Intelligence, Wellbeing Observatory, EU AI Act Observatory, Swedish Statute Book |
-| Labs | Symbol Lab, Philosophy Lab, Concept Lab, Ask the law, Drug Synergy Lab |
-| Engineering | IT Incident Clustering, Homie API, DiVA Thesis Lakehouse |
+| Group       | Projects                                                             |
+| ----------- | -------------------------------------------------------------------- |
+| Labs        | Symbol Lab, Philosophy Lab, Concept Lab, Ask the law, Drug Synergy Lab |
+| Engineering | IT Incident Clustering, Homie API, DiVA Thesis Lakehouse             |
 
-Each project has an entry page. Political Observatory opens as five analytical areas, with shared party selection and
-source readers behind them. The other observatories retain their report tabs, each with
-an address of its own. Labs and engineering projects are continuous
-reports with section addresses. Readers for one speech, debate, article or concept are separate
-views. Previous and next links follow the menu's group order.
+Each project has an entry page. Labs and engineering projects are continuous reports with
+section addresses. Readers for one speech, debate, article or concept are separate views.
+Previous and next links follow the group order. Cluster Visuals (`#cluster-visuals`) and the
+chart feed `#what-does-it-even-mean` sit outside the groups.
 
-Two pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
+Three pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
 answers questions over Swedish statutes or the EU AI Act; `?korpus=ai-act` picks the AI Act.
+Ask the platform (`#ask-platform`) answers questions from the repository's own documents.
 On `#cluster-visuals`, the card `#cv-place` places a reader's sentence on the party-leader debate
 map.
 
@@ -58,15 +60,11 @@ Routes are `#path` with optional query parameters, so a chosen view can be share
 
 ## Layout and copy
 
-Observatory charts use bounded analytical panels. Labs and engineering keep wide figures
-and open comparisons; filters and technical detail may have a bounded area. A
-chart heading names the measure; its caption keeps source, unit, period and comparison basis.
+Labs and engineering keep wide figures and open comparisons; filters and technical detail may
+have a bounded area. A chart heading names the measure; its caption keeps source, unit, period and comparison basis.
 Technical methods use native disclosures. Analytical pages have a warm-grey canvas, and the
 decorative debate background stays on the homepage. Large map projections keep their reading
 key.
-
-The Wellbeing county reference is a mean of the counties weighted by total population, and is
-labelled that way. Each source keeps its own population definition.
 
 ## Retired views
 
@@ -77,22 +75,20 @@ schema access, quality checks and trace data that the remaining projects use are
 repository, and so are their documents: [quality-and-validity.md](quality-and-validity.md),
 [data-constellation.md](data-constellation.md) and [idea-lineage.md](idea-lineage.md).
 
+The observatories (politics, the labour market, Job Intelligence and Compliance Intelligence,
+wellbeing, the EU AI Act, taxes and budget, the Swedish Statute Book) were withdrawn on
+2026-10-21. Their addresses, and `/companies/*`, lead to `#what-does-it-even-mean`
+(`PREFIX_REDIRECTS` in `router.ts`). `frontend/src/{compliance,companies,job-intelligence}` stay
+unrouted because the build checks read them.
+
 Retired project ids are still accepted by the append-only idea journal, so old records stay
 readable.
 
 ## Visual workspace ownership
 
-The project groups also determine `data-workspace` on the app shell: `observatories`,
-`labs` or `engineering`. Standalone views use `tool`. `ReportShell`, `Stage`, `ProjectHero`,
-`Feature` and the existing dashboard kit provide the four patterns documented in
-[design-system.md](design-system.md). This classification changes presentation only.
-The homepage keeps its own token scope and composition; shared project styling is scoped
+The project groups also determine `data-workspace` on the app shell (`App.tsx`): `labs` or
+`engineering`, `sweden` for the SWEDEN pages and the chart feed, and `tool` for everything else.
+`ReportShell`, `Stage`, `ProjectHero`, `Feature` and the dashboard kit provide the patterns
+documented in [design-system.md](design-system.md). This classification changes presentation
+only. The homepage keeps its own token scope and composition; shared project styling is scoped
 to `.project-shell`.
-
-## Political Observatory v2
-
-The five routes are `#politik`, `#politik-val`, `#politik-riksdag`, `#politik-budget` and
-`#politik-tal`. The scoped workspace lives in `frontend/src/politik/workspace/`. Existing
-research views and old aliases remain available. See [Political Observatory v2](political-observatory-v2.md)
-for filter semantics, evidence relationships, retained routes and coverage. The homepage and
-shared site header were not changed by this migration.
