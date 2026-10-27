@@ -81,21 +81,22 @@
     "quality": "python platform/pipeline.py run quality"
   },
   "dependencies": {
-    "hyparquet": "^1.31.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "hyparquet": "^1.31.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "three": "0.169.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.55.0",
+    "@types/node": "^20.19.43",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@types/three": "0.169.0",
-    "@vitejs/plugin-react": "^4.5.0",
-    "prettier": "^3.9.8",
+    "@vitejs/plugin-react": "^6.1.2",
+    "prettier": "^3.9.10",
     "typescript": "~5.8.3",
-    "vite": "^6.3.5",
+    "vite": "^8.3.5",
     "wrangler": "^4.151.0"
   },
   "overrides": {
