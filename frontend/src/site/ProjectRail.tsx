@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { MEANING, type Route } from '../router'
 import Signature from '../home/Signature'
@@ -88,10 +89,21 @@ function activeHref(route: Route) {
 
 /**
  * The projects start: a floating signature that leads home and an index on the left quarter,
- * shaded darker towards the edge with a little grain, so no page is a dead end.
+ * shaded darker towards the edge with a little grain, so no page is a dead end. On phones the
+ * index waits as a faint tab on the left edge and slides out over the page.
  */
 export default function ProjectRail({ route }: { route: Route }) {
   const active = activeHref(route)
+  const [open, setOpen] = useState(false)
+  useEffect(() => setOpen(false), [route.path])
+  useEffect(() => {
+    if (!open) return
+    const close = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    window.addEventListener('keydown', close)
+    return () => window.removeEventListener('keydown', close)
+  }, [open])
   const link = (item: Item, overview = false) => (
     <a
       key={item.href}
@@ -106,7 +118,20 @@ export default function ProjectRail({ route }: { route: Route }) {
   )
   return (
     <>
-      <div className="rail-shade" aria-hidden="true" />
+      <div
+        className={`rail-shade${open ? ' is-open' : ''}`}
+        aria-hidden="true"
+        onClick={() => setOpen(false)}
+      />
+      <button
+        type="button"
+        className="rail-toggle"
+        aria-expanded={open}
+        aria-controls="project-rail"
+        onClick={() => setOpen(!open)}
+      >
+        {l('Index', 'Index')}
+      </button>
       <a
         className="rail-signature"
         href="#start"
@@ -124,7 +149,11 @@ export default function ProjectRail({ route }: { route: Route }) {
         </a>
         <LanguageToggle />
       </nav>
-      <nav className="project-rail" aria-label={l('Projects', 'Projekt')}>
+      <nav
+        id="project-rail"
+        className={`project-rail${open ? ' is-open' : ''}`}
+        aria-label={l('Projects', 'Projekt')}
+      >
         {link({ href: '#projects', en: 'Overview', sv: 'Översikt' }, true)}
         {GROUPS.map((group) => (
           <div key={group.en} className="rail-group">
