@@ -70,19 +70,11 @@
   text-wrap: balance;
 }
 .mean-lede {
-  margin: 0 0 var(--sp-4);
+  margin: 0 0 var(--sp-section);
   max-width: var(--measure);
   color: var(--color-ink-secondary);
   font-size: var(--body-large);
   line-height: 1.6;
-}
-.mean-count {
-  margin: 0 0 var(--sp-section);
-  max-width: var(--measure);
-  color: var(--color-ink-secondary);
-  font-family: var(--font-mono);
-  font-size: var(--caption);
-  letter-spacing: 0.06em;
 }
 /* One grid per subject, so dense packing never pulls a post above its section heading. */
 .mean-section + .mean-section {

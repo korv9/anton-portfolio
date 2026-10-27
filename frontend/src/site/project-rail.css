@@ -1,5 +1,5 @@
 /* The projects start (site/ProjectRail.tsx): the index on the left quarter, the signature floating
-   over it, the page beside them. Wide screens only; phones keep the site header. */
+   over it, the page beside them. Phones keep the site header and get the index as a drawer. */
 :root {
   --rail-w: clamp(240px, 25vw, 360px);
   --rail-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -8,8 +8,156 @@
 .rail-shade,
 .rail-signature,
 .rail-tools,
-.project-rail {
+.rail-toggle {
   display: none;
+}
+
+/* No divider: a shade, darkest at the edge, fading out past the index, with fine grain. */
+.rail-shade::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    rgb(0 0 0 / 0.7) 45%,
+    transparent 100%
+  );
+}
+
+.project-rail {
+  box-sizing: border-box;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.rail-group-label {
+  margin: 18px 0 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 14px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8a857b;
+}
+.rail-link {
+  position: relative;
+  display: block;
+  width: fit-content;
+  padding: 3px 0;
+  font-size: 17px;
+  line-height: 21px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: #77736a;
+  transition: color 0.24s;
+}
+.rail-overview {
+  font-size: 24px;
+  line-height: 28px;
+}
+.rail-link:hover {
+  color: #c6c1b6;
+}
+.rail-link[aria-current='page'] {
+  background: linear-gradient(
+    to bottom right,
+    #ffffff 0%,
+    #c6c1b6 55%,
+    #9c978d 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.rail-link[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: 50%;
+  width: 9px;
+  height: 2px;
+  background: #f4f1e8;
+  animation: rail-mark-in 0.24s var(--rail-ease) both;
+}
+
+@media (max-width: 1023px) {
+  /* A faint tab on the left edge; it comes up when touched or focused. */
+  .rail-toggle {
+    display: block;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    z-index: 70;
+    padding: 18px 7px 18px 5px;
+    border: 0;
+    background: linear-gradient(90deg, rgb(0 0 0 / 0.55), transparent);
+    color: #c6c1b6;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    writing-mode: vertical-rl;
+    transform: translateY(-50%) rotate(180deg);
+    opacity: 0.5;
+    cursor: pointer;
+    transition: opacity 0.4s var(--rail-ease);
+  }
+  .rail-toggle:hover,
+  .rail-toggle:focus-visible,
+  .rail-toggle[aria-expanded='true'] {
+    opacity: 1;
+  }
+
+  .rail-shade {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 75;
+    background: linear-gradient(
+      90deg,
+      rgb(0 0 0 / 0.86) 0%,
+      rgb(0 0 0 / 0.66) 60%,
+      rgb(0 0 0 / 0.4) 100%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s var(--rail-ease);
+  }
+  .rail-shade.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .project-rail {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 80;
+    width: min(84vw, 340px);
+    padding: 96px 24px 40px 44px;
+    background: linear-gradient(90deg, #121211 0%, #1a1a19 70%, #1e1e1c 100%);
+    box-shadow: 24px 0 60px rgb(0 0 0 / 0.5);
+    transform: translateX(-100%);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      transform 0.5s var(--rail-ease),
+      opacity 0.5s var(--rail-ease),
+      visibility 0s 0.5s;
+  }
+  .project-rail.is-open {
+    transform: none;
+    opacity: 1;
+    visibility: visible;
+    transition:
+      transform 0.5s var(--rail-ease),
+      opacity 0.5s var(--rail-ease);
+  }
 }
 
 @media (min-width: 1024px) {
@@ -23,7 +171,6 @@
     animation: rail-page-in 0.62s var(--rail-ease) both;
   }
 
-  /* No divider: a shade, darkest at the edge, fading out past the index, with fine grain. */
   .rail-shade {
     display: block;
     position: fixed;
@@ -36,21 +183,6 @@
       rgb(0 0 0 / 0.66) 0%,
       rgb(0 0 0 / 0.42) 38%,
       rgb(0 0 0 / 0.16) 72%,
-      transparent 100%
-    );
-  }
-  .rail-shade::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0.16;
-    mix-blend-mode: soft-light;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 180px 180px;
-    mask-image: linear-gradient(
-      90deg,
-      #000 0%,
-      rgb(0 0 0 / 0.7) 45%,
       transparent 100%
     );
   }
@@ -96,68 +228,13 @@
   }
 
   .project-rail {
-    display: block;
     position: fixed;
     top: 150px;
     left: 0;
     bottom: 0;
     width: var(--rail-w);
     z-index: 50;
-    box-sizing: border-box;
     padding: 0 28px 32px 60px;
-    overflow-y: auto;
-    scrollbar-width: none;
-  }
-  .rail-group-label {
-    margin: 18px 0 6px;
-    font-family: var(--font-mono);
-    font-size: 10px;
-    line-height: 14px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: #8a857b;
-  }
-  .rail-link {
-    position: relative;
-    display: block;
-    width: fit-content;
-    padding: 3px 0;
-    font-size: 17px;
-    line-height: 21px;
-    font-weight: 750;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    text-decoration: none;
-    color: #77736a;
-    transition: color 0.24s;
-  }
-  .rail-overview {
-    font-size: 24px;
-    line-height: 28px;
-  }
-  .rail-link:hover {
-    color: #c6c1b6;
-  }
-  .rail-link[aria-current='page'] {
-    background: linear-gradient(
-      to bottom right,
-      #ffffff 0%,
-      #c6c1b6 55%,
-      #9c978d 100%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  .rail-link[aria-current='page']::before {
-    content: '';
-    position: absolute;
-    left: -20px;
-    top: 50%;
-    width: 9px;
-    height: 2px;
-    background: #f4f1e8;
-    animation: rail-mark-in 0.24s var(--rail-ease) both;
   }
 }
 
@@ -184,5 +261,10 @@
   .project-shell #main,
   .rail-link[aria-current='page']::before {
     animation: none;
+  }
+  .rail-toggle,
+  .rail-shade,
+  .project-rail {
+    transition: none;
   }
 }
