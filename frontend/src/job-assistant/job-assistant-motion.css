@@ -1,0 +1,104 @@
+/* The desk's motion, one system: state changes the reader caused settle quickly with the same
+   exponential ease-out, using opacity, transform and the details' block size only. Nothing moves
+   on first paint: every entrance waits for .ja[data-moved], set on the first open, list change,
+   filter or mark. Reduced motion turns it all off (and tokens.css shortens any left over). */
+.ja {
+  --ja-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --ja-settle: 220ms;
+}
+
+/* Feedback: the selected row's background, tabs and mark buttons ease between states. */
+.ja-item {
+  transition: background-color 150ms var(--ja-ease);
+}
+.ja-tab,
+.ja-actions .btn-quiet {
+  transition:
+    background-color 150ms var(--ja-ease),
+    color 150ms var(--ja-ease),
+    border-color 150ms var(--ja-ease);
+}
+
+@keyframes ja-settle {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@keyframes ja-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes ja-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+@keyframes ja-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+/* An opened ad (re-mounted per ad) settles into place. */
+.ja[data-moved] .ja-detail > * {
+  animation: ja-settle var(--ja-settle) var(--ja-ease);
+}
+/* A new list (tab, search or filter) fades in, staggered over at most 200 ms. */
+.ja[data-moved] .ja-items > li {
+  animation: ja-fade 180ms var(--ja-ease) backwards;
+  animation-delay: calc(min(var(--i, 0), 8) * 25ms);
+}
+/* A count that changed, and the line that says where a mark is kept, fade in. */
+.ja[data-moved] .ja-count,
+.ja[data-moved] .ja-kept {
+  animation: ja-fade 200ms var(--ja-ease);
+}
+
+/* "Read the whole ad" opens to its height; the chevron turns. Browsers without
+   ::details-content open at once. */
+.ja-whole {
+  interpolate-size: allow-keywords;
+}
+.ja-whole::details-content {
+  block-size: 0;
+  overflow: hidden;
+  transition:
+    block-size 300ms var(--ja-ease),
+    content-visibility 300ms allow-discrete;
+}
+.ja-whole[open]::details-content {
+  block-size: auto;
+}
+.ja-whole summary svg {
+  transition: transform 200ms var(--ja-ease);
+}
+
+/* On a phone the ad slides in from the right, and the list comes back from the left. */
+@media (max-width: 760px) {
+  .ja[data-moved] .ja-desk[data-open='true'] .ja-detail {
+    animation: ja-from-right 260ms var(--ja-ease);
+  }
+  .ja[data-moved] .ja-desk[data-open='true'] .ja-detail > * {
+    animation: none;
+  }
+  .ja[data-moved] .ja-desk[data-open='false'] .ja-list-pane {
+    animation: ja-from-left 200ms var(--ja-ease);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ja * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* Its own rule: a browser that does not know ::details-content drops only this one. */
+@media (prefers-reduced-motion: reduce) {
+  .ja-whole::details-content {
+    transition: none;
+  }
+}

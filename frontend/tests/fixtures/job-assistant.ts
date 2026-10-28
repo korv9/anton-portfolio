@@ -106,7 +106,8 @@ export function jobAssistantFixture() {
         ads.map((a) => [
           a.id,
           {
-            description: 'Du har arbetat med dbt.\nMeriterande med Kubernetes.',
+            description:
+              'Vi söker en dataingenjör.\n\nDu har arbetat med dbt.\nMeriterande med Kubernetes.',
             contact_redactions: 0,
           },
         ]),
@@ -127,7 +128,6 @@ export function jobAssistantFixture() {
         '1001': { status: 'interesting', note: '', updated_at: head.generated_at },
       },
     },
-    labels: { labels: {} },
     // GET /api/jobs/profile as a visitor gets it: the approved version, never the draft.
     profile: {
       draft: null,

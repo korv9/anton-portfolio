@@ -369,53 +369,36 @@ describe this search, not matching in general.
 
 ## Review page
 
-`#jobs` (`frontend/src/job-assistant/`) is the work tool and the public page in one. The production
-build shows it, as it shows every other page.
+`#jobs` (`frontend/src/job-assistant/`) is the work tool and the public page in one. It sits in
+the site shell like every project page: the site header and the project index stay, and the tool
+fills the content area.
 
-- The header says what the page is. A status line below it gives the ads in the store, the ads
-  published today, the strong matches, the applications per pipeline status and the time of the
-  last sync. When that sync is more than eight hours old, a notice says so.
-- Three tabs: Jobs, Applications and How it works. The Applications tab is a read-only board of
-  the pipeline, from Saved to Rejected, built from the review rows.
-- When nothing is matched, the Jobs tab lists the open ads (not removed, not expired, not a
-  duplicate), newest first, with title, employer, place, dates and a link to the ad on
-  Platsbanken. There are no classes, skills or filters. The note above the list gives the reason
-  from `status`: "matching starts when the CV profile is approved" only when the Worker answered
-  without one, otherwise that the profile store is not set up (503) or that the profile could
-  not be read or reached, with the time. When the last matches were kept, the status line says
-  so.
-- Jobs: a free-text search over title, employer, occupation and the skills the ad names, and
-  filters for match class (strong and possible by default, or one class, or the evaluation
-  sample), place or remote, employment type, role, publication date, deadline and seniority. Each
-  option shows how many ads it would leave; active filters are chips that remove themselves.
-  Sorting is by best match, newest or deadline. Search, filters, sort, tab and the open ad are in
-  the address (`#jobs?q=dbt&place=Solna&ad=<id>`), so a link shares the view and the back button
-  closes an opened ad. Filtering runs in the browser over the released JSON.
-- Result cards show title, employer, place, days since publication, the days left to apply, the
-  class, up to four skills the CV shows in work or projects, and up to two it does not. Twenty
-  cards are shown at a time, with "Show more". The arrow keys (or `j`/`k`) move between cards and
-  Enter opens one; `/` searches and Escape clears it or closes the ad. With the owner token, `1`
-  to `5` set the pipeline status: saved, applied, interview, offer, rejected.
-- The open ad sits beside the list on wide screens; under 760 px it replaces the list and has a
-  back button. It shows the class with the reasons, the checked explanation, and a table of
-  requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line with
-  its CV section and the kind of entry (employment, internship, education, project, skills list).
-  Under 760 px each requirement is one block. Gaps, education and conditions, uncertainty, a
-  trace of the files, models and tests behind the match, the full text, links and dates come
-  after.
-- The full text of a detailed ad comes from `texts.json`. Any other open ad's text comes from
-  `texts-remaining.json`, fetched once, only when such an ad is opened (`?ad=` in the address);
-  the preview beside the list offers a button instead. If that file fails, the ad links to
-  Platsbanken.
-- With the owner token the open ad has buttons for every status and a private note. Statuses
-  are stored in D1 and survive reloads and new sessions.
-- How it works: the method, the approved CV profile (skills by level, each with its CV line and
-  entry; never the draft, the file or the summary), what the ads ask for against the CV
-  (`demand.json` against the approved profile), the label counts, the runs of the last seven
-  days, and the owner's tools (token, CV upload, draft editor with fields for roles, places,
-  remote work and seniority, approval request).
-- Only `ads.json` is required. When matches, texts or demand fail to load, or the owner routes
-  answer 401, 503 or not at all, the page says which and keeps the ad list working.
+- A bar holds the title, the search (title, employer, occupation, named skills) and the time of
+  the last sync. A calm notice under it says when the data is more than eight hours old, a file
+  failed to load, the last matches were kept, or nothing is matched yet.
+- List buttons with counts: Good fit (strong and possible), Saved, Applied, Closed, All, and How
+  it works. A Filters disclosure holds place, role and seniority, each with counts. Sorting is by
+  fit, then the nearest deadline. The list, search, filters and the open ad are in the address.
+- The list column shows title, employer and place, the mark, and the days left (highlighted under
+  seven). The open ad shows its title and employer, quick facts (apply by, employment,
+  published, fit in words), the marks and a link to apply at the employer (https only).
+- "What the ad asks for" groups the named skills as Required and Nice to have; skills the ad does
+  not grade form one group with a line saying so. Education and conditions are one plain line.
+  The page does not compare the ad with the CV.
+- The ad's lead is shown, and a native disclosure, "Read the whole ad", opens the full text in
+  place. The text comes from `texts.json`, else from `texts-remaining.json`, fetched once and only
+  when an ad is opened.
+- The only personal marks are Saved, Applied and Closed. They are kept in `localStorage` per ad
+  (`job-assistant-status:<id>`), so they work for any visitor and survive sessions. With the owner
+  token and a working D1, the D1 review rows are read on load and win, and each change is written
+  back (saved as `interesting`, applied as `applied`, closed as `closed`, cleared as `new`).
+- Motion uses one ease-out curve on opacity, transform and the disclosure's height: the opened ad
+  settles in, the whole ad expands, marks and counts ease, a changed list fades in with a short
+  stagger, and on phones the ad slides in. Nothing moves on first paint, and
+  `prefers-reduced-motion` turns it all off. There are no keyboard shortcuts.
+- Under 760 px the list comes first and the opened ad replaces it, with a back button.
+- How it works keeps the method, the runs and the owner tools (token, CV upload, draft editor,
+  approval request).
 
 The home page entry described below is not built in this task: the task brief keeps
 `frontend/src/home/` untouched while the owner works there.

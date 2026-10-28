@@ -36,25 +36,20 @@ const problem = (status: number): Records['problem'] =>
   status === 401 ? 'token' : status === 503 ? 'storage' : 'offline'
 
 /**
- * The owner's records, read only with the owner token: statuses and notes sit next to named
- * employers. Empty and marked unavailable, with the reason, without the token or when the Worker
- * refuses, has no storage or cannot be reached.
+ * The owner's statuses from the owner store, read only with the owner token: they sit next to
+ * named employers. Empty and marked unavailable, with the reason, without the token or when the
+ * Worker refuses, has no storage or cannot be reached.
  */
 export async function loadRecords(): Promise<Records> {
   const token = ownerToken()
-  const none = { reviews: {}, labels: {}, available: false }
+  const none = { reviews: {}, available: false }
   if (!token) return none
   try {
-    const [r, l] = await Promise.all(
-      ['reviews', 'labels'].map((k) =>
-        fetch(`/api/jobs/${k}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ),
-    )
-    if (!r.ok || !l.ok)
-      return { ...none, problem: problem(r.ok ? l.status : r.status) }
-    return { ...(await r.json()), ...(await l.json()), available: true }
+    const r = await fetch('/api/jobs/reviews', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!r.ok) return { ...none, problem: problem(r.status) }
+    return { ...(await r.json()), available: true }
   } catch {
     return { ...none, problem: 'offline' }
   }

@@ -1,5 +1,4 @@
-/* Tables, the method and owner sections (the How it works tab), and the narrow-screen layout.
-   Loaded last, so its media queries override the rules of the other two files. */
+/* The How it works tab: tables, the method, the owner's tools and the wishes editor. */
 .ja-table-wrap {
   overflow-x: auto;
 }
@@ -34,14 +33,6 @@
   font-size: var(--type-caption);
   font-weight: var(--weight-body);
 }
-.ja-table q {
-  display: block;
-  color: var(--color-ink-secondary);
-}
-.ja-table strong {
-  font-weight: var(--weight-ui);
-}
-.ja-table tr[data-gap='true'] strong,
 .ja-demand tr[data-gap='true'] td:last-child {
   color: var(--color-ink-secondary);
   font-style: italic;
@@ -75,20 +66,8 @@
 .ja-steps li + li {
   margin-top: var(--sp-2);
 }
-.ja-owner,
-.ja-wide {
+.ja-owner {
   grid-column: 1 / -1;
-}
-.ja-table-wrap + .ja-table-wrap {
-  margin-top: var(--sp-5);
-}
-.ja-cv-skills caption {
-  color: var(--color-ink);
-  font-weight: var(--weight-ui);
-}
-.ja-cv-skills tbody th {
-  width: 12rem;
-  white-space: normal;
 }
 .ja-wishes {
   display: grid;
@@ -137,93 +116,8 @@
   color: var(--color-ink);
 }
 
-@media (pointer: coarse) {
-  .ja-find select,
-  .ja-results-head select,
-  .ja-chip,
-  .ja-clear,
-  .ja-segment button {
-    min-height: 44px;
-  }
-}
-/* Under 760 px the open ad replaces the list, with a back button; the list keeps the page scroll. */
 @media (max-width: 760px) {
-  .ja-work,
   .ja-sections {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .ja-list-pane,
-  .ja-detail {
-    position: static;
-    max-height: none;
-    overflow: visible;
-  }
-  .ja-work[data-open='true'] .ja-list-pane,
-  .ja-work[data-open='false'] .ja-detail {
-    display: none;
-  }
-  .ja-back {
-    display: inline-flex;
-  }
-  .ja:has(.ja-work[data-open='true']) .ja-find {
-    display: none;
-  }
-  .ja-filters label:first-child {
-    flex-basis: 100%;
-  }
-  .ja-find select,
-  .ja-results-head select,
-  .ja-segment button {
-    min-height: 44px;
-  }
-  .ja-filters label {
-    flex-basis: calc(50% - var(--sp-3));
-    max-width: none;
-  }
-  .ja-board {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  /* One block per row: the skill, then the ad and the CV side at full width. */
-  .ja-cv-skills thead,
-  .ja-evidence thead {
-    display: none;
-  }
-  .ja-cv-skills tr,
-  .ja-cv-skills tbody th,
-  .ja-cv-skills td,
-  .ja-evidence tr,
-  .ja-evidence tbody th,
-  .ja-evidence td {
-    display: block;
-    width: auto;
-  }
-  .ja-cv-skills tbody th,
-  .ja-evidence tbody th,
-  .ja-evidence td:not(:last-child) {
-    padding-bottom: 0;
-    border-bottom: 0;
-  }
-  .ja-evidence tbody th span {
-    display: inline;
-    margin-inline-start: var(--sp-2);
-  }
-  .ja-evidence td::before {
-    content: attr(data-label);
-    display: block;
-    color: var(--color-ink-secondary);
-    font-size: var(--type-caption);
-  }
-  .ja-evidence td p {
-    margin: var(--sp-1) 0 0;
-  }
-}
-/* On a phone no ad is open until one is tapped, so the first card is not marked as open. */
-@media (max-width: 760px) {
-  .ja-work[data-open='false'] .ja-card[aria-current='true'] {
-    border-color: var(--color-border);
-    background: none;
-  }
-  .ja-work[data-open='false'] .ja-card[aria-current='true'] .ja-card-title {
-    text-decoration: none;
   }
 }

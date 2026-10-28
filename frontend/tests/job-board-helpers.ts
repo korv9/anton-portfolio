@@ -50,14 +50,13 @@ export async function board(
       })
     // Public: the approved profile only, as worker/jobs.ts answers without the token.
     if (what === 'profile') return route.fulfill({ json: f.profile })
-    // Like worker/jobs.ts: statuses, notes and labels only with the owner token.
+    // Like worker/jobs.ts: statuses only with the owner token.
     if (!route.request().headers()['authorization'])
       return route.fulfill({
         status: 401,
         json: { error: 'owner token required' },
       })
     if (what === 'reviews') return route.fulfill({ json: f.reviews })
-    if (what === 'labels') return route.fulfill({ json: f.labels })
     if (request.method() === 'PUT' && request.url().includes('/reviews/')) {
       o.puts?.push({ id: what!, body: request.postDataJSON() })
       return route.fulfill({ json: { updated_at: new Date().toISOString() } })
@@ -66,11 +65,12 @@ export async function board(
   })
   await page.goto('/' + hash)
   if (!hash.includes('tab=') && !o.fail?.ads)
-    await expect(page.locator('a.ja-card').first()).toBeVisible()
+    await expect(page.locator('a.ja-item').first()).toBeVisible()
 }
 export const asOwner = (page: Page) =>
   page.addInitScript(() =>
     localStorage.setItem('job-assistant-owner-token', 'fixture-token'),
   )
-export const count = (page: Page) =>
-  page.locator('.ja-results-head [aria-live]').innerText()
+/** The count on a list tab, e.g. tab(page, 'Saved'). */
+export const tab = (page: Page, name: string) =>
+  page.getByRole('button', { name: new RegExp(`^${name} `) })

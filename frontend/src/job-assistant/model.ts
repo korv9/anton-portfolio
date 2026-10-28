@@ -1,4 +1,4 @@
-/** Types and pure logic of the job assistant: the joined rows, status and the label evaluation. */
+/** Types and pure logic of the job assistant: the joined rows and the personal statuses. */
 export type MatchClass = 'strong' | 'possible' | 'stretch' | 'outside'
 export const CLASSES: MatchClass[] = [
   'strong',
@@ -6,28 +6,38 @@ export const CLASSES: MatchClass[] = [
   'stretch',
   'outside',
 ]
-export const STATUSES = [
-  'new',
-  'review',
-  'interesting',
-  'pass',
-  'applied',
-  'interview',
-  'offer',
-  'rejected',
-  'closed',
-] as const
-export type Status = (typeof STATUSES)[number]
-/** The application pipeline, from saving an ad to the answer; 'interesting' is shown as Saved. */
-export const PIPELINE = [
-  'interesting',
-  'applied',
-  'interview',
-  'offer',
-  'rejected',
-] as const satisfies readonly Status[]
-export const LABELS = ['relevant', 'maybe', 'not_relevant'] as const
-export type Label = (typeof LABELS)[number]
+/** The reader's own marks on an ad: the only personal functions on the board. */
+export const MINE = ['saved', 'applied', 'closed'] as const
+export type Mine = (typeof MINE)[number]
+/** Statuses the owner store (D1, worker/jobs.ts) accepts; older ones are read into a mark. */
+export type Status =
+  | 'new'
+  | 'review'
+  | 'interesting'
+  | 'pass'
+  | 'applied'
+  | 'interview'
+  | 'offer'
+  | 'rejected'
+  | 'closed'
+/** A mark as the owner store writes it; none is written as 'new'. */
+export const TO_STORE: Record<Mine, Status> = {
+  saved: 'interesting',
+  applied: 'applied',
+  closed: 'closed',
+}
+/** A stored status as a mark: interview and offer still count as applied, a pass or no as closed. */
+export const FROM_STORE: Record<Status, Mine | undefined> = {
+  new: undefined,
+  review: undefined,
+  interesting: 'saved',
+  applied: 'applied',
+  interview: 'applied',
+  offer: 'applied',
+  pass: 'closed',
+  rejected: 'closed',
+  closed: 'closed',
+}
 
 export type Ad = {
   id: string
@@ -136,15 +146,8 @@ export type Delivered = {
 /** A released file other than ads.json that could not be read; the page goes on without it. */
 export type Optional = 'matches' | 'texts' | 'demand'
 export type Review = { status: Status; note: string; updated_at?: string }
-export type LabelRow = {
-  label: Label
-  note: string
-  shown_class: MatchClass
-  updated_at?: string
-}
 export type Records = {
   reviews: Record<string, Review>
-  labels: Record<string, LabelRow>
   available: boolean
   /** Why the records could not be read with a token: refused, no storage (503), or unreachable. */
   problem?: 'token' | 'storage' | 'offline'
@@ -154,17 +157,17 @@ export type Records = {
 export function recordsNote(p: Records['problem']): [string, string] {
   if (p === 'token')
     return [
-      'The owner token was not accepted, so statuses and notes are not shown or saved.',
-      'Ägartoken godtogs inte, så status och anteckningar visas inte och sparas inte.',
+      'The owner token was not accepted, so statuses are kept on this device only.',
+      'Ägartoken godtogs inte, så status sparas bara på den här enheten.',
     ]
   if (p === 'storage')
     return [
-      'The record storage is not set up yet, so statuses, notes and labels cannot be saved.',
-      'Lagringen är inte uppsatt än, så status, anteckningar och märkningar kan inte sparas.',
+      'The owner store is not set up yet, so statuses are kept on this device only.',
+      'Ägarlagringen är inte uppsatt än, så status sparas bara på den här enheten.',
     ]
   return [
-    'The owner records could not be reached just now. The ads still work; try again later.',
-    'Ägarens poster gick inte att nå just nu. Annonserna fungerar ändå; försök igen senare.',
+    'The owner store could not be reached just now, so statuses are kept on this device.',
+    'Ägarlagringen gick inte att nå just nu, så status sparas på den här enheten.',
   ]
 }
 
@@ -177,66 +180,19 @@ export function https(url: string | null | undefined) {
   }
 }
 
-/** An ad's status: the owner's, else closed when JobTech removed it or the deadline passed, else new. */
-export function statusOf(ad: Ad, review?: Review): Status {
-  if (review && review.status !== 'new') return review.status
-  return ad.removed_at || ad.expired ? 'closed' : 'new'
-}
-
-export type Row = {
-  ad: Ad
-  match: Match
-  status: Status
-  review?: Review
-  label?: LabelRow
-}
-export function rows(d: Delivered, rec: Records): Row[] {
-  const ads = new Map(d.ads.ads.map((a) => [a.id, a]))
-  return d.matches.matches.flatMap((match) => {
-    const ad = ads.get(match.id)
-    if (!ad) return []
-    const review = rec.reviews[match.id]
-    return [
-      {
-        ad,
-        match,
-        review,
-        label: rec.labels[match.id],
-        status: statusOf(ad, review),
-      },
-    ]
-  })
-}
+export type Row = { ad: Ad; match?: Match; mine?: Mine }
 
 /**
- * The owner's relevance labels against the classes shown when labelling: how many listed ads
- * (strong or possible) were relevant, how many sampled outside ads were relevant (missed), and
- * every ad whose class and label disagree. Small counts describe this search only.
+ * The board's rows: every open ad (not removed, not expired, not a duplicate) with its match
+ * when there is one, and any other ad the reader has marked, so a saved ad stays findable.
  */
-export function evaluation(labels: Record<string, LabelRow>) {
-  const all = Object.entries(labels)
-  const listed = all.filter(
-    ([, l]) => l.shown_class === 'strong' || l.shown_class === 'possible',
+export function rows(d: Delivered, mine: Record<string, Mine>): Row[] {
+  const matches = new Map(d.matches.matches.map((m) => [m.id, m]))
+  return d.ads.ads.flatMap((ad) =>
+    (!ad.removed_at && !ad.expired && !ad.duplicate_of) || mine[ad.id]
+      ? [{ ad, match: matches.get(ad.id), mine: mine[ad.id] }]
+      : [],
   )
-  const outside = all.filter(([, l]) => l.shown_class === 'outside')
-  const relevant = (xs: typeof all) =>
-    xs.filter(([, l]) => l.label === 'relevant').length
-  return {
-    labelled: all.length,
-    listed: listed.length,
-    listedRelevant: relevant(listed),
-    outside: outside.length,
-    outsideRelevant: relevant(outside),
-    disagreements: all
-      .filter(
-        ([, l]) =>
-          (l.label === 'relevant' &&
-            (l.shown_class === 'outside' || l.shown_class === 'stretch')) ||
-          (l.label === 'not_relevant' &&
-            (l.shown_class === 'strong' || l.shown_class === 'possible')),
-      )
-      .map(([id, l]) => ({ id, ...l })),
-  }
 }
 
 export const ROLE_NAMES: Record<string, [string, string]> = {

@@ -1,90 +1,76 @@
-/** #jobs as a job board: search, a filter chip, opening an ad, back navigation and the phone layout. */
+/** #jobs as a desk: the list tabs, search and filters, an opened ad, the whole ad, the phone layout. */
 import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './test'
 import { jobAssistantFixture } from './fixtures/job-assistant'
-import { board, count, shots, type Fixture } from './job-board-helpers'
+import { board, shots, tab } from './job-board-helpers'
 
-test('search, a removable filter chip, an opened ad and the back button', async ({
+test('search, a filter, an opened ad with its tags and the whole ad, and the back button', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  // The Applications pipeline shows the owner's statuses, so this visit carries the token.
-  await page.addInitScript(() =>
-    localStorage.setItem('job-assistant-owner-token', 'fixture-token'),
-  )
   await board(page)
-  await expect(page.locator('.page-head-kpis')).toContainText('Strong matches')
-  const before = await count(page)
+  // Good fit is strong and possible: 18 of the fixture's 30 ads.
+  await expect(tab(page, 'Good fit')).toHaveAttribute('aria-pressed', 'true')
+  await expect(tab(page, 'Good fit')).toContainText('18')
+  await expect(tab(page, 'All')).toContainText('30')
+  await expect(page.locator('kbd')).toHaveCount(0)
 
-  await page.getByRole('searchbox', { name: /Search jobs/ }).fill('dbt')
-  await expect.poll(() => count(page)).not.toBe(before)
+  await page.getByRole('searchbox', { name: 'Search jobs' }).fill('dbt')
   await expect(page).toHaveURL(/q=dbt/)
-  for (const card of await page.locator('.ja-card').all())
-    await expect(card).toContainText('dbt')
+  await expect(tab(page, 'All')).toContainText('15')
 
+  await page.getByText('Filters', { exact: true }).click()
   await page.getByLabel('Place').selectOption('Solna')
   await expect(page).toHaveURL(/place=Solna/)
-  const chip = page.getByRole('button', { name: 'Remove filter Solna' })
-  await expect(chip).toBeVisible()
-  await chip.click()
-  await expect(page).not.toHaveURL(/place=/)
+  for (const item of await page.locator('a.ja-item').all())
+    await expect(item).toContainText('Solna')
 
-  const first = page.locator('.ja-card').first()
-  const title = await first.locator('.ja-card-title').innerText()
+  const first = page.locator('a.ja-item').first()
+  const title = await first.locator('.ja-item-title').innerText()
   await first.click()
   await expect(page).toHaveURL(/ad=\d+/)
   await expect(page.locator('#ja-detail-title')).toHaveText(title)
-  await expect(page.locator('.ja-card[aria-current="true"]')).toHaveCount(1)
-  await expect(page.getByRole('link', { name: 'Original ad' })).toBeVisible()
-  if (shots) await page.screenshot({ path: `${shots}/jobs-desktop.png` })
+  const asks = page.locator('section:has(#ja-asks)')
+  await expect(asks).toContainText('Required')
+  await expect(asks).toContainText('Nice to have')
+  await expect(page.locator('.ja-lead')).toHaveText('Vi söker en dataingenjör.')
+  await expect(page.locator('.ja-rest')).toBeHidden()
+  await page.getByText('Read the whole ad').click()
+  await expect(page.locator('.ja-rest')).toContainText(
+    'Meriterande med Kubernetes.',
+  )
+  await expect(
+    page.getByRole('link', { name: /Apply at the employer/ }),
+  ).toHaveAttribute('href', /^https:\/\/arbetsformedlingen\.se\//)
+  if (shots) await page.screenshot({ path: `${shots}/desk-desktop.png` })
 
   await page.goBack()
   await expect(page).not.toHaveURL(/ad=/)
   await expect(page).toHaveURL(/q=dbt/)
-
-  await page.getByRole('button', { name: 'Applications' }).click()
-  await expect(page.getByRole('heading', { name: /Applied/ })).toBeVisible()
-  if (shots) await page.screenshot({ path: `${shots}/jobs-pipeline.png` })
-})
-
-test('the arrow keys move between cards and Enter opens one', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1280, height: 900 })
-  await board(page)
-  await page.locator('.ja-card').first().focus()
-  await page.keyboard.press('ArrowDown')
-  await expect(page.locator('.ja-card').nth(1)).toBeFocused()
-  await page.keyboard.press('Enter')
-  await expect(page).toHaveURL(/ad=\d+/)
 })
 
 test('on a phone the ad replaces the list and the back button returns to it', async ({
   page,
 }) => {
-  await page.setViewportSize({ width: 390, height: 844 })
+  await page.setViewportSize({ width: 375, height: 812 })
   await board(page)
   await expect(page.locator('.ja-detail')).toBeHidden()
-  if (shots)
-    await page.screenshot({
-      path: `${shots}/jobs-mobile-list.png`,
-      fullPage: true,
-    })
-  await page.locator('.ja-card').nth(2).click()
+  await page.locator('a.ja-item').nth(2).click()
   await expect(page.locator('.ja-list-pane')).toBeHidden()
-  const back = page.getByRole('button', { name: 'Back to the jobs' })
+  const back = page.getByRole('button', { name: 'Back to the list' })
   await expect(back).toBeVisible()
-  if (shots) await page.screenshot({ path: `${shots}/jobs-mobile-ad.png` })
+  const overflow = () =>
+    page.evaluate(
+      () => document.documentElement.scrollWidth > window.innerWidth,
+    )
+  expect(await overflow()).toBe(false)
   await back.click()
   await expect(page.locator('.ja-list-pane')).toBeVisible()
   await expect(page).not.toHaveURL(/ad=/)
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > window.innerWidth,
-  )
-  expect(overflow).toBe(false)
+  expect(await overflow()).toBe(false)
 })
 
-test('without a profile the board lists the open ads under a calm note, with no classes, filters or error codes', async ({
+test('without a profile the desk lists every open ad under a calm note, with no error codes', async ({
   page,
 }) => {
   const f = jobAssistantFixture()
@@ -99,47 +85,48 @@ test('without a profile the board lists the open ads under a calm note, with no 
       },
       matches: [],
     },
-    texts: { ...f.texts, texts: {} },
   }
-  await board(page, '#jobs', unmatched as unknown as Fixture)
-  await expect(page.locator('.ja-empty')).toContainText(
+  await board(page, '#jobs', unmatched as unknown as typeof f)
+  await expect(page.locator('.ja-notes')).toContainText(
     'Matching against my CV is paused for now.',
   )
-  await expect(page.locator('.ja-empty')).not.toContainText('403')
-  await expect(page.locator('.ja-empty')).not.toContainText('starts when')
-  await expect(page.locator('.ja-results-head')).toContainText(
-    `${f.ads.ads.length} open ads`,
-  )
-  await expect(page.locator('.ja-card')).toHaveCount(20)
-  await expect(page.locator('.ja-badge')).toHaveCount(0)
-  await expect(
-    page.getByRole('searchbox', { name: /Search jobs/ }),
-  ).toHaveCount(0)
-  await expect(page.locator('.page-head-kpis')).not.toContainText(
-    'Strong matches',
-  )
-  // A visitor has no token: the owner-only Applications tab and stat are not offered.
-  await expect(page.locator('.page-head-kpis')).not.toContainText(
-    'Applications',
-  )
-  await expect(page.getByRole('button', { name: 'Applications' })).toHaveCount(
-    0,
-  )
+  await expect(page.locator('.ja-notes')).not.toContainText('403')
+  await expect(tab(page, 'All')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.locator('a.ja-item')).toHaveCount(30)
+  await expect(page.locator('#ja-asks')).toHaveCount(0)
 })
 
-test('How it works shows the approved profile to a visitor, with sources, and no owner records', async ({
+test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({
   page,
 }) => {
-  await board(page, '#jobs?tab=about')
-  const profile = page.locator('section:has(#ja-cv-profile)')
-  await expect(profile).toContainText('Version 1')
-  await expect(profile).toContainText('Built dbt models.')
-  await expect(profile).toContainText(
-    'Internship (LIA) · Data Engineer, Testbolag A AB',
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const f = jobAssistantFixture()
+  for (const id of ['1005', '1010']) {
+    delete f.texts.texts[id]
+    f['texts-remaining'].texts[id] = {
+      description: `Hela texten för annons ${id}.`,
+      contact_redactions: 0,
+    }
+  }
+  const remaining: string[] = []
+  await board(page, '#jobs', f, { remaining })
+  await page.waitForLoadState('networkidle')
+  // 1005 (strong, the nearest deadline) is first on the desk, shown but not opened: nothing is
+  // fetched yet.
+  expect(remaining).toHaveLength(0)
+  await expect(page.locator('a.ja-item').first()).toHaveAttribute(
+    'href',
+    /ad=1005$/,
   )
-  await expect(profile).toContainText('Own project · Test project')
-  await expect(page.locator('.ja-owner')).toHaveCount(0)
-  await expect(page.locator('main')).not.toContainText('Profile draft')
+  await page.locator('a.ja-item[href$="ad=1005"]').click()
+  await expect(page.locator('.ja-lead')).toHaveText(
+    'Hela texten för annons 1005.',
+  )
+  await page.locator('a.ja-item[href$="ad=1010"]').click()
+  await expect(page.locator('.ja-lead')).toHaveText(
+    'Hela texten för annons 1010.',
+  )
+  expect(remaining).toHaveLength(1)
 })
 
 for (const hash of ['#jobs?ad=1000', '#jobs?tab=about'])
@@ -155,30 +142,3 @@ for (const hash of ['#jobs?ad=1000', '#jobs?tab=about'])
       result.violations.map((v) => `${v.id}: ${v.nodes[0]?.target.join(' ')}`),
     ).toEqual([])
   })
-
-test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 })
-  const f = jobAssistantFixture()
-  for (const id of ['1003', '1008']) {
-    delete f.texts.texts[id]
-    f['texts-remaining'].texts[id] = {
-      description: `Hela texten för annons ${id}.`,
-      contact_redactions: 0,
-    }
-  }
-  const remaining: string[] = []
-  await board(page, '#jobs?match=stretch', f, { remaining })
-  await page.waitForLoadState('networkidle')
-  expect(remaining).toHaveLength(0)
-  await page.locator('a.ja-card[href$="ad=1003"]').click()
-  await expect(page.locator('.ja-ad-text')).toHaveText(
-    /Hela texten för annons 1003\./,
-  )
-  await page.locator('a.ja-card[href$="ad=1008"]').click()
-  await expect(page.locator('.ja-ad-text')).toHaveText(
-    /Hela texten för annons 1008\./,
-  )
-  expect(remaining).toHaveLength(1)
-})
