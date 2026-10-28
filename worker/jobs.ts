@@ -161,6 +161,16 @@ async function hex(bytes: ArrayBuffer) {
     .join('')
 }
 
+/** An approved profile as visitors read it: no `corrections` (owner notes), no `cv.filename`. */
+export function publicProfile(stored: string) {
+  const { corrections: _, ...p } = JSON.parse(stored)
+  if (p.cv && typeof p.cv === 'object') {
+    const { filename: __, ...cv } = p.cv
+    p.cv = cv
+  }
+  return p
+}
+
 export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
   const db = env.JOBS_DB
   if (!db)
@@ -178,14 +188,21 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
   if (path[0] === 'profile' && path.length === 1 && !write) {
     const versions = await list(db, 'version')
     const last = versions.at(-1) ?? null
+    const isOwner = await owner(request, env)
     // The draft is unapproved: only the owner sees it.
-    const draft = (await owner(request, env))
+    const draft = isOwner
       ? parse(await db.prepare(SQL.get).bind('draft', 'current').first<Row>())
       : null
     return reply({
       draft,
-      // The approved profile exactly as stored, so its profile_sha256 still matches.
-      approved: last ? JSON.parse(last.value) : null,
+      // The owner (and the hourly run) gets the approved profile exactly as stored, so its
+      // profile_sha256 still matches; visitors get it without the owner's correction notes and
+      // the uploaded file's name.
+      approved: last
+        ? isOwner
+          ? JSON.parse(last.value)
+          : publicProfile(last.value)
+        : null,
       versions: versions.map((v) => {
         const p = JSON.parse(v.value)
         return {

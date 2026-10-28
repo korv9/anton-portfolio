@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   loadDelivered,
   loadRecords,
+  remainingText,
   type Delivered,
   type LabelRow,
   type Records,
@@ -56,4 +57,38 @@ export function useJobData(owner: boolean) {
   }
 
   return { data, records, setRecords, failed, retry, saved }
+}
+
+/**
+ * An ad's full text: texts.json when it has it, else the remaining texts, fetched only once
+ * `load` is true (the ad was opened, not just shown first on a wide screen).
+ */
+export function useAdText(
+  id: string,
+  published: string | undefined,
+  load: boolean,
+) {
+  const [state, setState] = useState<{
+    id: string
+    text?: string
+    failed?: boolean
+  }>({ id })
+  useEffect(() => {
+    if (published || !load) return
+    let live = true
+    remainingText(id).then(
+      (text) => live && setState({ id, text, failed: !text }),
+      () => live && setState({ id, failed: true }),
+    )
+    return () => {
+      live = false
+    }
+  }, [id, published, load])
+  if (published) return { text: published, loading: false, failed: false }
+  const mine = state.id === id ? state : { id }
+  return {
+    text: mine.text,
+    loading: load && !mine.text && !mine.failed,
+    failed: Boolean(mine.failed),
+  }
 }

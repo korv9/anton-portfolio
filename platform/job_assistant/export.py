@@ -5,7 +5,8 @@
 
 ads.json holds mart_job_assistant_ads (current ads and those removed in the last 30 days, without the
 text), the cursor and the last week of mart_job_assistant_runs_daily, which is the record of
-scheduled operation. matches.json, texts.json and demand.json come from export_matches.py. The
+scheduled operation. matches.json, texts.json, texts-remaining.json and demand.json come from
+export_matches.py. The
 marts are built by `dbt build --select tag:job_assistant` (platform/models/*/job_assistant).
 """
 from __future__ import annotations
@@ -92,8 +93,9 @@ def main() -> None:
         def read(name):
             return json.loads((args.check / "job-assistant" / name).read_text(encoding="utf-8"))
         data = read("ads.json")
-        found = problems(data, now) + export_matches.problems(read("matches.json"), read("texts.json"),
-                                                              export_matches.open_ids(data))
+        texts = read("texts.json")
+        found = (problems(data, now) + export_matches.problems(read("matches.json"), texts, export_matches.open_ids(data))
+                 + export_matches.remaining_problems(texts, read("texts-remaining.json"), data))
         print("\n".join(found) or "job-assistant: valid")
         sys.exit(1 if found else 0)
     state = json.loads((store_dir() / "state.json").read_text(encoding="utf-8"))
@@ -103,14 +105,16 @@ def main() -> None:
     data = build(db, state, now)
     # rank.py's note on the profile route is provenance of the run, read from the raw store as state is.
     note = json.loads((store_dir() / "matches.json").read_text(encoding="utf-8")).get("note")
-    matches, texts, demand = export_matches.build(db, data["generated_at"], note)
+    matches, texts, demand, remaining = export_matches.build(db, data["generated_at"], note)
     db.close()
-    found = problems(data, now) + export_matches.problems(matches, texts, export_matches.open_ids(data))
+    found = (problems(data, now) + export_matches.problems(matches, texts, export_matches.open_ids(data))
+             + export_matches.remaining_problems(texts, remaining, data))
     if found:
         sys.exit("\n".join(found))
-    for name, value in (("matches.json", matches), ("texts.json", texts), ("demand.json", demand), ("ads.json", data)):
+    for name, value in (("matches.json", matches), ("texts.json", texts), ("texts-remaining.json", remaining),
+                        ("demand.json", demand), ("ads.json", data)):
         write_atomic(OUT / name, value)
-    print(f"{OUT}: {len(data['ads'])} ads, {len(matches['matches'])} matches, {len(texts['texts'])} texts, "
+    print(f"{OUT}: {len(data['ads'])} ads, {len(matches['matches'])} matches, {len(texts['texts'])}+{len(remaining['texts'])} texts, "
           f"{data['counts']}")
 
 

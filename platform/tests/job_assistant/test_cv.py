@@ -172,3 +172,31 @@ def test_approval_versions_and_rejects_unchanged(owner):
     assert v2["version"] == 2 and v2["profile_sha256"] != v1["profile_sha256"]
     with pytest.raises(ValueError, match="not valid"):
         approve(correct(v1, {"professional_years": -1}, "", NOW), text, [v1], NOW)
+
+
+def test_seniority_wish_and_evidence_refs(owner):
+    profile, text = owner
+    wishes = {**profile["wishes"], "seniority": "any"}
+    assert problems(correct(profile, {"wishes": wishes}, "", NOW), text) == []
+    found = problems(correct(profile, {"wishes": {**wishes, "seniority": "senior"}}, "", NOW), text)
+    assert any("wishes/seniority" in p for p in found)
+    skills = [{**s, "evidence": [{**e, "ref": "experience-9"} for e in s["evidence"]]} if s["skill"] == "Python" else s
+              for s in profile["skills"]]
+    assert any("ref names no profile entry" in p for p in problems(correct(profile, {"skills": skills}, "", NOW), text))
+
+
+def test_every_cv_quote_is_word_for_word_in_the_cv_text(owner):
+    # Only whitespace may differ (PDF line wraps); punctuation and order are the CV's own.
+    profile, text = owner
+    import re
+    from cv import LINK
+
+    def fold(s):
+        return re.sub(r"\s+", " ", s.replace("•", " ")).strip().casefold()
+    whole = fold(text), fold(LINK.sub("", text))
+    quotes = [e["quote"] for s in profile["skills"] for e in s["evidence"]]
+    quotes += [q for k in ("experience", "projects", "education") for i in profile[k] for q in [i["quote"], *i["details"]]]
+    missing = [q for q in quotes if not any(fold(q) in w for w in whole)]
+    assert quotes and missing == []
+    assert "covering tickets, problems, changes, agents and departments." in " ".join(quotes)
+    assert not any(q.startswith("LIA internship · Freshservice ITSM data in Azure Databricks Built") for q in quotes)

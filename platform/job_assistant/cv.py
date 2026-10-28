@@ -24,7 +24,7 @@ from xml.etree import ElementTree
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from skills import SKILLS, best_level, find_skills  # noqa: E402
 
-PARSER_VERSION = "cv-rules-v1"
+PARSER_VERSION = "cv-rules-v2"
 PDF = "application/pdf"
 DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 HEADINGS = {
@@ -76,7 +76,9 @@ def read_text(data: bytes, media_type: str) -> str:
 
 def clean_lines(text: str) -> list[str]:
     """CV lines without contact details: the contact span goes, the rest of its line stays."""
-    lines = [re.sub(r"\s+", " ", CONTACT_SPAN.sub(" ", line)).strip(" /·|,")
+    # A comma at the line end is kept ("covering tickets,"), so quotes stay word for word; only a
+    # comma left by a cut contact span goes.
+    lines = [re.sub(r"\s+", " ", CONTACT_SPAN.sub(" ", line)).strip(" /·|," if CONTACT_SPAN.search(line) else " /·|")
              for line in text.replace("•", " ").splitlines()]
     return [line for line in lines if line and not NOISE.match(line) and LINK.sub("", line).strip(" /·|,")]
 
@@ -96,8 +98,17 @@ def sections(lines: list[str]) -> dict[str, list[str]]:
 
 
 def sentences(lines: list[str]) -> list[str]:
-    """Wrapped PDF lines joined back into sentences, so a quote is a whole sentence."""
-    return [s.strip() for s in re.split(r"(?<=[.!?])\s+", " ".join(lines)) if s.strip()]
+    """Wrapped PDF lines joined back into sentences, so a quote is a whole sentence.
+
+    A short line without end punctuation before a capitalised line is a heading of its own
+    ("LIA internship · Freshservice ITSM data in Azure Databricks"), not the start of a sentence.
+    """
+    text = ""
+    for i, line in enumerate(lines):
+        prev = lines[i - 1] if i else ""
+        heading = prev and len(prev) < 80 and prev[-1] not in ".!?,;:" and line[:1].isupper()
+        text += ("\n" if heading else " ") + line
+    return [s.strip() for s in re.split(r"(?<=[.!?])\s+|\n", text) if s.strip()]
 
 
 def entries(lines: list[str]) -> list[dict]:

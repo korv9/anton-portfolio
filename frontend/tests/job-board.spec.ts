@@ -1,47 +1,8 @@
 /** #jobs as a job board: search, a filter chip, opening an ad, back navigation and the phone layout. */
-import type { Page } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 import { test, expect } from './test'
 import { jobAssistantFixture } from './fixtures/job-assistant'
-
-const shots = process.env.JOBS_SCREENSHOTS
-
-type Fixture = ReturnType<typeof jobAssistantFixture>
-
-async function board(
-  page: Page,
-  hash = '#jobs',
-  f: Fixture = jobAssistantFixture(),
-) {
-  // The committed delivery reads job-assistant/ from R2; these fixtures stand in for it locally.
-  await page.route('**/data/delivery.json', async (route) => {
-    const { live: _, ...local } = await (await route.fetch()).json()
-    return route.fulfill({ json: local })
-  })
-  await page.route('**/data/job-assistant/*.json', (route) => {
-    const name = new URL(route.request().url()).pathname.split('/').pop()!
-    return route.fulfill({
-      json: f[
-        name.replace('.json', '') as 'ads' | 'matches' | 'texts' | 'demand'
-      ],
-    })
-  })
-  await page.route('**/api/jobs/**', (route) => {
-    const what = new URL(route.request().url()).pathname.split('/').pop()
-    // Like worker/jobs.ts: statuses, notes and labels only with the owner token.
-    if (!route.request().headers()['authorization'])
-      return route.fulfill({
-        status: 401,
-        json: { error: 'owner token required' },
-      })
-    if (what === 'reviews') return route.fulfill({ json: f.reviews })
-    if (what === 'labels') return route.fulfill({ json: f.labels })
-    return route.fulfill({ status: 404, json: { error: 'not found' } })
-  })
-  await page.goto('/' + hash)
-  await expect(page.locator('.ja-card').first()).toBeVisible()
-}
-const count = (page: Page) =>
-  page.locator('.ja-results-head [aria-live]').innerText()
+import { board, count, shots, type Fixture } from './job-board-helpers'
 
 test('search, a removable filter chip, an opened ad and the back button', async ({
   page,
@@ -49,7 +10,7 @@ test('search, a removable filter chip, an opened ad and the back button', async 
   await page.setViewportSize({ width: 1440, height: 900 })
   // The Applications pipeline shows the owner's statuses, so this visit carries the token.
   await page.addInitScript(() =>
-    sessionStorage.setItem('job-assistant-owner-token', 'fixture-token'),
+    localStorage.setItem('job-assistant-owner-token', 'fixture-token'),
   )
   await board(page)
   await expect(page.locator('.page-head-kpis')).toContainText('Strong matches')
@@ -164,4 +125,60 @@ test('without a profile the board lists the open ads under a calm note, with no 
   await expect(page.getByRole('button', { name: 'Applications' })).toHaveCount(
     0,
   )
+})
+
+test('How it works shows the approved profile to a visitor, with sources, and no owner records', async ({
+  page,
+}) => {
+  await board(page, '#jobs?tab=about')
+  const profile = page.locator('section:has(#ja-cv-profile)')
+  await expect(profile).toContainText('Version 1')
+  await expect(profile).toContainText('Built dbt models.')
+  await expect(profile).toContainText(
+    'Internship (LIA) · Data Engineer, Testbolag A AB',
+  )
+  await expect(profile).toContainText('Own project · Test project')
+  await expect(page.locator('.ja-owner')).toHaveCount(0)
+  await expect(page.locator('main')).not.toContainText('Profile draft')
+})
+
+for (const hash of ['#jobs?ad=1000', '#jobs?tab=about'])
+  test(`${hash} has no axe violations`, async ({ page, isMobile }) => {
+    test.skip(isMobile, 'the same markup on a phone')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await board(page, hash)
+    await expect(page.locator('.ja-sections, .ja-detail').first()).toBeVisible()
+    await page.waitForLoadState('networkidle')
+    const result = await new AxeBuilder({ page }).include('main').analyze()
+    expect(
+      result.violations.map((v) => `${v.id}: ${v.nodes[0]?.target.join(' ')}`),
+    ).toEqual([])
+  })
+
+test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const f = jobAssistantFixture()
+  for (const id of ['1003', '1008']) {
+    delete f.texts.texts[id]
+    f['texts-remaining'].texts[id] = {
+      description: `Hela texten för annons ${id}.`,
+      contact_redactions: 0,
+    }
+  }
+  const remaining: string[] = []
+  await board(page, '#jobs?match=stretch', f, { remaining })
+  await page.waitForLoadState('networkidle')
+  expect(remaining).toHaveLength(0)
+  await page.locator('a.ja-card[href$="ad=1003"]').click()
+  await expect(page.locator('.ja-ad-text')).toHaveText(
+    /Hela texten för annons 1003\./,
+  )
+  await page.locator('a.ja-card[href$="ad=1008"]').click()
+  await expect(page.locator('.ja-ad-text')).toHaveText(
+    /Hela texten för annons 1008\./,
+  )
+  expect(remaining).toHaveLength(1)
 })

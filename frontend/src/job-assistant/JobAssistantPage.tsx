@@ -19,7 +19,7 @@ import PageHead from '../ui/PageHead'
 import Unmatched from './Unmatched'
 import { useListKeys } from './useListKeys'
 import { useJobData } from './useJobData'
-import { ownerToken, rows as joinRows, type Status } from './data'
+import { https, ownerToken, rows as joinRows, type Status } from './data'
 import {
   DEFAULT_QUERY,
   facetCounts,
@@ -231,9 +231,11 @@ export default function JobAssistantPage({ route }: { route: Route }) {
               <AdDetail
                 key={selected.ad.id}
                 row={selected}
-                text={data.texts.texts[selected.ad.id]?.description}
+                published={data.texts.texts[selected.ad.id]?.description}
+                opened={selected === opened}
                 owner={owner}
                 storage={records.available}
+                problem={records.problem}
                 onSaved={saved}
                 statusKey={statusKey}
                 today={day}
@@ -279,9 +281,9 @@ function Gone({
           'Annonsen är stängd eller borttagen, så den matchas inte längre.',
         )}
       </p>
-      {ad && (
+      {ad && https(ad.source_url) && (
         <p className="ja-links">
-          <a href={ad.source_url} target="_blank" rel="noreferrer">
+          <a href={https(ad.source_url)} target="_blank" rel="noreferrer">
             {l('Original ad', 'Originalannonsen')}
           </a>
         </p>

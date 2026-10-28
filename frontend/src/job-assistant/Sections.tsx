@@ -3,17 +3,12 @@
  * show), evaluation (owner only: labels are read with the token), operation and the owner's tools
  * (only with the token or ?owner).
  */
-import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import CvProfile, { useApprovedProfile } from './CvProfile'
 import Owner from './Owner'
 import { ROLE_NAMES, evaluation, type Delivered, type Records } from './data'
 import { cvLevelLabel } from './labels'
 
-type ApprovedProfile = {
-  version: number
-  wishes: { locations: string[]; remote: string | null; roles: string[] }
-  skills: { skill: string; level: string }[]
-}
 type Props = {
   data: Delivered
   records: Records
@@ -32,13 +27,8 @@ export default function Sections({
   onOwner,
   onRecords,
 }: Props) {
-  const [profile, setProfile] = useState<ApprovedProfile | null>(null)
-  useEffect(() => {
-    fetch('/api/jobs/profile')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((p) => setProfile(p?.approved ?? null))
-      .catch(() => setProfile(null))
-  }, [])
+  const read = useApprovedProfile()
+  const profile = read && read !== 'failed' ? read : null
   const ev = evaluation(records.labels)
   const top = data.demand.skills.slice(0, 15)
 
@@ -84,6 +74,16 @@ export default function Sections({
           </a>
         </p>
       </section>
+
+      {profile && <CvProfile profile={profile} />}
+      {read === 'failed' && (
+        <p className="ja-muted" role="status">
+          {l(
+            'The approved CV profile could not be read just now, so it is not shown here.',
+            'Den godkända cv-profilen gick inte att läsa just nu, så den visas inte här.',
+          )}
+        </p>
+      )}
 
       {(profile || top.length > 0) && (
         <section aria-labelledby="ja-profile">
@@ -230,6 +230,7 @@ export default function Sections({
         <Owner
           owner={owner}
           available={records.available}
+          problem={records.problem}
           onOwner={onOwner}
           onRecords={onRecords}
         />

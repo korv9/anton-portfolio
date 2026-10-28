@@ -78,10 +78,25 @@ export function statKpis({ data, records, day }: Props): Kpi[] {
   ]
 }
 
+const MISSING: Record<Delivered['missing'][number], [string, string]> = {
+  matches: ['the matches', 'matchningarna'],
+  texts: ['the ad texts', 'annonstexterna'],
+  demand: ['the skill demand', 'kompetensefterfrågan'],
+}
+
 export function StaleNotes({ data, now }: { data: Delivered; now: Date }) {
   const hours = syncAge(data.ads.generated_at, now)
+  const missing = data.missing.map((m) => l(...MISSING[m]))
   return (
     <>
+      {missing.length > 0 && (
+        <p className="ja-stale" role="status">
+          {l(
+            `Could not load ${missing.join(' and ')} just now. The ad list still works; reload later to try again.`,
+            `Kunde inte läsa ${missing.join(' och ')} just nu. Annonslistan fungerar ändå; ladda om senare för att försöka igen.`,
+          )}
+        </p>
+      )}
       {data.matches.profile && data.matches.status?.kept && (
         <p className="ja-stale" role="status">
           {l(...keptNote(data.matches.status.kept))}

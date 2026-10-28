@@ -1,6 +1,6 @@
 /** Display names for the job assistant's classes, statuses and evidence levels. */
 import { currentLocale, l } from '../i18n'
-import type { Judgement, MatchClass, Status } from './data'
+import type { Judgement, MatchClass, Source, Status } from './data'
 
 const CLASS: Record<MatchClass, [string, string]> = {
   strong: ['Strong', 'Stark'],
@@ -20,7 +20,7 @@ const STATUS: Record<Status, [string, string]> = {
   closed: ['Closed', 'Stängd'],
 }
 const LEVEL: Record<string, [string, string]> = {
-  practical: ['In work (LIA, employment)', 'I arbete (LIA, anställning)'],
+  practical: ['In practical work', 'I praktiskt arbete'],
   education_or_project: [
     'In education or a project',
     'I utbildning eller projekt',
@@ -45,6 +45,19 @@ export function cvSection(ref: string) {
   if (!name) return ref
   return `${l('CV', 'Cv')}: ${l(...name)}${n ? `, ${l('entry', 'post')} ${n}` : ''}`
 }
+
+// The kind of CV entry a quote comes from, as the pipeline names it in matches.json.
+const SOURCE: Record<Source, [string, string]> = {
+  employment: ['Employment', 'Anställning'],
+  internship: ['Internship (LIA)', 'Praktik (LIA)'],
+  education: ['Education', 'Utbildning'],
+  project: ['Own project', 'Eget projekt'],
+  skills_list: ['Skills list', 'Kompetenslista'],
+  summary: ['Summary', 'Sammanfattning'],
+}
+/** A quote's source as a label; an unknown value is shown as it is, a missing one as nothing. */
+export const sourceLabel = (s: string | undefined) =>
+  s ? l(...(SOURCE[s as Source] ?? [s, s])) : ''
 
 export const classLabel = (c: MatchClass) => l(...CLASS[c])
 export const statusLabel = (s: Status) => l(...STATUS[s])

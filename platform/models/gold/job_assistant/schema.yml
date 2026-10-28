@@ -214,6 +214,12 @@ models:
       - name: cv_level
         data_type: VARCHAR
         description: 'Attribute: the evidence level of a CV line; null on the ad side.'
+      - name: cv_source
+        data_type: VARCHAR
+        description: 'Attribute: the kind of CV entry a CV line comes from; null on the ad side.'
+        data_tests:
+          - accepted_values: {arguments: {values: [employment, internship, education, project, skills_list, summary]}}
+          - not_null: {config: {where: "side = 'cv'"}}
 
   - name: mart_job_assistant_checks
     description: Education and conditions the detailed ads state; they never change the class.
@@ -240,7 +246,9 @@ models:
         description: 'Attribute: line in the ad text.'
 
   - name: mart_job_assistant_texts
-    description: The full public text of exactly the detailed ads, contact details redacted.
+    description: >-
+      The full public text, contact details redacted, of every detailed ad and every open,
+      non-duplicate ad; detailed marks the ones published in texts.json.
     config:
       contract: {enforced: true}
     columns:
@@ -260,6 +268,10 @@ models:
       - name: content_hash
         data_type: VARCHAR
         description: 'Attribute: the ad version of the text.'
+      - name: detailed
+        data_type: BOOLEAN
+        description: 'Attribute: the ad is detailed in matches.json (texts.json); else texts-remaining.json.'
+        data_tests: [not_null]
 
   - name: mart_job_assistant_skill_demand
     description: >-

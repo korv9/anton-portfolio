@@ -55,8 +55,8 @@ def test_project_or_education_skills_alone_are_a_stretch(profile):
     # SQL and dbt sit in the owner's projects and education, not in employment.
     m = match(ad(text="Krav: Du har erfarenhet av SQL och dbt."), profile)
     assert m["class"] == "stretch" and "2 more only in projects or education" in m["reasons"]
-    assert match(ad(text="Du kommer att bygga pipelines."), profile)["class"] == "stretch", \
-        "possible needs at least one judged skill"
+    m = match(ad(text="Du kommer att bygga pipelines."), profile)
+    assert m["class"] == "possible" and any("No skill from the vocabulary" in u for u in m["uncertain"])
 
 
 def test_senior_title_or_years_is_a_stretch(profile):
@@ -64,6 +64,24 @@ def test_senior_title_or_years_is_a_stretch(profile):
     years = ad(text="Krav: Du har minst 5 års erfarenhet av Python, SQL och Databricks.")
     m = match(years, profile)
     assert m["class"] == "stretch" and m["seniority"]["years"] == 5
+
+
+def test_seniority_any_keeps_the_class_and_reports_it(profile):
+    loose = {**profile, "wishes": {**profile["wishes"], "seniority": "any"}}
+    m = match(ad("Senior Data Engineer"), loose)
+    assert m["class"] == "strong" and "the title says senior or lead" in m["reasons"]
+    assert any("seniority" in u for u in m["uncertain"])
+    assert match(ad("Senior Data Engineer"), profile)["class"] == "stretch"
+
+
+def test_cv_quotes_name_their_source(profile):
+    quotes = [q for j in match(ad(), profile)["skills"] for q in j["cv_quotes"]]
+    assert quotes and all(q["source"] in ("employment", "internship", "education", "project", "skills_list", "summary")
+                          for q in quotes)
+    # The public CV's data engineering roles are LIA internships; they still count as practical.
+    assert all(q["source"] == "internship" for q in quotes if q["level"] == "practical")
+    kinds = {q["ref"]: q["source"] for q in quotes}
+    assert kinds.get("skills", "skills_list") == "skills_list"
 
 
 def test_place_role_and_coverage_send_ads_outside(profile):
@@ -75,9 +93,9 @@ def test_place_role_and_coverage_send_ads_outside(profile):
     assert match(ad(text="Krav: Du har erfarenhet av Java, Scala, Go och AWS."), profile)["class"] == "outside"
 
 
-def test_body_only_role_and_thin_evidence_stay_possible(profile):
+def test_body_only_role_is_a_stretch_and_thin_evidence_stays_possible(profile):
     m = match(ad("Konsult", text="Vi bygger en dataplattform. Krav: Python, SQL och Databricks."), profile)
-    assert (m["class"], m["role_from_title"]) == ("possible", False) and m["uncertain"]
+    assert (m["class"], m["role_from_title"]) == ("stretch", False) and m["uncertain"]
     assert match(ad(text="Krav: Python."), profile)["class"] == "possible"
 
 

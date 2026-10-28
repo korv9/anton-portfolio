@@ -1,7 +1,7 @@
 /** Each skill the ad asks for, with every ad sentence and every CV line behind the judgement. */
 import { l } from '../i18n'
 import type { Judgement } from './data'
-import { cvLevelLabel, cvSection } from './labels'
+import { cvLevelLabel, cvSection, sourceLabel } from './labels'
 
 const ASKS: Record<Judgement['strength'], [string, string]> = {
   required: ['required', 'krav'],
@@ -22,7 +22,7 @@ export default function Evidence({ skills, onLine }: Props) {
         {l('Requirements and CV evidence', 'Krav och belägg i cv:t')}
       </h3>
       <div className="ja-table-wrap">
-        <table className="ja-table">
+        <table className="ja-table ja-evidence">
           <thead>
             <tr>
               <th scope="col">{l('Skill', 'Kompetens')}</th>
@@ -43,7 +43,7 @@ export default function Evidence({ skills, onLine }: Props) {
                   {j.skill}
                   <span>{l(...ASKS[j.strength])}</span>
                 </th>
-                <td>
+                <td data-label={l('The ad', 'Annonsen')}>
                   {j.ad_quotes.map((q, i) => (
                     <p key={i}>
                       <q>{q.quote}</q>
@@ -63,13 +63,17 @@ export default function Evidence({ skills, onLine }: Props) {
                     </p>
                   ))}
                 </td>
-                <td>
+                <td data-label={l('The CV', 'Cv:t')}>
                   <strong>{cvLevelLabel(j.cv_level)}</strong>
                   {j.cv_quotes.map((q, i) => (
                     <p key={i}>
                       <q>{q.quote}</q>
-                      {q.ref && (
-                        <small className="ja-ref">{cvSection(q.ref)}</small>
+                      {(q.source || q.ref) && (
+                        <small className="ja-ref">
+                          {[sourceLabel(q.source), q.ref && cvSection(q.ref)]
+                            .filter(Boolean)
+                            .join(' · ')}
+                        </small>
                       )}
                     </p>
                   ))}

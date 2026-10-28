@@ -18,6 +18,10 @@
 - 2026-10-18 [USER] No automatic deployment. Missing financial/workforce/contracts/repository/issuer data must remain absent; named legal findings still require human approval.
 - 2026-10-21 [USER] Observatories withdrawn from the site (politics, jobs, Job Intelligence, wellbeing, AI Act, statute book); every old address and `/companies/*` redirects to `#what-does-it-even-mean`. Home card "What does it even mean?" replaces Observatories. `frontend/src/{compliance,companies,job-intelligence}` kept unrouted for the compliance release hash; `platform/architecture/registry.py` still lists deleted frontend folders.
 
+- 2026-10-27 [CODE] Arbetsförmedla completion (branch korv9/arbetsformedla-complete): CV quotes carry `source` (employment/internship/education/project/skills_list/summary), wish `seniority` (junior|any), lazily loaded `job-assistant/texts-remaining.json` for every open ad, engine `job-match-v4`, public CV profile section, status buttons, wishes editor, owner token in localStorage, failure states, phone redaction re-applied each run.
+- 2026-10-27 [TOOL] Manual evaluation (AI agent on the owner's behalf) in `docs/job-assistant-evaluation.md`: list precision 16/36 (v1) to 9/13 (v3); v4 local counts 1 strong, 18 possible, 109 stretch, 2,068 outside. Status persistence verified with wrangler dev and local D1.
+- 2026-10-27 [USER-PENDING] Live owner functions still need: Cloudflare token permission Account > D1 > Edit (setup run 40580520662 failed on it), then setup workflow, D1 id in wrangler.toml, secret JOB_ASSIST_TOKEN, CV upload and approval.
+
 ## Working set
 
 - 2026-10-18 [CODE] `.github/workflows/ci.yml`, `.github/workflows/security.yml`, `CLAUDE.md`, `docs/development.md`

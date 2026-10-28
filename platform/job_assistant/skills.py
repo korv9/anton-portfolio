@@ -29,6 +29,12 @@ SKILLS = {
     "machine learning": ("practice", r"\bmachine learning\b|maskininlärning"),
     "deep learning": ("practice", r"\bdeep learning\b|djupinlärning"),
     "OAI-PMH": ("practice", r"\boai-pmh\b"),
+    # Graph and semantic data work ("grafdatabaser och kunskapsgrafer", "ontologier").
+    "graph databases": ("database", r"\bgraph ?databas\w*|\bgrafdatabas\w*"),
+    "Neo4j": ("database", r"\bneo4j\b"),
+    "knowledge graphs": ("practice", r"\bknowledge ?graphs?\b|\bkunskapsgraf\w*"),
+    "ontologies": ("practice", r"\bontolog\w*"),
+    "RDF/SPARQL": ("practice", r"\brdf\b|\bsparql\b"),
 }
 LEVELS = ("practical", "education_or_project", "listed", "interest")
 

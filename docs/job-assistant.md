@@ -21,7 +21,7 @@ same way: raw files with provenance, dbt layers with tests, versioned delivery t
 | Bronze | Typed views of the stores: ads, ad events, matches, profile, runs | `platform/models/bronze/job_assistant/` |
 | Silver | Judgements, quotes and conditions unpacked to one row each | `platform/models/silver/job_assistant/` |
 | Gold | Nine tables with enforced contracts | `platform/models/gold/job_assistant/` |
-| Delivery | `job-assistant/{ads,matches,texts,demand}.json`, checked, then released as the group `job-assistant` | `export.py`, `configs/delivery/job-assistant.json` |
+| Delivery | `job-assistant/{ads,matches,texts,texts-remaining,demand}.json`, checked, then released as the group `job-assistant` | `export.py`, `configs/delivery/job-assistant.json` |
 | Owner records | Profile drafts and versions, statuses, notes, labels | Worker and D1 (storage pull request) |
 
 The subject `job_assistant` in `platform/pipeline.yml` runs these steps in order from
@@ -33,7 +33,7 @@ runs every few hours in practice (see Monitoring). The export runs only when eve
 1. The owner uploads a CV as PDF or DOCX. The Worker stores the file in D1, readable only with
    the owner token, and the next hourly run (or a manual run) reads it with `platform/job_assistant/cv.py` into a draft profile.
 2. The owner reads the draft, corrects it and adds wishes (places, remote work, prioritised
-   roles, interests). `cv_profile.py` checks each correction, and approval freezes the draft as
+   roles, interests, and optionally the seniority level: `junior`, the default, or `any`). `cv_profile.py` checks each correction, and approval freezes the draft as
    the next numbered version.
 3. On an hourly schedule a GitHub Actions run reads JobTech's JobStream for the Data/IT occupation field
    and stores new, changed and removed ads.
@@ -59,8 +59,28 @@ strongest of those lines. The level of a line follows from the CV section it sit
 level must be that section's level. A skills-list line therefore stays `listed` even when it is
 paired with a real experience sentence. A correction may move, rename or delete facts. It cannot add a fact at
 a level above `interest` unless the quote is found in the CV text, so the profile never states
-experience the CV lacks. `professional_years` stays empty until the owner enters a documented
-number; internships are not turned into years of employment.
+experience the CV lacks. The summary is checked the same way. `professional_years` stays empty
+until the owner enters a documented number as a correction; `cv_profile.py` refuses a number that
+no entry in `corrections` names, and internships are not turned into years of employment.
+
+Each CV quote in a match also carries `source`, the kind of entry it comes from, read from the
+profile entry its ref names:
+
+| `source` | Ref | Rule |
+| --- | --- | --- |
+| `employment` | `experience-N`, `other-N` | the entry's `kind` is `employment` |
+| `internship` | `experience-N`, `other-N` | the entry's `kind` is `internship` (LIA); still `practical` |
+| `education` | `education-N`, `project-N` | an education entry, or a project whose `context` is `education` (the CV calls it a thesis) |
+| `project` | `project-N` | any other project |
+| `skills_list` | `skills` | the skills list |
+| `summary` | `summary` | the summary |
+
+`cv_profile.py` refuses a profile with a ref that names no entry or an experience `kind` other
+than these two. The level rules above do not change.
+
+CV quotes are the CV's own words: only whitespace differs from the extracted text. Line-end
+commas are kept, and a short line without end punctuation (an entry's subtitle) is a quote of its
+own (`cv-rules-v2`).
 
 Formal education requirements in ads are shown in their own row and never lower the match
 class. Language, citizenship and security clearance conditions are listed the same way, as
@@ -86,7 +106,7 @@ approved profile and the draft, with their CV quotes, are public by the owner's 
 | Match | gold `mart_job_assistant_matches`; `job-assistant/matches.json` | One row per matched ad that is neither removed nor expired, in rank order: class, role, reasons, gaps, similarity, checked explanation, profile version and CV hash, and whether it is detailed (strong, possible, stretch or in the 30-ad evaluation sample) |
 | Judgement and evidence | gold `mart_job_assistant_judgements`, `mart_job_assistant_evidence` | One row per detailed ad and skill (strength, CV level), and one per quote behind it, from the ad or the CV |
 | Condition | gold `mart_job_assistant_checks` | Education and conditions a detailed ad states, with the sentence |
-| Ad text | gold `mart_job_assistant_texts`; `job-assistant/texts.json` | The full public text of exactly the detailed ads |
+| Ad text | gold `mart_job_assistant_texts`; `job-assistant/texts.json`, `job-assistant/texts-remaining.json` | The full public text (contact details redacted) of the detailed ads in `texts.json`, loaded with the page, and of every other open, non-duplicate ad in `texts-remaining.json`, loaded when such an ad is opened. Both are `{schema_version, generated_at, texts: {ad id: {description, text_origin, contact_redactions, content_hash}}}` |
 | Skill demand | gold `mart_job_assistant_skill_demand`; `job-assistant/demand.json` | Per skill: matched ads that require, prefer or name it, and the CV's level for it |
 | Profile used | gold `mart_job_assistant_profile` | The profile version, CV hash and the last run's Workers AI use |
 | Review status | D1 `review` | One row per ad: status, note, updated time |
@@ -112,7 +132,11 @@ occupation filter and returns about 40,000 ads. Later runs ask JobStream for eve
 the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
 stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
 `job_assistant`, so its fetch log never mixes with the market subject's. The text projection and
-contact redaction come from `platform/publish/job_content.py`.
+contact redaction come from `platform/publish/job_content.py`: e-mail addresses, contact names and
+phone numbers ("070 123 45 67", "070.123.45.67", "08-788 00 00", "+46 (0)70 123 45 67") become
+"[kontaktuppgift utelämnad]". Each run applies the current redaction to stored texts as well, so
+a wider pattern covers ads stored before it, and the export refuses `texts.json` or
+`texts-remaining.json` with an e-mail address or phone number left.
 
 - The key is the JobTech ad id. A changed ad replaces its row when its content hash differs, and
   the old version is noted in the row's history. An unchanged repeat does nothing.
@@ -135,10 +159,10 @@ ads: the requirement taxonomy from `job_content.py` plus a few CV terms.
 
 | Aspect | Rule |
 | --- | --- |
-| Role category | Title patterns for Data Engineering, Analytics Engineering, Python Backend, Applied AI, BI, Frontend, Full stack, Data Analysis and ML Engineering; a body-only signal is marked as uncertain |
-| Technique | Each required and preferred skill sentence against the profile level of that skill |
-| Seniority | Senior, lead and principal titles and stated years of experience, with the experience wording that lifted the senior/junior AUC by 0.15 in the feature study (`ml/feature_study/job_ads.py`, branch `korv9/ml-feature-engineering`) |
-| Wishes | Place, remote wording and the owner's role order |
+| Role category | Title patterns for Data Engineering, Analytics Engineering, Python Backend, Applied AI, BI, Frontend, Full stack, Data Analysis and ML Engineering ("deep learning" and "computer vision" count as ML); a body-only signal is marked as uncertain. "Analytiker"/"analyst" (also compounds) is Data Analysis only with data wording in the ad (SQL, BI, statistics, datasets); "backend" is Python Backend only when the title names Python or the ad requires it; a generic developer title ("Systemutvecklare", "Mjukvaruutvecklare", "Utvecklare", "Software Engineer/Developer") is Python Backend, read from the title, when the ad names Python; a bare "AI" in the body names no role |
+| Technique | Each required and preferred skill sentence against the profile level of that skill. Strength comes from `job_content.py` (`job-requirements-v5`): "Det är ett plus om …" and lines under a "Meriterande:" heading are preferred even when they say "du har"; lines under "Krav:", "Skallkrav", "Kvalifikationer", "Vi söker dig som har:" or "We believe you have:" are required. The job assistant reads the vocabulary of `skills.py`, which adds graph databases, Neo4j, knowledge graphs, ontologies and RDF/SPARQL. A spoken language other than Swedish and English ("Fluent Spanish …") is listed as a condition |
+| Seniority | Senior, lead and principal titles; senior wording in the text ("med din expertis och erfarenhet", "gedigen erfarenhet", "lång erfarenhet", "technical leadership", "as a lead", "som senior"), but not "erfarenhet av X" on its own; stated years of experience ("4+ years of professional … experience", "minst fem år", "flera (5+) års", "Minst 4 års arbete"; "flerårig", "flera års" and "several years" count as three; over 15 is read as a company's age), with the experience wording that lifted the senior/junior AUC by 0.15 in the feature study (`ml/feature_study/job_ads.py`, branch `korv9/ml-feature-engineering`) |
+| Wishes | Place, full-remote wording, the owner's role order and the seniority wish |
 
 `platform/job_assistant/match.py` sets one of four classes. "Practical" means the profile has the
 skill at `practical`; "shown" adds `education_or_project`. Only practical skills can make an ad
@@ -148,11 +172,19 @@ shares count required skills, or every named skill when the ad marks none as req
 | Class | Rule |
 | --- | --- |
 | `strong` | A wished role read from the title, in a wished place, not senior; at least three skills named and at least 60 % practical |
-| `possible` | A wished role in a wished place, not senior, at least one skill named and at least 30 % practical; or a strong case whose role is only in the ad text or that names fewer than three skills |
-| `stretch` | A wished role in a wished place with at least 30 % shown (or no skill named), but a senior, lead or architect title, three or more years of experience asked, or under 30 % practical |
-| `outside` | Another role, another place without remote wording, or under 30 % shown |
+| `possible` | A wished role read from the title, in a wished place, not senior, and at least 30 % of the named skills practical or no skill from the vocabulary named (noted as uncertain); or a strong case that names fewer than three skills or states no place |
+| `stretch` | A wished role in a wished place with at least 30 % shown (or no skill named, or a title-read role in an ad with a junior ask: "junior", "blivande", at most one year), but senior, three or more years of experience asked, under 30 % practical, or a role read only from the ad text |
+| `outside` | Another role, another place without full-remote wording, or under 30 % shown |
 
-Hybrid work counts as work at the ad's own office, so only remote wording widens the place. Each
+"Senior" lowers the class only under the default wish `seniority: junior`. With `seniority: any`
+a senior title or years asked keep the class; the reasons still name them and `uncertain` says
+the wish kept them from lowering it.
+
+Hybrid work counts as work at the ad's own office, so only full-remote wording widens the place:
+"helt på distans", "100 % remote", "fully remote", "remote-first", "Tjänsten utförs på distans".
+A sentence with partial or negated wording ("en dag i veckan", "delvis", "hybrid", "Remote work
+is not available") does not count. An ad with no municipality or region is not outside on place
+alone; it is at most possible and `uncertain` says "The ad states no place." Each
 match lists its reasons in plain words, for example "data engineering (from the title); 3 of 8
 named skills shown in practical work; 2 more only in projects or education; Stockholm". `strong` and `possible` make the
 review list. Within a class, ads are sorted by the owner's role order, then by the bge-m3 cosine
@@ -164,7 +196,15 @@ nine wished roles, the earlier rules (which counted project skills toward strong
 gave 15 strong, 93 possible, 115 stretch and 2,010 outside. The current rules (`job-match-v2`),
 on 2,239 current, unexpired ads of a later local store, give 4 strong, 35 possible, 186 stretch and
 2,014 outside: the test profile shows SQL and dbt only in projects and education. Most
-outside ads are support, Java or other roles outside the wishes. These counts come from one test
+outside ads are support, Java or other roles outside the wishes. A manual evaluation of 30 ads on
+2026-10-27 (`job-match-v3` before its rule fixes: 4 strong, 32 possible, 145 stretch, 2,015 outside
+of 2,196) found missed years, hybrid wording read as remote and roles read from company
+boilerplate. With those fixed (`job-match-v3`, `job-requirements-v5`, profile version 2 of the
+public CV with Stockholm, Solna and Sundbyberg, remote, eight roles) the same store gives 2
+strong, 11 possible, 96 stretch and 2,087 outside. A second round (generic developer titles with
+Python, graph and ontology terms in the vocabulary, bracketed years, senior wording in the text,
+deep learning, ads without a place; `job-match-v4`) gives 1 strong, 18 possible, 109 stretch and
+2,068 outside. These counts come from one test
 profile; the owner's labels measure whether the rules are right.
 
 ## Workers AI budget
@@ -359,11 +399,23 @@ build shows it, as it shows every other page.
 - The open ad sits beside the list on wide screens; under 760 px it replaces the list and has a
   back button. It shows the class with the reasons, the checked explanation, and a table of
   requirements: skill, how the ad asks for it, the ad sentence, the CV level and the CV line with
-  its CV section. Gaps, education and conditions, uncertainty, a trace of the files, models and
-  tests behind the match, the full text, links and dates come after.
-- How it works: the method, what the ads ask for against the CV (`demand.json` against the
-  approved profile), the label counts, the runs of the last seven days, and the owner's tools
-  (token, CV upload, draft editor, approval request).
+  its CV section and the kind of entry (employment, internship, education, project, skills list).
+  Under 760 px each requirement is one block. Gaps, education and conditions, uncertainty, a
+  trace of the files, models and tests behind the match, the full text, links and dates come
+  after.
+- The full text of a detailed ad comes from `texts.json`. Any other open ad's text comes from
+  `texts-remaining.json`, fetched once, only when such an ad is opened (`?ad=` in the address);
+  the preview beside the list offers a button instead. If that file fails, the ad links to
+  Platsbanken.
+- With the owner token the open ad has buttons for every status and a private note. Statuses
+  are stored in D1 and survive reloads and new sessions.
+- How it works: the method, the approved CV profile (skills by level, each with its CV line and
+  entry; never the draft, the file or the summary), what the ads ask for against the CV
+  (`demand.json` against the approved profile), the label counts, the runs of the last seven
+  days, and the owner's tools (token, CV upload, draft editor with fields for roles, places,
+  remote work and seniority, approval request).
+- Only `ads.json` is required. When matches, texts or demand fail to load, or the owner routes
+  answer 401, 503 or not at all, the page says which and keeps the ad list working.
 
 The home page entry described below is not built in this task: the task brief keeps
 `frontend/src/home/` untouched while the owner works there.
@@ -400,7 +452,10 @@ and misses from the owner's labels).
   between fetch and store, then resumed.
 - Matching: each class rule, education requirements never lowering the class, and every
   judgement carrying both quotes. Each answer of the profile route in the table under Workers AI
-  budget (`platform/tests/job_assistant/test_rank_profile.py`).
+  budget (`platform/tests/job_assistant/test_rank_profile.py`). The 2026-10-27 evaluation's ad
+  wording for years, remote, role context and requirement headings
+  (`platform/tests/job_assistant/test_match_rules.py`); the seniority wish, each CV quote's
+  `source`, and every CV quote found word for word in the CV text.
 - Budget: the cap is reached mid-run and the run still ranks every ad.
 - Worker: writes without the token, with a wrong token and from another origin are refused.
 - Review UI: filter, sort, keyboard status changes and the full ad text.

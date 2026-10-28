@@ -75,8 +75,49 @@
 .ja-steps li + li {
   margin-top: var(--sp-2);
 }
-.ja-owner {
+.ja-owner,
+.ja-wide {
   grid-column: 1 / -1;
+}
+.ja-table-wrap + .ja-table-wrap {
+  margin-top: var(--sp-5);
+}
+.ja-cv-skills caption {
+  color: var(--color-ink);
+  font-weight: var(--weight-ui);
+}
+.ja-cv-skills tbody th {
+  width: 12rem;
+  white-space: normal;
+}
+.ja-wishes {
+  display: grid;
+  gap: var(--sp-3);
+  max-width: var(--measure);
+  margin: var(--sp-3) 0;
+  padding: var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+.ja-wishes legend {
+  padding-inline: var(--sp-1);
+  font-weight: var(--weight-ui);
+}
+.ja-wishes p {
+  margin: 0;
+}
+.ja-wish-roles {
+  margin: var(--sp-1) 0 var(--sp-2);
+  padding-inline-start: 1.2rem;
+}
+.ja-wish-roles li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--sp-3);
+}
+.ja-wish-roles li span {
+  flex: 1;
 }
 .ja-owner summary {
   min-height: 44px;
@@ -141,6 +182,39 @@
   }
   .ja-board {
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* One block per row: the skill, then the ad and the CV side at full width. */
+  .ja-cv-skills thead,
+  .ja-evidence thead {
+    display: none;
+  }
+  .ja-cv-skills tr,
+  .ja-cv-skills tbody th,
+  .ja-cv-skills td,
+  .ja-evidence tr,
+  .ja-evidence tbody th,
+  .ja-evidence td {
+    display: block;
+    width: auto;
+  }
+  .ja-cv-skills tbody th,
+  .ja-evidence tbody th,
+  .ja-evidence td:not(:last-child) {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+  .ja-evidence tbody th span {
+    display: inline;
+    margin-inline-start: var(--sp-2);
+  }
+  .ja-evidence td::before {
+    content: attr(data-label);
+    display: block;
+    color: var(--color-ink-secondary);
+    font-size: var(--type-caption);
+  }
+  .ja-evidence td p {
+    margin: var(--sp-1) 0 0;
   }
 }
 /* On a phone no ad is open until one is tapped, so the first card is not marked as open. */

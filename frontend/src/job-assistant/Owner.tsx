@@ -5,13 +5,25 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import Wishes, { type WishSet } from './Wishes'
 import {
   loadRecords,
   ownerToken,
+  recordsNote,
   setOwnerToken,
   write,
   type Records,
 } from './data'
+
+/** The draft text as a profile, or null while it is not valid JSON. */
+function parsed(text: string): Record<string, unknown> | null {
+  try {
+    const p = JSON.parse(text)
+    return p && typeof p === 'object' && !Array.isArray(p) ? p : null
+  } catch {
+    return null
+  }
+}
 
 type Draft = {
   profile: Record<string, unknown>
@@ -22,21 +34,31 @@ type Draft = {
 type Props = {
   owner: boolean
   available: boolean
+  problem?: Records['problem']
   onOwner: (o: boolean) => void
   onRecords: (r: Records) => void
 }
 
-export default function Owner({ owner, available, onOwner, onRecords }: Props) {
+export default function Owner({
+  owner,
+  available,
+  problem,
+  onOwner,
+  onRecords,
+}: Props) {
   const [token, setToken] = useState('')
   const [draft, setDraft] = useState<Draft | null>(null)
   const [text, setText] = useState('')
   const [message, setMessage] = useState('')
+  // The HTTP status of the profile route when it could not be read (0: unreachable).
+  const [unread, setUnread] = useState<number | null>(null)
 
   async function refresh() {
     // The draft is owner-only: without the token the route leaves it out.
     const r = await fetch('/api/jobs/profile', {
       headers: { Authorization: `Bearer ${ownerToken()}` },
     }).catch(() => null)
+    setUnread(r?.ok ? null : (r?.status ?? 0))
     const state = r?.ok ? await r.json() : null
     setDraft(state?.draft ?? null)
     setText(state?.draft ? JSON.stringify(state.draft.profile, null, 1) : '')
@@ -110,15 +132,18 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
     )
   }
 
+  const profile = parsed(text)
+  const w = profile?.wishes as WishSet | undefined
+  // Only a draft whose wishes have the v1 shape gets the fields; the JSON stays editable.
+  const wishes =
+    w && Array.isArray(w.roles) && Array.isArray(w.locations) ? w : undefined
+
   return (
     <details className="ja-owner">
       <summary>{l('Owner tools', 'Ägarens verktyg')}</summary>
-      {owner && !available && (
-        <p className="ja-muted">
-          {l(
-            'The record storage is not set up yet, so statuses, labels and the profile cannot be saved.',
-            'Lagringen är inte uppsatt än, så status, märkningar och profilen kan inte sparas.',
-          )}
+      {owner && !available && problem && (
+        <p className="ja-muted" role="status">
+          {l(...recordsNote(problem))}
         </p>
       )}
       {!owner ? (
@@ -140,15 +165,15 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
             />
           </label>
           <button className="btn-quiet" type="submit">
-            {l('Use in this tab', 'Använd i den här fliken')}
+            {l('Keep on this device', 'Spara på den här enheten')}
           </button>
         </form>
       ) : (
         <>
           <p className="ja-owner-row">
             {l(
-              'Writes are on until this tab closes. The Worker still checks the token on each one.',
-              'Skrivning är på tills fliken stängs. Workern kontrollerar ändå token vid varje skrivning.',
+              'The token is kept on this device until you forget it. The Worker checks it on every write.',
+              'Token sparas på den här enheten tills du glömmer den. Workern kontrollerar den vid varje skrivning.',
             )}
             <button
               className="btn-text"
@@ -189,6 +214,14 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
                   ))}
                 </ul>
               )}
+              {wishes && (
+                <Wishes
+                  wishes={wishes}
+                  onChange={(w) =>
+                    setText(JSON.stringify({ ...profile, wishes: w }, null, 1))
+                  }
+                />
+              )}
               <textarea
                 aria-label={l('Profile draft (JSON)', 'Profilutkast (JSON)')}
                 rows={16}
@@ -216,6 +249,14 @@ export default function Owner({ owner, available, onOwner, onRecords }: Props) {
                 </button>
               </p>
             </div>
+          ) : unread != null ? (
+            <p className="ja-muted" role="status">
+              {l(
+                ...(unread === 503 || unread === 401
+                  ? recordsNote(unread === 503 ? 'storage' : 'token')
+                  : recordsNote('offline')),
+              )}
+            </p>
           ) : (
             <p className="ja-muted">
               {l(

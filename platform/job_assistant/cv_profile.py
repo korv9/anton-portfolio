@@ -27,6 +27,8 @@ KEYS = {"schema_version", "status", "cv", "summary", "experience", "projects", "
         "languages", "professional_years", "wishes", "uncertain", "corrections"}
 APPROVED_KEYS = KEYS | {"version", "approved_at", "profile_sha256"}
 WISH_KEYS = {"locations", "remote", "roles", "interests"}
+# Optional wishes; absent means the first value. seniority junior: a senior ad is at most a stretch.
+OPTIONAL_WISHES = {"seniority": ("junior", "any")}
 ROLES = ("data_engineering", "analytics_engineering", "python_backend", "applied_ai", "bi", "frontend",
          "fullstack", "data_analysis", "ml_engineering", "other")
 # An evidence ref names the CV section its quote must sit in, and that section fixes the level:
@@ -71,8 +73,14 @@ def problems(profile: dict, cv_text: str | None = None) -> list[str]:
             quoted(f"{section}/{item.get('id')}", item.get("quote"))
             for i, line in enumerate(item.get("details", [])):
                 quoted(f"{section}/{item.get('id')}/details/{i}", line)
+    if profile["summary"]:
+        quoted("summary", profile["summary"], "summary")
     for lang in profile["languages"]:
         quoted(f"languages/{lang.get('language')}", lang.get("quote"))
+    # match.sources reads each ref's kind of source from these entries.
+    entries = {"skills", "summary", *(i.get("id") for k in ("experience", "projects", "education") for i in profile[k])}
+    out += [f"experience/{e.get('id')}: kind must be employment or internship"
+            for e in profile["experience"] if e.get("kind") not in ("employment", "internship")]
     for s in profile["skills"]:
         where = f"skills/{s.get('skill')}"
         if s.get("skill") not in SKILLS:
@@ -85,20 +93,27 @@ def problems(profile: dict, cv_text: str | None = None) -> list[str]:
             out.append(f"{where}: level {s.get('level')} differs from its strongest evidence {best_level(rows)}")
         for r in rows:
             section, level = REFS.get(re.sub(r"-\d+$", "", str(r.get("ref"))), (None, None))
-            if section is None or r["level"] != level:
+            if r.get("ref") not in entries:
+                out.append(f"{where}/{r.get('ref')}: ref names no profile entry")
+            elif section is None or r["level"] != level:
                 out.append(f"{where}/{r.get('ref')}: level {r['level']} does not match the CV section of its ref")
             quoted(f"{where}/{r.get('ref')}", r.get("quote"), section)
     wishes = profile["wishes"]
-    if set(wishes) != WISH_KEYS:
-        out.append(f"wishes must have exactly {sorted(WISH_KEYS)}")
+    if not WISH_KEYS <= set(wishes) <= WISH_KEYS | set(OPTIONAL_WISHES):
+        out.append(f"wishes must have {sorted(WISH_KEYS)} and may have {sorted(OPTIONAL_WISHES)}")
     else:
         out += [f"wishes/roles: unknown role {r}" for r in wishes["roles"] if r not in ROLES]
         out += [f"wishes/interests: {i} is not in the skill taxonomy" for i in wishes["interests"] if i not in SKILLS]
         if wishes["remote"] not in (None, "no", "hybrid", "remote"):
             out.append("wishes/remote must be null, no, hybrid or remote")
+        out += [f"wishes/{k} must be one of {', '.join(v)}" for k, v in OPTIONAL_WISHES.items()
+                if k in wishes and wishes[k] not in v]
     years = profile["professional_years"]
     if years is not None and not (isinstance(years, (int, float)) and 0 <= years <= 60):
         out.append("professional_years must be null or a documented number")
+    # The parser never sets it: a number is the owner's own statement, made as a logged correction.
+    elif years is not None and not any("professional_years" in c.get("fields", []) for c in profile["corrections"]):
+        out.append("professional_years is set but no correction states it")
     return out
 
 

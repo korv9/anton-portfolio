@@ -1,21 +1,34 @@
 /** One ad under review: why it got its class, the evidence on both sides, the full text, the decision. */
 import { useState, type MutableRefObject } from 'react'
 import { l } from '../i18n'
-import { ROLE_NAMES, type Row, type Status } from './data'
+import {
+  https,
+  recordsNote,
+  ROLE_NAMES,
+  type Records,
+  type Row,
+  type Status,
+} from './data'
 import Decision, { type Saved } from './Decision'
 import Evidence from './Evidence'
 import { classLabel, day, left, statusLabel } from './labels'
 import { daysBetween } from './query'
 import Trace from './Trace'
+import { useAdText } from './useJobData'
 
 // Python's str.splitlines() breaks, so line numbers match platform/publish/job_content.py.
 const LINE_BREAK = /\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]/
 
 type Props = {
   row: Row
-  text?: string
+  /** The text from texts.json; any other ad's text is loaded when it is opened. */
+  published?: string
+  /** The reader opened this ad (not only shown first), so a missing text may be fetched. */
+  opened: boolean
   owner: boolean
   storage: boolean
+  /** Why the owner's records could not be read, when they could not. */
+  problem?: Records['problem']
   onSaved: Saved
   statusKey: MutableRefObject<((status: Status) => void) | null>
   /** Today in Stockholm, for the deadline countdown. */
@@ -27,15 +40,22 @@ type Props = {
 /** Keyed by the ad id in the page, so the note, messages and scroll start fresh per ad. */
 export default function AdDetail({
   row,
-  text,
+  published,
+  opened,
   owner,
   storage,
+  problem,
   onSaved,
   statusKey,
   today,
   onBack,
 }: Props) {
   const { ad, match } = row
+  const source = https(ad.source_url)
+  const apply = https(ad.application_url)
+  const [asked, setAsked] = useState(false)
+  const load = opened || asked
+  const { text, loading, failed } = useAdText(ad.id, published, load)
   const [hit, setHit] = useState<number | null>(null)
   const showLine = (line: number) => {
     setHit(line)
@@ -118,23 +138,22 @@ export default function AdDetail({
           </div>
         </dl>
         <p className="ja-links">
-          <a href={ad.source_url} target="_blank" rel="noreferrer">
-            {l('Original ad', 'Originalannonsen')}
-          </a>
-          {ad.application_url && (
-            <a href={ad.application_url} target="_blank" rel="noreferrer">
+          {source && (
+            <a href={source} target="_blank" rel="noreferrer">
+              {l('Original ad', 'Originalannonsen')}
+            </a>
+          )}
+          {apply && (
+            <a href={apply} target="_blank" rel="noreferrer">
               {l('Application page', 'Ansökningssidan')}
             </a>
           )}
         </p>
       </header>
 
-      {owner && !storage && (
-        <p className="ja-muted">
-          {l(
-            'The record storage is not set up yet, so statuses and labels cannot be saved.',
-            'Lagringen är inte uppsatt än, så status och märkningar kan inte sparas.',
-          )}
+      {owner && problem && (
+        <p className="ja-muted" role="status">
+          {l(...recordsNote(problem))}
         </p>
       )}
       {owner && storage && (
@@ -216,11 +235,31 @@ export default function AdDetail({
               </span>
             ))}
           </p>
+        ) : loading ? (
+          <p className="ja-muted" role="status">
+            {l('Loading the full text…', 'Laddar hela texten…')}
+          </p>
+        ) : !load ? (
+          <p className="ja-muted">
+            <button
+              type="button"
+              className="btn-quiet"
+              onClick={() => setAsked(true)}
+            >
+              {l('Load the full text', 'Ladda hela texten')}
+            </button>
+          </p>
         ) : (
           <p className="ja-muted">
-            {l(
-              'By design the full text is published only for listed, stretch and sampled ads, which keeps the public files small. This ad is on the original page.',
-              'Hela texten publiceras med avsikt bara för listade, stretch- och urvalsannonser, så att de publika filerna hålls små. Den här annonsen finns på originalsidan.',
+            {failed &&
+              l(
+                'The full text of this ad could not be loaded. ',
+                'Hela texten för den här annonsen gick inte att läsa. ',
+              )}
+            {source && (
+              <a href={source} target="_blank" rel="noreferrer">
+                {l('Read it on Platsbanken', 'Läs den på Platsbanken')}
+              </a>
             )}
           </p>
         )}

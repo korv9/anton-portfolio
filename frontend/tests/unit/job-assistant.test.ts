@@ -3,7 +3,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   evaluation,
+  https,
   keptNote,
+  recordsNote,
   rows,
   unmatchedNote,
   statusOf,
@@ -277,4 +279,34 @@ test('the unmatched note says approval only when the Worker answered without a p
     keptNote({ reason: 'x', status: 500, at })[0],
     /answered 500 at 2026-10-25 11:13 UTC/,
   )
+})
+
+test('the owner note tells a refused token, missing storage and an unreachable Worker apart', () => {
+  assert.match(recordsNote('token')[0], /token was not accepted/)
+  assert.match(recordsNote('storage')[0], /storage is not set up/)
+  assert.match(recordsNote('offline')[0], /could not be reached/)
+  for (const p of ['token', 'storage', 'offline'] as const) {
+    const [en, sv] = recordsNote(p)
+    // Calm copy: no HTTP codes, and both languages present.
+    assert.doesNotMatch(en, /\d{3}/)
+    assert.ok(sv.length > 0 && sv !== en)
+  }
+})
+
+test('only absolute https links from the source data are linked', () => {
+  const ok = 'https://arbetsformedlingen.se/platsbanken/annonser/1'
+  assert.equal(https(ok), ok)
+  for (const bad of [
+    'javascript:alert(1)',
+    'JAVASCRIPT:alert(1)',
+    'data:text/html,x',
+    'http://example.se/ad',
+    '//example.se/ad',
+    '/platsbanken/1',
+    'not a url',
+    '',
+    null,
+    undefined,
+  ])
+    assert.equal(https(bad), undefined, String(bad))
 })

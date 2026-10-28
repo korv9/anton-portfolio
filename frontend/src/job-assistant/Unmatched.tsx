@@ -4,7 +4,7 @@
  */
 import { useState } from 'react'
 import { l } from '../i18n'
-import { unmatchedNote, type Ad, type RouteNote } from './model'
+import { https, unmatchedNote, type Ad, type RouteNote } from './model'
 import { ago, left } from './labels'
 import { daysBetween } from './query'
 
@@ -32,9 +32,12 @@ export default function Unmatched({ ads, day, skipped }: Props) {
       <ol className="ja-cards">
         {open.slice(0, n).map((ad) => {
           const deadline = daysBetween(day, ad.application_deadline)
+          // A source link that is not https is not linked; the card still lists the ad.
+          const href = https(ad.source_url)
+          const Card = href ? 'a' : 'div'
           return (
             <li key={ad.id}>
-              <a className="ja-card" href={ad.source_url} rel="noopener">
+              <Card className="ja-card" href={href} rel={href && 'noopener'}>
                 <span className="ja-card-title">{ad.headline}</span>
                 <span className="ja-card-employer">
                   {ad.employer}
@@ -47,7 +50,7 @@ export default function Unmatched({ ads, day, skipped }: Props) {
                   {deadline != null && <span>{left(deadline)}</span>}
                   {ad.employment_type && <span>{ad.employment_type}</span>}
                 </span>
-              </a>
+              </Card>
             </li>
           )
         })}

@@ -48,8 +48,19 @@ export type Ad = {
   application_url: string | null
   expired: boolean
 }
+/** Where a CV quote comes from (platform/job_assistant); absent in files before it was added. */
+export const SOURCES = [
+  'employment',
+  'internship',
+  'education',
+  'project',
+  'skills_list',
+  'summary',
+] as const
+export type Source = (typeof SOURCES)[number]
 export type Quote = {
   quote: string
+  source?: Source
   line?: number | null
   field?: string
   ref?: string
@@ -119,7 +130,11 @@ export type Delivered = {
       cv_level: string | null
     }[]
   }
+  /** The optional files that failed to load. */
+  missing: Optional[]
 }
+/** A released file other than ads.json that could not be read; the page goes on without it. */
+export type Optional = 'matches' | 'texts' | 'demand'
 export type Review = { status: Status; note: string; updated_at?: string }
 export type LabelRow = {
   label: Label
@@ -131,6 +146,35 @@ export type Records = {
   reviews: Record<string, Review>
   labels: Record<string, LabelRow>
   available: boolean
+  /** Why the records could not be read with a token: refused, no storage (503), or unreachable. */
+  problem?: 'token' | 'storage' | 'offline'
+}
+
+/** What the owner sees when the records could not be read, as [English, Swedish]. */
+export function recordsNote(p: Records['problem']): [string, string] {
+  if (p === 'token')
+    return [
+      'The owner token was not accepted, so statuses and notes are not shown or saved.',
+      'Ägartoken godtogs inte, så status och anteckningar visas inte och sparas inte.',
+    ]
+  if (p === 'storage')
+    return [
+      'The record storage is not set up yet, so statuses, notes and labels cannot be saved.',
+      'Lagringen är inte uppsatt än, så status, anteckningar och märkningar kan inte sparas.',
+    ]
+  return [
+    'The owner records could not be reached just now. The ads still work; try again later.',
+    'Ägarens poster gick inte att nå just nu. Annonserna fungerar ändå; försök igen senare.',
+  ]
+}
+
+/** A link from the source data, only when it is an absolute https URL; anything else gets no link. */
+export function https(url: string | null | undefined) {
+  try {
+    return url && new URL(url).protocol === 'https:' ? url : undefined
+  } catch {
+    return undefined
+  }
 }
 
 /** An ad's status: the owner's, else closed when JobTech removed it or the deadline passed, else new. */
