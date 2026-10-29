@@ -34,14 +34,9 @@
   overflow-y: auto;
   scrollbar-width: none;
 }
-.rail-group-label {
-  margin: 18px 0 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 14px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #8a857b;
+/* The space the group labels held, so the groups stay apart. */
+.rail-group {
+  margin-top: 38px;
 }
 .rail-link {
   position: relative;
@@ -166,9 +161,8 @@
 }
 
 @media (min-width: 1024px) {
-  /* The index says where the page sits, so the header and the breadcrumb step aside. */
-  .project-shell .site-header,
-  .project-shell .project-context {
+  /* The index says where the page sits, so the header steps aside. */
+  .project-shell .site-header {
     display: none;
   }
   .project-shell #main {

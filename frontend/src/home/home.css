@@ -138,15 +138,6 @@
 .home-screen {
   padding-block: var(--sp-section);
 }
-.home-label {
-  margin: 0 0 var(--sp-2);
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: var(--caption);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
 .home-title {
   margin: 0 0 var(--sp-5);
   font-size: var(--display-l);

@@ -16,9 +16,7 @@
   background: var(--page);
   color: var(--ink);
 }
-.project-hero-eyebrow,
-.project-hero-label,
-.project-section-label {
+.project-hero-label {
   display: flex;
   gap: var(--sp-3);
   margin: 0 0 var(--sp-3);

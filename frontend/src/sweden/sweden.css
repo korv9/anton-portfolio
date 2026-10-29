@@ -145,9 +145,8 @@
 
 /* One page: the shared head (ui/PageHead), a sticky jump row, then a short section per product. */
 .sw-one {
-  padding: 0 var(--gutter, 1rem) 4rem;
+  padding: 0 0 4rem;
   max-width: 64rem;
-  margin-inline: auto;
 }
 .sw-jump {
   position: sticky;

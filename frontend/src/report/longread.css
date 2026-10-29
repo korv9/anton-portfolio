@@ -710,14 +710,8 @@
   font-size: var(--body-large);
   line-height: 1.5;
 }
-.project-shell
-  #main
-  .politik-long
-  :is(.board-slicers, .story-filters, .stage-kicker) {
+.project-shell #main .politik-long :is(.board-slicers, .story-filters) {
   grid-column: 1 / -1;
-}
-.project-shell #main .politik-long .stage-kicker {
-  display: none;
 }
 .project-shell #main .politik-long .board-slicers {
   justify-content: flex-start;

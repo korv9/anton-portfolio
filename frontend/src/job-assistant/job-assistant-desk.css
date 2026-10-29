@@ -1,0 +1,271 @@
+/* The desk below the bar: the compact list on the left, the open ad on the right with its
+   quick facts aside. Under 760 px the ad replaces the list and has a back button. */
+.ja-desk {
+  container: desk / inline-size;
+  display: grid;
+  grid-template-columns: minmax(16rem, 22.5rem) minmax(0, 1fr);
+  align-items: start;
+}
+.ja-list-pane,
+.ja-detail {
+  position: sticky;
+  top: calc(var(--header-h, 5.5rem) + var(--sp-3));
+  max-height: calc(100dvh - var(--header-h, 5.5rem) - var(--sp-5));
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--color-border-control) transparent;
+  scrollbar-width: thin;
+}
+.ja-list-pane {
+  border-right: 1px solid var(--line);
+}
+
+.ja-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ja-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-1) var(--sp-3);
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+.ja-item:hover {
+  background: var(--color-surface);
+}
+.ja-item[aria-current='true'] {
+  background: var(--color-surface);
+  box-shadow: inset 2px 0 0 var(--ink);
+}
+.ja-item:focus-visible {
+  outline-offset: -2px;
+}
+.ja-item-title {
+  overflow: hidden;
+  padding-inline-start: var(--sp-3);
+  font-weight: var(--weight-ui);
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ja-item-sub {
+  overflow: hidden;
+  padding-inline-start: var(--sp-3);
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ja-item-days {
+  grid-row: span 2;
+  align-self: center;
+  font-variant-numeric: tabular-nums;
+}
+.ja-item-days[data-soon] {
+  color: var(--color-error);
+}
+.ja-mark[data-mark='saved'] {
+  color: var(--series-5);
+}
+.ja-mark[data-mark='applied'] {
+  color: var(--series-3);
+}
+.ja-more {
+  margin: var(--sp-3) var(--sp-3) 0;
+}
+
+/* One column by default: the quick facts sit under the title, before the tags and the ad. */
+.ja-detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  padding: var(--sp-5) 0 var(--sp-5) clamp(var(--sp-4), 3vw, var(--sp-6));
+}
+#main .ja .ja-detail h2 {
+  margin: 0;
+  font-size: var(--h2);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.ja-employer {
+  margin: var(--sp-2) 0 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--body-large);
+}
+.ja-detail h3 {
+  margin: var(--sp-6) 0 var(--sp-3);
+  font-size: var(--small);
+  font-weight: var(--weight-heading);
+}
+.ja-back {
+  display: none;
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.ja-tag-group + .ja-tag-group {
+  margin-top: var(--sp-3);
+}
+.ja-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0;
+  padding: 0;
+  list-style: none;
+}
+.ja-tags li {
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius);
+  background: var(--color-panel);
+}
+.ja-tags[data-strength='preferred'] li,
+.ja-tags[data-strength='ambiguous'] li {
+  background: var(--color-surface);
+}
+.ja-checks {
+  margin: var(--sp-3) 0 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+}
+.ja-lead,
+.ja-rest {
+  max-width: var(--measure);
+  margin: 0;
+  color: var(--ink-2);
+  font-size: var(--body-large);
+  line-height: 1.65;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.ja-whole {
+  margin-top: var(--sp-3);
+}
+.ja-whole summary {
+  list-style: none;
+}
+.ja-whole summary::-webkit-details-marker {
+  display: none;
+}
+.ja-whole[open] summary svg {
+  transform: rotate(180deg);
+}
+.ja-whole .ja-rest {
+  margin-top: var(--sp-3);
+}
+
+.ja-detail-main {
+  display: contents;
+}
+.ja-detail-main > section:has(#ja-asks) {
+  order: 2;
+}
+.ja-detail-main > section:has(#ja-ad) {
+  order: 3;
+}
+.ja-facts {
+  order: 1;
+  margin-top: var(--sp-5);
+  align-self: start;
+  padding: var(--sp-5);
+  background: var(--color-surface);
+}
+/* --muted is too faint on the surface for small labels; the secondary ink keeps AA contrast. */
+.ja-facts .ja-label {
+  color: var(--color-ink-secondary);
+}
+.ja-facts dl {
+  display: grid;
+  gap: var(--sp-3) var(--sp-5);
+  margin: 0;
+}
+.ja-facts dd {
+  overflow-wrap: anywhere;
+  margin: var(--sp-1) 0 0;
+  font-size: var(--body-large);
+}
+.ja-actions {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+.ja-kept {
+  margin-bottom: var(--sp-2);
+}
+.ja-apply svg {
+  flex: none;
+}
+
+/* Under the title the facts read across, and the buttons share a row. */
+.ja-facts dl {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+.ja-actions {
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.ja-kept,
+.ja-apply {
+  grid-column: 1 / -1;
+}
+.ja-apply {
+  justify-self: start;
+}
+/* Wide enough for both (the list plus about 46rem): the text, and the quick facts beside it. */
+@container desk (min-width: 69rem) {
+  .ja-facts dl,
+  .ja-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ja-apply {
+    justify-self: stretch;
+  }
+  .ja-detail {
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: var(--sp-6);
+  }
+  .ja-detail-main {
+    display: block;
+  }
+  .ja-facts {
+    order: 0;
+    margin-top: 0;
+  }
+}
+/* Under 760 px the open ad replaces the list, with a back button; the list keeps the page scroll. */
+@media (max-width: 760px) {
+  .ja-desk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ja-list-pane,
+  .ja-detail {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border-right: 0;
+  }
+  .ja-detail {
+    padding-inline: 0;
+    /* Opened, it scrolls to just below the sticky site header, back button first. */
+    scroll-margin-top: calc(var(--header-h, 4rem) + var(--sp-2));
+  }
+  .ja-desk[data-open='true'] .ja-list-pane,
+  .ja-desk[data-open='false'] .ja-detail {
+    display: none;
+  }
+  .ja-back {
+    display: inline-flex;
+  }
+  .ja:has(.ja-desk[data-open='true']) .ja-lists {
+    display: none;
+  }
+  /* No ad is open on a phone until one is tapped, so the first is not marked. */
+  .ja-desk[data-open='false'] .ja-item[aria-current='true'] {
+    background: none;
+    box-shadow: none;
+  }
+}

@@ -19,12 +19,9 @@
 .project-shell #main:has(.cv) {
   background: var(--page);
 }
-.project-shell #main:has(.cv) > .project-context {
-  display: none;
-}
 .cv {
   min-height: 100vh;
-  padding: clamp(24px, 3vw, 48px) clamp(16px, 3vw, 56px) var(--sp-section);
+  padding: clamp(24px, 3vw, 48px) 0 var(--sp-section);
   background: var(--page);
   color: var(--ink);
 }

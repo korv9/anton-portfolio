@@ -1,12 +1,12 @@
-/** The job assistant's review list: derived status, filters and sorting, and the label metric. */
+/** The job assistant's desk: rows and marks, list tabs, filters, sorting and the ad lead. */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  evaluation,
+  https,
   keptNote,
+  recordsNote,
   rows,
   unmatchedNote,
-  statusOf,
   type Ad,
   type Delivered,
   type Match,
@@ -16,12 +16,14 @@ import {
   daysBetween,
   facetCounts,
   isFiltered,
+  listCounts,
   parseQuery,
   queryParams,
-  pipelineColumns,
   search,
+  splitLead,
   syncAge,
 } from '../../src/job-assistant/query.ts'
+import { merge } from '../../src/job-assistant/mine.ts'
 import { parseHash } from '../../src/router.ts'
 
 const ad = (id: string, extra: Partial<Ad> = {}): Ad => ({
@@ -69,40 +71,27 @@ const delivered = (ads: Ad[], matches: Match[]) =>
 
 test('the route has its own page and the withdrawn job addresses still redirect', () => {
   assert.equal(parseHash('#jobs').page, 'jobs')
-  assert.equal(parseHash('#jobs?ad=1&view=sample').page, 'jobs')
+  assert.equal(parseHash('#jobs?ad=1&list=saved').page, 'jobs')
   assert.notEqual(parseHash('#jobb-it').page, 'jobs')
 })
 
-test('a removed or expired ad is closed unless the owner set something else', () => {
-  assert.equal(statusOf(ad('1')), 'new')
-  assert.equal(
-    statusOf(ad('1', { removed_at: '2026-10-23T10:00:00' })),
-    'closed',
-  )
-  assert.equal(statusOf(ad('1', { expired: true })), 'closed')
-  assert.equal(
-    statusOf(ad('1', { removed_at: '2026-10-23' }), {
-      status: 'applied',
-      note: '',
-    }),
-    'applied',
-  )
-})
-
 const DAY = '2026-10-23'
-const board = () => {
+const board = (mine = {}) => {
   const d = delivered(
     [
-      ad('1', { employment_type: 'Vanlig anställning' }),
+      ad('1', { application_deadline: '2026-11-30T23:59:59' }),
       ad('2', {
         application_deadline: '2026-10-30T23:59:59',
         municipality: 'Solna',
       }),
-      ad('3', { published: '2026-09-01T08:00:00' }),
+      ad('3'),
       ad('4'),
+      ad('5', { removed_at: '2026-10-22T10:00:00' }),
+      ad('6', { duplicate_of: '1' }),
+      ad('7', { expired: true }),
     ],
     [
-      match('2', 1, 'strong', {
+      match('2', 3, 'possible', {
         remote: 'Du kan jobba på distans',
         seniority: { title: null, years: null, junior: 'junior' },
         skills: [
@@ -115,95 +104,124 @@ const board = () => {
           },
         ],
       }),
-      match('1', 2, 'possible', {
-        role: 'bi',
-        seniority: { title: 'Senior', years: 5, junior: null },
-      }),
-      match('3', 3, 'strong'),
-      match('4', 4, 'outside', { sample: true }),
+      match('1', 2, 'strong', { role: 'bi' }),
+      match('3', 1, 'stretch'),
     ],
   )
-  return rows(d, {
-    reviews: { '1': { status: 'interesting', note: '' } },
-    labels: {},
-    available: true,
-  })
+  return rows(d, mine)
 }
 const ids = (xs: { ad: Ad }[]) => xs.map((r) => r.ad.id)
+const q = (extra: Partial<typeof DEFAULT_QUERY>) => ({
+  ...DEFAULT_QUERY,
+  ...extra,
+})
 
-test('the default query lists strong and possible ads in rank order', () => {
+test('the board lists open ads with their match, and any ad the reader marked', () => {
+  assert.deepEqual(ids(board()).sort(), ['1', '2', '3', '4'])
+  const marked = board({ '5': 'applied', '7': 'saved' })
+  assert.deepEqual(ids(marked).sort(), ['1', '2', '3', '4', '5', '7'])
+  assert.equal(marked.find((r) => r.ad.id === '4')?.match, undefined)
+})
+
+test('good fit is strong and possible, sorted by fit and then the nearest deadline', () => {
   const all = board()
-  assert.deepEqual(ids(search(all, DEFAULT_QUERY, DAY)), ['2', '1', '3'])
-  assert.deepEqual(
-    ids(search(all, { ...DEFAULT_QUERY, match: 'sample' }, DAY)),
-    ['4'],
-  )
-  assert.deepEqual(
-    ids(search(all, { ...DEFAULT_QUERY, match: 'possible' }, DAY)),
-    ['1'],
-  )
+  assert.deepEqual(ids(search(all, DEFAULT_QUERY)), ['1', '2'])
+  // All: strong, possible, stretch, then the unmatched ad.
+  assert.deepEqual(ids(search(all, q({ list: 'all' }))), ['1', '2', '3', '4'])
+})
+
+test('the saved, applied and closed tabs hold the marks, and the counts follow the search', () => {
+  const all = board({ '1': 'saved', '3': 'applied', '4': 'closed' })
+  assert.deepEqual(ids(search(all, q({ list: 'saved' }))), ['1'])
+  assert.deepEqual(ids(search(all, q({ list: 'applied' }))), ['3'])
+  assert.deepEqual(listCounts(all, DEFAULT_QUERY), {
+    good: 2,
+    saved: 1,
+    applied: 1,
+    closed: 1,
+    all: 4,
+  })
+  assert.equal(listCounts(all, q({ q: 'dbt' })).all, 1)
 })
 
 test('free text searches the title, the employer and the named skills', () => {
   const all = board()
-  assert.deepEqual(ids(search(all, { ...DEFAULT_QUERY, q: 'DBT' }, DAY)), ['2'])
+  assert.deepEqual(ids(search(all, q({ q: 'DBT', list: 'all' }))), ['2'])
   assert.deepEqual(
-    ids(search(all, { ...DEFAULT_QUERY, q: 'exempel engineer 3' }, DAY)),
+    ids(search(all, q({ q: 'exempel engineer 3', list: 'all' }))),
     ['3'],
   )
 })
 
-test('each filter narrows on the exported field and sorts keep the match order on ties', () => {
+test('place, role and seniority narrow the list and count their options', () => {
   const all = board()
-  const q = (extra: Partial<typeof DEFAULT_QUERY>) =>
-    ids(search(all, { ...DEFAULT_QUERY, ...extra }, DAY))
-  assert.deepEqual(q({ place: 'Solna' }), ['2'])
-  assert.deepEqual(q({ place: 'remote' }), ['2'])
-  assert.deepEqual(q({ type: 'Vanlig anställning' }), ['1'])
-  assert.deepEqual(q({ role: 'bi' }), ['1'])
-  assert.deepEqual(q({ published: '30' }), ['2', '1'])
-  assert.deepEqual(q({ deadline: '7' }), ['2'])
-  assert.deepEqual(q({ level: 'junior' }), ['2'])
-  assert.deepEqual(q({ level: 'not_senior' }), [])
-  assert.deepEqual(q({ sort: 'newest' }), ['2', '1', '3'])
-  assert.deepEqual(q({ sort: 'deadline' }), ['2', '1', '3'])
-})
-
-test('an option counts the ads it would leave with the other filters kept', () => {
-  const all = board()
-  const c = facetCounts(all, { ...DEFAULT_QUERY, place: 'Stockholm' }, DAY)
-  assert.equal(c.place.get('Stockholm'), 2)
+  const inAll = (extra: Partial<typeof DEFAULT_QUERY>) =>
+    ids(search(all, q({ list: 'all', ...extra })))
+  assert.deepEqual(inAll({ place: 'Solna' }), ['2'])
+  assert.deepEqual(inAll({ place: 'remote' }), ['2'])
+  assert.deepEqual(inAll({ role: 'bi' }), ['1'])
+  assert.deepEqual(inAll({ level: 'junior' }), ['2'])
+  assert.deepEqual(inAll({ level: 'not_senior' }), [])
+  const c = facetCounts(all, q({ list: 'all', place: 'Stockholm' }))
+  assert.equal(c.place.get('Stockholm'), 3)
   assert.equal(c.place.get('Solna'), 1)
-  assert.equal(c.place.get('remote'), 1)
-  assert.equal(c.match.get('listed'), 2, 'the place filter is kept')
-  assert.equal(c.match.get('sample'), 1)
-  assert.equal(c.role.get('bi'), 1)
+  assert.equal(c.role.get('bi'), 1, 'the place filter is kept')
 })
 
 test('the query round-trips through the address and drops defaults and junk', () => {
   const base = new URLSearchParams('ad=7&lang=sv')
-  const q = {
-    ...DEFAULT_QUERY,
-    q: 'dbt',
-    place: 'Solna',
-    sort: 'newest' as const,
-  }
-  const params = queryParams(base, q)
-  assert.equal(params.toString(), 'ad=7&lang=sv&q=dbt&place=Solna&sort=newest')
-  assert.deepEqual(parseQuery(params), q)
+  const query = q({ q: 'dbt', place: 'Solna', list: 'saved' })
+  const params = queryParams(base, query)
+  assert.equal(params.toString(), 'ad=7&lang=sv&q=dbt&list=saved&place=Solna')
+  assert.deepEqual(parseQuery(params), query)
   assert.deepEqual(
-    parseQuery(new URLSearchParams('match=everything&sort=random&published=2')),
+    parseQuery(new URLSearchParams('list=everything&level=2&sort=x')),
     DEFAULT_QUERY,
   )
   assert.deepEqual(
-    parseQuery(new URLSearchParams('place=Atlantis&type=x&role=bi'), board()),
-    { ...DEFAULT_QUERY, role: 'bi' },
-    'a place, type or role no loaded ad has falls back to the default',
+    parseQuery(new URLSearchParams('place=Atlantis&role=bi'), board()),
+    q({ role: 'bi' }),
+    'a place or role no loaded ad has falls back to the default',
+  )
+  // Without a profile the default tab is all, and the address leaves it out.
+  assert.equal(parseQuery(new URLSearchParams(), [], 'all').list, 'all')
+  assert.equal(
+    queryParams(new URLSearchParams(), q({ list: 'all' }), 'all').toString(),
+    '',
   )
   assert.equal(queryParams(new URLSearchParams(), DEFAULT_QUERY).toString(), '')
-  assert.equal(isFiltered(DEFAULT_QUERY), false)
-  assert.equal(isFiltered({ ...DEFAULT_QUERY, sort: 'deadline' }), false)
-  assert.equal(isFiltered({ ...DEFAULT_QUERY, level: 'junior' }), true)
+  assert.equal(isFiltered(q({ list: 'saved' })), false)
+  assert.equal(isFiltered(q({ level: 'junior' })), true)
+})
+
+test('the owner store wins over the device, and older statuses read as a mark', () => {
+  const merged = merge(
+    { a: 'saved', b: 'applied', c: 'closed' },
+    {
+      a: { status: 'interview', note: '' },
+      b: { status: 'new', note: '' },
+      d: { status: 'interesting', note: '' },
+      e: { status: 'rejected', note: '' },
+    },
+  )
+  assert.deepEqual(merged, {
+    a: 'applied',
+    c: 'closed',
+    d: 'saved',
+    e: 'closed',
+  })
+})
+
+test('the lead is the first lines, never past a blank line', () => {
+  assert.deepEqual(splitLead('Kort intro.\n\nResten av annonsen.'), [
+    'Kort intro.',
+    'Resten av annonsen.',
+  ])
+  const long = Array.from({ length: 10 }, (_, i) => `Rad ${i} `.repeat(10))
+  const [lead, rest] = splitLead(long.join('\n'))
+  assert.ok(lead.length >= 250 && lead.length < 400, String(lead.length))
+  assert.ok(rest.startsWith('Rad 5'))
+  assert.deepEqual(splitLead('Bara en rad.'), ['Bara en rad.', ''])
 })
 
 test('days are whole calendar days and the sync age is in hours', () => {
@@ -213,44 +231,6 @@ test('days are whole calendar days and the sync age is in hours', () => {
   const now = new Date('2026-10-23T12:00:00Z')
   assert.equal(syncAge('2026-10-23T08:30:00+00:00', now), 3.5)
   assert.equal(syncAge(undefined, now), null)
-})
-
-test('the pipeline board groups the owner reviews from saved to the answer', () => {
-  const cols = pipelineColumns([ad('1'), ad('2')], {
-    reviews: {
-      '1': { status: 'interesting', note: '' },
-      '2': { status: 'interview', note: '' },
-      '9': { status: 'applied', note: '' },
-      '3': { status: 'pass', note: '' },
-    },
-    labels: {},
-    available: true,
-  })
-  assert.deepEqual(
-    cols.map((c) => [c.status, c.items.map((i) => i.id)]),
-    [
-      ['interesting', ['1']],
-      ['applied', ['9']],
-      ['interview', ['2']],
-      ['offer', []],
-      ['rejected', []],
-    ],
-  )
-  assert.equal(cols[1].items[0].ad, undefined, 'an ad gone from the file')
-})
-
-test('labels give precision of the list, misses outside it and every disagreement', () => {
-  const ev = evaluation({
-    a: { label: 'relevant', note: '', shown_class: 'strong' },
-    b: { label: 'not_relevant', note: '', shown_class: 'possible' },
-    c: { label: 'relevant', note: '', shown_class: 'outside' },
-    d: { label: 'maybe', note: '', shown_class: 'outside' },
-  })
-  assert.deepEqual(
-    [ev.labelled, ev.listedRelevant, ev.listed, ev.outsideRelevant, ev.outside],
-    [4, 1, 2, 1, 2],
-  )
-  assert.deepEqual(ev.disagreements.map((x) => x.id).sort(), ['b', 'c'])
 })
 
 test('the unmatched note says approval only when the Worker answered without a profile, and a calm pause otherwise', () => {
@@ -277,4 +257,34 @@ test('the unmatched note says approval only when the Worker answered without a p
     keptNote({ reason: 'x', status: 500, at })[0],
     /answered 500 at 2026-10-25 11:13 UTC/,
   )
+})
+
+test('the owner note tells a refused token, missing storage and an unreachable Worker apart', () => {
+  assert.match(recordsNote('token')[0], /token was not accepted/)
+  assert.match(recordsNote('storage')[0], /store is not set up/)
+  assert.match(recordsNote('offline')[0], /could not be reached/)
+  for (const p of ['token', 'storage', 'offline'] as const) {
+    const [en, sv] = recordsNote(p)
+    // Calm copy: no HTTP codes, and both languages present.
+    assert.doesNotMatch(en, /\d{3}/)
+    assert.ok(sv.length > 0 && sv !== en)
+  }
+})
+
+test('only absolute https links from the source data are linked', () => {
+  const ok = 'https://arbetsformedlingen.se/platsbanken/annonser/1'
+  assert.equal(https(ok), ok)
+  for (const bad of [
+    'javascript:alert(1)',
+    'JAVASCRIPT:alert(1)',
+    'data:text/html,x',
+    'http://example.se/ad',
+    '//example.se/ad',
+    '/platsbanken/1',
+    'not a url',
+    '',
+    null,
+    undefined,
+  ])
+    assert.equal(https(bad), undefined, String(bad))
 })

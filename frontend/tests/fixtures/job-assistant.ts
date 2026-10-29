@@ -61,7 +61,14 @@ export function jobAssistantFixture() {
         strength: 'required',
         cv_level: 'practical',
         ad_quotes: [{ quote: 'Du har arbetat med dbt.', line: 1, field: 'description' }],
-        cv_quotes: [{ quote: 'Built dbt models.', ref: 'experience-1', level: 'practical' }],
+        cv_quotes: [
+          {
+            quote: 'Built dbt models.',
+            ref: 'experience-1',
+            level: 'practical',
+            source: 'internship',
+          },
+        ],
       },
       {
         skill: 'kubernetes',
@@ -99,11 +106,20 @@ export function jobAssistantFixture() {
         ads.map((a) => [
           a.id,
           {
-            description: 'Du har arbetat med dbt.\nMeriterande med Kubernetes.',
+            description:
+              'Vi söker en dataingenjör.\n\nDu har arbetat med dbt.\nMeriterande med Kubernetes.',
             contact_redactions: 0,
           },
         ]),
       ),
+    },
+    // The ads without a text in texts.json, loaded when one of them is opened.
+    'texts-remaining': {
+      ...head,
+      texts: {} as Record<
+        string,
+        { description: string; contact_redactions: number }
+      >,
     },
     demand: { ...head, profile: null, skills: [] },
     reviews: {
@@ -112,6 +128,30 @@ export function jobAssistantFixture() {
         '1001': { status: 'interesting', note: '', updated_at: head.generated_at },
       },
     },
-    labels: { labels: {} },
+    // GET /api/jobs/profile as a visitor gets it: the approved version, never the draft.
+    profile: {
+      draft: null,
+      approved: {
+        version: 1,
+        approved_at: head.generated_at,
+        wishes: { roles: ['data_engineering'], locations: ['Solna'], remote: null, interests: [] },
+        skills: [
+          {
+            skill: 'dbt',
+            level: 'practical',
+            evidence: [{ level: 'practical', ref: 'experience-1', quote: 'Built dbt models.' }],
+          },
+          {
+            skill: 'python',
+            level: 'education_or_project',
+            evidence: [{ level: 'education_or_project', ref: 'project-1', quote: 'Wrote a Python CLI.' }],
+          },
+        ],
+        experience: [{ id: 'experience-1', kind: 'internship', title: 'Data Engineer', organisation: 'Testbolag A AB' }],
+        projects: [{ id: 'project-1', name: 'Test project' }],
+        education: [],
+      },
+      versions: [],
+    },
   }
 }

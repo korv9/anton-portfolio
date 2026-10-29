@@ -1,6 +1,6 @@
-/* Arbetsförmedla (#jobs): a job board, ivory on charcoal through the shared tokens. The head is
-   ui/PageHead; space instead of rules between the parts; result cards beside the open ad, no
-   shadows; the open card is the one focal mark on the screen. */
+/* Arbetsförmedla (#jobs), the desk: ivory on charcoal through the shared tokens. A top bar with
+   the title in the signature's gradient, list tabs with counts and compact filters; the list and
+   the open ad below (job-assistant-desk.css). Labels are small caps in the site's meta face. */
 .ja {
   padding-block: 0 var(--sp-section);
 }
@@ -8,77 +8,161 @@
   color: var(--color-ink-secondary);
   font-size: var(--type-caption);
 }
-.ja kbd {
-  padding: 0 0.3em;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  font-size: 0.75rem;
+.ja-label {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.ja-note,
+.ja ::selection {
+  background: var(--color-panel);
+  color: var(--color-ink);
+}
+
+.ja-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3) var(--sp-5);
+  padding-block: var(--sp-5) var(--sp-4);
+}
+.ja-search-wrap {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.ja-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 44px;
+  padding-inline: var(--sp-3);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  color: var(--muted);
+}
+.ja-search:focus-within {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.project-shell .ja-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 42px;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  outline: none;
+}
+
+.ja-notes {
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--color-border-control);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+  font-size: var(--type-label);
+}
+.ja-notes p {
+  margin: 0;
+}
+.ja-notes p + p {
+  margin-top: var(--sp-1);
+}
+
+.ja-lists {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-3);
+  padding-block: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.ja-lists nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+.ja-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 40px;
+  padding: 0.35rem 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--small);
+  cursor: pointer;
+}
+.ja-tab:hover {
+  border-color: var(--ink);
+}
+.ja button[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-accent);
+}
+.ja-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
+.ja-filters {
+  margin-inline-start: auto;
+}
+.ja-filters summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  cursor: pointer;
+}
+.ja-filters[open] {
+  flex-basis: 100%;
+}
+.ja-filters > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--sp-3);
+  padding-top: var(--sp-2);
+}
+.ja-filters label,
 .ja-owner label {
   display: grid;
   gap: var(--sp-1);
+  color: var(--color-ink-secondary);
   font-size: var(--type-caption);
+}
+.ja-filters select {
+  min-width: 12rem;
+}
+
+.ja-empty {
+  padding: var(--sp-5) 0;
   color: var(--color-ink-secondary);
 }
 
-.ja-segment {
-  display: inline-flex;
-  flex-wrap: wrap;
-  border: 1px solid var(--color-border-control);
-  border-radius: var(--radius);
+@media (pointer: coarse) {
+  .ja-tab,
+  .ja-filters select,
+  .ja-filters summary {
+    min-height: 44px;
+  }
 }
-.ja-segment button {
-  min-height: 36px;
-  padding: 0.3rem 0.75rem;
-  border: 0;
-  border-inline-end: 1px solid var(--color-border);
-  background: transparent;
-  font: inherit;
-  font-size: var(--type-label);
-  font-weight: var(--weight-ui);
-  cursor: pointer;
-}
-.ja-segment button:last-child {
-  border-inline-end: 0;
-}
-.ja-segment button:hover {
-  background: var(--color-surface);
-}
-.ja-decide .ja-segment button[aria-pressed='true'] {
-  outline: 1px solid var(--color-border-control);
-  outline-offset: -1px;
-  background: var(--color-panel);
-  font-weight: var(--weight-heading);
-}
-.ja-count {
-  margin-inline-start: 0.4em;
-  font-weight: var(--weight-body);
-  color: var(--color-ink-secondary);
-}
-
-.ja-work {
-  display: grid;
-  grid-template-columns: minmax(20rem, 2fr) minmax(0, 3fr);
-  gap: var(--sp-5);
-  align-items: start;
-}
-.ja-list-pane,
-.ja-detail {
-  max-height: calc(100dvh - var(--header-h, 5.5rem) - var(--sp-5));
-  overflow: auto;
-  scrollbar-color: var(--color-border-control) transparent;
-  scrollbar-width: thin;
-}
-/* Below the sticky site header, not under it; each pane keeps its own scroll position. */
-.ja-list-pane,
-.ja-detail {
-  position: sticky;
-  top: calc(var(--header-h, 5.5rem) + var(--sp-3));
-  overscroll-behavior: contain;
-}
-/* Cards and links fill their scroll panes, so the focus ring is drawn inside them. */
-.ja-card:focus-visible,
-.ja-detail a:focus-visible {
-  outline-offset: -2px;
+@media (max-width: 760px) {
+  .ja-filters {
+    margin-inline-start: 0;
+  }
+  .ja-filters select {
+    min-width: 0;
+    width: 100%;
+  }
+  .ja-filters label {
+    flex: 1 1 100%;
+  }
 }

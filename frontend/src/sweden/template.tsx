@@ -209,10 +209,6 @@ export function Scene({
   return (
     <div className="sw-scene" role="group" aria-labelledby={titleId}>
       <header className="sw-scene-title">
-        <p className="sw-kicker">
-          <span className="sw-id">{product.id === 'X' ? '×' : product.id}</span>
-          {b(product.title)}
-        </p>
         <h2 id={titleId}>{b(product.question)}</h2>
       </header>
       <div className="sw-scene-visual">{children}</div>

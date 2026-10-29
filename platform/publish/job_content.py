@@ -7,7 +7,7 @@ import re
 from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
-VERSION = 'job-requirements-v4'
+VERSION = 'job-requirements-v5'
 SKILLS = {
     'Python': ('language', r'\bpython\b'), 'SQL': ('database', r'\bsql\b'),
     'Java': ('language', r'\bjava\b'), 'JavaScript': ('language', r'\bjavascript\b'),
@@ -35,9 +35,20 @@ SKILLS = {
     'GitHub Actions': ('practice', r'\bgithub actions\b'), 'Scala': ('language', r'\bscala\b'),
     'Rust': ('language', r'\brust\b'), 'Terraform': ('platform', r'\bterraform\b'), 'Linux': ('platform', r'\blinux\b'),
 }
-PREFERRED = r'meriterande|önskvärt|en fördel|gärna|nice.to.have|preferred|a plus'
+PREFERRED = r'meriterande|önskvärt|en fördel|ett plus|gärna|nice.to.have|preferred|a plus|an advantage'
 REQUIRED = r'\bkrav\b|måste|du (?:ska|skall|har)|vi (?:kräver|söker dig som har)|required|must.have|you (?:must|have)|(?:minst|minimum|at least)\s+(?:\d+|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio|one|two|three|four|five|six|seven|eight|nine|ten)\+?\s*(?:års?|years?|yrs?)'
-NEGATED = r'inget krav|inte ett krav|krävs inte|not required|no .{0,20}required'
+# Swedish phone numbers: "070 123 45 67", "070.123.45.67", "073-123 45 67", "08-123 45 67", "+46 (0)70 123 45 67".
+EMAIL = r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}'
+PHONE = r'(?<!\w)(?:\+46[   ]*(?:\(0\))?[   .-]?|0)(?:\d[   .-]?){7,10}\d(?!\w)'
+NEGATED = r'inget krav|inte ett krav|krävs inte|not required|not a requirement|no .{0,20}required'
+# A heading that introduces requirements: "Krav:", "Vi söker dig som har:", "We believe you have:".
+REQUIRED_HEADING = r'^\s*(?:krav|skallkrav|kvalifikationer|qualifications|requirements|must.have)\s*:?\s*$|(?:du|som|you)\s+(?:har|have)\s*:\s*$'
+# Spoken languages other than the Swedish and English rule below, named as a skill to have.
+LANGUAGES = (r'\b(?:spanska|spanish|tyska|german|franska|french|finska|finnish|norska|norwegian|danska|danish|'
+             r'arabiska|arabic|polska|polish|italienska|italian|ryska|russian|kinesiska|chinese|mandarin|'
+             r'japanska|japanese|portugisiska|portuguese|nederländska|dutch|turkiska|turkish)\b')
+LANGUAGE_CONDITION = (rf'(?:flytande|fluent|proficien\w*|goda kunskaper i)\s+(?:\w+\s+(?:och|and)\s+)?{LANGUAGES}'
+                      rf'|{LANGUAGES}[\w-]*\s+(?:i tal och skrift|speaking|written|spoken)')
 
 
 class PlainHTML(HTMLParser):
@@ -100,6 +111,15 @@ def active(ad, at):
             and (deadline is None or deadline >= at))
 
 
+def redact(text):
+    """(text with e-mail addresses and phone numbers replaced, how many were replaced)."""
+    count = 0
+    for pattern in (EMAIL, PHONE):
+        text, n = re.subn(pattern, '[kontaktuppgift utelämnad]', text)
+        count += n
+    return text, count
+
+
 def public_text(ad):
     description = ad.get('description') or {}
     text = description.get('text')
@@ -109,11 +129,7 @@ def public_text(ad):
         parser.feed(description.get('text_formatted') or '')
         text, origin = ''.join(parser.parts), 'description.text_formatted_as_text'
     # Retain wording and whitespace except disclosed contact redactions.
-    count = 0
-    for pattern in (r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}',
-                    r'(?<!\w)(?:\+46[ -]?|0)(?:\d[ -]?){8,10}\d(?!\w)'):
-        text, n = re.subn(pattern, '[kontaktuppgift utelämnad]', text)
-        count += n
+    text, count = redact(text)
     for contact in ad.get('application_contacts') or []:
         name = contact.get('name') if isinstance(contact, dict) else None
         if name and len(name) > 3:
@@ -122,29 +138,34 @@ def public_text(ad):
     return text, origin, count
 
 
-def requirements(text, ad):
+def requirements(text, ad, skills=None):
+    """skills: the vocabulary to read, {label: (kind, pattern)}; SKILLS unless a caller has a wider one."""
+    skills = skills or SKILLS
     result, seen = [], set()
     heading = None
     for line_number, line in enumerate(text.splitlines(), 1):
         if not line.strip():
             heading = None
             continue
-        short_heading = len(line) < 65 and (line.rstrip().endswith(':') or not re.search(r'[.!?]', line))
-        if short_heading and (line.rstrip().endswith(':') or re.fullmatch(r'\s*(?:krav|requirements|must.have|meriterande|preferred)\s*', line, re.I)):
+        # A line that ends in a colon may be longer ("Det är ett plus om du har erfarenhet inom något av följande:").
+        short_heading = ((len(line) < 65 and not re.search(r'[.!?]', line))
+                         or (len(line) < 90 and line.rstrip().endswith(':')))
+        if short_heading and (line.rstrip().endswith(':') or re.fullmatch(r'\s*(?:krav|skallkrav|kvalifikationer|qualifications|requirements|must.have|meriterande|preferred)\s*', line, re.I)):
             heading = ('preferred' if re.search(PREFERRED, line, re.I) else
-                       'required' if re.fullmatch(r'\s*(?:krav|requirements|must.have)\s*:?\s*', line, re.I)
-                       else None)
+                       'required' if re.search(REQUIRED_HEADING, line, re.I) else None)
         for sentence in re.split(r'(?<=[!?])\s+|(?<=\.)\s+(?=[A-ZÅÄÖ])', line):
             level = ('ambiguous' if re.search(NEGATED, sentence, re.I) else
-                     'preferred' if re.search(PREFERRED, sentence, re.I) else
+                     # Under a "Meriterande:" heading, "du har ..." is still a merit.
+                     'preferred' if heading == 'preferred' or re.search(PREFERRED, sentence, re.I) else
                      'required' if re.search(REQUIRED, sentence, re.I) else heading or 'ambiguous')
-            observations = [(label, kind) for label, (kind, pattern) in SKILLS.items() if re.search(pattern, sentence, re.I)]
+            observations = [(label, kind) for label, (kind, pattern) in skills.items() if re.search(pattern, sentence, re.I)]
             for kind, pattern in (
                 ('seniority', r'\b(?:senior|junior|lead|principal)\b'),
                 ('education', r'utbildning|examen|högskol|universitet|degree|bachelor|master|ph\.?d|doktor'),
                 ('experience', r'\d+\s*(?:års?|years?)|erfarenhet|experience'),
                 ('conditions', r'heltid|deltid|tillsvidare|visstid|provanställning|full.time|part.time'),
                 ('conditions', r'personalansvar|people management|manage a team|ledarerfarenhet|medborgarskap|citizenship|säkerhetsprövning|security clearance|svenska.*(?:tal|skrift)|swedish.*(?:fluent|proficien)'),
+                ('conditions', LANGUAGE_CONDITION),
                 ('responsibilities', r'arbetsuppgifter|du kommer|ansvara|ansvarar|responsibilities|you will'),
                 ('benefits', r'friskvård|förmåner|pension|benefits'),
             ):
@@ -160,7 +181,7 @@ def requirements(text, ad):
     for key, strength in (('must_have', 'required'), ('nice_to_have', 'preferred')):
         for skill in (ad.get(key) or {}).get('skills') or []:
             if isinstance(skill, dict) and skill.get('label'):
-                normalized = next((name for name, (_, pattern) in SKILLS.items()
+                normalized = next((name for name, (_, pattern) in skills.items()
                     if re.search(pattern, skill['label'], re.I)), skill['label'])
                 result.append({'label': normalized, 'category': 'structured_skill', 'strength': strength,
                                'source_field': key + '.skills', 'line': None, 'quote': skill['label']})

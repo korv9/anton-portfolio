@@ -6,14 +6,6 @@
   margin: 0 0 var(--sp-4);
   max-width: 44rem;
 }
-.data-question-eyebrow {
-  margin: 0 0 var(--sp-2);
-  color: var(--muted);
-  font-size: var(--caption);
-  font-weight: var(--weight-ui);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
 .data-question h1,
 .data-question h2 {
   margin: 0;

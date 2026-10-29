@@ -6,7 +6,6 @@ import './project.css'
 
 export function ProjectHero({
   project,
-  eyebrow,
   title,
   question,
   children,
@@ -15,8 +14,6 @@ export function ProjectHero({
 }: {
   /** Registry id: name, descriptor, question and finding come from it by default. */
   project?: string
-  /** For a page outside the registry (Data Constellation, Quality). */
-  eyebrow?: string
   title?: string
   question?: string
   /** One or two sentences on what this is. */
@@ -31,7 +28,6 @@ export function ProjectHero({
     text ? l(text.en, text.sv) : undefined
   return (
     <header className={`project-hero${dark ? ' plate' : ''}`}>
-      <p className="project-hero-eyebrow">{eyebrow ?? b(entry?.descriptor)}</p>
       <h1 className="project-hero-title">{title ?? b(entry?.title)}</h1>
       <p className="project-hero-question">
         {question ?? b(entry?.home?.question)}
@@ -45,13 +41,11 @@ export function ProjectHero({
 
 export function ProjectSection({
   id,
-  label,
   title,
   children,
   className,
 }: {
   id?: string
-  label?: string
   title: string
   children: ReactNode
   className?: string
@@ -63,7 +57,6 @@ export function ProjectSection({
       id={id}
       aria-labelledby={headingId}
     >
-      {label && <p className="project-section-label">{label}</p>}
       <h2 id={headingId}>{title}</h2>
       {children}
     </section>

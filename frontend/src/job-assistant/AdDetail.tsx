@@ -1,50 +1,53 @@
-/** One ad under review: why it got its class, the evidence on both sides, the full text, the decision. */
-import { useState, type MutableRefObject } from 'react'
+/**
+ * One ad on the desk: title, employer and place, what the ad asks for (skills as tags, grouped
+ * as the ad grades them), the ad itself, and an aside of quick facts with the reader's marks
+ * (save, applied, close) and the way to apply. No CV comparison here: that is the matching's job.
+ */
 import { l } from '../i18n'
-import { ROLE_NAMES, type Row, type Status } from './data'
-import Decision, { type Saved } from './Decision'
-import Evidence from './Evidence'
-import { classLabel, day, left, statusLabel } from './labels'
+import { https, type Judgement, type Mine, type Row } from './data'
+import AdText from './AdText'
+import { day, fitLabel, left } from './labels'
 import { daysBetween } from './query'
-import Trace from './Trace'
-
-// Python's str.splitlines() breaks, so line numbers match platform/publish/job_content.py.
-const LINE_BREAK = /\r\n|[\n\r\v\f\x1c-\x1e\x85\u2028\u2029]/
 
 type Props = {
   row: Row
-  text?: string
-  owner: boolean
-  storage: boolean
-  onSaved: Saved
-  statusKey: MutableRefObject<((status: Status) => void) | null>
-  /** Today in Stockholm, for the deadline countdown. */
+  published?: string
+  opened: boolean
+  /** Sets or clears a mark; a pressed button clears its own. */
+  onMark: (id: string, mark: Mine | undefined) => void
+  /** Where the marks are kept, said quietly under the buttons. */
+  kept: string
   today: string
-  /** Back to the list; the button shows only where the detail replaces the list (mobile). */
   onBack: () => void
 }
 
-/** Keyed by the ad id in the page, so the note, messages and scroll start fresh per ad. */
+const GROUPS: [Judgement['strength'], [string, string]][] = [
+  ['required', ['Required', 'Krav']],
+  ['preferred', ['Nice to have', 'Meriterande']],
+  ['ambiguous', ['Named in the ad', 'Nämns i annonsen']],
+]
+const MARKS: [Mine, [string, string]][] = [
+  ['saved', ['Save', 'Spara']],
+  ['applied', ['Mark as applied', 'Markera som sökt']],
+  ['closed', ['Close', 'Stäng']],
+]
+
 export default function AdDetail({
   row,
-  text,
-  owner,
-  storage,
-  onSaved,
-  statusKey,
+  published,
+  opened,
+  onMark,
+  kept,
   today,
   onBack,
 }: Props) {
-  const { ad, match } = row
-  const [hit, setHit] = useState<number | null>(null)
-  const showLine = (line: number) => {
-    setHit(line)
-    const target = document.getElementById(`ja-line-${line}`)
-    target?.scrollIntoView({ block: 'center' })
-    // Focus follows, so keyboard and screen-reader users land on the line too.
-    target?.focus({ preventScroll: true })
-  }
+  const { ad, match, mine } = row
+  const source = https(ad.source_url)
+  const apply = https(ad.application_url) ?? source
   const place = [ad.municipality, ad.region].filter(Boolean).join(', ')
+  const days = daysBetween(today, ad.application_deadline)
+  const skills = match?.skills ?? []
+  const graded = skills.some((s) => s.strength !== 'ambiguous')
 
   return (
     <article className="ja-detail" aria-labelledby="ja-detail-title">
@@ -57,174 +60,140 @@ export default function AdDetail({
             strokeWidth="1.5"
           />
         </svg>
-        {l('Back to the jobs', 'Tillbaka till jobben')}
+        {l('Back to the list', 'Tillbaka till listan')}
       </button>
-      <header className="ja-detail-head">
+      <div className="ja-detail-main">
         <h2 id="ja-detail-title">{ad.headline}</h2>
-        <p className="ja-detail-meta">
-          <span className="ja-badge" data-class={match.class}>
-            {classLabel(match.class)}
-            {match.sample &&
-              ` · ${l('evaluation sample', 'utvärderingsurval')}`}
-          </span>{' '}
+        <p className="ja-employer">
           {ad.employer}
-          {place && ` · ${place}`} ·{' '}
-          {l(...(ROLE_NAMES[match.role] ?? ROLE_NAMES.other))}
+          {place && ` · ${place}`}
         </p>
-        <dl className="ja-dates">
+
+        {skills.length > 0 && (
+          <section aria-labelledby="ja-asks">
+            <h3 id="ja-asks">
+              {l('What the ad asks for', 'Vad annonsen efterfrågar')}
+            </h3>
+            {GROUPS.map(([strength, name]) => {
+              const tags = skills.filter((s) => s.strength === strength)
+              if (tags.length === 0) return null
+              return (
+                <div key={strength} className="ja-tag-group">
+                  {(graded || strength !== 'ambiguous') && (
+                    <p className="ja-label">{l(...name)}</p>
+                  )}
+                  <ul className="ja-tags" data-strength={strength}>
+                    {tags.map((s) => (
+                      <li key={s.skill}>{s.skill}</li>
+                    ))}
+                  </ul>
+                  {strength === 'ambiguous' && (
+                    <p className="ja-label">
+                      {graded
+                        ? l(
+                            'The ad does not say whether these are required or nice to have',
+                            'Annonsen säger inte om de här är krav eller meriterande',
+                          )
+                        : l(
+                            'The ad does not separate required from nice to have',
+                            'Annonsen skiljer inte på krav och meriterande',
+                          )}
+                    </p>
+                  )}
+                </div>
+              )
+            })}
+            {match?.checks && match.checks.length > 0 && (
+              <p className="ja-checks">
+                {l('Education and conditions: ', 'Utbildning och villkor: ')}
+                {match.checks.map((c) => c.quote).join(' · ')}
+              </p>
+            )}
+          </section>
+        )}
+
+        <AdText
+          id={ad.id}
+          published={published}
+          opened={opened}
+          source={source}
+        />
+      </div>
+
+      <aside className="ja-facts" aria-label={l('Quick facts', 'Snabbfakta')}>
+        <dl>
           <div>
-            <dt>{l('Published', 'Publicerad')}</dt>
-            <dd>{day(ad.published)}</dd>
-          </div>
-          <div>
-            <dt>{l('Apply by', 'Sök senast')}</dt>
+            <dt className="ja-label">{l('Apply by', 'Sök senast')}</dt>
             <dd>
               {day(ad.application_deadline)}
-              {ad.application_deadline && (
-                <small>
-                  {' '}
-                  {left(daysBetween(today, ad.application_deadline))}
-                </small>
-              )}
+              {days != null && ` · ${left(days)}`}
             </dd>
           </div>
-          {ad.employment_type && (
+          {(ad.employment_type || ad.working_hours) && (
             <div>
-              <dt>{l('Employment', 'Anställning')}</dt>
-              <dd>{ad.employment_type}</dd>
-            </div>
-          )}
-          {ad.working_hours && (
-            <div>
-              <dt>{l('Hours', 'Omfattning')}</dt>
-              <dd>{ad.working_hours}</dd>
-            </div>
-          )}
-          {match.remote && (
-            <div>
-              <dt>{l('Remote', 'Distans')}</dt>
+              <dt className="ja-label">{l('Employment', 'Anställning')}</dt>
               <dd>
-                <q>{match.remote}</q>
+                {[ad.employment_type, ad.working_hours]
+                  .filter(Boolean)
+                  .join(', ')}
               </dd>
             </div>
           )}
           <div>
-            <dt>{l('Status', 'Status')}</dt>
-            <dd>
-              {statusLabel(row.status)}
-              {ad.removed_at &&
-                ` · ${l('removed', 'borttagen')} ${day(ad.removed_at)}`}
-            </dd>
+            <dt className="ja-label">{l('Published', 'Publicerad')}</dt>
+            <dd>{day(ad.published)}</dd>
           </div>
+          <div>
+            <dt className="ja-label">{l('Fit', 'Passform')}</dt>
+            <dd>{fitLabel(match)}</dd>
+          </div>
+          {ad.removed_at && (
+            <div>
+              <dt className="ja-label">{l('Removed', 'Borttagen')}</dt>
+              <dd>{day(ad.removed_at)}</dd>
+            </div>
+          )}
         </dl>
-        <p className="ja-links">
-          <a href={ad.source_url} target="_blank" rel="noreferrer">
-            {l('Original ad', 'Originalannonsen')}
-          </a>
-          {ad.application_url && (
-            <a href={ad.application_url} target="_blank" rel="noreferrer">
-              {l('Application page', 'Ansökningssidan')}
+        <div className="ja-actions">
+          {MARKS.map(([mark, name]) => (
+            <button
+              key={mark}
+              type="button"
+              className="btn-quiet"
+              aria-pressed={mine === mark}
+              onClick={() => onMark(ad.id, mine === mark ? undefined : mark)}
+            >
+              {l(...name)}
+            </button>
+          ))}
+          <p className="ja-label ja-kept" key={mine ?? 'none'}>
+            {kept}
+          </p>
+          {apply && (
+            <a
+              className="btn ja-apply"
+              href={apply}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {l('Apply at the employer', 'Sök hos arbetsgivaren')}
+              <svg
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                aria-hidden="true"
+              >
+                <path
+                  d="M7 17L17 7M9 7h8v8"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
             </a>
           )}
-        </p>
-      </header>
-
-      {owner && !storage && (
-        <p className="ja-muted">
-          {l(
-            'The record storage is not set up yet, so statuses and labels cannot be saved.',
-            'Lagringen är inte uppsatt än, så status och märkningar kan inte sparas.',
-          )}
-        </p>
-      )}
-      {owner && storage && (
-        <Decision row={row} onSaved={onSaved} statusKey={statusKey} />
-      )}
-
-      <section aria-labelledby="ja-why">
-        <h3 id="ja-why">{l('Why it matches', 'Varför den matchar')}</h3>
-        <ul className="ja-reasons">
-          {match.reasons.map((r) => (
-            <li key={r}>{r}</li>
-          ))}
-        </ul>
-        {match.explanation && (
-          <p className="ja-explanation">
-            {match.explanation}{' '}
-            <small>
-              {l('Written by', 'Skrivet av')} {match.explanation_model};{' '}
-              {l(
-                'every sentence quotes the ad or the CV, and every quote was checked there.',
-                'varje mening citerar annonsen eller cv:t, och varje citat är kontrollerat där.',
-              )}
-            </small>
-          </p>
-        )}
-      </section>
-
-      {match.skills && match.skills.length > 0 && (
-        <Evidence skills={match.skills} onLine={text ? showLine : undefined} />
-      )}
-
-      {((match.gaps?.length ?? 0) > 0 ||
-        (match.checks?.length ?? 0) > 0 ||
-        (match.uncertain?.length ?? 0) > 0) && (
-        <section aria-labelledby="ja-gaps">
-          <h3 id="ja-gaps">
-            {l('Gaps and things to check', 'Luckor och saker att kontrollera')}
-          </h3>
-          {match.gaps && match.gaps.length > 0 && (
-            <p>
-              {l(
-                'Not shown in work or projects: ',
-                'Inte visat i arbete eller projekt: ',
-              )}
-              {match.gaps.join(', ')}.
-            </p>
-          )}
-          <ul className="ja-reasons">
-            {match.checks?.map((c) => (
-              <li key={c.kind + c.quote}>
-                {c.kind === 'education'
-                  ? l('Education', 'Utbildning')
-                  : l('Condition', 'Villkor')}
-                : <q>{c.quote}</q>
-              </li>
-            ))}
-            {match.uncertain?.map((u) => (
-              <li key={u}>{u}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <Trace />
-
-      <section aria-labelledby="ja-text">
-        <h3 id="ja-text">{l('The full ad', 'Hela annonsen')}</h3>
-        {text ? (
-          <p className="ja-ad-text">
-            {text.split(LINE_BREAK).map((line, i) => (
-              <span
-                key={i}
-                id={`ja-line-${i + 1}`}
-                tabIndex={-1}
-                data-hit={hit === i + 1 || undefined}
-              >
-                {line}
-                {'\n'}
-              </span>
-            ))}
-          </p>
-        ) : (
-          <p className="ja-muted">
-            {l(
-              'By design the full text is published only for listed, stretch and sampled ads, which keeps the public files small. This ad is on the original page.',
-              'Hela texten publiceras med avsikt bara för listade, stretch- och urvalsannonser, så att de publika filerna hålls små. Den här annonsen finns på originalsidan.',
-            )}
-          </p>
-        )}
-      </section>
+        </div>
+      </aside>
     </article>
   )
 }

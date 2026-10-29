@@ -1,22 +1,16 @@
 /**
- * The How it works tab: the method, the profile against demand (only when there is demand to
- * show), evaluation (owner only: labels are read with the token), operation and the owner's tools
- * (only with the token or ?owner).
+ * The How it works tab: the method, what the ads ask for against the CV (only when there is
+ * demand to show), the scheduled runs and the owner's tools (only with the token or ?owner).
  */
-import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import Owner from './Owner'
-import { ROLE_NAMES, evaluation, type Delivered, type Records } from './data'
+import type { Delivered, Records } from './data'
 import { cvLevelLabel } from './labels'
 
-type ApprovedProfile = {
-  version: number
-  wishes: { locations: string[]; remote: string | null; roles: string[] }
-  skills: { skill: string; level: string }[]
-}
 type Props = {
   data: Delivered
-  records: Records
+  available: boolean
+  problem?: Records['problem']
   owner: boolean
   ownerTools: boolean
   onOwner: (owner: boolean) => void
@@ -26,20 +20,13 @@ const LEVELS = ['practical', 'education_or_project', 'listed']
 
 export default function Sections({
   data,
-  records,
+  available,
+  problem,
   owner,
   ownerTools,
   onOwner,
   onRecords,
 }: Props) {
-  const [profile, setProfile] = useState<ApprovedProfile | null>(null)
-  useEffect(() => {
-    fetch('/api/jobs/profile')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((p) => setProfile(p?.approved ?? null))
-      .catch(() => setProfile(null))
-  }, [])
-  const ev = evaluation(records.labels)
   const top = data.demand.skills.slice(0, 15)
 
   return (
@@ -85,7 +72,7 @@ export default function Sections({
         </p>
       </section>
 
-      {(profile || top.length > 0) && (
+      {top.length > 0 && (
         <section aria-labelledby="ja-profile">
           <h2 id="ja-profile">
             {l(
@@ -93,19 +80,6 @@ export default function Sections({
               'Vad annonserna frågar efter, mot cv:t',
             )}
           </h2>
-          {profile && (
-            <p>
-              {l('Looking for', 'Söker')}:{' '}
-              {profile.wishes.roles
-                .map((r) => l(...(ROLE_NAMES[r] ?? [r, r])))
-                .join(', ')}
-              . {profile.wishes.locations.join(', ')}
-              {profile.wishes.remote &&
-                profile.wishes.remote !== 'no' &&
-                `, ${profile.wishes.remote}`}
-              . {l('Profile version', 'Profilversion')} {profile.version}.
-            </p>
-          )}
           {top.length > 0 && (
             <div className="ja-table-wrap">
               <table className="ja-table ja-demand">
@@ -146,53 +120,6 @@ export default function Sections({
         </section>
       )}
 
-      {records.available && (
-        <section aria-labelledby="ja-eval">
-          <h2 id="ja-eval">{l('Is the list right?', 'Stämmer listan?')}</h2>
-          <p>
-            {l(
-              `I label ads from the list and 30 outside it, to find misranked and missed jobs. Labelled: ${ev.labelled} of 50.`,
-              `Jag märker annonser från listan och 30 utanför den, för att hitta felrankade och missade jobb. Märkta: ${ev.labelled} av 50.`,
-            )}
-          </p>
-          {ev.labelled > 0 && (
-            <dl className="ja-dates">
-              <div>
-                <dt>
-                  {l(
-                    'Listed ads that were relevant',
-                    'Listade annonser som var relevanta',
-                  )}
-                </dt>
-                <dd>
-                  {ev.listedRelevant} / {ev.listed}
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  {l(
-                    'Outside ads that were relevant (missed)',
-                    'Annonser utanför som var relevanta (missade)',
-                  )}
-                </dt>
-                <dd>
-                  {ev.outsideRelevant} / {ev.outside}
-                </dd>
-              </div>
-              <div>
-                <dt>
-                  {l(
-                    'Class and label disagree',
-                    'Klass och märkning skiljer sig',
-                  )}
-                </dt>
-                <dd>{ev.disagreements.length}</dd>
-              </div>
-            </dl>
-          )}
-        </section>
-      )}
-
       <section aria-labelledby="ja-ops">
         <h2 id="ja-ops">
           {l(
@@ -229,7 +156,8 @@ export default function Sections({
       {ownerTools && (
         <Owner
           owner={owner}
-          available={records.available}
+          available={available}
+          problem={problem}
           onOwner={onOwner}
           onRecords={onRecords}
         />

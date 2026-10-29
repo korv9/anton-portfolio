@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ingest/jobtech"))
 import rawstore  # noqa: E402
 from ingest_jobs import API as SEARCH_URL, fetch_search  # noqa: E402
-from publish.job_content import public_text, public_url  # noqa: E402
+from publish.job_content import public_text, public_url, redact  # noqa: E402
 
 SOURCE = "job_assistant"
 STREAM_URL = "https://jobstream.api.jobtechdev.se"
@@ -100,13 +100,34 @@ def project(ad: dict, seen: str) -> dict:
         "published": ad.get("publication_date"),
         "changed": ad.get("timestamp") and datetime.fromtimestamp(ad["timestamp"] / 1000, LOCAL).strftime(STAMP),
     }
+    hashes(row)
+    row["first_seen"] = seen
+    return row
+
+
+def hashes(row: dict) -> None:
+    """Set the content hash (what the review list shows) and the duplicate key of a public row."""
     shown = {k: row[k] for k in ("headline", "employer", "municipality", "region", "description",
                                  "application_deadline", "employment_type", "working_hours",
                                  "must_have", "nice_to_have", "application_url")}
     row["content_hash"] = hashlib.sha256(json.dumps(shown, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
-    row["duplicate_key"] = hashlib.sha256("\n".join(map(fold, (row["employer"], row["headline"], text))).encode()).hexdigest()
-    row["first_seen"] = seen
-    return row
+    row["duplicate_key"] = hashlib.sha256(
+        "\n".join(map(fold, (row["employer"], row["headline"], row["description"]))).encode()).hexdigest()
+
+
+def reredact(ads: dict) -> int:
+    """Apply the current e-mail and phone redaction to stored texts; returns how many rows changed.
+
+    A wider pattern (job_content.PHONE) then also covers ads stored before it, without a refetch.
+    """
+    changed = 0
+    for row in ads.values():
+        text, n = redact(row.get("description") or "")
+        if n:
+            row.update(description=text, contact_redactions=(row.get("contact_redactions") or 0) + n)
+            hashes(row)
+            changed += 1
+    return changed
 
 
 def apply(ads: dict, items: list[dict], seen: str) -> dict:
@@ -206,6 +227,10 @@ def run(until: datetime, http=None, now=None) -> dict:
     state = json.loads(state_path.read_text(encoding="utf-8")) if state_path.exists() else {}
     record = {"started": now(), "windows": [], "outcome": "running"}
     try:
+        record["re_redacted"] = reredact(ads)
+        if record["re_redacted"]:
+            duplicates(ads)
+            save_ads(ads_path, ads)
         if not state:
             # The search has no cursor of its own: the stream starts a little before it was asked.
             start = until - timedelta(minutes=10)

@@ -211,6 +211,30 @@ test('draft, approval request and versions', async () => {
   assert.equal(state.versions.length, 1)
 })
 
+test('visitors read the approved profile without correction notes or the file name', async () => {
+  const e = env()
+  const approved = {
+    ...profile(),
+    cv: { sha256: SHA, filename: 'cv-private.pdf' },
+    corrections: [{ at: '2026-10-01', note: 'moved dbt up', changes: {} }],
+    status: 'approved',
+    version: 1,
+  }
+  const r = await call(e, 'profile/versions', {
+    method: 'POST',
+    body: JSON.stringify(approved),
+    token: TOKEN,
+  })
+  assert.equal(r.status, 200)
+  const visitor = await (await call(e, 'profile')).json()
+  assert.equal(visitor.approved.corrections, undefined)
+  assert.deepEqual(visitor.approved.cv, { sha256: SHA })
+  assert.equal(JSON.stringify(visitor).includes('cv-private'), false)
+  assert.equal(JSON.stringify(visitor).includes('moved dbt up'), false)
+  const owner = await (await call(e, 'profile', { token: TOKEN })).json()
+  assert.deepEqual(owner.approved, approved)
+})
+
 test('personnummer and street addresses count as contact details', async () => {
   for (const text of CASES.contact) assert.ok(CONTACT.test(text), text)
   for (const text of CASES.not_contact) assert.ok(!CONTACT.test(text), text)

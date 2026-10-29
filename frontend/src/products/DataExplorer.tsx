@@ -123,7 +123,6 @@ export default function DataExplorer({
   const pageCount = Math.max(1, Math.ceil(visible.length / 25))
   return (
     <section className="report data-explorer" id={sectionId}>
-      <p className="eyebrow">{t('Open data desk')}</p>
       <h2>{t('Inspect the records behind the charts.')}</h2>
       <p className="report-intro">
         {l(

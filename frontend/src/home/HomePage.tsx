@@ -122,9 +122,6 @@ function Profile() {
           ))}
         </ol>
         <div className="home-job home-job-additional">
-          <h3 className="home-label">
-            {l('Additional experience', 'Övrig erfarenhet')}
-          </h3>
           <div className="home-job-head">
             <p className="home-job-org-small">
               {b(ADDITIONAL.role)} | {ADDITIONAL.org}

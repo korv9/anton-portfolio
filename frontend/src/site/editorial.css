@@ -24,10 +24,6 @@
   padding-inline: 0;
   max-width: none;
 }
-.project-shell #main .project-context {
-  display: block;
-  padding: var(--sp-4) 0;
-}
 .project-shell
   #main
   :is(.page-lead, .project-hero, .theme-head, .dk-head, .board-head, .aa-hero) {

@@ -40,10 +40,6 @@ export function HomiePage() {
       <Stage
         id="homie-stage"
         level={1}
-        kicker={l(
-          'Homie API · contract-first backend',
-          'Homie API · kontraktsdriven backend',
-        )}
         title={l(
           'A backend for household events',
           'En backend för hushållets händelser',
