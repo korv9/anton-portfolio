@@ -519,9 +519,6 @@ function Constellation({
               <ConceptCard concept={active} data={data} />
             ) : (
               <>
-                <p className="cc-kicker">
-                  {l('How to read it', 'Så läser du den')}
-                </p>
                 <ul className="cc-legend">
                   {summary.relation_types
                     .filter(
@@ -624,9 +621,6 @@ function ConceptCard({ concept, data }: { concept: Concept; data: Data }) {
     data.summary.concepts.find((c) => c.concept_id === id)
   return (
     <>
-      <p className="cc-kicker">
-        {l(...FAMILY_LABEL[concept.family])}, <Kind kind="interpretation" />
-      </p>
       <h3>{label(concept)}</h3>
       <p>{l(concept.description_en, concept.description_sv)}</p>
       <ProfileBars profile={profile} corpora={data.summary.corpora} />
@@ -840,10 +834,6 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
   return (
     <>
       <header className="cc-hero ds-container">
-        <p className="cc-kicker">
-          <a href="#concept-constellation">Concept Lab</a>,{' '}
-          {l(...FAMILY_LABEL[concept.family])}
-        </p>
         <h1>{label(concept)}</h1>
         <p className="cc-question">
           {l(concept.description_en, concept.description_sv)}

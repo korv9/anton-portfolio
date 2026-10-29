@@ -1,5 +1,11 @@
 /* The shared project head (ui/PageHead.tsx): name in the signature's gradient, one sentence,
    KPIs; legends under charts; the method folded at the foot. */
+/* The title sits at the same height on every project page: no wrapper adds space above it. */
+.project-shell
+  #main
+  :is(.project-page, .politik-main, .cv, .report-tab):has(.page-head) {
+  padding-top: 0;
+}
 .project-shell #main .page-head-title {
   width: max-content;
   max-width: 100%;

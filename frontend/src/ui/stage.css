@@ -17,7 +17,6 @@
 .stage-head {
   max-width: var(--measure);
 }
-.stage-kicker,
 .stage-block-title {
   margin: 0 0 var(--sp-2);
   font-size: var(--type-metadata);

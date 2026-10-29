@@ -7,12 +7,6 @@ const PIN =
 export default function HomieProject() {
   return (
     <article className="report homie-project" id="homie">
-      <p className="eyebrow">
-        {l(
-          'Homie API / contract-first backend',
-          'Homie API / kontraktsdriven backend',
-        )}
-      </p>
       <h2>
         {l(
           'From household events to useful summaries.',

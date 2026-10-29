@@ -151,7 +151,6 @@ export default function ProjectRail({ route }: { route: Route }) {
         {link({ href: '#projects', en: 'Overview', sv: 'Översikt' }, true)}
         {GROUPS.map((group) => (
           <div key={group.en} className="rail-group">
-            <p className="rail-group-label">{l(group.en, group.sv)}</p>
             {group.items.map((item) => link(item))}
           </div>
         ))}

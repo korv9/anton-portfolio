@@ -1,14 +1,11 @@
-/** Document titles and breadcrumbs from the project registry. */
+/** Document titles from the project registry. */
 import { l } from '../i18n'
-import { isLongRead, type Route } from '../router'
+import { type Route } from '../router'
 import { projectForRoute, type Bilingual } from '../projects/projectRegistry'
 
 const b = (text: Bilingual) => l(text.en, text.sv)
 
-/**
- * Where a project page sits: "Projects / <project>", from the registry. The pages under the
- * hood (Data Constellation, the data platform, quality, Idea Lineage) say so instead.
- */
+/** The pages outside the registry name themselves; the rest are "Under the hood". */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
   clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
   meaning: {
@@ -27,42 +24,4 @@ export function pageTitle(route: Route): string | null {
   if (project) return b(project.title)
   const technical = TECHNICAL[route.page]
   return technical ? b(technical) : l('Under the hood', 'Under huven')
-}
-
-export function ProjectContext({ route }: { route: Route }) {
-  const project = projectForRoute(route)
-  const technical = TECHNICAL[route.page]
-  if (route.page === 'home' || route.page === 'projects') return null
-  if (isLongRead(route.path)) return null
-  return (
-    <nav
-      className="project-context ds-container"
-      aria-label={l('Breadcrumb', 'Brödsmulor')}
-    >
-      <ol>
-        <li>
-          <a href="#projects">{l('Projects', 'Projekt')}</a>
-        </li>
-        {project && (
-          <li>
-            {route.path === project.href ? (
-              <span aria-current="page">{b(project.title)}</span>
-            ) : (
-              <a href={project.href}>{b(project.title)}</a>
-            )}
-          </li>
-        )}
-        {!project && technical && (
-          <>
-            <li>
-              <a href="#projects">{l('Tools', 'Verktyg')}</a>
-            </li>
-            <li>
-              <span aria-current="page">{b(technical)}</span>
-            </li>
-          </>
-        )}
-      </ol>
-    </nav>
-  )
 }

@@ -10,6 +10,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import AdDetail from './AdDetail'
+import PageHead from '../ui/PageHead'
 import Bar, { Notes } from './Bar'
 import Filters from './Filters'
 import JobList from './JobList'
@@ -143,6 +144,13 @@ export default function JobAssistantPage({ route }: { route: Route }) {
 
   return (
     <div className="ja ds-container" data-moved={moved || undefined}>
+      <PageHead
+        title="Arbetsförmedla"
+        sentence={l(
+          'Every open Data/IT job ad, compared with my CV.',
+          'Varje öppen Data/IT-annons, jämförd med mitt CV.',
+        )}
+      />
       <Bar
         data={data}
         q={query.q}

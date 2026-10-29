@@ -2,7 +2,6 @@ import { useEffect, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { isLongRead, type Route } from '../router'
 import { PROJECTS, projectForRoute } from './projectRegistry'
-import { PROJECT_TOPICS } from './topics'
 import './projectStructure.css'
 
 export function ProjectDepth({
@@ -49,14 +48,6 @@ export default function ProjectStructure({
   children: ReactNode
 }) {
   const project = projectForRoute(route)
-  const topics = project ? (PROJECT_TOPICS[project.id] ?? []) : []
-  const active = topics.find((topic) =>
-    topic.href.includes('?')
-      ? new URLSearchParams(topic.href.split('?')[1]).get('section') ===
-        route.params.get('section')
-      : topic.href === route.path ||
-        topic.links?.some((link) => link.href === route.path),
-  )
   useEffect(() => {
     const section = route.params.get('section')
     // A long read lands on its own chapters (PoliticsProduct).
@@ -93,55 +84,5 @@ export default function ProjectStructure({
     }
   }, [route.hash, project?.id])
   if (!project || isLongRead(route.path)) return children
-  return (
-    <div className="project-structure">
-      {topics.length > 0 &&
-        (route.path !== project.href ||
-          !['politics', 'jobs', 'welfare', 'ai-act'].includes(project.id)) && (
-          <nav
-            className="project-topics"
-            aria-label={l('Project topics', 'Projektets teman')}
-          >
-            <a
-              href={project.href}
-              aria-current={
-                route.path === project.href && !route.params.has('section')
-                  ? 'page'
-                  : undefined
-              }
-            >
-              {l('Overview', 'Översikt')}
-            </a>
-            {topics
-              .filter((topic) => topic.href !== project.href)
-              .map((topic) => (
-                <a
-                  key={topic.href}
-                  href={topic.href}
-                  aria-current={active === topic ? 'page' : undefined}
-                >
-                  {l(topic.title.en, topic.title.sv)}
-                </a>
-              ))}
-          </nav>
-        )}
-      {active?.links && (
-        <nav
-          className="project-topic-tools"
-          aria-label={l('In this topic', 'Inom temat')}
-        >
-          {active.links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              aria-current={link.href === route.path ? 'page' : undefined}
-            >
-              {l(link.label.en, link.label.sv)}
-            </a>
-          ))}
-        </nav>
-      )}
-      {children}
-    </div>
-  )
+  return <div className="project-structure">{children}</div>
 }

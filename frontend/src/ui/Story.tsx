@@ -22,13 +22,11 @@ import './story.css'
 
 export function DataQuestion({
   id,
-  eyebrow,
   question,
   children,
   level = 2,
 }: {
   id?: string
-  eyebrow?: string
   question: string
   /** A short line of context under the question. */
   children?: ReactNode
@@ -37,7 +35,6 @@ export function DataQuestion({
   const H = level === 1 ? 'h1' : 'h2'
   return (
     <header className="data-question">
-      {eyebrow && <p className="data-question-eyebrow">{eyebrow}</p>}
       <H id={id}>{question}</H>
       {children && <div className="data-question-context">{children}</div>}
     </header>

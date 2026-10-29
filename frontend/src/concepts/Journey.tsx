@@ -158,7 +158,6 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
               >
                 <DataQuestion
                   id={`cj-${c}`}
-                  eyebrow={label(k)}
                   question={l(DOMAIN[c].en, DOMAIN[c].sv)}
                 >
                   {p && (

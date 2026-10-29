@@ -84,10 +84,6 @@ export default function Connections() {
   return (
     <ProductSection product={product}>
       <header className="sw-scene-title">
-        <p className="sw-kicker">
-          <span className="sw-id">×</span>
-          {l(product.title.en, product.title.sv)}
-        </p>
         <h2 id="sw-title-X">{l(product.question.en, product.question.sv)}</h2>
         <p className="sw-line">
           {l(

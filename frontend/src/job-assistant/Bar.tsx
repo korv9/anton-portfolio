@@ -1,5 +1,5 @@
 /**
- * The desk's top bar: the page title, the search and when the ads were updated, with the notes
+ * The desk's top bar: the search and when the ads were updated, with the notes
  * that say when the figures can't be trusted: stale (over eight hours), a file that did not
  * load, kept matches, or no matching at all.
  */
@@ -24,7 +24,6 @@ type Props = {
 export default function Bar({ data, q, onSearch, day }: Props) {
   return (
     <header className="ja-bar">
-      <h1 className="ja-title">Arbetsförmedla</h1>
       <div role="search" className="ja-search-wrap">
         <label className="ja-search">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">

@@ -12,10 +12,6 @@
 }
 
 /* ---------- Header ---------- */
-/* The dashboard's own breadcrumb replaces the site's. */
-main:has(.dk) > .project-context {
-  display: none;
-}
 .politik-main:has(> .dk),
 .politik-landing:has(.dk) {
   padding: 0;

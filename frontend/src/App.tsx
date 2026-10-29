@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { currentLocale, l, type Locale } from './i18n'
 import { sameReport, useRoute } from './router'
-import { pageTitle, ProjectContext } from './site/Header'
+import { pageTitle } from './site/Header'
 import SiteHeader from './site/SiteHeader'
 import ProjectRail from './site/ProjectRail'
 import { CvViewerProvider } from './site/CvViewer'
@@ -10,7 +10,6 @@ import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
 import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
-import './site/site.css'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
@@ -101,7 +100,6 @@ export default function App() {
           key={`${language}-${page}`}
           style={{ background: 'transparent' }}
         >
-          <ProjectContext route={route} />
           <PageBoundary key={page}>
             <ProjectStructure route={route}>
               <Suspense

@@ -27,24 +27,6 @@
   align-items: center;
   gap: var(--sp-3) var(--sp-5);
   padding-block: var(--sp-5) var(--sp-4);
-  border-bottom: 1px solid var(--line);
-}
-#main .ja .ja-title {
-  margin: 0;
-  font-size: var(--h3);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-  text-transform: uppercase;
-  background: linear-gradient(
-    to bottom right,
-    var(--color-accent-focal) 0%,
-    var(--color-ink-secondary) 55%,
-    var(--muted) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .ja-search-wrap {
   flex: 1 1 18rem;

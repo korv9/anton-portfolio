@@ -76,9 +76,8 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     await page.locator('main, .site-shell').first().waitFor()
     // The homepage fell back in: the address names no page.
     if (await page.locator(HOME).count()) broken.push(href)
-    // The breadcrumb names where the page sits, not just "Projects".
-    const crumbs = page.locator('.project-context li')
-    // The list of projects carries no breadcrumb, nor do the lab reports and their deep dives, which name the report in a link back.
+    // The index marks where the page sits.
+    const placed = page.locator('.project-rail [aria-current="page"]')
     if (
       /^#(sweden|tech|symbolic-|philosophy-|concept|drugcomb|fraga-lagen)/.test(
         href,
@@ -89,10 +88,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
         .first()
         .waitFor({ timeout: 45_000 })
     if (
-      (await crumbs.count()) < 2 &&
-      !(await page.locator('.project-context [aria-current]').count()) &&
-      // The Overview (#projects) is placed by the index, not a breadcrumb.
-      !href.startsWith('#projects') &&
+      !(await placed.count()) &&
       !(await page.locator('.politik-long, .tech, .sweden').count())
     )
       unplaced.push(href)
@@ -100,7 +96,7 @@ test('every internal link opens a page', async ({ page, isMobile }) => {
     if (!/^.+ \| Anton Ernstsson$/.test(await page.title())) untitled.push(href)
   }
   expect(untitled, 'pages without their own title').toEqual([])
-  expect(unplaced, 'pages whose breadcrumb stops at Projects').toEqual([])
+  expect(unplaced, 'pages the index does not mark').toEqual([])
   expect(broken, 'links that fall back to the homepage').toEqual([])
   expect(errors).toEqual([])
 })
