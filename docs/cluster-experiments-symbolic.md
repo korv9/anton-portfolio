@@ -42,31 +42,31 @@ found bge collapsing to 2 to 5 clusters, and e5 and gte no less book-dominated t
 
 Neighbour share (k=10, same value among cosine neighbours; chance: book 0.011, symbol 0.054):
 
-| representation | book | tradition | symbol |
-|---|---|---|---|
-| context, MiniLM, raw (champion) | 0.416 | 0.589 | 0.221 |
-| context, MiniLM, book-centred | 0.298 | 0.445 | 0.254 |
-| matching sentence only, MiniLM, raw | 0.201 | 0.356 | 0.413 |
-| symbol word masked, MiniLM, raw | 0.415 | 0.591 | 0.137 |
-| masked, MiniLM, book-centred | 0.297 | 0.451 | 0.140 |
-| context, multilingual MiniLM, raw | 0.324 | 0.489 | 0.219 |
-| context, multilingual MiniLM, book-centred | 0.225 | 0.363 | 0.248 |
+| representation                             | book  | tradition | symbol |
+| ------------------------------------------ | ----- | --------- | ------ |
+| context, MiniLM, raw (champion)            | 0.416 | 0.589     | 0.221  |
+| context, MiniLM, book-centred              | 0.298 | 0.445     | 0.254  |
+| matching sentence only, MiniLM, raw        | 0.201 | 0.356     | 0.413  |
+| symbol word masked, MiniLM, raw            | 0.415 | 0.591     | 0.137  |
+| masked, MiniLM, book-centred               | 0.297 | 0.451     | 0.140  |
+| context, multilingual MiniLM, raw          | 0.324 | 0.489     | 0.219  |
+| context, multilingual MiniLM, book-centred | 0.225 | 0.363     | 0.248  |
 
 Selected rows (weighted top share of the dominant book or symbol per group; full table in
 `warehouse/ml/experiments/symbolic/select.json`):
 
-| representation, clustering | groups | noise | seed ARI | silhouette (rep.) | book | symbol |
-|---|---|---|---|---|---|---|
-| champion, HDBSCAN 20/10 | 77 | 0.392 | 0.784 | 0.027 | 0.413 | 0.217 |
-| champion, HDBSCAN 50/10 | 36 | 0.424 | 0.955 | 0.037 | 0.349 | 0.202 |
-| champion, HDBSCAN 100/10 | 19 | 0.436 | 0.922 | 0.040 | 0.282 | 0.177 |
-| champion, K-means 30 | 30 | 0 | 0.625 | 0.000 | 0.223 | 0.173 |
-| book-centred, HDBSCAN 20/10 | 74 | 0.509 | 0.881 | 0.034 | 0.227 | 0.364 |
-| sentence only, HDBSCAN 20/10 | 65 | 0.484 | 0.946 | 0.025 | 0.171 | 0.536 |
-| masked, HDBSCAN 20/10 | 90 | 0.484 | 0.934 | 0.054 | 0.545 | 0.168 |
-| masked + book-centred, HDBSCAN 20/10 | 70 | 0.518 | 0.721 | 0.013 | 0.238 | 0.187 |
-| masked + book-centred, HDBSCAN 50/10 | 2 | 0.026 | 0.347 | 0.002 | 0.034 | 0.066 |
-| multilingual, HDBSCAN 100/10 | 20 | 0.547 | 0.899 | 0.047 | 0.197 | 0.219 |
+| representation, clustering           | groups | noise | seed ARI | silhouette (rep.) | book  | symbol |
+| ------------------------------------ | ------ | ----- | -------- | ----------------- | ----- | ------ |
+| champion, HDBSCAN 20/10              | 77     | 0.392 | 0.784    | 0.027             | 0.413 | 0.217  |
+| champion, HDBSCAN 50/10              | 36     | 0.424 | 0.955    | 0.037             | 0.349 | 0.202  |
+| champion, HDBSCAN 100/10             | 19     | 0.436 | 0.922    | 0.040             | 0.282 | 0.177  |
+| champion, K-means 30                 | 30     | 0     | 0.625    | 0.000             | 0.223 | 0.173  |
+| book-centred, HDBSCAN 20/10          | 74     | 0.509 | 0.881    | 0.034             | 0.227 | 0.364  |
+| sentence only, HDBSCAN 20/10         | 65     | 0.484 | 0.946    | 0.025             | 0.171 | 0.536  |
+| masked, HDBSCAN 20/10                | 90     | 0.484 | 0.934    | 0.054             | 0.545 | 0.168  |
+| masked + book-centred, HDBSCAN 20/10 | 70     | 0.518 | 0.721    | 0.013             | 0.238 | 0.187  |
+| masked + book-centred, HDBSCAN 50/10 | 2      | 0.026 | 0.347    | 0.002             | 0.034 | 0.066  |
+| multilingual, HDBSCAN 100/10         | 20     | 0.547 | 0.899    | 0.047             | 0.197 | 0.219  |
 
 Chosen candidates, each a different hypothesis and each passing every frozen criterion on the
 selection side:
@@ -80,16 +80,16 @@ selection side:
 
 ## Evaluation side (seeds 10 to 14; 10,510 observations, 48 books)
 
-| criterion (frozen) | champion | retuned 50/10 | masked + centred | multilingual 100/10 |
-|---|---|---|---|---|
-| seed ARI ≥ 0.5 | 0.939 | 0.940 ✓ | 0.732 ✓ | 0.453 ✗ |
-| groups ≥ 5 | 72 | 36 ✓ | 66 ✓ | 16 ✓ |
-| noise ≤ 0.6 | 0.371 | 0.403 ✓ | 0.453 ✓ | 0.501 ✓ |
-| book top share, at most +0.02 | 0.473 | 0.430 ✓ | 0.240 ✓ | 0.199 ✓ |
-| symbol top share, at most +0.02 | 0.216 | 0.193 ✓ | 0.171 ✓ | 0.181 ✓ |
-| silhouette in representation, at most −0.03 | 0.042 | 0.047 ✓ | 0.008 ✗ | 0.044 ✓ |
-| a gain of 0.05 (book, symbol or ARI) | | ✗ (book −0.043, symbol −0.023, ARI +0.001) | ✓ book | ✓ book |
-| **decision** | champion | rejected | rejected | rejected |
+| criterion (frozen)                          | champion | retuned 50/10                              | masked + centred | multilingual 100/10 |
+| ------------------------------------------- | -------- | ------------------------------------------ | ---------------- | ------------------- |
+| seed ARI ≥ 0.5                              | 0.939    | 0.940 ✓                                    | 0.732 ✓          | 0.453 ✗             |
+| groups ≥ 5                                  | 72       | 36 ✓                                       | 66 ✓             | 16 ✓                |
+| noise ≤ 0.6                                 | 0.371    | 0.403 ✓                                    | 0.453 ✓          | 0.501 ✓             |
+| book top share, at most +0.02               | 0.473    | 0.430 ✓                                    | 0.240 ✓          | 0.199 ✓             |
+| symbol top share, at most +0.02             | 0.216    | 0.193 ✓                                    | 0.171 ✓          | 0.181 ✓             |
+| silhouette in representation, at most −0.03 | 0.042    | 0.047 ✓                                    | 0.008 ✗          | 0.044 ✓             |
+| a gain of 0.05 (book, symbol or ARI)        |          | ✗ (book −0.043, symbol −0.023, ARI +0.001) | ✓ book           | ✓ book              |
+| **decision**                                | champion | rejected                                   | rejected         | rejected            |
 
 Other measures, champion / retuned / masked + centred / multilingual: minimum seed ARI 0.922 /
 0.892 / 0.460 / 0.023; clusters per seed 69–75 / 31–38 / 66–85 / 2–17; silhouette in the clustered
@@ -172,4 +172,5 @@ Logs: `tmp/symbolic-{prepare,select,final,export}.log`; prepared data and checkp
 - Editorial apparatus (contents pages, numbered notes) is not filtered; it needs a cleaning rule in
   `platform/nlp/symbolic/cleaning.py`, not here.
 - `select` was rerun on CPU in GitHub Actions (run 40999907253, 16 min 12 s, 3.11 GB peak). Its rows
-  were not compared one by one with the local GPU run, and `final` has not run there.
+  were not compared one by one with the local GPU run. `final` on the runner passed all three
+  candidates; see [Final on the runner](cluster-experiments.md#final-on-the-runner-2026-10-30).
