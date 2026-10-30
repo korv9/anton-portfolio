@@ -171,4 +171,5 @@ Logs: `tmp/symbolic-{prepare,select,final,export}.log`; prepared data and checkp
 - Deduplicating multi-symbol contexts (one row per context) was measured but not tried as a variant.
 - Editorial apparatus (contents pages, numbered notes) is not filtered; it needs a cleaning rule in
   `platform/nlp/symbolic/cleaning.py`, not here.
-- Not run in GitHub Actions; the code has a CPU path but only the local GPU run was measured.
+- `select` was rerun on CPU in GitHub Actions (run 40999907253, 16 min 12 s, 3.11 GB peak). Its rows
+  were not compared one by one with the local GPU run, and `final` has not run there.

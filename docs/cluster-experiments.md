@@ -70,6 +70,41 @@ including checkpoints after a failure. Source texts stay under the storage rules
 `src/portfolio/storage/warehouse_store.py`: only text whose licence allows redistribution may be in
 the public bucket.
 
+## Runner measurements (2026-10-30)
+
+Each domain's `select` step ran once from scratch on a standard Ubuntu runner (4 CPUs, no GPU),
+from main after #199. It was started with the third word `repro`, so checkpoints and embeddings
+went to separate `-repro-<run id>` folders and nothing was resumed. `select` registers nothing, so
+the registries did not change. Times are the run step only; R2 pull and push add under a minute.
+
+| Domain | Actions run | Run step | Fits | Peak memory |
+|---|---|---|---|---|
+| Philosophy Lab | 40998784012 | 9 min 42 s | 48 | 3.57 GB |
+| Symbol Lab | 40999907253 | 16 min 12 s | 7 units | 3.11 GB |
+| Replik | 41001632612 | 2 h 12 min | 25 | not recorded |
+| Job ads | 41014204044 | 53 min 43 s | 37 | not recorded |
+
+All four finished inside the 255-minute deadline. The longest Symbol Lab unit was the multilingual
+MiniLM context embedding, at 268 s. The Replik and job-ad select steps keep no per-fit resources
+in what they push. Replik's checkpoints hold text, so they stay in `warehouse/ml/experiments/` on
+the runner and are lost with it. Only its embeddings resume from R2.
+
+What the rerun showed:
+
+- Philosophy Lab: the same-work neighbour shares match the local run to three decimals, so the
+  embeddings are the same. The UMAP and HDBSCAN results drift. The champion setting (MiniLM centred,
+  HDBSCAN 25) gave 13 groups at noise 0.331, seed ARI 0.879 and work share 0.524. Locally it gave
+  noise 0.299, ARI 0.911 and work share 0.517. MiniLM raw HDBSCAN 25 moved most, from 10 to 13
+  groups. K-means rows moved by about 0.01. Selection numbers are therefore exact only on the
+  machine that made them, and differences of a few hundredths between candidates are within this
+  drift.
+- Job ads: the live store had grown to 2,843 ads (2,769 after deduplication, dataset
+  `3f246fedf7113fa3`). It is a different snapshot, so its picks (clean KBLab HDBSCAN 10, raw TF-IDF
+  K-means 12, raw KBLab HDBSCAN 10) are not a reproduction of the earlier selection. Its selection
+  summary was written to the normal `jobs/selection/` folder under the new dataset version, not
+  to a repro folder.
+- Symbol Lab and Replik were not compared row by row with their local runs.
+
 ## Deviations, recorded after the final evaluations (2026-10-29)
 
 - Tie-break. The protocol did not say which candidate wins when two pass. In Philosophy Lab
