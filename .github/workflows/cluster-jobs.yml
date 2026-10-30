@@ -100,9 +100,16 @@ jobs:
           fi
           if [ "$JOB" = experiments ]; then
             read -ra parts <<< "$ARGS"
-            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)(,(select|final|export))*$ ]] || ! [[ "${parts[2]:-}" =~ ^(repro(:[A-Za-z0-9_-]+)?)?$ ]]; then
-              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <step[,step]> [repro[:label]]', steps select, final, export"; exit 1
+            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export|rollback)(,(select|final|export|rollback))*$ ]] || ! [[ "${parts[2]:-}" =~ ^(repro(:[A-Za-z0-9_-]+)?)?$ ]]; then
+              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <step[,step]> [repro[:label]] [flags]', steps select, final, export, rollback"; exit 1
             fi
+            # A rollback drill only touches a repro registry, never a stored one.
+            if [[ ",${parts[1]}," == *,rollback,* ]] && [ -z "${parts[2]:-}" ]; then
+              echo "::error::rollback runs only under repro[:label]"; exit 1
+            fi
+            for word in "${parts[@]:3}"; do
+              [[ "$word" =~ ^[A-Za-z0-9_.:-]+$ ]] || { echo "::error::extra flags may hold only letters, digits and _ . : -"; exit 1; }
+            done
           fi
           if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
             echo "::error::path must be a folder of a-z, 0-9, _ and -, e.g. clusters/eras"; exit 1
