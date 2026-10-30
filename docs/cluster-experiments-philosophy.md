@@ -227,4 +227,6 @@ and `index.json`.
 - No human review of groups. bge-small and K-means 10 should be reviewed before any site change.
 - No resample stability (`evaluate.resample_stability`); only seed stability.
 - The passage cleaner's index and footnote leak is not fixed.
-- Nothing has been run in GitHub Actions or pushed to R2.
+- `select` was rerun from scratch in GitHub Actions (run 40998784012, 9 min 42 s, 3.57 GB peak). The
+  embeddings matched; UMAP and HDBSCAN numbers drifted by up to a few hundredths. See
+  [Runner measurements](cluster-experiments.md#runner-measurements-2026-10-30). `final` has not run there.

@@ -286,8 +286,9 @@ These ran on a standard Ubuntu runner, CPU only, from main after #196 and #197.
   promoted. The assign part of that run took 13.2 s at a 0.72 GB peak because the embeddings were
   cached.
 
-The heavier CPU work, the full selection grids with several embedding models, has not run in
-Actions. Its runner time is still unmeasured.
+The full selection grid (37 fits) then ran from scratch in run 41014204044. It took 53 min 43 s on
+a newer snapshot of 2,843 ads, so its picks differ from the selection above. Peak memory was not
+recorded. See [Runner measurements](cluster-experiments.md#runner-measurements-2026-10-30).
 
 ## Runbook
 
@@ -317,8 +318,7 @@ placeholders never reach embedded text, and old-version pipelines are refused; l
 changed and removed detection; cache invalidation on model and preprocessing change; resume after an
 interruption; abstention; model ↔ dataset ↔ export linkage and the tamper check; rejection, promotion
 and rollback on a copy; the refresh rule and the `jobs.yaml` branch; monitor flags; version diff.
-**Untested:** the workflow has not been run in GitHub Actions. CPU embedding time on a runner and the
-R2 round trip of model artifacts have not been measured.
+**Run in Actions:** assign, retrain and select (see above). **Untested:** `final` on a runner.
 
 ## Limitations
 
