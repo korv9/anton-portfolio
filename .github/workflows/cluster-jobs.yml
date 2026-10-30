@@ -36,7 +36,7 @@ on:
         options: [futures-topics, module, experiments]
         default: futures-topics
       args:
-        description: 'module: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1; experiments: <domain> <step>, e.g. philosophy select'
+        description: 'module: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1; experiments: <domain> <step[,step]> [repro[:label]] [flags], e.g. jobs final repro:drill --hold-out-newest 0.15'
         default: ''
       path:
         description: 'module only: folder of the tree to pull before and push after, e.g. clusters/eras'
@@ -159,15 +159,17 @@ jobs:
                 repro) export EXPERIMENTS_REPRO="$GITHUB_RUN_ID" ;;
                 repro:*) export EXPERIMENTS_REPRO="${parts[2]#repro:}" ;;
               esac
+              # Words after the third are passed to prepare and every step (e.g. --hold-out-newest 0.15).
+              extra=("${parts[@]:3}")
               # GNU time records the peak resident memory of each step (largest single process).
               timed() { if [ -x /usr/bin/time ]; then /usr/bin/time -v -o "logs/time-$1.txt" "${@:2}"; else "${@:2}"; fi; }
               # Prepare and the steps share one budget of 255 minutes, inside the step's 265.
               started=$(date +%s)
-              timed prepare python -m "ml.experiments.${parts[0]}" prepare 2>&1 | tee logs/prepare.log
+              timed prepare python -m "ml.experiments.${parts[0]}" prepare "${extra[@]}" 2>&1 | tee logs/prepare.log
               IFS=, read -ra steps <<< "${parts[1]}"
               for step in "${steps[@]}"; do
                 left=$(( 255 - ($(date +%s) - started) / 60 ))
-                timed "$step" python -m "ml.experiments.${parts[0]}" "$step" --deadline-minutes "$left" 2>&1 | tee "logs/step-$step.log"
+                timed "$step" python -m "ml.experiments.${parts[0]}" "$step" --deadline-minutes "$left" "${extra[@]}" 2>&1 | tee "logs/step-$step.log"
               done
               grep -H -E 'Maximum resident|Elapsed \(wall' logs/time-*.txt || true
               ;;
