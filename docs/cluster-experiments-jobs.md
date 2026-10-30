@@ -268,6 +268,27 @@ process; embeddings came from the cache).
 The heavy work took about 20 minutes per pass inside `runtime.heavy`; the first pass also waited
 about 45 minutes for the lock.
 
+## First runs in GitHub Actions (2026-10-30)
+
+These ran on a standard Ubuntu runner, CPU only, from main after #196 and #197.
+
+- The first dispatch of `cluster-jobs.yml` (job `experiments`, `philosophy select`, run 40993146600)
+  stopped on `ModuleNotFoundError: psutil`, because the ML lock lacked it. #197 added it. The second
+  dispatch (run 40994244944) pulled 327 files from R2 and found every fit already checkpointed.
+  Its run step took 3 seconds and pushed 2 files back. This shows that resuming from R2 works;
+  it does not measure CPU fitting time.
+- `job-clusters.yml` `assign` (run 40994537885) read the live store. Against the champion's snapshot
+  it found 97 changed and 42 removed ads. It gave 44.4 % of new and changed ads "fits no group",
+  against 18.8 % at training, and raised the investigation flag. The step took 66.7 s at a 2.15 GB
+  peak, including the CPU embedding of those ads.
+- `job-clusters.yml` `retrain` (run 40994561492) fitted candidate `8fc83877c0593b28` on the latest
+  snapshot. `jobs-refresh.yaml` judged it, and it was rejected on employer dominance. Nothing was
+  promoted. The assign part of that run took 13.2 s at a 0.72 GB peak because the embeddings were
+  cached.
+
+The heavier CPU work, the full selection grids with several embedding models, has not run in
+Actions. Its runner time is still unmeasured.
+
 ## Runbook
 
 ```bash
