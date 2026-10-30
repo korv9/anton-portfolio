@@ -1,18 +1,42 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T11:32:09.316184+00:00",
+  "generated_at": "2026-10-30T15:47:33.245556+00:00",
   "coordinates": "Coordinates come from this run's own 2-D UMAP fit. Maps of different runs are not aligned, so a position or a movement between two maps means nothing.",
   "domains": {
     "philosophy": {
-      "champion": "6efd7326ea66b9c3",
+      "champion": "f367c26d34300562",
       "question": "Which groups of passages recur across the works of a 13-work philosophy corpus, and how far do they follow the work, translator, original language or genre instead?",
       "runs": [
         {
-          "run_id": "6efd7326ea66b9c3",
+          "run_id": "f367c26d34300562",
           "status": "champion",
+          "label": "candidate: bge-small-en-v1.5 (reads the whole passage), HDBSCAN 40/8",
+          "role": "evaluation",
+          "created_at": "2026-10-30T08:00:57.179360+00:00",
+          "dataset_version": "9b854dbced0fcc49",
+          "embedding": {
+            "model": "BAAI/bge-small-en-v1.5",
+            "revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
+            "max_tokens": 512
+          },
+          "clustering": {
+            "method": "hdbscan",
+            "min_cluster_size": 40,
+            "min_samples": 8
+          },
+          "cluster_count": 7,
+          "noise_share": 0.4,
+          "seed_ari": 0.8880468618075316,
+          "accepted": true,
+          "published_on_site_page": false,
+          "retired_at": null
+        },
+        {
+          "run_id": "6efd7326ea66b9c3",
+          "status": "candidate",
           "label": "champion: published pipeline (MiniLM, work-centred, HDBSCAN 25/8)",
           "role": "evaluation",
-          "created_at": "2026-10-29T22:30:25.573290+00:00",
+          "created_at": "2026-10-30T07:58:32.530711+00:00",
           "dataset_version": "9b854dbced0fcc49",
           "embedding": {
             "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -24,19 +48,19 @@
             "min_cluster_size": 25,
             "min_samples": 8
           },
-          "cluster_count": 14,
-          "noise_share": 0.36642857142857144,
-          "seed_ari": 0.9290281874416457,
+          "cluster_count": 15,
+          "noise_share": 0.4228571428571429,
+          "seed_ari": 0.9373342617904109,
           "accepted": null,
           "published_on_site_page": true,
-          "retired_at": "2026-10-29T22:31:40.714968+00:00"
+          "retired_at": "2026-10-30T08:00:57.207187+00:00"
         },
         {
           "run_id": "426875670a55f5f2",
           "status": "rejected",
           "label": "candidate: champion with HDBSCAN min_cluster_size 40",
           "role": "evaluation",
-          "created_at": "2026-10-29T22:30:46.806669+00:00",
+          "created_at": "2026-10-30T07:58:48.053226+00:00",
           "dataset_version": "9b854dbced0fcc49",
           "embedding": {
             "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -48,19 +72,19 @@
             "min_cluster_size": 40,
             "min_samples": 8
           },
-          "cluster_count": 6,
-          "noise_share": 0.2307142857142857,
-          "seed_ari": 0.5839801962171659,
+          "cluster_count": 5,
+          "noise_share": 0.29928571428571427,
+          "seed_ari": 0.4070166896996056,
           "accepted": false,
           "published_on_site_page": false,
           "retired_at": null
         },
         {
           "run_id": "2938d83298589cc8",
-          "status": "candidate",
+          "status": "rejected",
           "label": "candidate: champion space, K-means k=10",
           "role": "evaluation",
-          "created_at": "2026-10-29T22:31:09.968939+00:00",
+          "created_at": "2026-10-30T07:59:03.696717+00:00",
           "dataset_version": "9b854dbced0fcc49",
           "embedding": {
             "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -73,70 +97,23 @@
           },
           "cluster_count": 10,
           "noise_share": 0.0,
-          "seed_ari": 0.6756748028333971,
-          "accepted": true,
+          "seed_ari": 0.6598259403063844,
+          "accepted": false,
           "published_on_site_page": false,
-          "retired_at": "2026-10-29T22:31:40.746910+00:00"
-        },
-        {
-          "run_id": "f367c26d34300562",
-          "status": "candidate",
-          "label": "candidate: bge-small-en-v1.5 (reads the whole passage), HDBSCAN 40/8",
-          "role": "evaluation",
-          "created_at": "2026-10-29T22:31:40.649172+00:00",
-          "dataset_version": "9b854dbced0fcc49",
-          "embedding": {
-            "model": "BAAI/bge-small-en-v1.5",
-            "revision": "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a",
-            "max_tokens": 512
-          },
-          "clustering": {
-            "method": "hdbscan",
-            "min_cluster_size": 40,
-            "min_samples": 8
-          },
-          "cluster_count": 9,
-          "noise_share": 0.35428571428571426,
-          "seed_ari": 0.864748860594546,
-          "accepted": true,
-          "published_on_site_page": false,
-          "retired_at": "2026-10-29T22:32:25.753470+00:00"
+          "retired_at": null
         }
       ]
     },
     "symbolic": {
-      "champion": "c71827fcfc9ee61b",
+      "champion": "a224a1756ec00889",
       "question": "Which recurring contexts do symbol words share across 101 public-domain books, once book, tradition and the symbol word itself are accounted for?",
       "runs": [
         {
-          "run_id": "c71827fcfc9ee61b",
-          "status": "champion",
-          "label": "champion: published v4",
-          "role": "evaluation",
-          "created_at": "2026-10-29T21:50:22.498585+00:00",
-          "dataset_version": "29625948b74892e5",
-          "embedding": {
-            "model": "sentence-transformers/all-MiniLM-L6-v2",
-            "revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
-          },
-          "clustering": {
-            "method": "hdbscan",
-            "min_cluster_size": 20,
-            "min_samples": 10
-          },
-          "cluster_count": 72,
-          "noise_share": 0.37059942911512844,
-          "seed_ari": 0.938672591532546,
-          "accepted": null,
-          "published_on_site_page": true,
-          "retired_at": null
-        },
-        {
           "run_id": "a224a1756ec00889",
-          "status": "rejected",
+          "status": "champion",
           "label": "retuned HDBSCAN (mcs 50)",
           "role": "evaluation",
-          "created_at": "2026-10-29T21:51:14.344499+00:00",
+          "created_at": "2026-10-30T08:14:14.152338+00:00",
           "dataset_version": "29625948b74892e5",
           "embedding": {
             "model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -148,18 +125,18 @@
             "min_samples": 10
           },
           "cluster_count": 36,
-          "noise_share": 0.40285442435775454,
-          "seed_ari": 0.9404552174637871,
-          "accepted": false,
+          "noise_share": 0.40685061845861087,
+          "seed_ari": 0.9296195932133309,
+          "accepted": true,
           "published_on_site_page": false,
-          "retired_at": null
+          "retired_at": "2026-10-30T08:18:21.764023+00:00"
         },
         {
-          "run_id": "e979b39bc35131e3",
-          "status": "rejected",
-          "label": "masked symbol word, book-centred",
+          "run_id": "c71827fcfc9ee61b",
+          "status": "candidate",
+          "label": "champion: published v4",
           "role": "evaluation",
-          "created_at": "2026-10-29T21:52:30.388477+00:00",
+          "created_at": "2026-10-30T08:13:36.693778+00:00",
           "dataset_version": "29625948b74892e5",
           "embedding": {
             "model": "sentence-transformers/all-MiniLM-L6-v2",
@@ -170,19 +147,42 @@
             "min_cluster_size": 20,
             "min_samples": 10
           },
-          "cluster_count": 66,
-          "noise_share": 0.45347288296860133,
-          "seed_ari": 0.7324436747584135,
-          "accepted": false,
+          "cluster_count": 69,
+          "noise_share": 0.36308277830637486,
+          "seed_ari": 0.9026412728914426,
+          "accepted": null,
+          "published_on_site_page": true,
+          "retired_at": "2026-10-30T08:14:14.156227+00:00"
+        },
+        {
+          "run_id": "e979b39bc35131e3",
+          "status": "candidate",
+          "label": "masked symbol word, book-centred",
+          "role": "evaluation",
+          "created_at": "2026-10-30T08:18:21.758986+00:00",
+          "dataset_version": "29625948b74892e5",
+          "embedding": {
+            "model": "sentence-transformers/all-MiniLM-L6-v2",
+            "revision": "c9745ed1d9f207416be6d2e6f8de32d1f16199bf"
+          },
+          "clustering": {
+            "method": "hdbscan",
+            "min_cluster_size": 20,
+            "min_samples": 10
+          },
+          "cluster_count": 72,
+          "noise_share": 0.4991436726926736,
+          "seed_ari": 0.8972587239610823,
+          "accepted": true,
           "published_on_site_page": false,
-          "retired_at": null
+          "retired_at": "2026-10-30T08:23:59.468022+00:00"
         },
         {
           "run_id": "d27a70b3ae032d57",
-          "status": "rejected",
+          "status": "candidate",
           "label": "multilingual MiniLM, HDBSCAN mcs 100",
           "role": "evaluation",
-          "created_at": "2026-10-29T21:53:46.192722+00:00",
+          "created_at": "2026-10-30T08:23:59.462304+00:00",
           "dataset_version": "29625948b74892e5",
           "embedding": {
             "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -194,9 +194,9 @@
             "min_samples": 10
           },
           "cluster_count": 16,
-          "noise_share": 0.5011417697431018,
-          "seed_ari": 0.45269010293092676,
-          "accepted": false,
+          "noise_share": 0.47402473834443387,
+          "seed_ari": 0.6914209959794596,
+          "accepted": true,
           "published_on_site_page": false,
           "retired_at": null
         }
@@ -439,15 +439,63 @@
       ]
     },
     "debates": {
-      "champion": "e86ca4aa5f4e8a3d",
+      "champion": "b33f92b181b8e676",
       "question": "Which subjects do Swedish party leaders speak about in the party-leader debates, grouped by topic similarity (not by opinion)?",
       "runs": [
         {
-          "run_id": "e86ca4aa5f4e8a3d",
+          "run_id": "b33f92b181b8e676",
           "status": "champion",
+          "label": "sbert-speaker-kmeans",
+          "role": "evaluation",
+          "created_at": "2026-10-30T09:07:49.913871+00:00",
+          "dataset_version": "72487eb4a4ab7433",
+          "embedding": {
+            "model": "KBLab/sentence-bert-swedish-cased",
+            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
+            "prefix": ""
+          },
+          "clustering": {
+            "method": "kmeans",
+            "k": 30
+          },
+          "cluster_count": 30,
+          "noise_share": 0.0,
+          "seed_ari": 0.8171974969156393,
+          "accepted": true,
+          "published_on_site_page": false,
+          "retired_at": null
+        },
+        {
+          "run_id": "e86ca4aa5f4e8a3d",
+          "status": "candidate",
           "label": "champion",
           "role": "evaluation",
-          "created_at": "2026-10-29T22:01:46.086521+00:00",
+          "created_at": "2026-10-30T09:05:04.405217+00:00",
+          "dataset_version": "72487eb4a4ab7433",
+          "embedding": {
+            "model": "KBLab/sentence-bert-swedish-cased",
+            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
+            "prefix": ""
+          },
+          "clustering": {
+            "method": "hdbscan",
+            "min_cluster_size": 0.004542,
+            "min_samples": 25,
+            "selection": "eom"
+          },
+          "cluster_count": 26,
+          "noise_share": 0.256730536017463,
+          "seed_ari": 0.9766309542259822,
+          "accepted": null,
+          "published_on_site_page": true,
+          "retired_at": "2026-10-30T09:18:53.731490+00:00"
+        },
+        {
+          "run_id": "e6c6282cfce36e0c",
+          "status": "rejected",
+          "label": "sbert-party",
+          "role": "evaluation",
+          "created_at": "2026-10-30T09:06:29.661117+00:00",
           "dataset_version": "72487eb4a4ab7433",
           "embedding": {
             "model": "KBLab/sentence-bert-swedish-cased",
@@ -461,57 +509,9 @@
             "selection": "eom"
           },
           "cluster_count": 28,
-          "noise_share": 0.2689788988600534,
-          "seed_ari": 0.9912836690031364,
-          "accepted": null,
-          "published_on_site_page": true,
-          "retired_at": "2026-10-29T22:08:01.228600+00:00"
-        },
-        {
-          "run_id": "e6c6282cfce36e0c",
-          "status": "candidate",
-          "label": "sbert-party",
-          "role": "evaluation",
-          "created_at": "2026-10-29T22:03:39.528774+00:00",
-          "dataset_version": "72487eb4a4ab7433",
-          "embedding": {
-            "model": "KBLab/sentence-bert-swedish-cased",
-            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
-            "prefix": ""
-          },
-          "clustering": {
-            "method": "hdbscan",
-            "min_cluster_size": 0.004542,
-            "min_samples": 25,
-            "selection": "eom"
-          },
-          "cluster_count": 23,
-          "noise_share": 0.23302207130730052,
-          "seed_ari": 0.9804106924013485,
-          "accepted": true,
-          "published_on_site_page": false,
-          "retired_at": "2026-10-29T22:08:01.257804+00:00"
-        },
-        {
-          "run_id": "b33f92b181b8e676",
-          "status": "candidate",
-          "label": "sbert-speaker-kmeans",
-          "role": "evaluation",
-          "created_at": "2026-10-29T22:05:25.857536+00:00",
-          "dataset_version": "72487eb4a4ab7433",
-          "embedding": {
-            "model": "KBLab/sentence-bert-swedish-cased",
-            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
-            "prefix": ""
-          },
-          "clustering": {
-            "method": "kmeans",
-            "k": 30
-          },
-          "cluster_count": 30,
-          "noise_share": 0.0,
-          "seed_ari": 0.843484310012809,
-          "accepted": true,
+          "noise_share": 0.2697065243754548,
+          "seed_ari": 0.9854356669113052,
+          "accepted": false,
           "published_on_site_page": false,
           "retired_at": null
         },
@@ -520,7 +520,7 @@
           "status": "rejected",
           "label": "minilm-speaker",
           "role": "evaluation",
-          "created_at": "2026-10-29T22:08:01.146205+00:00",
+          "created_at": "2026-10-30T09:18:53.718516+00:00",
           "dataset_version": "72487eb4a4ab7433",
           "embedding": {
             "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
@@ -533,9 +533,9 @@
             "min_samples": 25,
             "selection": "eom"
           },
-          "cluster_count": 22,
-          "noise_share": 0.38473199126849383,
-          "seed_ari": 0.9618879528112491,
+          "cluster_count": 21,
+          "noise_share": 0.3780014552510308,
+          "seed_ari": 0.8891568455057405,
           "accepted": false,
           "published_on_site_page": false,
           "retired_at": null
