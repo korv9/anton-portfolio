@@ -10,14 +10,14 @@ store, and it is a separate assessment from matching ads against the CV.
 **Status (2026-10-30).** The champion is `a35140926c6bf532`: the research settings on v2 text, fitted
 on snapshot 1. Champion history (append-only, in `registry.json`):
 
-| When | Run | Action | Why |
-| --- | --- | --- | --- |
-| 2026-10-29 | `6dcad57bab933c28` | register:champion | protocol champion, v1 text |
-| 2026-10-29 | `214c3c57e1f34498` | promote | clean KBLab K-means 8 passed `jobs.yaml` on v1 text |
-| 2026-10-29 | `6dcad…`, `758e…`, `0a71…` | reject | v1 text contained redaction placeholders, or invalid provenance (Deviation) |
-| 2026-10-29 | `214c…` | withdraw (now rejected) | coordinator decision with `Registry.reinstate`: its inputs were invalid |
-| 2026-10-29 | `a351…` | reinstate | the domain's existing pipeline refitted on corrected v2 text; this is not a promotion on the criteria |
-| 2026-10-30 | `20c4dba8403fd63a` | reject | refresh on the latest snapshot failed `jobs-refresh.yaml` on employer dominance (below) |
+| When       | Run                        | Action                  | Why                                                                                                   |
+| ---------- | -------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| 2026-10-29 | `6dcad57bab933c28`         | register:champion       | protocol champion, v1 text                                                                            |
+| 2026-10-29 | `214c3c57e1f34498`         | promote                 | clean KBLab K-means 8 passed `jobs.yaml` on v1 text                                                   |
+| 2026-10-29 | `6dcad…`, `758e…`, `0a71…` | reject                  | v1 text contained redaction placeholders, or invalid provenance (Deviation)                           |
+| 2026-10-29 | `214c…`                    | withdraw (now rejected) | coordinator decision with `Registry.reinstate`: its inputs were invalid                               |
+| 2026-10-29 | `a351…`                    | reinstate               | the domain's existing pipeline refitted on corrected v2 text; this is not a promotion on the criteria |
+| 2026-10-30 | `20c4dba8403fd63a`         | reject                  | refresh on the latest snapshot failed `jobs-refresh.yaml` on employer dominance (below)               |
 
 ## Corpus
 
@@ -26,17 +26,17 @@ The source is the job-assistant store `warehouse/raw/job_assistant/ads.json` (Jo
 behind `frontend/public/data/jobs/cluster-summary.json` used a different corpus: 35,861 ads from
 2022 to 2025. Its numbers are not comparable with the ones here.
 
-| Step | Ads |
-| --- | --- |
-| In the store | 2,829 |
-| Schema failures | 0 |
-| Marked `duplicate_of` by the store | 42 dropped |
-| Same `duplicate_key` or `content_hash` | 32 dropped |
-| Identical text after cleaning | 0 dropped |
-| Deduplicated | 2,755 (dedup rate 2.6 %) |
+| Step                                                                                      | Ads                         |
+| ----------------------------------------------------------------------------------------- | --------------------------- |
+| In the store                                                                              | 2,829                       |
+| Schema failures                                                                           | 0                           |
+| Marked `duplicate_of` by the store                                                        | 42 dropped                  |
+| Same `duplicate_key` or `content_hash`                                                    | 32 dropped                  |
+| Identical text after cleaning                                                             | 0 dropped                   |
+| Deduplicated                                                                              | 2,755 (dedup rate 2.6 %)    |
 | Snapshot 1 (`035573c07db049ab`): published before 2026-10-26T17:05 (newest 15 % held out) | 2,341, of which 478 removed |
-| Selection / evaluation side of snapshot 1 | 1,182 / 1,159 |
-| Held-out newer ads | 414 |
+| Selection / evaluation side of snapshot 1                                                 | 1,182 / 1,159               |
+| Held-out newer ads                                                                        | 414                         |
 
 **Redaction placeholders.** `platform/publish/job_content.py` replaces e-mail addresses and phone
 numbers with `[kontaktuppgift utelämnad]` (1,556 times in the store) and contact names with
@@ -75,16 +75,16 @@ were downloaded. UMAP is fixed at the champion's settings. HDBSCAN uses mcs equa
 share (about 20 ads), 10 and 40; K-means uses k = 8, 12 and 16. All 37 results are in
 `warehouse/features/experiments/jobs/selection/035573c07db049ab.json`. A selection:
 
-| Fit | Groups | Noise | Largest | Seed ARI | Silhouette (rep.) | Employer top share |
-| --- | --- | --- | --- | --- | --- | --- |
-| raw MiniLM HDBSCAN research share (champion) | 2 | 0.00 | 0.96 | 0.99 | −0.01 | 0.12 |
-| raw MiniLM HDBSCAN mcs 10 | 32 | 0.32 | 0.06 | 0.88 | 0.11 | 0.38 |
-| raw TF-IDF HDBSCAN mcs 10 | 17 | 0.20 | 0.33 | 0.96 | 0.31 | 0.41 |
-| raw TF-IDF K-means 12 | 12 | 0 | 0.24 | 0.89 | 0.15 | 0.29 |
-| clean MiniLM HDBSCAN mcs 10 | 34 | 0.38 | 0.04 | 0.89 | 0.09 | 0.27 |
-| clean MiniLM HDBSCAN mcs 40 | 6 | 0.26 | 0.21 | 0.85 | 0.08 | 0.13 |
-| clean KBLab K-means 8 | 8 | 0 | 0.25 | 0.75 | 0.08 | 0.14 |
-| clean KBLab K-means 12 | 12 | 0 | 0.14 | 0.79 | 0.07 | 0.15 |
+| Fit                                          | Groups | Noise | Largest | Seed ARI | Silhouette (rep.) | Employer top share |
+| -------------------------------------------- | ------ | ----- | ------- | -------- | ----------------- | ------------------ |
+| raw MiniLM HDBSCAN research share (champion) | 2      | 0.00  | 0.96    | 0.99     | −0.01             | 0.12               |
+| raw MiniLM HDBSCAN mcs 10                    | 32     | 0.32  | 0.06    | 0.88     | 0.11              | 0.38               |
+| raw TF-IDF HDBSCAN mcs 10                    | 17     | 0.20  | 0.33    | 0.96     | 0.31              | 0.41               |
+| raw TF-IDF K-means 12                        | 12     | 0     | 0.24    | 0.89     | 0.15              | 0.29               |
+| clean MiniLM HDBSCAN mcs 10                  | 34     | 0.38  | 0.04    | 0.89     | 0.09              | 0.27               |
+| clean MiniLM HDBSCAN mcs 40                  | 6      | 0.26  | 0.21    | 0.85     | 0.08              | 0.13               |
+| clean KBLab K-means 8                        | 8      | 0     | 0.25    | 0.75     | 0.08              | 0.14               |
+| clean KBLab K-means 12                       | 12     | 0     | 0.14    | 0.79     | 0.07              | 0.15               |
 
 What selection showed:
 
@@ -104,12 +104,12 @@ candidates were `raw TF-IDF HDBSCAN mcs 10`, `raw TF-IDF K-means 12` and `clean 
 
 ## Final evaluation (v2 text, evaluation side, 1,159 ads, seeds 10–14)
 
-| Run | Groups | Noise | Largest | Seed ARI (min) | Silhouette rep. | Employer top share (null p95) | Occupation AMI | Decision |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `a35140926c6bf532` champion settings | 13 | 0.26 | 0.12 | 0.92 (0.85) | 0.065 | 0.18 (0.10) | 0.30 | reference, registered as candidate |
-| `272c386613bb3d71` raw TF-IDF HDBSCAN 10 | 35 | 0.19 | 0.20 | 0.96 (0.94) | 0.283 | 0.55 (0.13) | 0.18 | rejected: employer dominance |
-| `8a2ac851197b0485` raw TF-IDF K-means 12 | 12 | 0 | 0.20 | 0.86 (0.80) | 0.162 | 0.31 (0.09) | 0.15 | rejected: employer dominance |
-| `62fa1938d9eb0616` clean MiniLM HDBSCAN 10 | 22 | 0.24 | 0.09 | 0.89 (0.83) | 0.036 | 0.18 (0.11) | 0.33 | rejected: no measured gain |
+| Run                                        | Groups | Noise | Largest | Seed ARI (min) | Silhouette rep. | Employer top share (null p95) | Occupation AMI | Decision                           |
+| ------------------------------------------ | ------ | ----- | ------- | -------------- | --------------- | ----------------------------- | -------------- | ---------------------------------- |
+| `a35140926c6bf532` champion settings       | 13     | 0.26  | 0.12    | 0.92 (0.85)    | 0.065           | 0.18 (0.10)                   | 0.30           | reference, registered as candidate |
+| `272c386613bb3d71` raw TF-IDF HDBSCAN 10   | 35     | 0.19  | 0.20    | 0.96 (0.94)    | 0.283           | 0.55 (0.13)                   | 0.18           | rejected: employer dominance       |
+| `8a2ac851197b0485` raw TF-IDF K-means 12   | 12     | 0     | 0.20    | 0.86 (0.80)    | 0.162           | 0.31 (0.09)                   | 0.15           | rejected: employer dominance       |
+| `62fa1938d9eb0616` clean MiniLM HDBSCAN 10 | 22     | 0.24  | 0.09    | 0.89 (0.83)    | 0.036           | 0.18 (0.11)                   | 0.33           | rejected: no measured gain         |
 
 All four saved models reproduce their measured fit (artifact label ARI 1.0).
 
@@ -117,12 +117,12 @@ All four saved models reproduce their measured fit (artifact label ARI 1.0).
 same pipeline is refitted on old and new ads together. Agreement is the ARI on the new ads, with noise
 excluded.
 
-| Run | Newer ads assigned | Refit covers | Agreement ARI with refit |
-| --- | --- | --- | --- |
-| champion settings | 0.52 | 0.62 | 0.83 |
-| TF-IDF HDBSCAN 10 | 0.38 | 0.80 | 0.93 |
-| TF-IDF K-means 12 | 0.87 | 1.00 | 0.74 |
-| MiniLM HDBSCAN 10 | 0.42 | 0.67 | 0.83 |
+| Run               | Newer ads assigned | Refit covers | Agreement ARI with refit |
+| ----------------- | ------------------ | ------------ | ------------------------ |
+| champion settings | 0.52               | 0.62         | 0.83                     |
+| TF-IDF HDBSCAN 10 | 0.38               | 0.80         | 0.93                     |
+| TF-IDF K-means 12 | 0.87               | 1.00         | 0.74                     |
+| MiniLM HDBSCAN 10 | 0.42               | 0.67         | 0.83                     |
 
 **Trade-offs by criterion.** Stability and separation: the TF-IDF runs lead, but their groups follow
 the employer (top share 0.31 and 0.55, against a null of about 0.1). Employer dominance: the champion
@@ -137,21 +137,21 @@ silhouette 0.036 vs 0.065, noise 0.24 vs 0.26. Nothing was promoted.
 The groups of the v2 champion-settings run, as generated c-TF-IDF terms (unreviewed). The stop list is
 the shared Swedish one plus `AD_FILLER`, fixed after reading the first export's terms.
 
-| Group | Ads | Terms | Most common JobTech occupation (share) |
-| --- | --- | --- | --- |
-| 0 | 27 | linux utveckling relevant kompetens säkerhet jobba polisen | Systemadministratör (0.33) |
-| 1 | 125 | support microsoft ärenden användare problem tekniker felsökning | Helpdesktekniker (0.42) |
-| 2 | 22 | cisco nätverk nätverkstekniker routing switching infrastruktur | Nätverkstekniker (0.82) |
-| 3 | 74 | test testing testning tester elektronik mjukvara verifiering | Mjukvarutestare (0.16) |
-| 4 | 49 | verifiering safety tekniskt komplexa dokumentation projekt | Systemutvecklare (0.16) |
-| 5 | 29 | data sql learning utveckla engineer medical qlik datamodellering | Data scientist (0.17) |
-| 6 | 34 | business architecture data enterprise solutions teams agenter | Mjukvaruutvecklare (0.29) |
-| 7 | 136 | minst leda arbetssätt behov skapa förmåga utveckling | Projektledare IT (0.24) |
-| 8 | 121 | förmåga vid säkerhet anställning arbetsuppgifter enligt personliga | IT-säkerhetsanalytiker (0.10) |
-| 9 | 120 | software embedded development mjukvara linux systems | Mjukvaruutvecklare (0.44) |
-| 10 | 72 | cloud azure net backend api aws infrastructure | Systemutvecklare (0.21) |
-| 11 | 21 | backend net utvecklare technical produkt code | Mjukvaruutvecklare (0.19) |
-| 12 | 31 | java spring backend development services kubernetes boot | Backend-utvecklare (0.32) |
+| Group | Ads | Terms                                                              | Most common JobTech occupation (share) |
+| ----- | --- | ------------------------------------------------------------------ | -------------------------------------- |
+| 0     | 27  | linux utveckling relevant kompetens säkerhet jobba polisen         | Systemadministratör (0.33)             |
+| 1     | 125 | support microsoft ärenden användare problem tekniker felsökning    | Helpdesktekniker (0.42)                |
+| 2     | 22  | cisco nätverk nätverkstekniker routing switching infrastruktur     | Nätverkstekniker (0.82)                |
+| 3     | 74  | test testing testning tester elektronik mjukvara verifiering       | Mjukvarutestare (0.16)                 |
+| 4     | 49  | verifiering safety tekniskt komplexa dokumentation projekt         | Systemutvecklare (0.16)                |
+| 5     | 29  | data sql learning utveckla engineer medical qlik datamodellering   | Data scientist (0.17)                  |
+| 6     | 34  | business architecture data enterprise solutions teams agenter      | Mjukvaruutvecklare (0.29)              |
+| 7     | 136 | minst leda arbetssätt behov skapa förmåga utveckling               | Projektledare IT (0.24)                |
+| 8     | 121 | förmåga vid säkerhet anställning arbetsuppgifter enligt personliga | IT-säkerhetsanalytiker (0.10)          |
+| 9     | 120 | software embedded development mjukvara linux systems               | Mjukvaruutvecklare (0.44)              |
+| 10    | 72  | cloud azure net backend api aws infrastructure                     | Systemutvecklare (0.21)                |
+| 11    | 21  | backend net utvecklare technical produkt code                      | Mjukvaruutvecklare (0.19)              |
+| 12    | 31  | java spring backend development services kubernetes boot           | Backend-utvecklare (0.32)              |
 
 Group 8 follows public-sector application wording (anställning, enligt, personliga) more than a task.
 "polisen" and "fouredge" are employer or client names that masking did not cover.
@@ -183,18 +183,18 @@ Both changes were made after the first final evaluation, at the coordinator's re
 
 ## MLOps design
 
-| Need | Implementation |
-| --- | --- |
-| Incremental ingest | `jobs_data.diff`: new ids, changed `content_hash`, newly removed and missing ads since the model's snapshot |
-| Versioned cleaning, dedup, validation | The text versions and template thresholds are part of every text hash. A missing, empty, non-JSON or non-list store, no valid ad, or more than 5 % schema failures raises `InputError`. A model on an older text version raises `ValueError` instead of embedding new text under an old label |
-| Embedding cache | `ml.experiments.embed`, keyed by text hash, model revision and text version + pooling. A change in model or preprocessing starts a new cache folder |
-| Dataset snapshot | `snapshots/<dataset_version>.json` holds ids, hashes, dates and the removed flag, with no text. The text table is `warehouse/ml/experiments/jobs/<version>.parquet` (local only) |
-| Model artifact | `models/<run_id>/model.joblib` holds the pipeline (text version and cleaning parameters, embedding and revision or the fitted TF-IDF/SVD, the fitted UMAP, training labels, centroids and radii in the reduced space, centroids in the representation space). `manifest.json` adds run_id, dataset_version, snapshot_version, train ids and sha256. `load` refuses tampered files |
-| Registry | `Registry('jobs')` with candidate, champion and rejected. Promotion needs a passed `accept.check` (`jobs.yaml`, or `jobs-refresh.yaml` for a refresh); `rollback` |
-| Export | `export.run_file` and `export.index`. The run file names `run_id`, `dataset_version`, the acceptance report and the status. No separate assignments file is published |
-| Assignment between retrains | Nearest centroid in the saved model's reduced space (`umap.transform`), accepted only within that group's 95th-percentile training radius. Otherwise the label is −1, "fits no group" |
-| Version diff | Jaccard overlap of the ads both models trained on, plus centroid cosine when the embeddings match. It reports matched, split and merged groups, and links below 0.3 as uncertain (`diffs/<old>__<new>.json`) |
-| Monitoring | `monitor/<kind>-<snapshot>-<model>.json`. Flags set `action: investigate` and never promote |
+| Need                                  | Implementation                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Incremental ingest                    | `jobs_data.diff`: new ids, changed `content_hash`, newly removed and missing ads since the model's snapshot                                                                                                                                                                                                                                                                       |
+| Versioned cleaning, dedup, validation | The text versions and template thresholds are part of every text hash. A missing, empty, non-JSON or non-list store, no valid ad, or more than 5 % schema failures raises `InputError`. A model on an older text version raises `ValueError` instead of embedding new text under an old label                                                                                     |
+| Embedding cache                       | `ml.experiments.embed`, keyed by text hash, model revision and text version + pooling. A change in model or preprocessing starts a new cache folder                                                                                                                                                                                                                               |
+| Dataset snapshot                      | `snapshots/<dataset_version>.json` holds ids, hashes, dates and the removed flag, with no text. The text table is `warehouse/ml/experiments/jobs/<version>.parquet` (local only)                                                                                                                                                                                                  |
+| Model artifact                        | `models/<run_id>/model.joblib` holds the pipeline (text version and cleaning parameters, embedding and revision or the fitted TF-IDF/SVD, the fitted UMAP, training labels, centroids and radii in the reduced space, centroids in the representation space). `manifest.json` adds run_id, dataset_version, snapshot_version, train ids and sha256. `load` refuses tampered files |
+| Registry                              | `Registry('jobs')` with candidate, champion and rejected. Promotion needs a passed `accept.check` (`jobs.yaml`, or `jobs-refresh.yaml` for a refresh); `rollback`                                                                                                                                                                                                                 |
+| Export                                | `export.run_file` and `export.index`. The run file names `run_id`, `dataset_version`, the acceptance report and the status. No separate assignments file is published                                                                                                                                                                                                             |
+| Assignment between retrains           | Nearest centroid in the saved model's reduced space (`umap.transform`), accepted only within that group's 95th-percentile training radius. Otherwise the label is −1, "fits no group"                                                                                                                                                                                             |
+| Version diff                          | Jaccard overlap of the ads both models trained on, plus centroid cosine when the embeddings match. It reports matched, split and merged groups, and links below 0.3 as uncertain (`diffs/<old>__<new>.json`)                                                                                                                                                                      |
+| Monitoring                            | `monitor/<kind>-<snapshot>-<model>.json`. Flags set `action: investigate` and never promote                                                                                                                                                                                                                                                                                       |
 
 All files except the text table sit under `warehouse/features/experiments/jobs/` and the shared
 registry and embedding folders, so `warehouse_store.py push --only features --path experiments` keeps them.
@@ -243,6 +243,7 @@ process; embeddings came from the cache).
 ## Earlier local runs (2026-10-29)
 
 **v1** (`prepare --hold-out-newest 0.15`, then select, final, export, assign, retrain, and rollback on a copy):
+
 - final promoted clean KBLab K-means 8 (`214c…`).
 - assign: 414 new ads, 74 % assigned against a training abstain rate of 5.3 %; the abstention flag
   was raised.
@@ -250,6 +251,7 @@ process; embeddings came from the cache).
 - These numbers are superseded, as described under Deviation.
 
 **v2:**
+
 - select and final as above; nothing passed.
 - The assign and refit in that drill used the v1 model on v2 text (`0a71…`). They are invalid and
   were rejected or moved, as above.
@@ -257,13 +259,13 @@ process; embeddings came from the cache).
 **Resources** (`tmp/jobs/resources.json` for v2 and `resources-v1.json`, measured with `runtime.measure`;
 12 CPUs, GTX 1660 for embeddings):
 
-| Step | Wall time v1 / v2 | Peak RSS v1 / v2 |
-| --- | --- | --- |
-| Sample check: 200 ads, three embeddings plus one 3-seed fit | 82 s / – | 1.7 GB |
-| select (37 fits) | 710 s / 762 s | 2.8 / 2.4 GB |
-| final (4 runs × 5 seeds, artefacts, temporal refits) | 329 s / 231 s | 3.2 / 3.1 GB |
-| export | 47 s / 19 s | 1.2 / 2.5 GB |
-| assign / retrain | 4.5 / 41 s; 29 / 99 s | ≤ 3.0 GB |
+| Step                                                        | Wall time v1 / v2     | Peak RSS v1 / v2 |
+| ----------------------------------------------------------- | --------------------- | ---------------- |
+| Sample check: 200 ads, three embeddings plus one 3-seed fit | 82 s / –              | 1.7 GB           |
+| select (37 fits)                                            | 710 s / 762 s         | 2.8 / 2.4 GB     |
+| final (4 runs × 5 seeds, artefacts, temporal refits)        | 329 s / 231 s         | 3.2 / 3.1 GB     |
+| export                                                      | 47 s / 19 s           | 1.2 / 2.5 GB     |
+| assign / retrain                                            | 4.5 / 41 s; 29 / 99 s | ≤ 3.0 GB         |
 
 The heavy work took about 20 minutes per pass inside `runtime.heavy`; the first pass also waited
 about 45 minutes for the lock.
@@ -290,6 +292,36 @@ The full selection grid (37 fits) then ran from scratch in run 41014204044. It t
 a newer snapshot of 2,843 ads, so its picks differ from the selection above. Peak memory was not
 recorded. See [Runner measurements](cluster-experiments.md#runner-measurements-2026-10-30).
 
+## Runner drill: over time and rollback (2026-10-30)
+
+Actions run 41091714598 ran `jobs select,final,rollback repro:drill-jobs --hold-out-newest 0.15
+--reason runner-rollback-drill` on a standard Ubuntu runner (CPU). Everything went to
+`features/experiments/repro/drill-jobs/`; the stored registry did not change. The store had 2,981
+ads (dataset `62223f4f601cb39e`); 2,896 after deduplication, and 2,461 after holding out the newest 15 %. The 435 newer ads
+were assigned afterwards. Splits are by employer, as before.
+
+| Step     | Time        | Peak memory |
+| -------- | ----------- | ----------- |
+| prepare  | 4 s         | 0.42 GB     |
+| select   | 54 min 10 s | 3.49 GB     |
+| final    | 38 min 42 s | 4.61 GB     |
+| rollback | 1 s         | 0.23 GB     |
+
+| Run (evaluation side)       | Status after drill  | Employer top share (null p95) | Newer ads assigned | Refit covers | Agreement ARI |
+| --------------------------- | ------------------- | ----------------------------- | ------------------ | ------------ | ------------- |
+| champion settings refitted  | champion (restored) | 0.189 (0.100)                 | 0.55               | 0.77         | 0.77          |
+| clean MiniLM-L12 HDBSCAN 10 | rejected (demoted)  | 0.196 (0.111)                 | 0.34               | 0.70         | 0.84          |
+| raw TF-IDF K-means 8        | rejected            | 0.223 (0.082)                 | 0.95               | 1.00         | 0.60          |
+| clean KBLab HDBSCAN 10      | candidate (passed)  | 0.200 (0.119)                 | 0.41               | 0.66         | 0.81          |
+
+Two candidates passed the frozen criteria and `final` promoted MiniLM HDBSCAN 10 (highest seed
+ARI). TF-IDF K-means 8 failed "employer dominance not worse". The `rollback` step then demoted the
+promoted run and restored the refitted champion, with the drill reason in the history. In every
+run the employer top share stays above its null p95, so employer templates still shape the groups.
+Over time, the HDBSCAN runs leave more newer ads unassigned but agree better with a refit; K-means
+assigns almost all but agrees least. This is a drill on a newer snapshot, not a reproduction, and
+it changes no stored decision.
+
 ## Runbook
 
 ```bash
@@ -310,7 +342,7 @@ ml/.venv/Scripts/python.exe -m ml.experiments.jobs rollback --reason "..." [--co
 pulls `features/experiments` and `raw/job_assistant`, runs `assign` and `monitor`, and pushes
 `features/experiments` back, after a failure too. Started by hand with `retrain`, it also refits a
 candidate; it never passes `--promote`. A person reads the acceptance report and the diff, then runs
-`promote`. It shares the `cluster-jobs-experiments` concurrency group with `cluster-jobs.yml`. 
+`promote`. It shares the `cluster-jobs-experiments` concurrency group with `cluster-jobs.yml`.
 
 **Tested** (`test_jobs_mlops.py`, 11 tests, about 5 s): missing, empty, non-JSON, wrong-shape and
 mostly invalid input; dedup by duplicate_of, duplicate_key and hash; template stripping and masking;
