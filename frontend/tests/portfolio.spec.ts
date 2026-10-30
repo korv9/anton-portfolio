@@ -46,8 +46,14 @@ test('education follows experience in one column, beside the cluster maps', asyn
     page
       .locator(selector)
       .evaluate((el) => el.getBoundingClientRect().toJSON() as DOMRect)
-  const experience = await box('.home-experience .home-title')
-  const education = await box('.home-education .home-title')
+  // Both titles in one frame: the page may still be scrolling smoothly to #erfarenhet, and two
+  // separate reads would compare positions from two scroll offsets.
+  const [experience, education] = await page.evaluate(() =>
+    ['.home-experience .home-title', '.home-education .home-title'].map(
+      (s) =>
+        document.querySelector(s)!.getBoundingClientRect().toJSON() as DOMRect,
+    ),
+  )
   expect(Math.abs(experience.left - education.left)).toBeLessThan(0.5)
   expect(education.top).toBeGreaterThan(experience.bottom)
   const column = await box('.home-experience')
