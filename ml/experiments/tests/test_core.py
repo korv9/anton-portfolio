@@ -181,17 +181,22 @@ def test_rollback_skips_rejected_and_reinstate_withdraws_invalid(tmp_path):
     assert reg.rollback('test') == a['run_id']
 
 
-def test_repro_label_moves_checkpoints_and_embeddings(tmp_path, monkeypatch):
+def test_repro_label_moves_every_stored_result(monkeypatch):
     import importlib
-    from ml.experiments import embed, runtime
+    from ml.experiments import embed, export, jobs_data, registry
+    modules = (registry, embed, export, jobs_data)
     monkeypatch.setenv('EXPERIMENTS_REPRO', '42')
     try:
-        importlib.reload(runtime)
-        importlib.reload(embed)
-        assert runtime.Checkpoints(tmp_path / 'select').folder.name == 'select-repro-42'
-        assert embed.ROOT.name == 'embeddings-repro-42'
+        for m in modules:
+            importlib.reload(m)
+        repro = registry.FEATURES / 'experiments' / 'repro' / '42'
+        assert registry.ROOT == repro / 'registry'
+        assert embed.ROOT == repro / 'embeddings'
+        assert jobs_data.OUT == repro / 'jobs'
+        assert export.OUT == repro / 'export' != export.SITE
     finally:
         monkeypatch.delenv('EXPERIMENTS_REPRO')
-        importlib.reload(runtime)
-        importlib.reload(embed)
-    assert runtime.Checkpoints(tmp_path / 'select').folder.name == 'select'
+        for m in modules:
+            importlib.reload(m)
+    assert registry.ROOT == registry.FEATURES / 'experiments' / 'registry'
+    assert export.OUT == export.SITE

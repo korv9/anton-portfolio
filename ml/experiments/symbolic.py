@@ -104,7 +104,7 @@ def prepare(args) -> None:
 def select(args) -> None:
     frame = observations()
     side = frame[frame.side == 'selection'].reset_index(drop=True)
-    deadline, marks = runtime.Deadline(args.deadline_minutes), runtime.Checkpoints(data.FOLDER / 'select')
+    deadline, marks = runtime.Deadline(args.deadline_minutes), runtime.Checkpoints(data.RESULTS / 'select')
     conf = confounders(side)
     for text, model, rep in SELECT:
         key = f'{text}-{model}-{rep}'
@@ -126,7 +126,7 @@ def select(args) -> None:
         marks.put(key, {'text': text, 'model': model, 'representation': rep, 'neighbours': neighbours,
                         'clusterings': rows, 'resources': used})
         print(key, used, flush=True)
-    atomic_json(data.FOLDER / 'select.json', {'created_at': now(), 'seeds': SELECT_SEEDS, 'n': len(side),
+    atomic_json(data.RESULTS / 'select.json', {'created_at': now(), 'seeds': SELECT_SEEDS, 'n': len(side),
                                               'results': marks.all()})
 
 
@@ -143,7 +143,7 @@ def final(args) -> None:
     frame = observations()
     side = frame[frame.side == 'evaluation'].reset_index(drop=True)
     version = data.version(side)
-    deadline, marks = runtime.Deadline(args.deadline_minutes), runtime.Checkpoints(data.FOLDER / 'final')
+    deadline, marks = runtime.Deadline(args.deadline_minutes), runtime.Checkpoints(data.RESULTS / 'final')
     registry, (rules, sha) = Registry(DOMAIN), accept.criteria(DOMAIN)
     conf = confounders(side)
     for label, text, model, rep, clustering in [CHAMPION, *CANDIDATES]:
@@ -194,7 +194,7 @@ def final(args) -> None:
 def export(args) -> None:
     frame = observations()
     side = frame[frame.side == 'evaluation'].reset_index(drop=True)
-    folder = data.FOLDER / 'final'
+    folder = data.RESULTS / 'final'
     for run_id, entry in Registry(DOMAIN).load()['runs'].items():
         pointer = folder / 'runs' / f'{run_id}.json'
         if not pointer.exists():

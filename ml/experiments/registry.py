@@ -20,7 +20,11 @@ from ml.cluster_lab.io import atomic_json, now
 from .contract import STATUSES, validate
 
 FEATURES = Path(os.environ.get('PORTFOLIO_FEATURES') or Path(__file__).resolve().parents[2] / 'warehouse' / 'features')
-ROOT = Path(os.environ.get('PORTFOLIO_EXPERIMENTS') or FEATURES / 'experiments' / 'registry')
+# A reproduction (EXPERIMENTS_REPRO=<label>) refits from scratch under experiments/repro/<label>:
+# its own registry, checkpoints, embeddings, summaries and exports. Stored results stay untouched.
+REPRO = os.environ.get('EXPERIMENTS_REPRO', '').strip()
+EXPERIMENTS = FEATURES / 'experiments' / 'repro' / REPRO if REPRO else FEATURES / 'experiments'
+ROOT = Path(os.environ.get('PORTFOLIO_EXPERIMENTS') or EXPERIMENTS / 'registry')
 # Prepared datasets hold source text and stay local (docs/incidents/2026-10-22-third-party-text-in-r2.md).
 LOCAL = Path(__file__).resolve().parents[2] / 'warehouse' / 'ml' / 'experiments'
 

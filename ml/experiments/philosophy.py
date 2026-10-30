@@ -26,14 +26,14 @@ import pandas as pd
 from ml.cluster_lab.io import atomic_json, atomic_parquet, digest, read_json
 from . import embed as emb
 from . import splits
-from .registry import FEATURES, LOCAL
+from .registry import EXPERIMENTS, LOCAL
 from .runtime import heavy, measure
 
 REPO = Path(__file__).resolve().parents[2]
 DATABASE = Path(os.environ.get('PORTFOLIO_DB', REPO / 'warehouse' / 'portfolio.duckdb'))
 CORPUS_FILE = REPO / 'platform' / 'ingest' / 'philosophy' / 'corpus.json'
 DATA = LOCAL / 'philosophy'
-WORK = FEATURES / 'experiments' / 'philosophy'
+WORK = EXPERIMENTS / 'philosophy'
 DOMAIN = 'philosophy'
 QUESTION = ('Which groups of passages recur across the works of a 13-work philosophy corpus, and how far '
             'do they follow the work, translator, original language or genre instead?')

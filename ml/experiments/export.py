@@ -17,9 +17,11 @@ from pathlib import Path
 
 from ml.cluster_lab.io import atomic_json, now, read_json
 from .contract import DOMAINS
-from .registry import Registry
+from .registry import EXPERIMENTS, REPRO, Registry
 
-OUT = Path(__file__).resolve().parents[2] / 'frontend' / 'public' / 'data' / 'cluster-experiments'
+SITE = Path(__file__).resolve().parents[2] / 'frontend' / 'public' / 'data' / 'cluster-experiments'
+# A reproduction exports beside its own registry, never into the site's files.
+OUT = EXPERIMENTS / 'export' if REPRO else SITE
 EXCERPT = 300
 MAX_POINTS = 3000
 SCHEMA_VERSION = 1
@@ -97,7 +99,7 @@ def index(out: Path = OUT, root: Path | None = None) -> Path:
     path = out / 'index.json'
     atomic_json(path, {'schema_version': SCHEMA_VERSION, 'generated_at': now(), 'coordinates': COORDINATES,
                        'domains': domains})
-    if out == OUT:
+    if out == SITE:
         # The site's catalogue lists every delivered file with its hash; only these entries change.
         from portfolio.publish.catalog import register
         register([path, *sorted((out / 'runs').glob('*.json'))])

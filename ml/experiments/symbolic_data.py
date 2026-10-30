@@ -22,11 +22,13 @@ import numpy as np
 import pandas as pd
 
 from . import splits
-from .registry import LOCAL
+from .registry import EXPERIMENTS, LOCAL
 
 ROOT = Path(__file__).resolve().parents[2]
 DATABASE = ROOT / 'warehouse' / 'portfolio.duckdb'
 FOLDER = LOCAL / 'symbolic'
+# Checkpoints, spaces and selection summaries hold no text, so they go to R2 and a stopped run resumes.
+RESULTS = EXPERIMENTS / 'symbolic'
 OBSERVATIONS = FOLDER / 'observations.parquet'
 PER_PAIR = 15
 SPLIT_SEED = 0

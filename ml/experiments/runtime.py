@@ -46,15 +46,9 @@ def measure(path: Path | str = '.'):
                       cpu_count=os.cpu_count())
 
 
-# A reproduction (EXPERIMENTS_REPRO=<label>) refits from scratch into its own checkpoint and
-# embedding folders, so a runner's own time and memory are measured and the original results stay.
-REPRO = os.environ.get('EXPERIMENTS_REPRO', '').strip()
-
-
 class Checkpoints:
     def __init__(self, folder: Path):
-        folder = Path(folder)
-        self.folder = folder.with_name(f'{folder.name}-repro-{REPRO}') if REPRO else folder
+        self.folder = Path(folder)
         self.folder.mkdir(parents=True, exist_ok=True)
 
     def path(self, key: str) -> Path:

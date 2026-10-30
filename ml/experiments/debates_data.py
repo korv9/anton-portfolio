@@ -18,11 +18,13 @@ import pandas as pd
 
 from ml.cluster_lab.io import digest
 from . import embed, splits
-from .registry import LOCAL
+from .registry import EXPERIMENTS, LOCAL
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / 'warehouse/cluster_lab/public-topics-2026-10-12/datasets/debate/observations.parquet'
 FOLDER = LOCAL / 'debates'
+# Checkpoints, labels, maps and decisions hold no text, so they go to R2 and a stopped run resumes.
+RESULTS = EXPERIMENTS / 'debates'
 TEXT_VERSIONS = {'current': 'replik-passages-v1', 'masked': 'replik-passages-masked-v1'}
 NEGATIONS = ('inte', 'aldrig', 'ingen', 'inget', 'inga', 'icke', 'varken')
 PARTY = re.compile(r'\b(?:(?:social ?demokrat|sosse|sossar|moderat|vänsterpartis?t|vänsterpartiet|centerpartis?t|'
