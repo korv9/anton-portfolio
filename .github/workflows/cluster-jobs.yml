@@ -13,7 +13,8 @@ name: Run a heavy compute job
 #                   tree raw, path jobtech/cluster-corpus,
 #                   args ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
 #   experiments     the clustering experiments (docs/cluster-experiments.md), args '<domain> <step>',
-#                   domain philosophy|symbolic|jobs|debates, step select|final|export. It pulls the
+#                   domain philosophy|symbolic|jobs|debates, step select|final|export, and an
+#                   optional third word repro for a from-scratch refit in separate folders. It pulls the
 #                   warehouse, the shared features/experiments folder (registry, embeddings,
 #                   checkpoints; no source text) and the domain's source files, rebuilds the local
 #                   text table with `prepare`, runs the step with a deadline 30 minutes inside the
@@ -99,8 +100,8 @@ jobs:
           fi
           if [ "$JOB" = experiments ]; then
             read -ra parts <<< "$ARGS"
-            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)$ ]]; then
-              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <select|final|export>'"; exit 1
+            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)$ ]] || ! [[ "${parts[2]:-}" =~ ^(repro)?$ ]]; then
+              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <select|final|export> [repro]'"; exit 1
             fi
           fi
           if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
@@ -152,6 +153,9 @@ jobs:
             experiments)
               read -ra parts <<< "$ARGS"
               python -m "ml.experiments.${parts[0]}" prepare 2>&1 | tee logs/prepare.log
+              # A third word 'repro' refits from scratch into separate folders (runtime.REPRO), so the
+              # runner's own CPU time and memory are measured without touching the stored results.
+              if [ "${parts[2]:-}" = repro ]; then export EXPERIMENTS_REPRO="$GITHUB_RUN_ID"; fi
               python -m "ml.experiments.${parts[0]}" "${parts[1]}" --deadline-minutes 255 2>&1 | tee logs/step.log
               ;;
           esac

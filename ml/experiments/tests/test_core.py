@@ -179,3 +179,19 @@ def test_rollback_skips_rejected_and_reinstate_withdraws_invalid(tmp_path):
     assert runs[b['run_id']]['status'] == 'rejected' and runs[c['run_id']]['status'] == 'champion'
     # Rolling back from c returns to a, never to the rejected b.
     assert reg.rollback('test') == a['run_id']
+
+
+def test_repro_label_moves_checkpoints_and_embeddings(tmp_path, monkeypatch):
+    import importlib
+    from ml.experiments import embed, runtime
+    monkeypatch.setenv('EXPERIMENTS_REPRO', '42')
+    try:
+        importlib.reload(runtime)
+        importlib.reload(embed)
+        assert runtime.Checkpoints(tmp_path / 'select').folder.name == 'select-repro-42'
+        assert embed.ROOT.name == 'embeddings-repro-42'
+    finally:
+        monkeypatch.delenv('EXPERIMENTS_REPRO')
+        importlib.reload(runtime)
+        importlib.reload(embed)
+    assert runtime.Checkpoints(tmp_path / 'select').folder.name == 'select'

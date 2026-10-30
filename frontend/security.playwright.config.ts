@@ -14,6 +14,8 @@ export default defineConfig({
       : {},
   },
   webServer: {
+    // From the repository root, where package.json is: npm on Windows does not look upwards.
+    cwd: '..',
     command: 'npm run preview -- --host 127.0.0.1 --port 4187 --strictPort',
     url: 'http://127.0.0.1:4187',
     reuseExistingServer: false,
