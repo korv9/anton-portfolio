@@ -1,0 +1,101 @@
+name: Job-ad clusters (assign and monitor)
+
+# The MLOps loop of the job-ad clustering (docs/cluster-experiments-jobs.md). Weekly, and by hand:
+#  - pulls the shared features/experiments folder (registry, models, snapshots, embedding cache,
+#    monitor files; no source text) and the job-assistant store (raw/job_assistant) from R2;
+#  - assign: diffs the store against the champion model's snapshot, gives new and changed ads a
+#    group or -1 ("fits no group") with the saved model, and writes a monitor file with flags;
+#  - retrain (by hand only): refits the champion's settings on the latest snapshot as a candidate
+#    and checks it against the frozen criteria. It never promotes: a person runs `promote`
+#    locally after reading the acceptance report and the version diff;
+#  - pushes features/experiments back, after a failure too, so checkpoints and monitor files stay.
+# It publishes nothing to the site and leaves the job assistant, its matching and D1 untouched.
+# It shares the experiments concurrency group of cluster-jobs.yml, so two jobs never write the
+# registry at once. Standard runner, CPU only.
+
+on:
+  schedule:
+    - cron: '41 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      step:
+        description: assign (with monitor) or retrain (a candidate, never promoted here)
+        type: choice
+        options: [assign, retrain]
+        default: assign
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cluster-jobs-experiments
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    if: github.ref == 'refs/heads/main'
+    environment: anton-portfolio
+    env:
+      STEP: ${{ inputs.step || 'assign' }}
+      PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Python and the ML lock
+        uses: ./.github/actions/data-setup
+        timeout-minutes: 20
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        with:
+          ml: 'true'
+      - name: Pull the model state and the ad store
+        id: pull
+        timeout-minutes: 15
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          python platform/publish/warehouse_store.py pull --only features --path experiments
+          python platform/publish/warehouse_store.py pull --only raw --path job_assistant
+      - name: Run
+        id: run
+        timeout-minutes: 50
+        shell: bash
+        run: |
+          mkdir -p logs
+          case "$STEP" in
+            assign) python -m ml.experiments.jobs assign 2>&1 | tee logs/assign.log ;;
+            retrain)
+              python -m ml.experiments.jobs assign 2>&1 | tee logs/assign.log
+              python -m ml.experiments.jobs retrain --deadline-minutes 40 2>&1 | tee logs/retrain.log ;;
+            *) echo "::error::step must be assign or retrain"; exit 1 ;;
+          esac
+          python -m ml.experiments.jobs monitor 2>&1 | tee logs/monitor.json
+      - name: Push the model state
+        if: ${{ always() && steps.pull.outcome == 'success' }}
+        timeout-minutes: 20
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python platform/publish/warehouse_store.py push --only features --path experiments
+      - name: Keep the logs and the monitor file
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: job-clusters-${{ github.run_id }}
+          if-no-files-found: ignore
+          path: |
+            logs/
+            warehouse/features/experiments/jobs/monitor/
+            warehouse/features/experiments/registry/jobs/registry.json

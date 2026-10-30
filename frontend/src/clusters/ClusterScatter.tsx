@@ -31,6 +31,8 @@ export default function ClusterScatter({
   label,
   height = 780,
   marker,
+  picked: chosen,
+  onPick,
 }: {
   points: ClusterPoint[]
   /** A cluster's name for the tooltip and the list. */
@@ -40,11 +42,16 @@ export default function ClusterScatter({
   height?: number
   /** One extra point drawn on top, named in the map's label. */
   marker?: { x: number; y: number; label: string }
+  /** A picked cluster held by the caller (for a shareable address); left out, the map keeps its own. */
+  picked?: number | null
+  onPick?: (cluster: number | null) => void
 }) {
   const box = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const [width, setWidth] = useState(900)
-  const [picked, setPicked] = useState<number | null>(null)
+  const [own, setOwn] = useState<number | null>(null)
+  const picked = chosen === undefined ? own : chosen
+  const setPicked = (c: number | null) => (onPick ? onPick(c) : setOwn(c))
   const [all, setAll] = useState(false)
   const [hover, setHover] = useState<{
     p: ClusterPoint

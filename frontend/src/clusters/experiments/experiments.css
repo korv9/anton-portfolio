@@ -1,0 +1,176 @@
+/* Clustering experiments (Experiments.tsx): the cluster visuals' neutral interface, native
+   tables with tabular figures, status in words with a quiet mark. No motion. */
+.cx {
+  padding-top: var(--sp-7);
+}
+.project-shell #main .cx h2 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-lg);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.project-shell #main .cx :is(h3, h4) {
+  margin: var(--sp-5) 0 var(--sp-2);
+  font-size: var(--fs-md);
+  font-weight: 650;
+  text-wrap: balance;
+}
+.cx-question {
+  max-width: var(--measure);
+  margin: var(--sp-3) 0;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+}
+.cx-note,
+.cx figcaption,
+.cx-table caption {
+  max-width: 90ch;
+  margin: var(--sp-2) 0;
+  color: var(--muted);
+  font-size: var(--fs-label);
+  line-height: 1.5;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.cx-state {
+  max-width: var(--measure);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--wash);
+  font-size: var(--fs-sm);
+}
+.cx a {
+  color: var(--ink);
+  text-underline-offset: 0.25em;
+}
+.cx a:focus-visible,
+.cx-table-wrap:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+.cv-variants .cx-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  background: var(--wash);
+  font-size: var(--fs-label);
+  text-decoration: none;
+  touch-action: manipulation;
+}
+.cv-variants .cx-chip[aria-current='page'] {
+  background: var(--muted);
+  color: var(--page);
+}
+.cx-status {
+  display: inline-block;
+  padding: 0 0.45em;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  font-size: var(--fs-label);
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  /* The former-champion label is long: it wraps inside its cell instead of overlapping the next. */
+  max-width: 100%;
+  white-space: normal;
+}
+.cx-status-champion {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--page);
+}
+.cx-status-rejected {
+  border-style: dashed;
+}
+.cx-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: var(--sp-3) var(--sp-5);
+  margin: var(--sp-4) 0;
+}
+.cx-facts dt {
+  color: var(--muted);
+  font-size: var(--fs-label);
+}
+.cx-facts dd {
+  margin: 0;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.cx-figure {
+  margin: var(--sp-4) 0;
+}
+.cx-table-wrap {
+  max-width: 100%;
+  margin: var(--sp-3) 0;
+  overflow-x: auto;
+}
+.cx-table {
+  width: 100%;
+  /* Narrow screens scroll the table inside its wrapper instead of breaking words. */
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: var(--fs-label);
+  font-variant-numeric: tabular-nums;
+}
+.cx-table :is(th, td) {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+.cx-table thead th {
+  background: var(--wash);
+  font-weight: 650;
+  white-space: nowrap;
+}
+.cx-table tbody th {
+  font-weight: 500;
+}
+.cx-table td {
+  max-width: 40ch;
+  overflow-wrap: break-word;
+}
+.cx-table .num {
+  text-align: right;
+}
+.cx-table small {
+  color: var(--muted);
+}
+.cx-table tr[aria-current='true'] {
+  background: var(--wash);
+  font-weight: 650;
+}
+.cx-inner th {
+  padding-left: 1.6em;
+}
+.cx-passages {
+  display: grid;
+  gap: var(--sp-4);
+  max-width: var(--measure);
+  margin: var(--sp-3) 0;
+  padding-left: 1.4em;
+}
+.cx-passages blockquote {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+}
+.cx-passages cite {
+  display: block;
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-label);
+  font-style: normal;
+}
+.cx-limits {
+  max-width: var(--measure);
+  padding-left: 1.2em;
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}

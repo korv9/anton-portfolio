@@ -12,6 +12,14 @@ name: Run a heavy compute job
 #                   later batch needs no change here. The job-ad corpus behind Cluster Lab:
 #                   tree raw, path jobtech/cluster-corpus,
 #                   args ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
+#   experiments     the clustering experiments (docs/cluster-experiments.md), args '<domain> <step>',
+#                   domain philosophy|symbolic|jobs|debates, step select|final|export. It pulls the
+#                   warehouse, the shared features/experiments folder (registry, embeddings,
+#                   checkpoints; no source text) and the domain's source files, rebuilds the local
+#                   text table with `prepare`, runs the step with a deadline 30 minutes inside the
+#                   run step's limit, and pushes features/experiments back, after a failure too,
+#                   so the next dispatch resumes from the checkpoints. All experiment dispatches
+#                   share one concurrency group, so two never write the registry at once.
 #
 # The run step stops at 300 minutes, so the push has its own window before the job limit. After a
 # failure or that timeout only the checkpoints are pushed (futures-topics: run/), so the next run
@@ -24,10 +32,10 @@ on:
       job:
         description: Job to run
         type: choice
-        options: [futures-topics, module]
+        options: [futures-topics, module, experiments]
         default: futures-topics
       args:
-        description: 'module only: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1'
+        description: 'module: the module and its arguments, e.g. ml.cluster_lab.cli run --new-runs 1; experiments: <domain> <step>, e.g. philosophy select'
         default: ''
       path:
         description: 'module only: folder of the tree to pull before and push after, e.g. clusters/eras'
@@ -55,9 +63,9 @@ jobs:
       JOB: ${{ inputs.job }}
       ARGS: ${{ inputs.args }}
       TREE: ${{ inputs.job == 'module' && inputs.tree || 'features' }}
-      PULL: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
-      PUSH: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics' || inputs.path }}
-      CHECKPOINTS: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.path }}
+      PULL: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.job == 'experiments' && 'experiments' || inputs.path }}
+      PUSH: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics' || inputs.job == 'experiments' && 'experiments' || inputs.path }}
+      CHECKPOINTS: ${{ inputs.job == 'futures-topics' && 'sweden/futures_topics/run' || inputs.job == 'experiments' && 'experiments' || inputs.path }}
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
@@ -89,6 +97,12 @@ jobs:
               echo "::error::module must be an ml. module, e.g. ml.cluster_lab.cli"; exit 1
             fi
           fi
+          if [ "$JOB" = experiments ]; then
+            read -ra parts <<< "$ARGS"
+            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)$ ]]; then
+              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <select|final|export>'"; exit 1
+            fi
+          fi
           if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
             echo "::error::path must be a folder of a-z, 0-9, _ and -, e.g. clusters/eras"; exit 1
           fi
@@ -104,7 +118,17 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: python platform/publish/warehouse_store.py pull --only "$TREE" --path "$PULL"
+        run: |
+          python platform/publish/warehouse_store.py pull --only "$TREE" --path "$PULL"
+          if [ "$JOB" = experiments ]; then
+            # The domain's sources: the warehouse holds the passages and occurrences; Replik's
+            # passages are in the stored Cluster Lab runs and the job ads in the job-assistant store.
+            python platform/publish/warehouse_store.py pull --only db
+            case "${ARGS%% *}" in
+              debates) python platform/publish/warehouse_store.py pull --only cluster_lab ;;
+              jobs) python platform/publish/warehouse_store.py pull --only raw --path job_assistant ;;
+            esac
+          fi
       - name: Run
         id: run
         timeout-minutes: 265
@@ -124,6 +148,11 @@ jobs:
               # Split on white space into the module and its arguments, each passed as one word.
               read -ra parts <<< "$ARGS"
               python -m "${parts[0]}" "${parts[@]:1}" 2>&1 | tee logs/module.log
+              ;;
+            experiments)
+              read -ra parts <<< "$ARGS"
+              python -m "ml.experiments.${parts[0]}" prepare 2>&1 | tee logs/prepare.log
+              python -m "ml.experiments.${parts[0]}" "${parts[1]}" --deadline-minutes 255 2>&1 | tee logs/step.log
               ;;
           esac
       # After a failure too, so the checkpoints of a stopped run are kept for the next one
@@ -158,4 +187,6 @@ jobs:
             warehouse/features/sweden/futures_topics/run/metrics.json
             warehouse/features/sweden/futures_topics/run/cache/*/sweep.parquet
             warehouse/features/sweden/futures_topics/method.json
+            warehouse/features/experiments/registry/*/registry.json
+            frontend/public/data/cluster-experiments/
             frontend/public/data/sweden/futures/topics.json

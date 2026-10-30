@@ -1,0 +1,17 @@
+# Acceptance criteria for a Philosophy Lab candidate, fixed on 2026-10-29 before any final
+# evaluation ran (docs/cluster-experiments.md). Both runs are fitted on the evaluation side with
+# the evaluation seeds; the champion is the published pipeline refitted the same way.
+frozen_at: '2026-10-29'
+split_groups: [document_id]
+criteria:
+  - {name: stable across seeds, metric: seed_stability.ari_mean, at_least: 0.5}
+  - {name: at least five groups, metric: cluster_count, at_least: 5}
+  - {name: noise ceiling, metric: noise_share, direction: lower, at_most: 0.55}
+  - {name: work dominance not worse, metric: dominance.work.weighted_top_share, direction: lower, not_worse_than_champion: 0.02}
+  - {name: translator dominance not worse, metric: dominance.translator.weighted_top_share, direction: lower, not_worse_than_champion: 0.02}
+  - {name: separation not worse, metric: separation_representation, not_worse_than_champion: 0.03}
+  - name: a measured gain
+    any_of:
+      - {metric: dominance.work.weighted_top_share, direction: lower, better_than_champion: 0.05}
+      - {metric: dominance.translator.weighted_top_share, direction: lower, better_than_champion: 0.05}
+      - {metric: seed_stability.ari_mean, better_than_champion: 0.05}
