@@ -177,13 +177,16 @@ def final(args) -> None:
                                                                               'representation': rep})
         if label == CHAMPION[0]:
             registry.register(run, 'champion', 'published v4 pipeline refitted on the evaluation side')
+            champion = run
             continue
         entry = registry.register(run, 'candidate', 'chosen on the selection side')
         if entry['status'] == 'candidate' and 'acceptance' not in entry:
-            report = accept.check(run, registry.champion(), rules, sha)
+            # Every candidate is judged against the refitted v4 run; only the first to pass, in
+            # CANDIDATES order, is promoted.
+            report = accept.check(run, champion, rules, sha)
             status = registry.decide(run['run_id'], report)
             print(label, status, report['failed'])
-            if report['passed']:
+            if report['passed'] and registry.champion()['run_id'] == champion['run_id']:
                 registry.promote(run['run_id'], 'met every frozen criterion on the evaluation side')
     state = registry.load()
     print(json.dumps({r: {'status': e['status'], 'label': e['run'].get('label'),

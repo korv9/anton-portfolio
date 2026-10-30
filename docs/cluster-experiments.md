@@ -121,6 +121,55 @@ What the rerun showed:
   to a repro folder.
 - Symbol Lab and Replik were not compared row by row with their local runs.
 
+## Final on the runner (2026-10-30)
+
+`final` then ran from scratch on the runner for every domain, from main after #201, each under its
+own repro root (`repro:final-<domain>`). Each step was measured with GNU time. The stored
+registries did not change. For jobs, `select` ran first in the same job because the picks belong to
+a snapshot.
+
+| Domain         | Actions run | Step    | Time        | Peak memory |
+| -------------- | ----------- | ------- | ----------- | ----------- |
+| Philosophy Lab | 41022958155 | final   | 4 min 0 s   | 2.16 GB     |
+| Symbol Lab     | 41023837255 | prepare | 6 min 50 s  | 1.47 GB     |
+|                |             | final   | 11 min 41 s | 3.07 GB     |
+| Replik         | 41026327146 | final   | 50 min 52 s | 2.82 GB     |
+| Job ads        | 41032672311 | select  | 1 h 7 min   | 3.96 GB     |
+|                |             | final   | 30 min 40 s | 2.71 GB     |
+
+Every other `prepare` step took under 15 s and under 0.5 GB. Each run finished inside one 255-minute
+budget with no deadline stop.
+
+The runner reached a different decision from the local run in every domain. Each candidate is
+judged here against the refitted champion of the same run (`tmp/repro/compare.txt` locally):
+
+- Philosophy Lab: same dataset. K-means 10, the local registry champion, fails "separation not
+  worse": 0.026 against a champion at 0.061 with 0.03 allowed. bge-small passes and the repro promotes
+  it. HDBSCAN 40 is rejected as before, now on seed stability too (0.41).
+- Symbol Lab: same dataset. All three candidates pass against the refitted v4 run. Locally, all three
+  were rejected. The masked, book-centred run had separation 0.033 here against 0.008 locally. The
+  multilingual run had seed ARI 0.69 against 0.45 locally. These gaps are larger than the UMAP drift
+  in Philosophy Lab. One likely cause is that the local embeddings came from a GPU and these from a
+  CPU, but that was not tested.
+- Replik: same dataset. sbert-party, the local registry champion, fails "a measured gain" because
+  its party AMI gain is under 0.01. K-means 30 passes and the repro promotes it.
+- Job ads: a newer snapshot (2,869 ads, 2,793 after deduplication, dataset `d1e98b56ca7c43f7`), so
+  this is not a reproduction. Raw MiniLM-L12 K-means 8 and clean KBLab K-means 8 pass, and the first
+  is promoted. Raw TF-IDF HDBSCAN fails, with its largest group at 54 %.
+
+So the frozen margins are no wider than the difference between two machines running the same code
+on the same data. The promotions in the stored Philosophy Lab and Replik registries rest on one
+machine's numbers and do not reproduce. They stay as recorded and change no page. Before any page
+uses a registry champion, the decision needs a re-run on fixed hardware, or wider margins fixed in
+advance.
+
+The run also exposed a fault in Symbol Lab's `final`. It judged each candidate against the current
+registry champion, so after one promotion the next candidate was judged against the new champion.
+The repro registry shows three promotions in a row. The fault never fired locally, where nothing
+passed. `final` now judges every candidate against the refitted v4 run, like the other domains,
+and promotes only the first pass. Under that rule, the repro would have promoted the retuned
+HDBSCAN 50.
+
 ## Deviations, recorded after the final evaluations (2026-10-29)
 
 - Tie-break. The protocol did not say which candidate wins when two pass. In Philosophy Lab

@@ -39,10 +39,10 @@ the evaluation works.
 - Work-level split (`document_id`, split seed 0). `splits.check` found no leaks: no work and no text
   appears on both sides.
 
-| Side | Works | Passages | Sampled (≤200/work) |
-|---|---|---|---|
-| Selection | Hobbes, Kant, Kierkegaard, Marcus Aurelius, Plato, Spinoza | 4,394 | 1,200 |
-| Evaluation | Aristotle, Epictetus, Hume, Locke, Mill, Nietzsche, Rousseau | 3,401 | 1,400 |
+| Side       | Works                                                        | Passages | Sampled (≤200/work) |
+| ---------- | ------------------------------------------------------------ | -------- | ------------------- |
+| Selection  | Hobbes, Kant, Kierkegaard, Marcus Aurelius, Plato, Spinoza   | 4,394    | 1,200               |
+| Evaluation | Aristotle, Epictetus, Hume, Locke, Mill, Nietzsche, Rousseau | 3,401    | 1,400               |
 
 A work-level split is workable but thin, with 6 and 7 works per side. Dominance is measured within a side.
 
@@ -67,32 +67,32 @@ side, Hume, Locke and Mill share `original English`.
 
 Neighbour share (k=10, share of a passage's nearest neighbours from the same work; chance 0.167):
 
-| Embedding | raw | centred |
-|---|---|---|
-| MiniLM passage | 0.678 | 0.498 |
-| MiniLM chunks80 | 0.694 | 0.518 |
-| mpnet | 0.755 | 0.604 |
-| bge-small | 0.727 | 0.546 |
+| Embedding       | raw   | centred |
+| --------------- | ----- | ------- |
+| MiniLM passage  | 0.678 | 0.498   |
+| MiniLM chunks80 | 0.694 | 0.518   |
+| mpnet           | 0.755 | 0.604   |
+| bge-small       | 0.727 | 0.546   |
 
 Every model and unit is strongly organised by work. Centring cuts that by 0.15 to 0.18 and never
-gets near chance. Reading the whole passage (chunks80, mpnet, bge) *raises* same-work
+gets near chance. Reading the whole passage (chunks80, mpnet, bge) _raises_ same-work
 neighbours. The stronger English models pick up more of what makes each work and translation sound
 like itself.
 
 Selected rows (work top share; null p95 in brackets; "sil" = silhouette in the representation space):
 
-| Configuration | Groups | Noise | Seed ARI | Work top share | sil |
-|---|---|---|---|---|---|
-| **MiniLM centred HDBSCAN 25 (champion)** | 13 | 0.299 | 0.911 | 0.517 (0.243) | 0.047 |
-| MiniLM centred HDBSCAN 40 | 5 | 0.177 | 0.865 | 0.367 (0.212) | 0.034 |
-| MiniLM centred K-means 10 | 10 | 0 | 0.824 | 0.421 (0.223) | 0.024 |
-| MiniLM centred K-means 6 | 6 | 0 | 0.806 | 0.371 (0.209) | 0.029 |
-| MiniLM chunks80 centred HDBSCAN 25 | 15 | 0.332 | 0.952 | 0.541 (0.258) | 0.061 |
-| mpnet centred HDBSCAN 12 | 23 | 0.282 | 0.306 | 0.694 (0.275) | 0.058 |
-| mpnet centred K-means 6 | 6 | 0 | 0.885 | 0.432 (0.210) | 0.026 |
-| bge-small centred HDBSCAN 40 | 8 | 0.237 | 0.938 | 0.439 (0.235) | 0.027 |
-| bge-small raw HDBSCAN 25 | 13 | 0.315 | 0.889 | 0.911 (0.255) | 0.067 |
-| MiniLM raw HDBSCAN 25 | 10 | 0.212 | 0.948 | 0.693 (0.231) | 0.042 |
+| Configuration                            | Groups | Noise | Seed ARI | Work top share | sil   |
+| ---------------------------------------- | ------ | ----- | -------- | -------------- | ----- |
+| **MiniLM centred HDBSCAN 25 (champion)** | 13     | 0.299 | 0.911    | 0.517 (0.243)  | 0.047 |
+| MiniLM centred HDBSCAN 40                | 5      | 0.177 | 0.865    | 0.367 (0.212)  | 0.034 |
+| MiniLM centred K-means 10                | 10     | 0     | 0.824    | 0.421 (0.223)  | 0.024 |
+| MiniLM centred K-means 6                 | 6      | 0     | 0.806    | 0.371 (0.209)  | 0.029 |
+| MiniLM chunks80 centred HDBSCAN 25       | 15     | 0.332 | 0.952    | 0.541 (0.258)  | 0.061 |
+| mpnet centred HDBSCAN 12                 | 23     | 0.282 | 0.306    | 0.694 (0.275)  | 0.058 |
+| mpnet centred K-means 6                  | 6      | 0     | 0.885    | 0.432 (0.210)  | 0.026 |
+| bge-small centred HDBSCAN 40             | 8      | 0.237 | 0.938    | 0.439 (0.235)  | 0.027 |
+| bge-small raw HDBSCAN 25                 | 13     | 0.315 | 0.889    | 0.911 (0.255)  | 0.067 |
+| MiniLM raw HDBSCAN 25                    | 10     | 0.212 | 0.948    | 0.693 (0.231)  | 0.042 |
 
 All 48 rows are in `warehouse/features/experiments/philosophy/selection.json`.
 
@@ -115,30 +115,30 @@ stable but more work-dominated than the champion on HDBSCAN; mpnet, which was le
 Each run was fitted with `fit.evaluate_candidate` and judged with `accept.check` against the
 refitted champion (criteria sha256 is in each report).
 
-| Criterion | Champion (MiniLM centred HDBSCAN 25/8) | HDBSCAN 40 | K-means 10 | bge-small HDBSCAN 40 |
-|---|---|---|---|---|
-| Seed ARI ≥ 0.5 | 0.929 | 0.584 ✓ | 0.676 ✓ | 0.865 ✓ |
-| ≥ 5 groups | 14 | 6 ✓ | 10 ✓ | 9 ✓ |
-| Noise ≤ 0.55 | 0.366 | 0.231 ✓ | 0.000 ✓ | 0.354 ✓ |
-| Work top share, ≤ champion + 0.02 | 0.365 | 0.264 ✓ | 0.264 ✓ | 0.312 ✓ |
-| Translator top share, ≤ champion + 0.02 | 0.532 | 0.456 ✓ | 0.431 ✓ | 0.489 ✓ |
-| Separation (repr.), ≥ champion − 0.03 | 0.054 | 0.013 ✗ | 0.028 ✓ | 0.038 ✓ |
-| Gain ≥ 0.05 (work, translator or ARI) | – | work, translator ✓ | work, translator ✓ | work ✓ |
-| **Decision** | – | **rejected** | **passed, champion** | **passed, candidate** |
+| Criterion                               | Champion (MiniLM centred HDBSCAN 25/8) | HDBSCAN 40         | K-means 10           | bge-small HDBSCAN 40  |
+| --------------------------------------- | -------------------------------------- | ------------------ | -------------------- | --------------------- |
+| Seed ARI ≥ 0.5                          | 0.929                                  | 0.584 ✓            | 0.676 ✓              | 0.865 ✓               |
+| ≥ 5 groups                              | 14                                     | 6 ✓                | 10 ✓                 | 9 ✓                   |
+| Noise ≤ 0.55                            | 0.366                                  | 0.231 ✓            | 0.000 ✓              | 0.354 ✓               |
+| Work top share, ≤ champion + 0.02       | 0.365                                  | 0.264 ✓            | 0.264 ✓              | 0.312 ✓               |
+| Translator top share, ≤ champion + 0.02 | 0.532                                  | 0.456 ✓            | 0.431 ✓              | 0.489 ✓               |
+| Separation (repr.), ≥ champion − 0.03   | 0.054                                  | 0.013 ✗            | 0.028 ✓              | 0.038 ✓               |
+| Gain ≥ 0.05 (work, translator or ARI)   | –                                      | work, translator ✓ | work, translator ✓   | work ✓                |
+| **Decision**                            | –                                      | **rejected**       | **passed, champion** | **passed, candidate** |
 
 Measured alongside the criteria, not judged:
 
-| | Champion | HDBSCAN 40 | K-means 10 | bge-small |
-|---|---|---|---|---|
-| Work top share null p95 | 0.221 | 0.186 | 0.193 | 0.213 |
-| Translator top share null p95 | 0.467 | 0.449 | 0.429 | 0.463 |
-| Work AMI | 0.157 | 0.098 | 0.076 | 0.122 |
-| Groups mostly one work | 3 | 1 | 0 | 0 |
-| Language / genre top share | 0.545 / 0.579 | 0.468 / 0.461 | 0.456 / 0.489 | 0.489 / 0.533 |
-| Groups per seed | 14–16 | 5–10 | 10 | 7–9 |
-| Seed ARI min | 0.888 | 0.365 | 0.607 | 0.757 |
-| Largest group share | 0.124 | 0.471 | 0.136 | 0.148 |
-| Same-work neighbours (chance 0.143) | 0.386 | 0.386 | 0.386 | 0.439 |
+|                                     | Champion      | HDBSCAN 40    | K-means 10    | bge-small     |
+| ----------------------------------- | ------------- | ------------- | ------------- | ------------- |
+| Work top share null p95             | 0.221         | 0.186         | 0.193         | 0.213         |
+| Translator top share null p95       | 0.467         | 0.449         | 0.429         | 0.463         |
+| Work AMI                            | 0.157         | 0.098         | 0.076         | 0.122         |
+| Groups mostly one work              | 3             | 1             | 0             | 0             |
+| Language / genre top share          | 0.545 / 0.579 | 0.468 / 0.461 | 0.456 / 0.489 | 0.489 / 0.533 |
+| Groups per seed                     | 14–16         | 5–10          | 10            | 7–9           |
+| Seed ARI min                        | 0.888         | 0.365         | 0.607         | 0.757         |
+| Largest group share                 | 0.124         | 0.471         | 0.136         | 0.148         |
+| Same-work neighbours (chance 0.143) | 0.386         | 0.386         | 0.386         | 0.439         |
 
 **Tie-break.** Two candidates passed, and the protocol has no tie-break. In the first `final` run
 my promotion loop promoted each passing candidate in turn, so bge-small ended as champion. I
@@ -229,4 +229,5 @@ and `index.json`.
 - The passage cleaner's index and footnote leak is not fixed.
 - `select` was rerun from scratch in GitHub Actions (run 40998784012, 9 min 42 s, 3.57 GB peak). The
   embeddings matched; UMAP and HDBSCAN numbers drifted by up to a few hundredths. See
-  [Runner measurements](cluster-experiments.md#runner-measurements-2026-10-30). `final` has not run there.
+  [Runner measurements](cluster-experiments.md#runner-measurements-2026-10-30). `final` on the runner rejected K-means 10
+  and passed bge-small; see [Final on the runner](cluster-experiments.md#final-on-the-runner-2026-10-30).
