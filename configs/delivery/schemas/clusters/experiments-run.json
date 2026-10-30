@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "One cluster experiment run (ml/experiments/export.py run_file)",
+  "type": "object",
+  "required": ["schema_version", "run_id", "status", "acceptance", "run", "map", "groups"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "pattern": "^[0-9a-f]{16}$"},
+    "status": {"enum": ["candidate", "champion", "rejected"]},
+    "acceptance": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "object", "required": ["passed", "failed", "criteria", "criteria_sha256", "champion_run_id"],
+         "properties": {"criteria": {"type": "array", "items": {"type": "object", "required": ["passed"]}}}}
+      ]
+    },
+    "run": {
+      "type": "object",
+      "required": ["domain", "question", "corpus", "sample", "dataset_version", "pipeline", "seeds",
+                   "role", "metrics", "resources", "limitations", "created_at"],
+      "properties": {
+        "pipeline": {"type": "object", "required": ["text", "embedding", "representation", "reduction", "clustering"],
+                     "properties": {"embedding": {"type": "object", "required": ["model", "revision"]}}},
+        "seeds": {"type": "array", "minItems": 1},
+        "metrics": {"type": "object", "required": ["cluster_count", "noise_share"]},
+        "limitations": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "map": {
+      "type": "object",
+      "required": ["method", "note", "columns", "points"],
+      "properties": {
+        "columns": {"const": ["id", "x", "y", "cluster"]},
+        "points": {"type": "array", "maxItems": 3000,
+                   "items": {"type": "array", "prefixItems": [{"type": "string"}, {"type": "number"}, {"type": "number"}, {"type": "integer"}], "minItems": 4, "maxItems": 4}}
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["cluster", "key", "size", "name_status", "examples"],
+        "properties": {
+          "cluster": {"type": "integer", "minimum": 0},
+          "size": {"type": "integer", "minimum": 1},
+          "name_status": {"type": "string"},
+          "examples": {"type": "array", "items": {"type": "object", "required": ["id", "text"],
+                       "properties": {"text": {"type": "string", "maxLength": 300}}}}
+        }
+      }
+    }
+  }
+}

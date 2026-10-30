@@ -17,6 +17,8 @@ import './clusters.css'
 import SentencePlacer from './SentencePlacer'
 import ClusterGallery, { DATASETS } from './ClusterGallery'
 import PageHead from '../ui/PageHead'
+import { useRoute } from '../router'
+import Experiments, { EXPERIMENTS } from './experiments/Experiments'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -497,6 +499,24 @@ export function ProjectMaps({ ids }: { ids: string[] }) {
 type DebateRun = { observations: number; clusters: number; noise_share: number }
 
 export default function ClusterVisualsPage() {
+  const { path } = useRoute()
+  return path === EXPERIMENTS ? (
+    <div className="cv">
+      <PageHead
+        title={l('Clustering experiments', 'Klustringsexperiment')}
+        sentence={l(
+          'Every registered run that is not a champion, with its status, its map and how it compared.',
+          'Varje registrerad körning som inte är champion, med status, karta och jämförelse.',
+        )}
+      />
+      <Experiments all />
+    </div>
+  ) : (
+    <Gallery />
+  )
+}
+
+function Gallery() {
   const maps = MAPS()
   const debates = maps.find((spec) => spec.id === 'research-debates')!
   const [run, setRun] = useState<DebateRun | null>(null)
@@ -539,6 +559,7 @@ export default function ClusterVisualsPage() {
       />
       <SentencePlacer spec={debates} />
       <ClusterGallery />
+      <Experiments all={false} />
       {lab && <ClusterLab />}
     </div>
   )

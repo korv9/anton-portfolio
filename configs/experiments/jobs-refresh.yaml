@@ -1,0 +1,14 @@
+# Added 2026-10-29, after the first final evaluation, as a separately documented rule for retraining
+# the champion's exact pipeline on a newer snapshot (docs/cluster-experiments-jobs.md, Deviation).
+# It is not used to choose between different pipelines: those are judged by jobs.yaml, which stays
+# frozen. A refresh must keep the absolute floors and may not be worse than the champion on employer
+# dominance or separation; it needs no measured gain.
+frozen_at: '2026-10-29'
+split_groups: [employer]
+criteria:
+  - {name: stable across seeds, metric: seed_stability.ari_mean, at_least: 0.6}
+  - {name: at least five groups, metric: cluster_count, at_least: 5}
+  - {name: noise ceiling, metric: noise_share, direction: lower, at_most: 0.4}
+  - {name: no group over a third, metric: largest_cluster_share, direction: lower, at_most: 0.34}
+  - {name: employer dominance not worse, metric: dominance.employer.weighted_top_share, direction: lower, not_worse_than_champion: 0.02}
+  - {name: separation not worse, metric: separation_representation, not_worse_than_champion: 0.03}

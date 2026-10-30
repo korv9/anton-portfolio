@@ -207,7 +207,9 @@ export function pageOf(path: string): Page {
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
   if (SWEDEN_PATHS.includes(path)) return 'sweden'
-  if (path === '#cluster-visuals') return 'clusters'
+  // The page, and its candidates and rejected clustering runs (clusters/experiments).
+  if (path === '#cluster-visuals' || path === '#cluster-visuals-experiments')
+    return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
   // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
