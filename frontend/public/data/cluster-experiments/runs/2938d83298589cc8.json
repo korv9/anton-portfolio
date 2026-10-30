@@ -259,7 +259,8 @@
       "Evaluation side holds 7 of 13 works (1,400 sampled passages); every measure is on those works only.",
       "Translator is confounded with work: most works have their own translator, and three English originals share one value.",
       "Groups are computed, not interpreted; their terms are generated and unreviewed.",
-      "Champion refitted under the protocol (seeds 10-14, evaluation works only); its numbers differ from the published 13-work run."
+      "Champion refitted under the protocol (seeds 10-14, evaluation works only); its numbers differ from the published 13-work run.",
+      "CPU rerun: Not reproduced. In the rerun (Actions run 41022958155) this run failed \"separation not worse\" (0.026 against the champion's 0.061, 0.03 allowed), and bge-small passed instead. Its promotion rests on one machine's numbers."
     ],
     "created_at": "2026-10-29T22:31:09.968939+00:00",
     "label": "candidate: champion space, K-means k=10",

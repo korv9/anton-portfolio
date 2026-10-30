@@ -241,7 +241,8 @@
       "No hand-labelled literal/symbolic sample exists, so no model was fine-tuned and no group is validated.",
       "Group names are generated terms, unreviewed.",
       "Fitted on the evaluation half of the books only; the published map uses all books with seed 42.",
-      "English translations dominate; translator wording is part of what a book contributes."
+      "English translations dominate; translator wording is part of what a book contributes.",
+      "CPU rerun: Not reproduced. In the rerun (Actions run 41023837255) all three candidates passed every criterion against the refitted v4 run. The rejection rests on one machine's numbers."
     ],
     "created_at": "2026-10-29T21:51:14.344499+00:00",
     "run_id": "a224a1756ec00889"

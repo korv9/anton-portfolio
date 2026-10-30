@@ -15,6 +15,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import yaml
+
 from ml.cluster_lab.io import atomic_json, now, read_json
 from .contract import DOMAINS
 from .registry import EXPERIMENTS, REPRO, Registry
@@ -26,6 +28,9 @@ EXCERPT = 300
 MAX_POINTS = 3000
 SCHEMA_VERSION = 1
 SITE_PAGES = ('philosophy', 'symbolic', 'debates')
+# Reproduction notes per run (configs/experiments/reproduction.yaml), shown with its limitations.
+NOTES = Path(__file__).resolve().parents[2] / 'configs' / 'experiments' / 'reproduction.yaml'
+NOTE_PREFIX = 'CPU rerun: '
 COORDINATES = ('Coordinates come from this run\'s own 2-D UMAP fit. Maps of different runs are not '
                'aligned, so a position or a movement between two maps means nothing.')
 
@@ -63,7 +68,7 @@ def run_file(entry: dict, points: list[list], groups: list[dict], out: Path = OU
 
 def index(out: Path = OUT, root: Path | None = None) -> Path:
     """Rebuild index.json from every domain registry; only runs with a written run file are listed."""
-    domains = {}
+    domains, notes = {}, yaml.safe_load(NOTES.read_text(encoding='utf-8')) if NOTES.exists() else {}
     for domain in DOMAINS:
         state = Registry(domain, root).load()
         runs = []
@@ -80,6 +85,9 @@ def index(out: Path = OUT, root: Path | None = None) -> Path:
             sync = {'status': entry['status'], 'acceptance': entry.get('acceptance'),
                     'published_on_site_page': on_site, 'retired_at': entry.get('retired_at')}
             body = read_json(file)
+            note = (notes.get(domain) or {}).get(run_id)
+            kept = [t for t in body['run'].get('limitations', []) if not t.startswith(NOTE_PREFIX)]
+            sync['run'] = {**body['run'], 'limitations': [*kept, *([NOTE_PREFIX + note] if note else [])]}
             if any(body.get(k) != v for k, v in sync.items()):
                 atomic_json(file, {**body, **sync})
             run, m = entry['run'], entry['run']['metrics']
