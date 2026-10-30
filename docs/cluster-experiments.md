@@ -172,6 +172,14 @@ passed. `final` now judges every candidate against the refitted v4 run, like the
 and promotes only the first pass. Under that rule, the repro would have promoted the retuned
 HDBSCAN 50.
 
+A second runner rerun of `final` for Philosophy Lab and Symbol Lab (Actions runs 41051018576 and
+41051992370, repro labels `final-<domain>-b`) matched the first to four decimals in every count,
+noise share and seed ARI, and every acceptance verdict. The runner is therefore a fixed machine for
+this code: on it, bge-small passes in Philosophy Lab and all three Symbol Lab candidates pass
+against v4. Nothing was promoted from these runs. The criteria were frozen before any machine was
+named, so choosing the runner after seeing its results is a decision for the owner, not for the
+protocol. Replik and job ads were not rerun a second time.
+
 ## Deviations, recorded after the final evaluations (2026-10-29)
 
 - Tie-break. The protocol did not say which candidate wins when two pass. In Philosophy Lab
