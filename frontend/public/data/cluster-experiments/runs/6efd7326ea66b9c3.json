@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "6efd7326ea66b9c3",
-  "status": "candidate",
+  "status": "champion",
   "acceptance": null,
   "run": {
     "domain": "philosophy",

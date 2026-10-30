@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "e86ca4aa5f4e8a3d",
-  "status": "candidate",
+  "status": "champion",
   "acceptance": null,
   "run": {
     "domain": "debates",

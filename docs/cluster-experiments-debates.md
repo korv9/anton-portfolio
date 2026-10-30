@@ -15,7 +15,7 @@ nothing about whether the speakers agree.
   sentences closed at 80 words (minimum 40, maximum 150).
 - The prepared table is `warehouse/ml/experiments/debates/observations.parquet`, kept local. It holds
   `observation_id, text, text_masked, text_hash, text_hash_masked, debate_id, speaker, party, date,
-  year, decade, session, selection`. Dataset version `739d86311fb89c5f`.
+year, decade, session, selection`. Dataset version `739d86311fb89c5f`.
 - Split by `debate_id` with `ml/experiments/splits.py`, seed 0. The selection side has 16,531
   passages from 55 debates (`7871a2dc2c6aae04`). The evaluation side has 16,492 passages from 53
   debates (`72487eb4a4ab7433`). Leak check: no debate and no text on both sides.
@@ -50,21 +50,21 @@ and a candidate does not get these steps either. Its numbers are therefore not t
 
 ## Selection (selection side, seeds 0, 1, 2)
 
-| representation | clustering | groups | noise | largest | seed ARI | sil. repr. | party AMI | speaker AMI | debate top share | groups in ≥3 decades |
-|---|---|---|---|---|---|---|---|---|---|---|
-| sbert speaker-centred (champion) | HDBSCAN 150/25 | 27 | 0.253 | 0.116 | 0.917 | 0.089 | 0.050 | 0.140 | 0.128 | 26 |
-| sbert speaker-centred | HDBSCAN 150/10 | 17 | 0.108 | 0.416 | 0.689 | 0.013 | 0.045 | 0.131 | 0.102 | 17 |
-| sbert speaker-centred | HDBSCAN 300/25 | 17 | 0.235 | 0.126 | 0.993 | 0.102 | 0.045 | 0.130 | 0.117 | 17 |
-| sbert speaker-centred | K-means 30 on UMAP | 30 | 0 | 0.067 | 0.864 | 0.078 | 0.036 | 0.106 | 0.115 | 30 |
-| sbert speaker-centred | K-means 30 on 768-D | 30 | 0 | 0.054 | 0.645 | 0.091 | 0.023 | 0.083 | 0.102 | 30 |
-| sbert raw | HDBSCAN 150/25 | 14 | 0.060 | 0.481 | 0.996 | 0.073 | 0.053 | 0.090 | 0.074 | 14 |
-| sbert party-centred | HDBSCAN 150/25 | 27 | 0.236 | 0.114 | 0.990 | 0.082 | 0.048 | 0.107 | 0.104 | 26 |
-| sbert party-centred | HDBSCAN 300/25 | 16 | 0.196 | 0.139 | 0.996 | 0.109 | 0.042 | 0.093 | 0.089 | 16 |
-| sbert masked, speaker-centred | HDBSCAN 150/25 | 18 | 0.067 | 0.288 | 0.867 | 0.010 | 0.044 | 0.121 | 0.092 | 17 |
-| sbert masked, speaker-centred | K-means 30 on UMAP | 30 | 0 | 0.067 | 0.823 | 0.075 | 0.036 | 0.107 | 0.114 | 30 |
-| e5-base speaker-centred | HDBSCAN 150/25 | 2 | 0 | 0.949 | 1.000 | 0.044 | 0.005 | 0.100 | 0.063 | 2 |
-| e5-base speaker-centred | HDBSCAN 150/10 | 38 | 0.448 | 0.051 | 0.978 | 0.129 | 0.076 | 0.235 | 0.183 | 22 |
-| minilm speaker-centred | HDBSCAN 150/25 | 28 | 0.422 | 0.094 | 0.981 | 0.083 | 0.045 | 0.142 | 0.141 | 25 |
+| representation                   | clustering          | groups | noise | largest | seed ARI | sil. repr. | party AMI | speaker AMI | debate top share | groups in ≥3 decades |
+| -------------------------------- | ------------------- | ------ | ----- | ------- | -------- | ---------- | --------- | ----------- | ---------------- | -------------------- |
+| sbert speaker-centred (champion) | HDBSCAN 150/25      | 27     | 0.253 | 0.116   | 0.917    | 0.089      | 0.050     | 0.140       | 0.128            | 26                   |
+| sbert speaker-centred            | HDBSCAN 150/10      | 17     | 0.108 | 0.416   | 0.689    | 0.013      | 0.045     | 0.131       | 0.102            | 17                   |
+| sbert speaker-centred            | HDBSCAN 300/25      | 17     | 0.235 | 0.126   | 0.993    | 0.102      | 0.045     | 0.130       | 0.117            | 17                   |
+| sbert speaker-centred            | K-means 30 on UMAP  | 30     | 0     | 0.067   | 0.864    | 0.078      | 0.036     | 0.106       | 0.115            | 30                   |
+| sbert speaker-centred            | K-means 30 on 768-D | 30     | 0     | 0.054   | 0.645    | 0.091      | 0.023     | 0.083       | 0.102            | 30                   |
+| sbert raw                        | HDBSCAN 150/25      | 14     | 0.060 | 0.481   | 0.996    | 0.073      | 0.053     | 0.090       | 0.074            | 14                   |
+| sbert party-centred              | HDBSCAN 150/25      | 27     | 0.236 | 0.114   | 0.990    | 0.082      | 0.048     | 0.107       | 0.104            | 26                   |
+| sbert party-centred              | HDBSCAN 300/25      | 16     | 0.196 | 0.139   | 0.996    | 0.109      | 0.042     | 0.093       | 0.089            | 16                   |
+| sbert masked, speaker-centred    | HDBSCAN 150/25      | 18     | 0.067 | 0.288   | 0.867    | 0.010      | 0.044     | 0.121       | 0.092            | 17                   |
+| sbert masked, speaker-centred    | K-means 30 on UMAP  | 30     | 0     | 0.067   | 0.823    | 0.075      | 0.036     | 0.107       | 0.114            | 30                   |
+| e5-base speaker-centred          | HDBSCAN 150/25      | 2      | 0     | 0.949   | 1.000    | 0.044      | 0.005     | 0.100       | 0.063            | 2                    |
+| e5-base speaker-centred          | HDBSCAN 150/10      | 38     | 0.448 | 0.051   | 0.978    | 0.129      | 0.076     | 0.235       | 0.183            | 22                   |
+| minilm speaker-centred           | HDBSCAN 150/25      | 28     | 0.422 | 0.094   | 0.981    | 0.083      | 0.045     | 0.142       | 0.141            | 25                   |
 
 All 25 rows are in `warehouse/ml/experiments/debates/select.csv`, including per-decade noise and the
 null top shares. In every row the party and debate top shares are above the null p95: for the
@@ -100,28 +100,28 @@ Not chosen:
 Each run went through `fit.evaluate_candidate`. Centring is applied beforehand in
 `debates_data.centre` so that it follows the champion's rule; `fit` then only normalises.
 
-| criterion (frozen) | champion `e86ca4aa5f4e8a3d` | sbert-party `e6c6282cfce36e0c` | K-means `b33f92b181b8e676` | MiniLM `0da6b7b441331a17` |
-|---|---|---|---|---|
-| seed ARI ≥ 0.6 | 0.991 | 0.980 ✓ | 0.843 ✓ | 0.962 ✓ |
-| ≥ 5 groups | 28 | 23 ✓ | 30 ✓ | 22 ✓ |
-| noise ≤ 0.45 | 0.269 | 0.233 ✓ | 0.000 ✓ | 0.385 ✓ |
-| party AMI ≤ champion + 0.01 | 0.0637 | 0.0501 ✓ | 0.0492 ✓ | 0.0569 ✓ |
-| speaker AMI ≤ champion + 0.01 | 0.1204 | 0.0903 ✓ | 0.0981 ✓ | 0.1135 ✓ |
-| debate top share ≤ champion + 0.02 | 0.0941 | 0.0872 ✓ | 0.0905 ✓ | 0.0873 ✓ |
-| separation (repr.) ≥ champion − 0.03 | 0.0887 | 0.0823 ✓ | 0.0704 ✓ | 0.0893 ✓ |
-| a measured gain (ARI +0.05, separation +0.03 or party AMI −0.01) | none | party AMI −0.014 ✓ | party AMI −0.015 ✓ | none ✗ |
-| **result** | | **passed** | **passed** | **rejected** |
+| criterion (frozen)                                               | champion `e86ca4aa5f4e8a3d` | sbert-party `e6c6282cfce36e0c` | K-means `b33f92b181b8e676` | MiniLM `0da6b7b441331a17` |
+| ---------------------------------------------------------------- | --------------------------- | ------------------------------ | -------------------------- | ------------------------- |
+| seed ARI ≥ 0.6                                                   | 0.991                       | 0.980 ✓                        | 0.843 ✓                    | 0.962 ✓                   |
+| ≥ 5 groups                                                       | 28                          | 23 ✓                           | 30 ✓                       | 22 ✓                      |
+| noise ≤ 0.45                                                     | 0.269                       | 0.233 ✓                        | 0.000 ✓                    | 0.385 ✓                   |
+| party AMI ≤ champion + 0.01                                      | 0.0637                      | 0.0501 ✓                       | 0.0492 ✓                   | 0.0569 ✓                  |
+| speaker AMI ≤ champion + 0.01                                    | 0.1204                      | 0.0903 ✓                       | 0.0981 ✓                   | 0.1135 ✓                  |
+| debate top share ≤ champion + 0.02                               | 0.0941                      | 0.0872 ✓                       | 0.0905 ✓                   | 0.0873 ✓                  |
+| separation (repr.) ≥ champion − 0.03                             | 0.0887                      | 0.0823 ✓                       | 0.0704 ✓                   | 0.0893 ✓                  |
+| a measured gain (ARI +0.05, separation +0.03 or party AMI −0.01) | none                        | party AMI −0.014 ✓             | party AMI −0.015 ✓         | none ✗                    |
+| **result**                                                       |                             | **passed**                     | **passed**                 | **rejected**              |
 
 Further measures, not part of the criteria:
 
-| measure | champion | sbert-party | K-means | MiniLM |
-|---|---|---|---|---|
-| largest group | 0.150 | 0.154 | 0.072 | 0.100 |
-| silhouette, clustered space | 0.590 | 0.559 | 0.441 | 0.479 |
-| groups per seed | 26–29 | 23–29 | 30 | 21–22 |
-| noise 1990s / 2000s / 2010s / 2020s | .31/.26/.27/.26 | .30/.25/.23/.18 | 0 | .45/.40/.37/.38 |
-| groups in ≥ 3 decades (≥ 5% of the group) | 26/28 | 23/23 | 29/30 | 19/22 |
-| wall time / peak RSS (embed + 5 fits) | 306 s / 2.1 GB | 113 s / 2.2 GB | 106 s / 2.2 GB | 155 s / 2.9 GB |
+| measure                                   | champion        | sbert-party     | K-means        | MiniLM          |
+| ----------------------------------------- | --------------- | --------------- | -------------- | --------------- |
+| largest group                             | 0.150           | 0.154           | 0.072          | 0.100           |
+| silhouette, clustered space               | 0.590           | 0.559           | 0.441          | 0.479           |
+| groups per seed                           | 26–29           | 23–29           | 30             | 21–22           |
+| noise 1990s / 2000s / 2010s / 2020s       | .31/.26/.27/.26 | .30/.25/.23/.18 | 0              | .45/.40/.37/.38 |
+| groups in ≥ 3 decades (≥ 5% of the group) | 26/28           | 23/23           | 29/30          | 19/22           |
+| wall time / peak RSS (embed + 5 fits)     | 306 s / 2.1 GB  | 113 s / 2.2 GB  | 106 s / 2.2 GB | 155 s / 2.9 GB  |
 
 ### Decision
 
@@ -134,6 +134,12 @@ history shows promote, promote, demote and rollback.
 keeps seed ARI at 0.98, against 0.84 for K-means. The K-means run passed its report, but it shows
 as `rejected` because of the rollback, which is the only way the registry API could demote it. Its
 acceptance report still says passed.
+
+**Rolled back on 2026-10-30.** The CPU rerun of `final` on the runner failed sbert-party on "a
+measured gain" and passed K-means instead
+([Final on the runner](cluster-experiments.md#final-on-the-runner-2026-10-30)). A decision that
+flips between machines shows no improvement, so the registry champion is the original pipeline
+(`e86ca4aa5f4e8a3d`) again. sbert-party is a candidate with its local report.
 
 Caveat on the gain: the only gain either candidate showed is party AMI 0.014 lower. Centring on
 party removes each party's mean vector, so lower party AMI partly follows from how the
@@ -151,16 +157,16 @@ decision.
 
 From the exported sbert-party run (`frontend/public/data/cluster-experiments/runs/e6c6282cfce36e0c.json`):
 
-- The largest group (2,547 passages, terms *miljöpartiet, utsläppen, kärnkraft, energi*) is about
+- The largest group (2,547 passages, terms _miljöpartiet, utsläppen, kärnkraft, energi_) is about
   climate and energy. Its representatives are Kristersson (M) in 2022 and 2025 on climate policy
   and Åkesson (SD) in 2017 on Fridolin and climate. The borderline passage is Olofsson (C) in 2005
   on enterprise, so the group's edge runs into business policy.
-- The jobs group (959; *jobb, arbetslösheten*) has Reinfeldt (M) in 2007, Hägglund (KD) in 2007 and
+- The jobs group (959; _jobb, arbetslösheten_) has Reinfeldt (M) in 2007, Hägglund (KD) in 2007 and
   Persson (S) in 2004 on unemployment. Its borderline is Sjöstedt (V) in 2018 on sickness insurance.
-- The migration group (425; *migrationspolitik, flyktingar*) has Fridolin (MP) in 2011, Kristersson
+- The migration group (425; _migrationspolitik, flyktingar_) has Fridolin (MP) in 2011, Kristersson
   (M) in 2019 and Björklund (L) in 2013. Its borderline is Åkesson (SD) in 2012 on the Migration
   Agency.
-- Group 7 (929; *dig, mig, säga, tacka*) is replies and thanks, the same kind of rhetoric group that
+- Group 7 (929; _dig, mig, säga, tacka_) is replies and thanks, the same kind of rhetoric group that
   the 2026-10-12 reading found.
 - No group has one party in the majority. The highest party share is V at 0.47 in the housing group
   (99 passages).

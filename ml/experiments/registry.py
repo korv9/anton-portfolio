@@ -141,11 +141,12 @@ class Registry:
             state['runs'][original]['status'] = 'champion'
             state['history'].append({'at': now(), 'run_id': original, 'action': 'reinstate', 'reason': reason})
 
-    def rollback(self, reason: str, demote_to: str = 'rejected') -> str:
+    def rollback(self, reason: str, demote_to: str = 'rejected', to: str | None = None) -> str:
         """Restore the champion before the current one. Returns the restored run id.
 
         The current champion becomes `demote_to`: 'rejected' when it is broken, 'candidate' when
-        it was promoted by mistake and its passed acceptance report still stands."""
+        it was promoted by mistake and its passed acceptance report still stands. `to` names the
+        earlier champion to restore; by default it is the most recent one."""
         if demote_to not in ('rejected', 'candidate'):
             raise ValueError(f'cannot demote to {demote_to}')
         with self.edit() as state:
@@ -154,7 +155,8 @@ class Registry:
             current = next((r for r, e in state['runs'].items() if e['status'] == 'champion'), None)
             # A rejected run (an invalid input, a failed check) is never brought back.
             previous = next((r for r in reversed(promotions)
-                             if r != current and state['runs'][r]['status'] != 'rejected'), None)
+                             if r != current and state['runs'][r]['status'] != 'rejected'
+                             and r == (to or r)), None)
             if previous is None:
                 raise ValueError('no earlier champion to restore')
             if current:
