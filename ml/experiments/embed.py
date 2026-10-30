@@ -15,10 +15,9 @@ import numpy as np
 import pandas as pd
 
 from ml.cluster_lab.io import atomic_json, digest
+from .registry import EXPERIMENTS
 
-_REPRO = os.environ.get('EXPERIMENTS_REPRO', '').strip()
-ROOT = (Path(os.environ.get('PORTFOLIO_FEATURES') or Path(__file__).resolve().parents[2] / 'warehouse' / 'features')
-        / 'experiments' / (f'embeddings-repro-{_REPRO}' if _REPRO else 'embeddings'))
+ROOT = EXPERIMENTS / 'embeddings'
 
 
 def text_hash(text: str, text_version: str) -> str:

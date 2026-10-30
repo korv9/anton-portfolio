@@ -51,7 +51,7 @@ def groups(obs, rep: np.ndarray, labels: np.ndarray) -> list[dict]:
 
 def export_all(deadline) -> dict:
     obs = dbt.evaluation_side()
-    marks = runtime.Checkpoints(dbt.FOLDER / 'final')
+    marks = runtime.Checkpoints(dbt.RESULTS / 'final')
     state = Registry('debates').load()
     written = {}
     for label, (rep_name, _) in dbt.RUNS.items():
@@ -61,9 +61,9 @@ def export_all(deadline) -> dict:
         entry = state['runs'].get(run['run_id'])
         if entry is None:
             continue
-        labels = np.load(dbt.FOLDER / 'final' / f'{label}-labels.npy')
+        labels = np.load(dbt.RESULTS / 'final' / f'{label}-labels.npy')
         rep = sel.representation(obs, rep_name)
-        mpath = dbt.FOLDER / 'final' / f'{label}-map.npy'
+        mpath = dbt.RESULTS / 'final' / f'{label}-map.npy'
         if not mpath.exists():
             np.save(mpath, fit.reduce(rep, MAP, 10).astype(np.float32))
         xy = np.load(mpath)

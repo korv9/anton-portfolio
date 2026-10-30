@@ -28,11 +28,11 @@ import pandas as pd
 from ml.cluster_lab.io import atomic_json, atomic_parquet, digest, now, read_json
 from ml.jobs.prepare import TEXT_VERSION, semantic_text
 from .embed import text_hash
-from .registry import FEATURES, LOCAL
+from .registry import EXPERIMENTS, LOCAL
 
 ROOT = Path(__file__).resolve().parents[2]
 STORE = ROOT / 'warehouse' / 'raw' / 'job_assistant' / 'ads.json'
-OUT = FEATURES / 'experiments' / 'jobs'
+OUT = EXPERIMENTS / 'jobs'
 TEXTS = LOCAL / 'jobs'
 # v2 (2026-10-29): the store's contact-redaction placeholders are removed from every variant.
 RAW_VERSION = f'{TEXT_VERSION}+ja-raw-v2'

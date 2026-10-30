@@ -20,6 +20,7 @@ from . import debates_select as sel
 from .registry import Registry
 
 FOLDER = data.FOLDER
+RESULTS = data.RESULTS
 QUESTION = ('Which subjects do Swedish party leaders speak about in the party-leader debates, '
             'grouped by topic similarity (not by opinion)?')
 CORPUS = ('Riksdag party-leader debates 1993-2026 (108 debates, 10,148 speeches), passages of whole '
@@ -61,7 +62,7 @@ def evaluation_side():
 
 def final(deadline) -> dict:
     obs = evaluation_side()
-    marks = runtime.Checkpoints(FOLDER / 'final')
+    marks = runtime.Checkpoints(RESULTS / 'final')
     dataset = data.dataset_version(obs)
     confounders = {'party': obs.party.to_numpy(), 'speaker': obs.speaker.to_numpy(),
                    'debate': obs.debate_id.to_numpy()}
@@ -75,7 +76,7 @@ def final(deadline) -> dict:
             labels, _, metrics = fit.evaluate_candidate(
                 rep, {**pipe, 'representation': {'kind': 'raw'}}, EVAL_SEEDS, confounders)
             metrics['time'] = sel.time_coverage(labels, obs.decade.to_numpy())
-        np.save(FOLDER / 'final' / f'{label}-labels.npy', labels)
+        np.save(RESULTS / 'final' / f'{label}-labels.npy', labels)
         run = {'domain': 'debates', 'question': QUESTION, 'corpus': CORPUS, 'label': label,
                'sample': {'side': 'evaluation', 'observations': len(obs), 'debates': int(obs.debate_id.nunique())},
                'dataset_version': dataset, 'pipeline': pipe, 'seeds': EVAL_SEEDS, 'role': 'evaluation',
@@ -110,7 +111,7 @@ def decide(marks) -> dict:
             out[label] = {'status': status, 'failed': report['failed']}
         else:
             out[label] = {'status': entry['status'], 'failed': entry.get('acceptance', {}).get('failed')}
-    atomic_json(FOLDER / 'decision.json', out)
+    atomic_json(RESULTS / 'decision.json', out)
     return out
 
 
@@ -127,9 +128,9 @@ def main() -> None:
         return
     with runtime.heavy(wait_seconds=3600):
         if args.command == 'select':
-            results = sel.run(FOLDER, deadline)
+            results = sel.run(RESULTS, deadline)
             frame = sel.table(results)
-            frame.to_csv(FOLDER / 'select.csv', index=False)
+            frame.to_csv(RESULTS / 'select.csv', index=False)
             print(frame.round(3).to_string(index=False))
         elif args.command == 'final':
             print(json.dumps(final(deadline), indent=1))

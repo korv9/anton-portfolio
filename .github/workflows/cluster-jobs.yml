@@ -12,9 +12,9 @@ name: Run a heavy compute job
 #                   later batch needs no change here. The job-ad corpus behind Cluster Lab:
 #                   tree raw, path jobtech/cluster-corpus,
 #                   args ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
-#   experiments     the clustering experiments (docs/cluster-experiments.md), args '<domain> <step>',
-#                   domain philosophy|symbolic|jobs|debates, step select|final|export, and an
-#                   optional third word repro for a from-scratch refit in separate folders. It pulls the
+#   experiments     the clustering experiments (docs/cluster-experiments.md), args '<domain> <step[,step]>',
+#                   domain philosophy|symbolic|jobs|debates, steps select|final|export, and an
+#                   optional third word repro[:label] for a from-scratch refit in separate folders. It pulls the
 #                   warehouse, the shared features/experiments folder (registry, embeddings,
 #                   checkpoints; no source text) and the domain's source files, rebuilds the local
 #                   text table with `prepare`, runs the step with a deadline 30 minutes inside the
@@ -100,8 +100,8 @@ jobs:
           fi
           if [ "$JOB" = experiments ]; then
             read -ra parts <<< "$ARGS"
-            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)$ ]] || ! [[ "${parts[2]:-}" =~ ^(repro)?$ ]]; then
-              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <select|final|export> [repro]'"; exit 1
+            if ! [[ "${parts[0]:-}" =~ ^(philosophy|symbolic|jobs|debates)$ ]] || ! [[ "${parts[1]:-}" =~ ^(select|final|export)(,(select|final|export))*$ ]] || ! [[ "${parts[2]:-}" =~ ^(repro(:[A-Za-z0-9_-]+)?)?$ ]]; then
+              echo "::error::experiments args are '<philosophy|symbolic|jobs|debates> <step[,step]> [repro[:label]]', steps select, final, export"; exit 1
             fi
           fi
           if [ -n "$PUSH" ] && ! [[ "$PUSH" =~ ^[a-z0-9_-]+(/[a-z0-9_-]+)*$ ]]; then
@@ -152,11 +152,24 @@ jobs:
               ;;
             experiments)
               read -ra parts <<< "$ARGS"
-              python -m "ml.experiments.${parts[0]}" prepare 2>&1 | tee logs/prepare.log
-              # A third word 'repro' refits from scratch into separate folders (runtime.REPRO), so the
-              # runner's own CPU time and memory are measured without touching the stored results.
-              if [ "${parts[2]:-}" = repro ]; then export EXPERIMENTS_REPRO="$GITHUB_RUN_ID"; fi
-              python -m "ml.experiments.${parts[0]}" "${parts[1]}" --deadline-minutes 255 2>&1 | tee logs/step.log
+              # A third word 'repro' (or 'repro:<label>') refits from scratch under experiments/repro/<label>
+              # (registry.EXPERIMENTS): own registry, checkpoints, embeddings and exports, so the runner's
+              # time and memory are measured and stored results stay. A re-run keeps the run id, so it resumes.
+              case "${parts[2]:-}" in
+                repro) export EXPERIMENTS_REPRO="$GITHUB_RUN_ID" ;;
+                repro:*) export EXPERIMENTS_REPRO="${parts[2]#repro:}" ;;
+              esac
+              # GNU time records the peak resident memory of each step (largest single process).
+              timed() { if [ -x /usr/bin/time ]; then /usr/bin/time -v -o "logs/time-$1.txt" "${@:2}"; else "${@:2}"; fi; }
+              # Prepare and the steps share one budget of 255 minutes, inside the step's 265.
+              started=$(date +%s)
+              timed prepare python -m "ml.experiments.${parts[0]}" prepare 2>&1 | tee logs/prepare.log
+              IFS=, read -ra steps <<< "${parts[1]}"
+              for step in "${steps[@]}"; do
+                left=$(( 255 - ($(date +%s) - started) / 60 ))
+                timed "$step" python -m "ml.experiments.${parts[0]}" "$step" --deadline-minutes "$left" 2>&1 | tee "logs/step-$step.log"
+              done
+              grep -H -E 'Maximum resident|Elapsed \(wall' logs/time-*.txt || true
               ;;
           esac
       # After a failure too, so the checkpoints of a stopped run are kept for the next one

@@ -77,17 +77,33 @@ from main after #199. It was started with the third word `repro`, so checkpoints
 went to separate `-repro-<run id>` folders and nothing was resumed. `select` registers nothing, so
 the registries did not change. Times are the run step only; R2 pull and push add under a minute.
 
-| Domain | Actions run | Run step | Fits | Peak memory |
-|---|---|---|---|---|
-| Philosophy Lab | 40998784012 | 9 min 42 s | 48 | 3.57 GB |
-| Symbol Lab | 40999907253 | 16 min 12 s | 7 units | 3.11 GB |
-| Replik | 41001632612 | 2 h 12 min | 25 | not recorded |
-| Job ads | 41014204044 | 53 min 43 s | 37 | not recorded |
+| Domain         | Actions run | Run step    | Fits    | Peak memory  |
+| -------------- | ----------- | ----------- | ------- | ------------ |
+| Philosophy Lab | 40998784012 | 9 min 42 s  | 48      | 3.57 GB      |
+| Symbol Lab     | 40999907253 | 16 min 12 s | 7 units | 3.11 GB      |
+| Replik         | 41001632612 | 2 h 12 min  | 25      | not recorded |
+| Job ads        | 41014204044 | 53 min 43 s | 37      | not recorded |
 
 All four finished inside the 255-minute deadline. The longest Symbol Lab unit was the multilingual
 MiniLM context embedding, at 268 s. The Replik and job-ad select steps keep no per-fit resources
-in what they push. Replik's checkpoints hold text, so they stay in `warehouse/ml/experiments/` on
-the runner and are lost with it. Only its embeddings resume from R2.
+in what they push. In this round, the Replik and Symbol Lab checkpoints were still kept beside the
+prepared text in `warehouse/ml/experiments/`, so they were lost with the runner. They hold no text,
+though: the longest string in them is the corpus description. Only their embeddings resumed from R2.
+
+Two faults in this round, fixed afterwards:
+
+- The philosophy repro wrote its `selection.json` into the stored `philosophy/` folder and pushed it,
+  which replaced the local selection numbers in R2. The local file was rebuilt from the untouched
+  local checkpoints (`select` resumed all 48 fits in 3 s) and pushed again.
+- Replik and Symbol Lab checkpoints, labels, coordinates and decisions now live in
+  `features/experiments/<domain>/`, so they go to R2 and a stopped run resumes. Prepared text
+  stays local.
+
+A repro now uses one root, `features/experiments/repro/<label>/` (`registry.EXPERIMENTS`). The root
+holds its own registry, checkpoints, embeddings, summaries and exports. Nothing outside it changes,
+and `final` judges candidates against an empty registry of its own. In `cluster-jobs.yml` the
+args are `<domain> <step[,step]> [repro[:label]]`. GNU time records each step's peak memory. A
+re-run keeps the Actions run id and so resumes the same repro.
 
 What the rerun showed:
 
