@@ -77,12 +77,12 @@ from main after #199. It was started with the third word `repro`, so checkpoints
 went to separate `-repro-<run id>` folders and nothing was resumed. `select` registers nothing, so
 the registries did not change. Times are the run step only; R2 pull and push add under a minute.
 
-| Domain | Actions run | Run step | Fits | Peak memory |
-|---|---|---|---|---|
-| Philosophy Lab | 40998784012 | 9 min 42 s | 48 | 3.57 GB |
-| Symbol Lab | 40999907253 | 16 min 12 s | 7 units | 3.11 GB |
-| Replik | 41001632612 | 2 h 12 min | 25 | not recorded |
-| Job ads | 41014204044 | 53 min 43 s | 37 | not recorded |
+| Domain         | Actions run | Run step    | Fits    | Peak memory  |
+| -------------- | ----------- | ----------- | ------- | ------------ |
+| Philosophy Lab | 40998784012 | 9 min 42 s  | 48      | 3.57 GB      |
+| Symbol Lab     | 40999907253 | 16 min 12 s | 7 units | 3.11 GB      |
+| Replik         | 41001632612 | 2 h 12 min  | 25      | not recorded |
+| Job ads        | 41014204044 | 53 min 43 s | 37      | not recorded |
 
 All four finished inside the 255-minute deadline. The longest Symbol Lab unit was the multilingual
 MiniLM context embedding, at 268 s. The Replik and job-ad select steps keep no per-fit resources
