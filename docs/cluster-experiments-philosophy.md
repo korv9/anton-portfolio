@@ -18,6 +18,10 @@ separation and passed bge-small instead
 flips between machines shows no improvement, so the registry champion is the original pipeline
 (`6efd7326ea66b9c3`) again. K-means 10 is a candidate with its local report.
 
+**Runner decides, 2026-10-30.** The owner made the runner the deciding machine, and two runner
+runs agree, so the registry now holds the runner's decision
+([The runner decides](cluster-experiments.md#the-runner-decides-2026-10-30)).
+
 **The published Philosophy Atlas page does not change.** Promotion in
 `warehouse/features/experiments/registry/philosophy/registry.json` only marks a run as champion
 for Cluster Visuals. The site's atlas still comes from `platform/nlp/philosophy/pipeline.py`.
