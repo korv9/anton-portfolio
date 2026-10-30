@@ -1,38 +1,15 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-30T11:17:06.734239+00:00",
+  "generated_at": "2026-10-30T11:32:09.316184+00:00",
   "coordinates": "Coordinates come from this run's own 2-D UMAP fit. Maps of different runs are not aligned, so a position or a movement between two maps means nothing.",
   "domains": {
     "philosophy": {
-      "champion": "2938d83298589cc8",
+      "champion": "6efd7326ea66b9c3",
       "question": "Which groups of passages recur across the works of a 13-work philosophy corpus, and how far do they follow the work, translator, original language or genre instead?",
       "runs": [
         {
-          "run_id": "2938d83298589cc8",
-          "status": "champion",
-          "label": "candidate: champion space, K-means k=10",
-          "role": "evaluation",
-          "created_at": "2026-10-29T22:31:09.968939+00:00",
-          "dataset_version": "9b854dbced0fcc49",
-          "embedding": {
-            "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-            "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
-            "max_tokens": 128
-          },
-          "clustering": {
-            "method": "kmeans",
-            "k": 10
-          },
-          "cluster_count": 10,
-          "noise_share": 0.0,
-          "seed_ari": 0.6756748028333971,
-          "accepted": true,
-          "published_on_site_page": false,
-          "retired_at": "2026-10-29T22:31:40.746910+00:00"
-        },
-        {
           "run_id": "6efd7326ea66b9c3",
-          "status": "candidate",
+          "status": "champion",
           "label": "champion: published pipeline (MiniLM, work-centred, HDBSCAN 25/8)",
           "role": "evaluation",
           "created_at": "2026-10-29T22:30:25.573290+00:00",
@@ -77,6 +54,29 @@
           "accepted": false,
           "published_on_site_page": false,
           "retired_at": null
+        },
+        {
+          "run_id": "2938d83298589cc8",
+          "status": "candidate",
+          "label": "candidate: champion space, K-means k=10",
+          "role": "evaluation",
+          "created_at": "2026-10-29T22:31:09.968939+00:00",
+          "dataset_version": "9b854dbced0fcc49",
+          "embedding": {
+            "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+            "max_tokens": 128
+          },
+          "clustering": {
+            "method": "kmeans",
+            "k": 10
+          },
+          "cluster_count": 10,
+          "noise_share": 0.0,
+          "seed_ari": 0.6756748028333971,
+          "accepted": true,
+          "published_on_site_page": false,
+          "retired_at": "2026-10-29T22:31:40.746910+00:00"
         },
         {
           "run_id": "f367c26d34300562",
@@ -439,37 +439,12 @@
       ]
     },
     "debates": {
-      "champion": "e6c6282cfce36e0c",
+      "champion": "e86ca4aa5f4e8a3d",
       "question": "Which subjects do Swedish party leaders speak about in the party-leader debates, grouped by topic similarity (not by opinion)?",
       "runs": [
         {
-          "run_id": "e6c6282cfce36e0c",
-          "status": "champion",
-          "label": "sbert-party",
-          "role": "evaluation",
-          "created_at": "2026-10-29T22:03:39.528774+00:00",
-          "dataset_version": "72487eb4a4ab7433",
-          "embedding": {
-            "model": "KBLab/sentence-bert-swedish-cased",
-            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
-            "prefix": ""
-          },
-          "clustering": {
-            "method": "hdbscan",
-            "min_cluster_size": 0.004542,
-            "min_samples": 25,
-            "selection": "eom"
-          },
-          "cluster_count": 23,
-          "noise_share": 0.23302207130730052,
-          "seed_ari": 0.9804106924013485,
-          "accepted": true,
-          "published_on_site_page": false,
-          "retired_at": "2026-10-29T22:08:01.257804+00:00"
-        },
-        {
           "run_id": "e86ca4aa5f4e8a3d",
-          "status": "candidate",
+          "status": "champion",
           "label": "champion",
           "role": "evaluation",
           "created_at": "2026-10-29T22:01:46.086521+00:00",
@@ -491,6 +466,31 @@
           "accepted": null,
           "published_on_site_page": true,
           "retired_at": "2026-10-29T22:08:01.228600+00:00"
+        },
+        {
+          "run_id": "e6c6282cfce36e0c",
+          "status": "candidate",
+          "label": "sbert-party",
+          "role": "evaluation",
+          "created_at": "2026-10-29T22:03:39.528774+00:00",
+          "dataset_version": "72487eb4a4ab7433",
+          "embedding": {
+            "model": "KBLab/sentence-bert-swedish-cased",
+            "revision": "6b5e83cd29c03729cfdc33d13b1423399b0efb5c",
+            "prefix": ""
+          },
+          "clustering": {
+            "method": "hdbscan",
+            "min_cluster_size": 0.004542,
+            "min_samples": 25,
+            "selection": "eom"
+          },
+          "cluster_count": 23,
+          "noise_share": 0.23302207130730052,
+          "seed_ari": 0.9804106924013485,
+          "accepted": true,
+          "published_on_site_page": false,
+          "retired_at": "2026-10-29T22:08:01.257804+00:00"
         },
         {
           "run_id": "b33f92b181b8e676",

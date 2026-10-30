@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "run_id": "2938d83298589cc8",
-  "status": "champion",
+  "status": "candidate",
   "acceptance": {
     "passed": true,
     "failed": [],
@@ -260,7 +260,7 @@
       "Translator is confounded with work: most works have their own translator, and three English originals share one value.",
       "Groups are computed, not interpreted; their terms are generated and unreviewed.",
       "Champion refitted under the protocol (seeds 10-14, evaluation works only); its numbers differ from the published 13-work run.",
-      "CPU rerun: Not reproduced. In the rerun (Actions run 41022958155) this run failed \"separation not worse\" (0.026 against the champion's 0.061, 0.03 allowed), and bge-small passed instead. Its promotion rests on one machine's numbers."
+      "CPU rerun: Not reproduced. In the rerun (Actions run 41022958155) this run failed \"separation not worse\" (0.026 against the champion's 0.061, 0.03 allowed), and bge-small passed instead. Its promotion rested on one machine's numbers and was rolled back on 2026-10-30; the original champion is restored."
     ],
     "created_at": "2026-10-29T22:31:09.968939+00:00",
     "label": "candidate: champion space, K-means k=10",

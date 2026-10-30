@@ -12,6 +12,12 @@ champion is now **K-means k=10 on the champion's own space** (run `2938d83298589
 bge-small candidate (`f367c26d34300562`) also passed and stays a candidate. The HDBSCAN
 min_cluster_size 40 candidate (`426875670a55f5f2`) was rejected on separation.
 
+**Rolled back on 2026-10-30.** The CPU rerun of `final` on the runner rejected K-means 10 on
+separation and passed bge-small instead
+([Final on the runner](cluster-experiments.md#final-on-the-runner-2026-10-30)). A decision that
+flips between machines shows no improvement, so the registry champion is the original pipeline
+(`6efd7326ea66b9c3`) again. K-means 10 is a candidate with its local report.
+
 **The published Philosophy Atlas page does not change.** Promotion in
 `warehouse/features/experiments/registry/philosophy/registry.json` only marks a run as champion
 for Cluster Visuals. The site's atlas still comes from `platform/nlp/philosophy/pipeline.py`.

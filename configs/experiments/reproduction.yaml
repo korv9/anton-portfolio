@@ -6,7 +6,7 @@ philosophy:
   2938d83298589cc8: >-
     Not reproduced. In the rerun (Actions run 41022958155) this run failed "separation not
     worse" (0.026 against the champion's 0.061, 0.03 allowed), and bge-small passed instead. Its
-    promotion rests on one machine's numbers.
+    promotion rested on one machine's numbers and was rolled back on 2026-10-30; the original champion is restored.
   f367c26d34300562: >-
     In the rerun (Actions run 41022958155) this run passed every criterion and was the one
     promoted there.
@@ -15,7 +15,7 @@ philosophy:
 debates:
   e6c6282cfce36e0c: >-
     Not reproduced. In the rerun (Actions run 41026327146) this run failed "a measured gain",
-    and K-means 30 was promoted instead. Its promotion rests on one machine's numbers.
+    and K-means 30 was promoted instead. Its promotion rested on one machine's numbers and was rolled back on 2026-10-30; the original champion is restored.
   b33f92b181b8e676: >-
     In the rerun (Actions run 41026327146) this run passed every criterion and was the one
     promoted there.

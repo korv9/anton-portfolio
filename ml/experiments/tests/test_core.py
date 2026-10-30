@@ -180,6 +180,19 @@ def test_rollback_can_keep_a_mistaken_champion_as_candidate(tmp_path):
     assert state[second['run_id']]['status'] == 'candidate' and state[first['run_id']]['status'] == 'champion'
 
 
+def test_rollback_to_a_named_earlier_champion(tmp_path):
+    reg = Registry('jobs', tmp_path)
+    first, second, third = make_run(seeds=(0,)), make_run(seeds=(0, 1)), make_run(seeds=(0, 1, 2))
+    reg.register(first, 'champion', 'published')
+    for run in (second, third):
+        reg.register(run)
+        reg.decide(run['run_id'], {'passed': True, 'failed': []})
+        reg.promote(run['run_id'], 'passed')
+    assert reg.rollback('not reproduced', demote_to='candidate', to=first['run_id']) == first['run_id']
+    state = reg.load()['runs']
+    assert [state[r['run_id']]['status'] for r in (first, second, third)] == ['champion', 'candidate', 'candidate']
+
+
 def test_rollback_skips_rejected_and_reinstate_withdraws_invalid(tmp_path):
     reg = Registry('jobs', tmp_path)
     a, b, c = make_run(seeds=(0,)), make_run(seeds=(0, 1)), make_run(seeds=(0, 1, 2))

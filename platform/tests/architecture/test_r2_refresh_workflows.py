@@ -56,7 +56,9 @@ def bash():
     if os.name == "nt":
         git = shutil.which("git")
         if git:
-            candidate = str(Path(git).resolve().parents[1] / "bin/bash.exe")
+            # git.exe sits in Git/cmd or, under Git Bash, Git/mingw64/bin; bash.exe is in Git/bin.
+            found = [p / "bin/bash.exe" for p in Path(git).resolve().parents if (p / "bin/bash.exe").is_file()]
+            candidate = str(found[0]) if found else candidate
     assert candidate and Path(candidate).is_file(), "Bash is needed to verify runner error handling"
     return candidate
 
