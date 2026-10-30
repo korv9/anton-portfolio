@@ -141,6 +141,10 @@ measured gain" and passed K-means instead
 flips between machines shows no improvement, so the registry champion is the original pipeline
 (`e86ca4aa5f4e8a3d`) again. sbert-party is a candidate with its local report.
 
+**Runner decides, 2026-10-30.** The owner made the runner the deciding machine, and two runner
+runs agree, so the registry now holds the runner's decision
+([The runner decides](cluster-experiments.md#the-runner-decides-2026-10-30)).
+
 Caveat on the gain: the only gain either candidate showed is party AMI 0.014 lower. Centring on
 party removes each party's mean vector, so lower party AMI partly follows from how the
 representation is built rather than being an independent finding. K-means gets its lower AMI while

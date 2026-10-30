@@ -180,6 +180,28 @@ against v4. Nothing was promoted from these runs. The criteria were frozen befor
 named, so choosing the runner after seeing its results is a decision for the owner, not for the
 protocol. Replik and job ads were not rerun a second time.
 
+## The runner decides (2026-10-30)
+
+The owner chose the runner as the machine that decides. A second runner run of Replik's `final`
+(Actions run 41073947884, label `final-debates-b`) matched the first in all 34 metrics of every
+run, to four decimals, with the same verdicts. The stored registries of Philosophy Lab, Symbol Lab
+and Replik are now the runner's repro registries. Each earlier local registry is kept beside it as
+`registry-local-2026-10-29.json`. The run files in Cluster Visuals now come from the runner export
+(same run ids), and each run whose decision differed carries the local result as a "Local run"
+limitation (`configs/experiments/reproduction.yaml`).
+
+| Domain         | Registry champion                                | Run id             |
+| -------------- | ------------------------------------------------ | ------------------ |
+| Philosophy Lab | bge-small-en-v1.5, work-centred, HDBSCAN 40/8    | `f367c26d34300562` |
+| Symbol Lab     | retuned HDBSCAN (mcs 50)                         | `a224a1756ec00889` |
+| Replik         | KBLab sentence-BERT, speaker-centred, K-means 30 | `b33f92b181b8e676` |
+| Job ads        | unchanged; the runner used a newer snapshot      | `a35140926c6bf532` |
+
+The Symbol Lab repro registry held the three chained promotions from the old `final`. It was
+rolled back to the first pass (`Registry.rollback` with `to`, the later two kept as candidates),
+which is what the fixed `final` promotes. As before, no site page changed: each page still
+publishes its existing pipeline.
+
 ## Deviations, recorded after the final evaluations (2026-10-29)
 
 - Tie-break. The protocol did not say which candidate wins when two pass. In Philosophy Lab

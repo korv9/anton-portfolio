@@ -30,7 +30,7 @@ SCHEMA_VERSION = 1
 SITE_PAGES = ('philosophy', 'symbolic', 'debates')
 # Reproduction notes per run (configs/experiments/reproduction.yaml), shown with its limitations.
 NOTES = Path(__file__).resolve().parents[2] / 'configs' / 'experiments' / 'reproduction.yaml'
-NOTE_PREFIX = 'CPU rerun: '
+NOTE_PREFIX = 'Local run: '
 COORDINATES = ('Coordinates come from this run\'s own 2-D UMAP fit. Maps of different runs are not '
                'aligned, so a position or a movement between two maps means nothing.')
 

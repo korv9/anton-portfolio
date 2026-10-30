@@ -4,6 +4,11 @@ Run on 2026-10-29 under the shared protocol in [cluster-experiments.md](cluster-
 with the frozen criteria in `configs/experiments/symbolic.yaml`. Code: `ml/experiments/symbolic.py`,
 `symbolic_data.py`, `symbolic_fit.py`; tests in `ml/experiments/tests/test_symbolic.py`.
 
+**Superseded on 2026-10-30.** The runner is now the deciding machine. There all three candidates
+pass against the refitted v4 run, and the retuned HDBSCAN (mcs 50, `a224a1756ec00889`) is the
+registry champion ([The runner decides](cluster-experiments.md#the-runner-decides-2026-10-30)).
+The local decision below is kept as the record of the local run.
+
 **Decision: the champion stays.** All three candidates were rejected on the evaluation side. The
 registry (`warehouse/features/experiments/registry/symbolic/registry.json`) holds the champion and
 the three rejected runs with their acceptance reports. Nothing here changes the published Symbol
