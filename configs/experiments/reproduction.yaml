@@ -1,0 +1,29 @@
+# Results of the from-scratch reruns of `final` on a standard Ubuntu runner (CPU, 2026-10-30).
+# Each run's own Actions run and repro registry: features/experiments/repro/final-<domain>/.
+# ml/experiments/export.index adds a note to the run's limitations on Cluster Visuals.
+# Job ads are left out: the rerun used a newer snapshot, so it is not a reproduction.
+philosophy:
+  2938d83298589cc8: >-
+    Not reproduced. In the rerun (Actions run 41022958155) this run failed "separation not
+    worse" (0.026 against the champion's 0.061, 0.03 allowed), and bge-small passed instead. Its
+    promotion rests on one machine's numbers.
+  f367c26d34300562: >-
+    In the rerun (Actions run 41022958155) this run passed every criterion and was the one
+    promoted there.
+  426875670a55f5f2: >-
+    The rerun (Actions run 41022958155) rejected it as well, on seed stability and separation.
+debates:
+  e6c6282cfce36e0c: >-
+    Not reproduced. In the rerun (Actions run 41026327146) this run failed "a measured gain",
+    and K-means 30 was promoted instead. Its promotion rests on one machine's numbers.
+  b33f92b181b8e676: >-
+    In the rerun (Actions run 41026327146) this run passed every criterion and was the one
+    promoted there.
+  0da6b7b441331a17: >-
+    The rerun (Actions run 41026327146) rejected it as well, on "a measured gain".
+symbolic:
+  a224a1756ec00889: &symbolic >-
+    Not reproduced. In the rerun (Actions run 41023837255) all three candidates passed every
+    criterion against the refitted v4 run. The rejection rests on one machine's numbers.
+  e979b39bc35131e3: *symbolic
+  d27a70b3ae032d57: *symbolic

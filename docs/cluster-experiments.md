@@ -159,7 +159,8 @@ judged here against the refitted champion of the same run (`tmp/repro/compare.tx
 
 So the frozen margins are no wider than the difference between two machines running the same code
 on the same data. The promotions in the stored Philosophy Lab and Replik registries rest on one
-machine's numbers and do not reproduce. They stay as recorded and change no page. Before any page
+machine's numbers and do not reproduce. They stay as recorded and change no page. Cluster Visuals
+shows the rerun result in the limitations of each affected run (`configs/experiments/reproduction.yaml`). Before any page
 uses a registry champion, the decision needs a re-run on fixed hardware, or wider margins fixed in
 advance.
 

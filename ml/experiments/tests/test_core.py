@@ -112,6 +112,20 @@ def test_export_lists_status_and_caps_text(tmp_path):
     assert index['domains']['jobs']['champion'] == run['run_id']
 
 
+def test_reproduction_note_joins_limitations_once(tmp_path, monkeypatch):
+    reg = Registry('jobs', tmp_path / 'reg')
+    run = make_run()
+    reg.register(run, 'champion', 'seed')
+    export.run_file(reg.load()['runs'][run['run_id']], [['a', 0.1, 0.2, 0]], [], tmp_path / 'out')
+    notes = tmp_path / 'notes.yaml'
+    notes.write_text(f"jobs:\n  {run['run_id']}: did not reproduce\n")
+    monkeypatch.setattr(export, 'NOTES', notes)
+    export.index(tmp_path / 'out', tmp_path / 'reg')
+    export.index(tmp_path / 'out', tmp_path / 'reg')
+    body = json.loads((tmp_path / 'out' / 'runs' / f"{run['run_id']}.json").read_text())
+    assert body['run']['limitations'].count(export.NOTE_PREFIX + 'did not reproduce') == 1
+
+
 def test_embedding_cache_reuses_and_invalidates(tmp_path):
     from ml.experiments import embed
     calls = []
