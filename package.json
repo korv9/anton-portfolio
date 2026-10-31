@@ -89,7 +89,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.55.0",
-    "@types/node": "^20.19.43",
+    "@types/node": "^26.6.5",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@types/three": "0.169.0",
