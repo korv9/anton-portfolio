@@ -6,7 +6,7 @@ duckdb==1.5.5
 requests==2.34.2
 pypdf==6.21.2           # official Riksdag PDFs when documentstatus has no HTML
 pytest==9.1.1
-pandas==3.0.6            # ingest (budget, outturn, votes, policy), legacy builders
+pandas==3.1.0            # ingest (budget, outturn, votes, policy), legacy builders
 pyarrow==25.0.1          # publish/build_parquet.py
 PyYAML==6.0.3            # legacy/build_politics.py, packages/meaningquality
 snowballstemmer==3.1.1   # nlp/issue_lexicon.py, legacy/build_report_audits.py
