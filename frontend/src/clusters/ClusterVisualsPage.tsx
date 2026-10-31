@@ -19,6 +19,8 @@ import ClusterGallery, { DATASETS } from './ClusterGallery'
 import PageHead from '../ui/PageHead'
 import { useRoute } from '../router'
 import Experiments, { EXPERIMENTS } from './experiments/Experiments'
+import GatedModels from './GatedModels'
+import Atlas from './Atlas'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -559,7 +561,9 @@ function Gallery() {
       />
       <SentencePlacer spec={debates} />
       <ClusterGallery />
+      <Atlas />
       <Experiments all={false} />
+      <GatedModels />
       {lab && <ClusterLab />}
     </div>
   )

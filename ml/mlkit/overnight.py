@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from mlkit import cards
-from mlkit.tasks import policy_area, polarization, seniority
+from mlkit.tasks import government_defeat, policy_area, polarization, reply, seniority
 
 ROOT = Path(__file__).resolve().parents[2]
 RUNS = ROOT / "ml/runs"
@@ -31,6 +31,8 @@ JOBS = [
     ("policy_area", policy_area.run),
     ("polarization", polarization.run),
     ("seniority", seniority.run),
+    ("government_defeat", government_defeat.run),
+    ("reply", reply.run),
     # sou_map waits for SOU ingestion; adding it here is the only change needed.
 ]
 

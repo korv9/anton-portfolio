@@ -4,6 +4,7 @@
  */
 import { l } from '../i18n'
 import { ok, unread, useFile } from './techData'
+import './tech.css'
 
 type Result = {
   model: string
@@ -39,6 +40,20 @@ const COPY: Record<string, () => [string, string]> = {
       'KB-BERT måste slå TF-IDF med mer än bredden på TF-IDF:s 95-procentsintervall. Den når högre, men intervallen överlappar, så den billigare modellen står kvar och inget publiceras från den här.',
     ),
   ],
+  government_defeat: () => [
+    l('Roll calls the government loses', 'Voteringar som regeringen förlorar'),
+    l(
+      'Rank defeats within each session better than the committee prior, with the lower bound of the paired bootstrap difference above zero. It ranks them at 0.68 against 0.53, so the per-session result is published.',
+      'Rangordna nederlagen inom varje riksmöte bättre än utskottets grundfrekvens, med nedre gränsen för den parade bootstrapskillnaden över noll. Den når 0,68 mot 0,53, så resultatet per riksmöte publiceras.',
+    ),
+  ],
+  reply: () => [
+    l('Speeches that draw a reply', 'Anföranden som får replik'),
+    l(
+      'The opening words must add more than 0.01 AUC to party and place in the speaking order, judged by the lower bound of the paired bootstrap difference. They add 0.016, with a lower bound of 0.008, so nothing is published.',
+      'Inledningsorden måste lägga till mer än 0,01 i AUC utöver parti och plats i talarordningen, bedömt på nedre gränsen för den parade bootstrapskillnaden. De lägger till 0,016 med nedre gräns 0,008, så inget publiceras.',
+    ),
+  ],
   seniority: () => [
     l('Junior share of job adverts', 'Juniorandel av platsannonser'),
     l(
@@ -65,51 +80,54 @@ function Interval({ r }: { r: Result }) {
   )
 }
 
-export function ModelCards() {
+/** `passedOnly` lists only models whose gate passed, for pages that show published results. */
+export function ModelCards({ passedOnly = false }: { passedOnly?: boolean }) {
   const cards = useFile<Card[]>('ml/models.json')
   if (!ok(cards)) return unread
   return (
     <ul className="model-cards">
-      {cards.map((c) => {
-        const [title, gate] = COPY[c.task]?.() ?? [c.purpose, '']
-        return (
-          <li key={c.task} className="model-card">
-            <h3>{title}</h3>
-            <p
-              className={`model-verdict ${c.gate_passed ? 'is-pass' : 'is-held'}`}
-            >
-              {c.gate_passed
-                ? l('Gate passed: shipped', 'Spärren klarad: publicerad')
-                : l('Held by its gate', 'Stoppad av sin spärr')}
-            </p>
-            <dl className="model-results">
-              {c.results.map((r) => (
-                <div key={`${r.model}-${r.metric}`}>
-                  <dt>
-                    {r.model} · {r.metric}
-                  </dt>
-                  <dd>
-                    <span className="model-value">{fmt(r.value)}</span>
-                    {r.interval && (
-                      <span className="tech-meta">
-                        {' '}
-                        {l('95% CI', '95 % KI')} {r.interval}
-                      </span>
-                    )}
-                    <Interval r={r} />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <p className="tech-note">
-              <strong>{l('Gate', 'Spärr')}:</strong> {gate}
-            </p>
-            <p className="tech-meta">
-              <a href={c.card_url}>{l('Model card', 'Modellkort')}</a>
-            </p>
-          </li>
-        )
-      })}
+      {cards
+        .filter((c) => !passedOnly || c.gate_passed)
+        .map((c) => {
+          const [title, gate] = COPY[c.task]?.() ?? [c.purpose, '']
+          return (
+            <li key={c.task} className="model-card">
+              <h3>{title}</h3>
+              <p
+                className={`model-verdict ${c.gate_passed ? 'is-pass' : 'is-held'}`}
+              >
+                {c.gate_passed
+                  ? l('Gate passed: shipped', 'Spärren klarad: publicerad')
+                  : l('Held by its gate', 'Stoppad av sin spärr')}
+              </p>
+              <dl className="model-results">
+                {c.results.map((r) => (
+                  <div key={`${r.model}-${r.metric}`}>
+                    <dt>
+                      {r.model} · {r.metric}
+                    </dt>
+                    <dd>
+                      <span className="model-value">{fmt(r.value)}</span>
+                      {r.interval && (
+                        <span className="tech-meta">
+                          {' '}
+                          {l('95% CI', '95 % KI')} {r.interval}
+                        </span>
+                      )}
+                      <Interval r={r} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="tech-note">
+                <strong>{l('Gate', 'Spärr')}:</strong> {gate}
+              </p>
+              <p className="tech-meta">
+                <a href={c.card_url}>{l('Model card', 'Modellkort')}</a>
+              </p>
+            </li>
+          )
+        })}
     </ul>
   )
 }

@@ -51,7 +51,17 @@ def _polarization(job_dir: Path, result: dict) -> dict:
     }
 
 
-PAYLOADS = {"polarization": _polarization}
+def _government_defeat(job_dir: Path, result: dict) -> dict:
+    detail = json.loads((job_dir / "detail.json").read_text(encoding="utf-8"))
+    return {
+        "sessions": [{**row, "auc": round(row["auc"], 4)} for row in detail["per_session"]],
+        "baseline": result["best_baseline"],
+        "terms": detail["terms"],
+        "permutation_p": detail["permutation"]["p_value"],
+    }
+
+
+PAYLOADS = {"polarization": _polarization, "government_defeat": _government_defeat}
 
 
 def read_card(path: Path) -> dict:
