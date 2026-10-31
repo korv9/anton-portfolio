@@ -15,4 +15,4 @@ openpyxl==3.1.5          # ingest/jobtech/export_presentation.py
 jsonschema==4.26.0       # publish/release.py, publish/summarize_news.py
 dbt-semantic-interfaces==0.10.5  # publish/validate_semantic_layer.py (MetricFlow's validator)
 scikit-learn==1.9.1      # publish/drugcomb_ml.py, publish/diva_clusters.py
-setuptools==84.1.0       # pip install -e . (pyproject.toml), same pin as requirements-ml.lock
+setuptools==84.2.1       # pip install -e . (pyproject.toml), same pin as requirements-ml.lock
