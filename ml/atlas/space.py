@@ -1,4 +1,4 @@
-"""One shared space: centring, its diagnostics, and the clustering.
+"""One shared space: centring, whitening and their diagnostics. The clustering is in stability.py.
 
 A multilingual model puts language and genre on its strongest axes, so raw vectors sort first by
 corpus and say little across corpora. Centring each corpus (and each language within the AI Act)
@@ -38,12 +38,18 @@ def centre(frame: pd.DataFrame, vectors: np.ndarray) -> np.ndarray:
 SHRINK = 0.1
 
 
-def whiten(frame: pd.DataFrame, vectors: np.ndarray, shrink: float = SHRINK) -> np.ndarray:
+def whiten(frame: pd.DataFrame, vectors: np.ndarray, shrink: float | None = SHRINK) -> np.ndarray:
+    """shrink=None picks each corpus's shrinkage by Ledoit–Wolf, so small corpora shrink more."""
+    from sklearn.covariance import ledoit_wolf
+
     out = np.empty_like(vectors)
     for _, rows in frame.groupby(frame.corpus + ':' + frame.language).indices.items():
         x = vectors[rows] - vectors[rows].mean(axis=0)
-        cov = np.cov(x, rowvar=False)
-        cov = (1 - shrink) * cov + shrink * np.trace(cov) / len(cov) * np.eye(len(cov))
+        if shrink is None:
+            cov = ledoit_wolf(x, assume_centered=True)[0]
+        else:
+            cov = np.cov(x, rowvar=False)
+            cov = (1 - shrink) * cov + shrink * np.trace(cov) / len(cov) * np.eye(len(cov))
         values, basis = np.linalg.eigh(cov)
         out[rows] = x @ basis @ np.diag(values ** -0.5) @ basis.T
     return normalise(out)
@@ -90,15 +96,3 @@ def translation_match(frame: pd.DataFrame, space: np.ndarray) -> dict | None:
     return {'pairs': int(len(sv)), 'top1': round(float(hits.mean()), 4),
             'random': round(1 / len(en), 5)}
 
-
-def cluster(space: np.ndarray, min_cluster_size: int, min_samples: int) -> tuple[np.ndarray, np.ndarray]:
-    """UMAP to 10 dimensions for HDBSCAN, and a separate 2-D UMAP for the map."""
-    import umap
-    from sklearn.cluster import HDBSCAN
-
-    reduced = umap.UMAP(n_components=10, n_neighbors=15, min_dist=0.0, metric='cosine',
-                        random_state=SEED).fit_transform(space)
-    labels = HDBSCAN(min_cluster_size=min_cluster_size, min_samples=min_samples).fit_predict(reduced)
-    flat = umap.UMAP(n_components=2, n_neighbors=30, min_dist=0.1, metric='cosine',
-                     random_state=SEED).fit_transform(space)
-    return labels, flat

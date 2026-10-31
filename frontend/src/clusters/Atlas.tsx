@@ -17,9 +17,10 @@ type Meta = {
   clusters: number
   mixed_clusters: number
   noise_share: number
-  checks: Record<'raw' | 'centred' | 'whitened', Check> & {
-    whitened: { translation: { top1: number; pairs: number } }
+  checks: Record<'raw' | 'centred' | 'aligned', Check> & {
+    aligned: { translation: { top1: number; pairs: number } }
   }
+  clustering: { found: number; stable: number; seeds: number[] }
 }
 type Points = {
   corpora: string[]
@@ -136,8 +137,8 @@ export default function Atlas() {
       </p>
       <p className="cx-note">
         {l(
-          `Each corpus is whitened on its own, so a law's register no longer decides where it lands. A passage's nearest neighbours then come from its own corpus ${pct(meta.checks.whitened.purity.overall)} of the time, against ${pct(meta.checks.raw.purity.overall)} before (${pct(meta.checks.whitened.purity.random)} at random). ${pct1(meta.checks.whitened.translation.top1)} of Swedish AI Act paragraphs still find their English original.`,
-          `Varje korpus vitas för sig, så att lagspråket inte längre avgör var en lag hamnar. En passages närmaste grannar kommer då från den egna korpusen i ${pct(meta.checks.whitened.purity.overall)} av fallen, mot ${pct(meta.checks.raw.purity.overall)} innan (${pct(meta.checks.whitened.purity.random)} vid slump). ${pct1(meta.checks.whitened.translation.top1)} av AI-förordningens svenska stycken hittar fortfarande sitt engelska original.`,
+          `Each corpus is whitened on its own, so a law's register no longer decides where it lands. A passage's nearest neighbours then come from its own corpus ${pct(meta.checks.aligned.purity.overall)} of the time, against ${pct(meta.checks.raw.purity.overall)} before (${pct(meta.checks.aligned.purity.random)} at random). ${pct1(meta.checks.aligned.translation.top1)} of Swedish AI Act paragraphs still find their English original. The map shows the ${meta.clustering.stable} of ${meta.clustering.found} clusters that came back when the clustering was rerun with ${meta.clustering.seeds.length - 1} other seeds; the rest count as noise.`,
+          `Varje korpus vitas för sig, så att lagspråket inte längre avgör var en lag hamnar. En passages närmaste grannar kommer då från den egna korpusen i ${pct(meta.checks.aligned.purity.overall)} av fallen, mot ${pct(meta.checks.raw.purity.overall)} innan (${pct(meta.checks.aligned.purity.random)} vid slump). ${pct1(meta.checks.aligned.translation.top1)} av AI-förordningens svenska stycken hittar fortfarande sitt engelska original. Kartan visar de ${meta.clustering.stable} av ${meta.clustering.found} kluster som kom tillbaka när klustringen kördes om med ${meta.clustering.seeds.length - 1} andra seeds; resten räknas som brus.`,
         )}
       </p>
       <div
@@ -227,8 +228,8 @@ function Links({ title, pair }: { title: string; pair: Pair }) {
         <table className="cx-table">
           <caption>
             {l(
-              "How much more often a party's passages land beside this group than the debates as a whole do. 1 means no difference; 95% interval over resampled debates.",
-              'Hur mycket oftare ett partis passager hamnar bredvid gruppen än debatterna i stort. 1 betyder ingen skillnad; 95-procentsintervall över omdragna debatter.',
+              "How much more often a party's passages land beside this group than the debates as a whole do. 1 means no difference; 95% interval over resampled debates. Shown only when the link also holds after correcting for every link tested (false discovery rate 5%).",
+              'Hur mycket oftare ett partis passager hamnar bredvid gruppen än debatterna i stort. 1 betyder ingen skillnad; 95-procentsintervall över omdragna debatter. Visas bara när kopplingen håller även efter korrigering för alla testade kopplingar (falsk upptäcktsandel 5 %).',
             )}
           </caption>
           <thead>
