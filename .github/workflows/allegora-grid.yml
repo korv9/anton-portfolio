@@ -30,6 +30,8 @@ permissions:
 jobs:
   grid:
     runs-on: ubuntu-latest
+    # The Cloudflare secrets are secrets of this environment.
+    environment: anton-portfolio
     # Batch jobs may queue for hours; the script gives up at five and leaves the job running.
     timeout-minutes: 320
     steps:
@@ -50,7 +52,7 @@ jobs:
       - name: Build the table
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
           VERTEX_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           VERTEX_MODEL: ${{ inputs.model }}
           COMMAND: ${{ inputs.command }}
