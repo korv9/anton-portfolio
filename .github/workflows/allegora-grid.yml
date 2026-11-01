@@ -21,7 +21,11 @@ on:
       model:
         description: Vertex AI model
         type: string
-        default: gemini-2.5-flash
+        default: gemini-3.8-flash
+      location:
+        description: Vertex AI location (eu, us, global or a region)
+        type: string
+        default: eu
 
 permissions:
   contents: read
@@ -56,6 +60,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN }}
           VERTEX_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
           VERTEX_MODEL: ${{ inputs.model }}
+          VERTEX_LOCATION: ${{ inputs.location }}
           COMMAND: ${{ inputs.command }}
           LIMIT: ${{ inputs.limit }}
         run: node --experimental-strip-types platform/publish/allegora/vertex_grid.ts "$COMMAND" --limit "$LIMIT"

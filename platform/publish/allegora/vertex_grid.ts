@@ -26,6 +26,7 @@ import {
   judge,
   parseOutputs,
   usableAllegory,
+  vertexHost,
   type Item,
   type Output,
 } from './grid.ts'
@@ -34,9 +35,10 @@ const ROOT = join(import.meta.dirname, '..', '..', '..')
 const SFS = join(ROOT, 'frontend', 'public', 'data', 'workers-ai', 'sfs')
 const OUT = join(ROOT, 'tmp', 'allegora-grid')
 const PROJECT = 'allegora-513419'
-const REGION = 'europe-west4'
+const LOCATION = process.env.VERTEX_LOCATION?.trim() || 'eu'
+const HOST = vertexHost(LOCATION)
 const BUCKET = 'allegora-513419-batch'
-const MODEL = process.env.VERTEX_MODEL ?? 'gemini-2.5-flash'
+const MODEL = process.env.VERTEX_MODEL ?? 'gemini-3.8-flash'
 const K = 8
 const POLL_MS = 60_000
 const WAIT_MS = 5 * 60 * 60_000
@@ -93,7 +95,7 @@ async function batch(name: string, lines: string[]) {
     `https://storage.googleapis.com/upload/storage/v1/b/${BUCKET}/o?uploadType=media&name=${encodeURIComponent(object)}`,
     { method: 'POST', body: `${lines.join('\n')}\n` },
   )
-  const api = `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT}/locations/${REGION}/batchPredictionJobs`
+  const api = `${HOST}/v1/projects/${PROJECT}/locations/${LOCATION}/batchPredictionJobs`
   const job = (await (
     await vertex(api, {
       method: 'POST',
@@ -108,7 +110,7 @@ async function batch(name: string, lines: string[]) {
       }),
     })
   ).json()) as { name: string }
-  const url = `https://${REGION}-aiplatform.googleapis.com/v1/${job.name}`
+  const url = `${HOST}/v1/${job.name}`
   console.log(`job ${job.name}`)
   for (const start = Date.now(); Date.now() - start < WAIT_MS; ) {
     const state = (await (await vertex(url)).json()) as { state: string; error?: unknown }
@@ -163,7 +165,7 @@ async function main() {
   }
   const characters = cells.reduce((sum, c) => sum + c.prompt.system.length + c.prompt.user.length, 0)
   console.log(
-    `${laws.length} laws, ${cells.length} cells, ${MODEL} in ${REGION}, about ${Math.round(characters / 4)} input tokens`,
+    `${laws.length} laws, ${cells.length} cells, ${MODEL} in ${LOCATION}, about ${Math.round(characters / 4)} input tokens`,
   )
   if (command === 'plan') return
 
@@ -187,7 +189,7 @@ async function main() {
     schema_version: 1,
     created: new Date().toISOString(),
     model: MODEL,
-    region: REGION,
+    location: LOCATION,
     embed_model: EMBED_MODEL,
     laws_fetched: meta.fetched,
     source_sha256: hash(cells.map((c) => c.passages.map((p) => p.text).join()).join()),
