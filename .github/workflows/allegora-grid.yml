@@ -1,0 +1,64 @@
+name: Allegora table on Vertex AI
+
+# Manual only, because every run costs money. `plan` calls no Vertex API and reports the cells and
+# input tokens; `run` submits the batch jobs and uploads grid.json as an artifact. Nothing is
+# published from here. It signs in to Google Cloud with Workload Identity Federation: the pool only
+# accepts this repository, the service account can use Vertex AI and one bucket, and no key is
+# stored (platform/publish/allegora/vertex_grid.ts).
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: plan or run
+        type: choice
+        options: [plan, run]
+        default: plan
+      limit:
+        description: Number of laws (each has five questions)
+        type: number
+        default: 2
+      model:
+        description: Vertex AI model
+        type: string
+        default: gemini-2.5-flash
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  grid:
+    runs-on: ubuntu-latest
+    # Batch jobs may queue for hours; the script gives up at five and leaves the job running.
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        id: google
+        if: inputs.command == 'run'
+        with:
+          workload_identity_provider: projects/877662270161/locations/global/workloadIdentityPools/github/providers/anton-portfolio
+          service_account: allegora-batch@allegora-513419.iam.gserviceaccount.com
+          token_format: access_token
+          access_token_lifetime: 3600s
+      - name: Build the table
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_AI_TOKEN }}
+          VERTEX_ACCESS_TOKEN: ${{ steps.google.outputs.access_token }}
+          VERTEX_MODEL: ${{ inputs.model }}
+          COMMAND: ${{ inputs.command }}
+          LIMIT: ${{ inputs.limit }}
+        run: node --experimental-strip-types platform/publish/allegora/vertex_grid.ts "$COMMAND" --limit "$LIMIT"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: inputs.command == 'run'
+        with:
+          name: allegora-grid
+          path: tmp/allegora-grid/grid.json
+          if-no-files-found: error
