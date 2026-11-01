@@ -41,7 +41,7 @@ export default function DebateBackdrop({
     loadDebateMap()
       .then((map) => {
         if (!active) return
-        setPoints(map.points)
+        setPoints(map.map(([x, y, c]) => ({ x, y, c })))
         if (allowIntro && !introPlayed && !reduced) {
           if (performance.now() - mounted > LATE) setIntro('late')
           else {

@@ -14,8 +14,8 @@ export default function GatedModels() {
       </h2>
       <p className="cx-question">
         {l(
-          'Each was scored on data it never saw and had to clear a rule set before its first run.',
-          'Varje modell prövades på data den aldrig sett och måste klara en regel som sattes före första körningen.',
+          "Each was scored on data it never saw and had to clear a rule recorded in the first run's result. A rule changed later is dated in docs/ml-gate-amendments.md. A model that leaves one session out still trains on later sessions, so its score is not a forecast.",
+          'Varje modell prövades på data den aldrig sett och måste klara en regel som finns i första körningens resultat. En regel som ändrats senare är daterad i docs/ml-gate-amendments.md. En modell som lämnar ut ett riksmöte i taget tränas ändå på senare riksmöten, så resultatet är ingen prognos.',
         )}
       </p>
       <ModelCards passedOnly />

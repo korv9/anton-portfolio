@@ -15,8 +15,8 @@ SHA-256. dbt on DuckDB builds bronze, silver and gold. dbt tests, enforced model
 JSON Schemas and Python validators run before anything is published, and each publish is a
 versioned release in Cloudflare R2. One command, `python platform/pipeline.py`, runs every
 subject the same way on a laptop and in GitHub Actions. In numbers[^count]: 19 ingestion
-packages, 26 pipeline subjects, 325 dbt models (158 with an enforced contract), 6,396 published
-files and 14 workflows. The [platform case study](docs/case-studies/platform.md) covers the
+packages, 26 pipeline subjects, 334 dbt models (158 with an enforced contract), 6,418 published
+files and 18 workflows. The [platform case study](docs/case-studies/platform.md) covers the
 design and what went wrong.
 
 **The job assistant.** The second flagship uses the same platform end to end. An hourly run
@@ -29,9 +29,9 @@ ad and the line in the CV it rests on; there is no hiring-chance percentage
 myth, philosophy and concepts, clustering experiments, and pre-registered studies whose
 method is fixed in a dated document before the results exist.
 
-The published build shows the home page only: profile, experience, the project list and a
-chart feed. Every other page runs in the dev server and the browser tests while it is refined
-(`START_ONLY` in [frontend/src/router.ts](frontend/src/router.ts)).
+The published site has every page. The home page is about Anton, `#projects` gives an overview
+of the platform and the projects, and each project has its own page
+([frontend/src/router.ts](frontend/src/router.ts)).
 
 ## Architecture
 
@@ -99,20 +99,33 @@ python platform/pipeline.py check           # the data validators (npm run data:
 python -m pytest platform/tests -q
 ```
 
-`npm run verify:full` adds the production build, the Python suite and the browser tests;
+`npm run verify:full` adds the production build, a Wrangler dry run, the import layers, the
+Python suite, dbt compile and the browser tests;
 data and delivery changes also need `npm run verify:delivery`. GitHub runs the full CI on
 every pull request. Scopes, logs and workspace rules are in
 [the development workflow](docs/development.md).
 
 ## Documentation
 
+Start here:
+
+1. [Platform case study](docs/case-studies/platform.md): the problem, the decisions, what failed
+2. [Pipeline](docs/pipeline.md): how a subject gets from source to release
+3. [Job assistant](docs/job-assistant.md): the second flagship, end to end
+4. [Quality and validity](docs/quality-and-validity.md): what the checks prove and what they do not
+5. [Development workflow](docs/development.md): verification levels and workspaces
+
+Everything else:
+
 - [Docs index](docs/README.md): platform, delivery, products, research and operations
 - [Pipeline](docs/pipeline.md) and [storage and serving](docs/storage-and-serving.md)
 - [Job assistant](docs/job-assistant.md) and [SWEDEN](docs/sweden-design.md)
 - [Hosting](docs/deploy.md), [security](docs/security.md) and [incidents](docs/incidents/)
 
-[^count]: Counted on 2026-10-23 from this branch. Ingestion packages: folders under
+[^count]: Counted on 2026-11-01 from this branch. Ingestion packages: folders under
     `platform/ingest/`. Subjects: entries under `subjects:` in `platform/pipeline.yml`. dbt
-    models: `.sql` files under `platform/models/`. Contracts: `enforced: true` lines in
+    models: models in the manifest from `dbt parse`, 321 SQL and 13 Python, the figure the site
+    shows. `platform/models/` has 325 `.sql` files because four opt-in job-cluster models are off
+    by default. Contracts: `enforced: true` lines in
     `platform/models/**/*.yml`. Published files: entries in `frontend/public/data/catalog.json`.
     Workflows: files in `.github/workflows/`.

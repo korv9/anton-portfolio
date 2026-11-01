@@ -9,7 +9,7 @@ module from the repository root.
 
 | Package | What it does | Entry point | Documentation |
 |---|---|---|---|
-| `mlkit/` | Supervised tasks with model cards in `cards/`: `policy_area`, `polarization`, `seniority` | `python -m ml.mlkit.overnight` | The cards |
+| `mlkit/` | Supervised tasks with model cards in `cards/`: `policy_area`, `polarization`, `seniority`, `government_defeat`, `reply` | `python -m ml.mlkit.overnight` | The cards |
 | `jobs/` | Unsupervised clustering of Swedish software and data job ads | `python -m ml.jobs.pipeline`, `sweep`, `feature_experiment` | [job-market clustering](../docs/job-market-clustering.md), [sweep](../docs/job-clustering-sweep.md), [ensemble](../docs/job-clustering-ensemble.md) |
 | `cluster_lab/` | Local, configuration-driven clustering experiments; never promotes results | `python -m ml.cluster_lab.cli` | [its README](cluster_lab/README.md) |
 | `research/` | Consensus subject groups in debates and philosophy, county profiles, the debate passages for Workers AI | `python -m ml.research.consensus`, `topics`, `export_workers_ai` | [public clustering](../docs/public-clustering-method.md), [Workers AI](../docs/workers-ai.md) |
@@ -60,7 +60,7 @@ without a deliberate promotion of a passing run (`mlkit/promote.py`).
 ## Tests
 
 ```bash
-python -m pytest ml/tests ml/jobs/tests -q
+python -m pytest ml/tests ml/experiments/tests ml/jobs/tests -q
 ```
 
 These tests are not part of `npm run verify:full` or the CI Python job, which run

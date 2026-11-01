@@ -8,6 +8,14 @@ The repository overview is in the [root README](../README.md). Folder guides:
 [platform](../platform/README.md), [ml](../ml/README.md), [frontend](../frontend/README.md),
 [configs](../configs/README.md), [scripts](../scripts/README.md), [infra](../infra/README.md).
 
+## Start here
+
+1. [Platform case study](case-studies/platform.md): the problem, the decisions, what failed
+2. [Pipeline](pipeline.md): how a subject gets from source to release
+3. [Job assistant](job-assistant.md): the second flagship, end to end
+4. [Quality and validity](quality-and-validity.md): what the checks prove and what they do not
+5. [Development workflow](development.md): verification levels and workspaces
+
 ## Platform
 
 | Document | Covers |
@@ -38,6 +46,7 @@ The repository overview is in the [root README](../README.md). Folder guides:
 | Document | Covers |
 |---|---|
 | [job-assistant.md](job-assistant.md) | The job assistant: CV profile, hourly matching, evidence model, delivery |
+| [job-assistant-evaluation.md](job-assistant-evaluation.md) | Manual evaluation of the matches, 2026-10-27 |
 | [job-intelligence.md](job-intelligence.md) | Job Intelligence: company resolution and ranking; not routed |
 | [compliance-intelligence/](compliance-intelligence/README.md) | Compliance research workflow, cohort, gates and risks; not routed |
 | [sweden-design.md](sweden-design.md) | The SWEDEN research pages: routes, template, lineage, statistical conventions |
@@ -51,10 +60,12 @@ The repository overview is in the [root README](../README.md). Folder guides:
 | [ai-politics.md](ai-politics.md) | AI in Riksdag speeches and similarity to the Act's text |
 | [ai-jobs.md](ai-jobs.md) | AI governance terms in job ads |
 | [ai-governance-timeline.md](ai-governance-timeline.md) | The Act, the Riksdag and job ads on one time axis |
-| [workers-ai.md](workers-ai.md) | Ask the law, Ask the platform and the sentence placer on Workers AI (sv) |
+| [workers-ai.md](workers-ai.md) | Ask the law and the sentence placer on Workers AI; the corpus and eval of the removed Ask the platform (sv) |
 | [site-structure.md](site-structure.md) | Pages, navigation, routing and retired addresses |
-| [design-system.md](design-system.md) | The approved visual direction, tokens and chart forms |
+| [design-system.md](design-system.md) | The live visual direction, tokens and chart forms |
 | [data-storytelling.md](data-storytelling.md) | The order a page presents question, answer, visual and method |
+| [site-goals.md](site-goals.md) | The site's finish line, as checkable goals |
+| [product-inventory.md](product-inventory.md) | Product reviews and task tables of 2026-10-25; paths as of that date |
 | [mockups/SPEC.md](mockups/SPEC.md) | The remaining dashboard mockups (sv) |
 
 DrugComb and the Homie API are documented beside their pinned sources in
@@ -65,7 +76,15 @@ DrugComb and the Homie API are documented beside their pinned sources in
 | Document | Covers |
 |---|---|
 | [ml-feature-engineering.md](ml-feature-engineering.md) | Engineered features against the plain baseline |
+| [ml-gate-amendments.md](ml-gate-amendments.md) | Dated changes to how a model or champion is judged, and their outcomes |
 | [cluster-batches.md](cluster-batches.md) | Clustering batches, their statuses and what may be posted |
+| [cluster-atlas.md](cluster-atlas.md) | Six corpora in one space: versions 1 and 2, links, the dimension-reduction benchmark |
+| [cluster-experiments.md](cluster-experiments.md) | The shared protocol for clustering experiments |
+| [cluster-experiments-debates.md](cluster-experiments-debates.md) | Results for Replik |
+| [cluster-experiments-jobs.md](cluster-experiments-jobs.md) | Results and MLOps for job ads |
+| [cluster-experiments-philosophy.md](cluster-experiments-philosophy.md) | Results for Philosophy Lab |
+| [cluster-experiments-symbolic.md](cluster-experiments-symbolic.md) | Results for Symbol Lab |
+| [cluster-visuals-experiments.md](cluster-visuals-experiments.md) | The experiments view on Cluster Visuals |
 | [job-market-clustering.md](job-market-clustering.md) | Semantic structure of tech job ads: method and limits |
 | [job-clustering-sweep.md](job-clustering-sweep.md) | The parameter sweep of 4 October 2026 (`job-clustering-sweep.csv`) |
 | [job-clustering-ensemble.md](job-clustering-ensemble.md) | The feature and ensemble experiment (`job-clustering-features.csv`) |
@@ -91,6 +110,8 @@ Pre-registrations are dated commitments and are never edited after the fact:
 | [security.md](security.md) | Security checks, locks and headers |
 | [roadmap.md](roadmap.md) | The current work queue and its status |
 | [idea-lineage.md](idea-lineage.md) | The idea journal and the `ideas:*` commands |
+| [package.md](package.md) | The platform as an installable Python package |
+| [code-inventory.md](code-inventory.md) | Snapshot of used and unused code on 2026-10-23; not kept current |
 | [case-studies/platform.md](case-studies/platform.md) | The platform: problem, decisions, failures, measured size |
 | [incidents/](incidents/) | Postmortems |
 

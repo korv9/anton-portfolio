@@ -4,7 +4,8 @@ A party classifier is fitted per session and the headline is the mean pairwise A
 separability is not the same as rising polarization, so the card refuses to let the headline
 stand alone:
 
-  permutation   shuffled party labels, to show what the floor actually is
+  permutation   party labels shuffled between speakers, to show what the floor actually is
+  bootstrap     speakers resampled, for an interval on each session's AUC
   role          the governing parties are listed per session, since being in office
                 changes the register regardless of position
   composition   the same seven parties throughout (S, M, C, L, KD, V, MP). A new party
@@ -32,6 +33,7 @@ import hashlib
 import json
 import re
 from collections import Counter
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -39,7 +41,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 
-from mlkit import data, metrics, splits
+from mlkit import data, metrics, provenance, splits
 
 BERT_SESSIONS = ["1993/94", "2002/03", "2010/11", "2015/16", "2020/21", "2025/26"]
 BERT_MODEL = "KB/bert-base-swedish-cased"
@@ -47,6 +49,10 @@ BERT_MAX_LEN = 256
 BERT_BATCH = 16
 BERT_EPOCHS = 2
 MIN_PER_PARTY = 25
+PERMUTATIONS = 999  # floor 0.001, under a Bonferroni limit of 0.05 / 33
+BOOTSTRAPS = 300
+SEEDS = [0, 1, 2]
+WORKERS = 3  # sessions at a time; the significance test takes most of a minute each
 # Party names, members' nouns and abbreviations, historical names included. Words that mark
 # government or opposition are left in: that is the role effect, reported separately.
 PARTY_NAMES = re.compile(
@@ -102,8 +108,20 @@ def _balanced(rows: list[dict], seed: int = 0) -> list[dict]:
     return out
 
 
-def _session_auc(rows: list[dict], seed: int = 0) -> dict | None:
-    """Mean pairwise AUC for one session, split so no speaker crosses the fold."""
+def _pairwise_auc(order: list):
+    def metric(truth, scores):
+        value = metrics.mean_pairwise_auc(truth, scores, order)["mean_auc"]
+        if value is None:
+            raise ValueError("no party pair left to compare")
+        return value
+    return metric
+
+
+def _session_auc(rows: list[dict], seed: int = 0, significance: bool = False) -> dict | None:
+    """Mean pairwise AUC for one session, split so no speaker crosses the fold.
+
+    `significance` adds the speaker-level permutation test and bootstrap; they are slow, and a
+    session needs them once."""
     rows = _balanced(rows, seed)
     if not rows:
         return None
@@ -129,16 +147,63 @@ def _session_auc(rows: list[dict], seed: int = 0) -> dict | None:
     if pairwise["mean_auc"] is None:
         return None
 
-    predicted = np.array([order[i] for i in scores.argmax(1)])
-    permuted = metrics.permutation_test(
-        metrics.macro_f1, parties[split.test], predicted, iterations=300, seed=seed)
     debates = np.array([r["debate"] for r in rows])
     within = metrics.within_group_pairwise_auc(
         parties[split.test], scores, order, debates[split.test])
-    return {"mean_auc": pairwise["mean_auc"], "pairs": pairwise["pairs"],
-            "within_debate_auc": within["mean_auc"],
-            "within_debate_comparisons": sum(p["comparisons"] for p in within["pairs"]),
-            "permutation": permuted, "passages": len(rows), "parties": labels}
+    out = {"mean_auc": pairwise["mean_auc"], "pairs": pairwise["pairs"],
+           "within_debate_auc": within["mean_auc"],
+           "within_debate_comparisons": sum(p["comparisons"] for p in within["pairs"]),
+           "passages": len(rows), "parties": labels}
+    if significance:
+        speakers = people[split.test]
+        # A member has one party in a session. One who switched counts as one unit per party.
+        units = np.char.add(speakers.astype(str), np.char.add("|", parties[split.test].astype(str)))
+        metric = _pairwise_auc(order)
+        out["permutation"] = metrics.permutation_test(
+            metric, parties[split.test], scores, iterations=PERMUTATIONS, seed=seed, groups=units)
+        out["bootstrap"] = metrics.cluster_bootstrap(
+            metric, parties[split.test], scores, speakers, iterations=BOOTSTRAPS, seed=seed)
+    return out
+
+
+def _measure_session(session: str, subset: list[dict]) -> dict | None:
+    """Every seed of one session, all parties and the fixed seven. Runs in a worker process."""
+    runs = [r for r in (_session_auc(subset, seed, significance=seed == SEEDS[0])
+                        for seed in SEEDS) if r]
+    if not runs or "permutation" not in runs[0]:
+        return None  # the first seed carries the test; without it the session has no verdict
+    values = [r["mean_auc"] for r in runs]
+    governing = GOVERNMENT.get(session, set())
+    measured = {
+        "mean_auc": float(np.mean(values)),
+        "seed_spread": float(max(values) - min(values)),
+        # Speaker bootstrap of the first seed's fold, which is also the permutation test's.
+        "first_seed_auc": runs[0]["mean_auc"],
+        "low": runs[0]["bootstrap"]["low"],
+        "high": runs[0]["bootstrap"]["high"],
+        "passages": runs[0]["passages"],
+        "parties": runs[0]["parties"],
+        "permutation_p": runs[0]["permutation"]["p_value"],
+        "permutation_null": runs[0]["permutation"]["null_mean"],
+        "governing_parties": sorted(governing),
+        "pairs": runs[0]["pairs"],
+    }
+    core = [r for r in (_session_auc([row for row in subset if row["party"] in CORE_PARTIES],
+                                     seed) for seed in SEEDS) if r]
+    if core:
+        measured["core_auc"] = float(np.mean([r["mean_auc"] for r in core]))
+        within = [r["within_debate_auc"] for r in core if r["within_debate_auc"] is not None]
+        if within:
+            measured["core_within_debate_auc"] = float(np.mean(within))
+            measured["core_within_debate_comparisons"] = core[0]["within_debate_comparisons"]
+        measured["core_passages"] = core[0]["passages"]
+    print(f"  {session}: AUC {measured['mean_auc']:.3f} "
+          f"(p={measured['permutation_p']:.3f}, "
+          f"{measured['passages']} passages; seven parties "
+          f"{measured.get('core_auc', float('nan')):.3f}, within debates "
+          f"{measured.get('core_within_debate_auc', float('nan')):.3f})",
+          flush=True)
+    return measured
 
 
 def _bert_session_auc(rows: list[dict], job_dir: Path, session: str, device: str):
@@ -227,49 +292,23 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
               "bert": BERT_SESSIONS if transformers else [], "group": "person_id",
               "core": sorted(CORE_PARTIES), "topic": "within-debate",
               "masked": "party-names"}
+    inputs = provenance.stamp(inputs, __file__, cards)
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
         return {**json.loads(cached[key].read_text(encoding="utf-8")), "status": "cached"}
 
-    per_session, seeds, texts = {}, [0, 1, 2], {}
-    for session in sessions:
-        subset = texts[session] = _mask_party_names(data.speech_texts(
-            [c for c in cards if c["session"] == session]))
-        if len(subset) < MIN_PER_PARTY * 2:
-            continue
-        runs = [r for r in (_session_auc(subset, seed) for seed in seeds) if r]
-        if not runs:
-            continue
-        values = [r["mean_auc"] for r in runs]
-        governing = GOVERNMENT.get(session, set())
-        per_session[session] = {
-            "mean_auc": float(np.mean(values)),
-            "low": float(np.percentile(values, 2.5)) if len(values) > 2 else None,
-            "high": float(np.percentile(values, 97.5)) if len(values) > 2 else None,
-            "passages": runs[0]["passages"],
-            "parties": runs[0]["parties"],
-            "permutation_p": runs[0]["permutation"]["p_value"],
-            "permutation_null": runs[0]["permutation"]["null_mean"],
-            "governing_parties": sorted(governing),
-            "pairs": runs[0]["pairs"],
-        }
-        core = [r for r in (_session_auc([row for row in subset if row["party"] in CORE_PARTIES],
-                                         seed) for seed in seeds) if r]
-        if core:
-            per_session[session]["core_auc"] = float(np.mean([r["mean_auc"] for r in core]))
-            within = [r["within_debate_auc"] for r in core if r["within_debate_auc"] is not None]
-            if within:
-                per_session[session]["core_within_debate_auc"] = float(np.mean(within))
-                per_session[session]["core_within_debate_comparisons"] = \
-                    core[0]["within_debate_comparisons"]
-            per_session[session]["core_passages"] = core[0]["passages"]
-        print(f"  {session}: AUC {per_session[session]['mean_auc']:.3f} "
-              f"(p={per_session[session]['permutation_p']:.3f}, "
-              f"{per_session[session]['passages']} passages; seven parties "
-              f"{per_session[session].get('core_auc', float('nan')):.3f}, within debates "
-              f"{per_session[session].get('core_within_debate_auc', float('nan')):.3f})",
-              flush=True)
+    per_session, texts = {}, {}
+    with ProcessPoolExecutor(WORKERS) as pool:
+        pending = {}
+        for session in sessions:
+            subset = texts[session] = _mask_party_names(data.speech_texts(
+                [c for c in cards if c["session"] == session]))
+            if len(subset) >= MIN_PER_PARTY * 2:
+                pending[session] = pool.submit(_measure_session, session, subset)
+        for session, future in pending.items():
+            if (measured := future.result()) is not None:
+                per_session[session] = measured
 
     if not per_session:
         raise RuntimeError("No session had enough balanced passages")
@@ -335,6 +374,10 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     # Gate: separability must be distinguishable from the permutation floor in most sessions.
     significant = sum(1 for s in ordered if per_session[s]["permutation_p"] < 0.05)
+    bonferroni = sum(1 for s in ordered if per_session[s]["permutation_p"] < 0.05 / len(ordered))
+    interval_above = sum(1 for s in ordered if (per_session[s]["low"] or 0) > 0.5)
+    verdict = (f"{significant} of {len(ordered)} sessions under p 0.05, {bonferroni} under the "
+               f"Bonferroni limit {0.05 / len(ordered):.4f}")
     passed = bool(significant >= 0.8 * len(ordered) and headline > 0.6)
 
     return {
@@ -342,13 +385,13 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
         "inputs": inputs,
         "headline": {"name": "TF-IDF, mean pairwise AUC", "metric": "AUC", "value": headline,
                      "low": None, "high": None},
-        "best_baseline": {"name": "Permutation null", "metric": "macro-F1",
+        "best_baseline": {"name": "Permutation null", "metric": "AUC",
                           "value": null_mean, "low": None, "high": None},
         "gate": {
             "rule": "Party separability must beat the permutation null in at least 80% of "
                     "sessions, and mean AUC must exceed 0.60.",
             "passed": passed,
-            "detail": f"{significant} of {len(ordered)} sessions significant; mean AUC "
+            "detail": f"{verdict}; mean AUC "
                       f"{headline:.3f}, sessions range {spread}; trend {trend:+.4f} AUC per "
                       f"session" + (f" (SE {trend_se:.4f})." if trend_se else "."),
         },
@@ -382,7 +425,11 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                     f"{len(cards):,} ({kinds.get('issues', 0):,} issue debates, "
                     f"{kinds.get('leaders', 0):,} party-leader debates)",
                 "source": "Issue and party-leader debates, Swedish Parliament open data",
-                "seeds per session": len(seeds),
+                "seeds per session": len(SEEDS),
+                "sessions whose speaker-bootstrap interval lies above 0.5":
+                    f"{interval_above} of {len(ordered)} ({BOOTSTRAPS} resamples, first seed)",
+                "permutation test": f"{PERMUTATIONS} shuffles of party between speakers on the "
+                                    "first seed's held-out fold, scored with mean pairwise AUC",
             },
             "split":
                 "Party names and abbreviations are masked in the text first, so the label "
@@ -391,15 +438,17 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "measured three times with different balanced samples. The headline is the "
                 "mean over sessions; the per-session range is in Data, not an interval.",
             "baselines": [
-                {"name": "Permutation null (shuffled parties)", "metric": "macro-F1",
+                {"name": "Permutation null (parties shuffled between speakers)", "metric": "AUC",
                  "value": null_mean, "low": None, "high": None},
             ],
             "headline": {"name": "Mean pairwise AUC", "metric": "AUC", "value": headline,
                          "low": None, "high": None},
-            "gate": {"rule": "Beat the permutation null in 80% of sessions, mean AUC > 0.60.",
+            "gate": {"rule": "Beat the permutation null in 80% of sessions, mean AUC > 0.60. "
+                             "The null shuffles party between speakers since 2026-11-01 "
+                             "(docs/ml-gate-amendments.md); the shuffle of rows it replaced "
+                             "could not fail.",
                      "passed": passed,
-                     "detail": f"{significant} of {len(ordered)} sessions significant; "
-                               f"mean AUC {headline:.3f}."},
+                     "detail": f"{verdict}; mean AUC {headline:.3f}."},
             "limitations": [
                 "Separability is not polarization. A rising line may mean parties changed "
                 "subject rather than changed position. The within-debate measure holds the "

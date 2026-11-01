@@ -227,3 +227,26 @@ def test_repro_label_moves_every_stored_result(monkeypatch):
             importlib.reload(m)
     assert registry.ROOT == registry.FEATURES / 'experiments' / 'registry'
     assert export.OUT == export.SITE
+
+
+def test_common_gain_needs_shared_rows_and_more_than_seed_spread():
+    field = np.array(['a'] * 50 + ['b'] * 50)
+    aligned = (field == 'b').astype(int)  # follows the field exactly
+    blind = np.arange(100) % 2  # ignores it
+    noisy = aligned.copy()
+    noisy[:50] = -1  # drops one whole value as noise, so its own rows look unmixed
+    out = accept.common_rows([blind, blind], [aligned, aligned], {'f': field})['f']
+    assert out['gain'] > 0.9 and out['spread'] == 0 and out['common_share'] == 1
+    # Half the rows are noise in the champion, and the score only uses the rows both assign.
+    assert accept.common_rows([blind, blind], [noisy, noisy], {'f': field})['f']['common_share'] == 0.5
+    rule = [{'name': 'gain', 'common_gain': 'f'}]
+    run = {'run_id': 'c', 'metrics': {}}
+    assert accept.check(run, run, rule, 'sha', {'f': {'gain': 0.05, 'spread': 0.01}})['passed']
+    assert accept.check(run, run, rule, 'sha', {'f': {'gain': 0.01, 'spread': 0.05}})['failed'] == ['gain']
+    assert accept.check(run, run, rule, 'sha')['failed'] == ['gain']
+
+
+def test_pick_takes_the_largest_margin_not_the_first_pass():
+    report = lambda passed, gain: {'passed': passed, 'criteria': [{'common_gain': 'f', 'gain': gain, 'spread': 0.01}]}
+    assert accept.pick({'first': report(True, 0.02), 'second': report(True, 0.05), 'failed': report(False, 0.9)}) == 'second'
+    assert accept.pick({'failed': report(False, 0.9)}) is None

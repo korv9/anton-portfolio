@@ -4,7 +4,7 @@
  * a myth and a philosopher end up side by side. Below it, the links between corpora that clear
  * their interval. Group terms are generated and marked unreviewed.
  */
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
 import ClusterScatter, { type ClusterPoint } from './ClusterScatter'
@@ -46,7 +46,7 @@ type Link = {
   high: number
 }
 type Pair = { from: string; to: string; links: Link[] }
-type Data = { meta: Meta; points: Points; clusters: Cluster[]; links: Pair[] }
+type Data = { meta: Meta; clusters: Cluster[]; links: Pair[] }
 
 const CORPUS: Record<string, () => string> = {
   debates: () => l('Party-leader debates', 'Partiledardebatter'),
@@ -77,17 +77,38 @@ export default function Atlas() {
   const [data, setData] = useState<Data | 'error' | null>(null)
   const [view, setView] = useState<'cluster' | 'corpus'>('corpus')
   const [picked, setPicked] = useState<number | null>(null)
+  const box = useRef<HTMLDivElement>(null)
+  const [near, setNear] = useState(false)
+  const [mapData, setMapData] = useState<Points | 'error' | null>(null)
+  const ready = data !== null && data !== 'error'
   useEffect(() => {
     Promise.all(
-      ['meta', 'points', 'clusters', 'links'].map((f) =>
+      ['meta', 'clusters', 'links'].map((f) =>
         fetchJson<unknown>(`atlas/${f}.json`),
       ),
     ).then(
-      ([meta, points, clusters, links]) =>
-        setData({ meta, points, clusters, links } as Data),
+      ([meta, clusters, links]) => setData({ meta, clusters, links } as Data),
       () => setData('error'),
     )
   }, [])
+  // The 1 MB of points waits until the map nears the screen, as MapSection's maps do.
+  useEffect(() => {
+    const el = box.current
+    if (!el) return
+    if (typeof IntersectionObserver === 'undefined') return setNear(true)
+    const observer = new IntersectionObserver(
+      ([entry]) => entry.isIntersecting && setNear(true),
+      { rootMargin: '300px 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [ready])
+  useEffect(() => {
+    if (near)
+      fetchJson<Points>('atlas/points.json').then(setMapData, () =>
+        setMapData('error'),
+      )
+  }, [near])
   const byId = useMemo(
     () =>
       new Map(
@@ -96,15 +117,15 @@ export default function Atlas() {
     [data],
   )
   const points = useMemo<ClusterPoint[]>(() => {
-    if (!data || data === 'error') return []
-    const p = data.points
+    if (!mapData || mapData === 'error') return []
+    const p = mapData
     return p.x.map((x, i) => ({
       x,
       y: -p.y[i],
       c: view === 'corpus' ? p.corpus[i] : p.cluster[i],
       label: corpusName(p.corpora[p.corpus[i]]),
     }))
-  }, [data, view])
+  }, [mapData, view])
 
   if (data === null)
     return (
@@ -121,7 +142,9 @@ export default function Atlas() {
   const { meta } = data
   const name = (c: number) =>
     view === 'corpus'
-      ? corpusName(data.points.corpora[c])
+      ? corpusName(
+          mapData && mapData !== 'error' ? mapData.corpora[c] : String(c),
+        )
       : (byId.get(c)?.terms.slice(0, 3).join(', ') ?? '')
   const chosen = view === 'cluster' && picked != null ? byId.get(picked) : null
   return (
@@ -162,17 +185,25 @@ export default function Atlas() {
           </button>
         ))}
       </div>
-      <ClusterScatter
-        key={view}
-        points={points}
-        name={name}
-        label={l(
-          `Atlas of ${num(meta.passages)} passages, coloured by ${view}`,
-          `Atlas med ${num(meta.passages)} passager, färgad per ${view === 'corpus' ? 'korpus' : 'kluster'}`,
+      <div ref={box} aria-busy={near && !mapData}>
+        {mapData === 'error' ? (
+          <p className="cx-state" role="alert">
+            {l('The map did not load.', 'Kartan kunde inte läsas.')}
+          </p>
+        ) : (
+          <ClusterScatter
+            key={view}
+            points={points}
+            name={name}
+            label={l(
+              `Atlas of ${num(meta.passages)} passages, coloured by ${view}`,
+              `Atlas med ${num(meta.passages)} passager, färgad per ${view === 'corpus' ? 'korpus' : 'kluster'}`,
+            )}
+            picked={picked}
+            onPick={setPicked}
+          />
         )}
-        picked={picked}
-        onPick={setPicked}
-      />
+      </div>
       {chosen && <Detail cluster={chosen} />}
       {view === 'cluster' && (
         <p className="cx-note">

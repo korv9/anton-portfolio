@@ -37,9 +37,40 @@ SKILLS = {
 }
 PREFERRED = r'meriterande|önskvärt|en fördel|ett plus|gärna|nice.to.have|preferred|a plus|an advantage'
 REQUIRED = r'\bkrav\b|måste|du (?:ska|skall|har)|vi (?:kräver|söker dig som har)|required|must.have|you (?:must|have)|(?:minst|minimum|at least)\s+(?:\d+|ett|två|tre|fyra|fem|sex|sju|åtta|nio|tio|one|two|three|four|five|six|seven|eight|nine|ten)\+?\s*(?:års?|years?|yrs?)'
-# Swedish phone numbers: "070 123 45 67", "070.123.45.67", "073-123 45 67", "08-123 45 67", "+46 (0)70 123 45 67".
+# Swedish phone numbers: "070 123 45 67", "070.123.45.67", "073 - 123 45 67", "070–1234567", "(08) 123 45 67",
+# "+46 (0)70 123 45 67", "+46 (70) 1234567", "46 701-23 45 67". At least nine digits, so "08.00-17.00" stays.
 EMAIL = r'[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}'
-PHONE = r'(?<!\w)(?:\+46[   ]*(?:\(0\))?[   .-]?|0)(?:\d[   .-]?){7,10}\d(?!\w)'
+_GAP = r"[ \t\u00a0\u202f]*"
+_SEP = rf"(?:{_GAP}[.\u2013\u2014-]?{_GAP}\)?{_GAP})"
+PHONE = (rf"(?<!\w)(?:(?:\+46\)?{_GAP}(?:\(0\))?{_SEP}\(?|00{_GAP}46{_SEP}\(?|\(?0)(?:\d{_SEP}){{7,10}}"
+         rf"|46{_GAP}(?:\d{_SEP}){{8}})\d(?!\w)")
+# A person's name in a contact sentence (redact_names). Capitalised words, so names after a contact
+# word are caught without touching the rest of the ad; a one-word name is left, since it cannot be
+# told from an employer ("Kontakta Försvarsmakten").
+CONTACT_MARK = '[kontaktperson utelämnad]'
+_MARKS = r'\[kontakt(?:uppgift|person) utelämnad\]'
+_WORD = r"[A-ZÅÄÖÆØÉÈÜ][a-zåäöæøéèüáíóúñç]+(?:-[A-ZÅÄÖÆØÉÈÜ]?[a-zåäöæøéèüáíóúñç]+)?"
+PERSON = rf"{_WORD}(?:[ \t]+(?:(?:von|van|de|af|del)[ \t]+)?{_WORD}){{1,3}}"
+_ROLES = (r'kontaktpersoner|kontaktperson|kontakter|kontakt|rekryteringsansvarig|rekryterande\s+\w*chef|'
+          r'ansvarig\s+rekryterare|rekryterare|rekryteringskonsult|rekryteringspartner|rekryteringsspecialist|'
+          r'konsultchef|hr-\w+|fackliga?\s+(?:företrädare|representanter|representant|kontakter|kontakt)|'
+          r'contact\s+persons?|recruiters?|recruitment\s+consultant|hiring\s+manager|talent\s+acquisition\s+\w+')
+_ASKS = (r'kontakta(?:s\s+av)?|ring|mejla|maila|hör\s+av\s+dig\s+till|vänd\s+dig\s+till|'
+         r'frågor[^.\n]{0,40}?\s(?:till|av|hos)|please\s+contact|contact|reach\s+out\s+to|'
+         r'get\s+in\s+touch\s+with|questions?[^.\n]{0,40}?\s(?:to|with)')
+_FILL = r'(?:gärna|vår|våra|din|er|ansvarig|närmaste|our|your|the)'
+_LINK = r'(?:alternativt|eller|samt|och|or|and)'
+_CUE = (rf"(?<![\w-])(?i:{_ASKS}|{_ROLES})(?:[ \t]*[:,–—-]+)?\s+(?:(?i:{_FILL}|{_ROLES})(?:[ \t]*[:,–—-]+)?\s+)*"
+        rf"|(?<![\w-])(?:Unionen|Saco(?:-S)?|SACO(?:-S)?|Ledarna|Vision|Seko|SEKO|OFR(?:/\w+)?|ST)\s*[:–—-]\s*"
+        rf"|{_MARKS}[,;)]?\s*{_LINK}\s+")
+_LIST = rf"{PERSON}(?:(?:[ \t]*[,/][ \t]*|[ \t]+{_LINK}[ \t]+){PERSON})*"
+# Titles, teams and companies that follow the same words. At either end of the capitalised words they
+# are kept ("Talent Partner <name>"); elsewhere, or with under two words left, it is not a person.
+NOT_A_NAME = frozenset("""work talent specialist manager partner team engineering recruitment product platform
+    ingenjörer data consultant enhetschef om unit system development case assignment group operating don senior
+    digital support owners owner consulting tech region kommun stad stads sverige sweden ab center centre service
+    services customer person us university universitet högskola avdelning department chef rekryterare recruiter
+    hr it cloud azure microsoft google life""".split())
 NEGATED = r'inget krav|inte ett krav|krävs inte|not required|not a requirement|no .{0,20}required'
 # A heading that introduces requirements: "Krav:", "Vi söker dig som har:", "We believe you have:".
 REQUIRED_HEADING = r'^\s*(?:krav|skallkrav|kvalifikationer|qualifications|requirements|must.have)\s*:?\s*$|(?:du|som|you)\s+(?:har|have)\s*:\s*$'
@@ -111,13 +142,43 @@ def active(ad, at):
             and (deadline is None or deadline >= at))
 
 
+def redact_names(text):
+    """(text with people's names replaced where a contact word or contact detail marks them, how many)."""
+    count = 0
+
+    def person(match):
+        nonlocal count
+        words = match[0].split()
+        plain = [not NOT_A_NAME & set(re.split('-', w.casefold())) for w in words]
+        if True not in plain:
+            return match[0]
+        first, last = plain.index(True), len(plain) - plain[::-1].index(True)
+        if last - first < 2 or not all(plain[first:last]):
+            return match[0]
+        count += 1
+        return ' '.join(words[:first] + [CONTACT_MARK] + words[last:])
+
+    def listed(match):
+        return match[1] + re.sub(PERSON, person, match[2])
+
+    # Until nothing changes: a mark just written is the cue for the name beside it.
+    while True:
+        before = count
+        text = re.sub(rf"({_CUE})({_LIST})", listed, text)
+        text = re.sub(rf"()({PERSON})(?=[,:;]?\s*\(?(?i:(?:tel\.?|telefon|tfn|mobil|mob\.?|phone|e-?post|e-?mail|mail|mejl)[:.]?\s*)?{_MARKS}|[ \t]+{_LINK}[ \t]+{_MARKS})",
+                      listed, text)
+        if count == before:
+            return text, count
+
+
 def redact(text):
-    """(text with e-mail addresses and phone numbers replaced, how many were replaced)."""
+    """(text with e-mail addresses, phone numbers and marked contact names replaced, how many)."""
     count = 0
     for pattern in (EMAIL, PHONE):
         text, n = re.subn(pattern, '[kontaktuppgift utelämnad]', text)
         count += n
-    return text, count
+    text, n = redact_names(text)
+    return text, count + n
 
 
 def public_text(ad):

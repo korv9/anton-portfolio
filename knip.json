@@ -1,0 +1,16 @@
+{
+  "entry": [
+    "frontend/src/main.tsx",
+    "frontend/tests/**/*.{ts,spec.ts}",
+    "frontend/*.config.ts",
+    "worker/*.ts",
+    "scripts/*.mjs"
+  ],
+  "project": ["frontend/src/**/*.{ts,tsx}"],
+  "ignore": [
+    "frontend/src/companies/**",
+    "frontend/src/compliance/**",
+    "frontend/src/job-intelligence/**",
+    "frontend/src/sweden/atlas/**"
+  ]
+}

@@ -17,3 +17,4 @@ criteria:
       - {metric: seed_stability.ari_mean, better_than_champion: 0.05}
       - {metric: separation_representation, better_than_champion: 0.03}
       - {metric: dominance.party.ami, direction: lower, better_than_champion: 0.01}
+  - {name: gain beyond seed spread on common rows, common_gain: party}

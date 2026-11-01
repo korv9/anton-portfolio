@@ -1,7 +1,7 @@
 name: Build, store and publish the warehouse
 
 # Weekly, and by hand: every subject of platform/pipeline.yml that is not marked manual, from the
-# public sources to the site. The whole DuckDB warehouse is stored in R2 with every raw file it
+# public sources to the R2 release. The whole DuckDB warehouse is stored in R2 with every raw file it
 # was built from and the ML stages' outputs (platform/publish/warehouse_store.py), and each
 # delivery group whose subjects all came through is validated and published. Nothing is
 # committed. A run starts from the raw files already stored, so closed parliamentary sessions and

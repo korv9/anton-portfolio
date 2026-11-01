@@ -166,7 +166,9 @@ async function post(ai: Env['AI'], path: string, body: unknown) {
     method: 'POST',
     body: JSON.stringify(body),
   })
-  const response = await worker.fetch(request, { AI: ai, ASSETS: assets })
+  // The Worker fails closed without a limiter; this local evaluation has no quota to protect.
+  const RATE_LIMITER = { limit: async () => ({ success: true }) }
+  const response = await worker.fetch(request, { AI: ai, ASSETS: assets, RATE_LIMITER })
   return { status: response.status, body: (await response.json()) as Record<string, unknown> }
 }
 

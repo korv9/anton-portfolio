@@ -298,13 +298,15 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
     name(group)
     current_data, _ = read(s3, bucket, CURRENT)
     expected = {group: strict_json(current_data)["groups"].get(group, {}).get("release") if current_data else None}
+    active_rows = {}
     if current_data and group in strict_json(current_data)["groups"]:
         previous = group_manifest(s3, bucket, strict_json(current_data)["groups"][group])
         for path in spec.get("optional_files", []):
             if path in previous["files"] and not (root / path).is_file():
                 raise ValueError(f"Previously published optional file must be materialized: {path}")
+        active_rows = previous.get("reconcile", {}).get("rows", {})
     payloads = prepare(root, spec, group)
-    quality, counts = gate(group, payloads)  # Blocks before any upload.
+    quality, counts = gate(group, payloads, active_rows)  # Blocks before any upload.
     dependencies = spec.get("dependencies", {})
     for dependency, version in dependencies.items():
         name(dependency)

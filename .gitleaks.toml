@@ -1,0 +1,12 @@
+# Picked up by `gitleaks git` from the repository root (docs/security.md). The scan covers every
+# fetched branch, so an exception here also holds for commits that never reached main.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Reviewed 2026-11-01: no credentials"
+# Generated public data: indicator keys, column names, passage hashes, record UUIDs and job-ad text
+# that default rules mistake for keys.
+paths = ['''^frontend/public/data/''']
+# korv9/meaning-wel: two chart field names, the only hits in this commit.
+commits = ["1740ebe52dedd74fd66d84bd3a87cf6e4738475b"]

@@ -125,6 +125,31 @@ Status values: `todo`, `doing`, `review`, `loop` (merged to loop), `main`, `bloc
 | P3.4 | I-6 debate to statute book | the `Förarbeten` key | one export, mart and post | blocked | The key must exist and be verified first. |
 | P3.5 | Clustering batch 4 in Actions: DiVA topics, `bridge_job_skills` | P1.6 | `.github/workflows/cluster-jobs.yml` `module` entry, `ml/cluster_lab/` | todo | Runs through the existing workflow; no new workflow file. |
 
+## Owner direction after the loop
+
+Decisions the owner gave after the backlog above was written, from 2026-10-23 on. They overrule it
+where they differ. Statuses checked on 2026-11-01 against the cached `origin/main` and this checkout.
+
+| Id | Item | Owner's date | Status | Note |
+| --- | --- | --- | --- | --- |
+| D1 | Case study: data platform | 2026-10-23 | main | `docs/case-studies/platform.md` |
+| D2 | Case studies: H1 trace every chart, job assistant | 2026-10-23 | todo | Neither file exists. |
+| D3 | Architecture page with live numbers | 2026-10-23 | doing | `#projects` shows models, tests, rows and checks from committed exports. Last successful run and CI are not shown. |
+| D4 | Incident log | 2026-10-23 | main | Two postmortems in `docs/incidents/`. |
+| D5 | README with diagram, how to run, CI badges | 2026-10-23 | main | |
+| D6 | Swedish home page | 2026-10-23 | main | Through the site's language toggle. |
+| D7 | Swedish case studies | 2026-10-23 | todo | The case study is in English. |
+| D8 | Cloudflare Web Analytics | 2026-10-23 | main | Loaded when `VITE_CF_BEACON_TOKEN` is set; whether it is set in Workers Builds was not checked. |
+| D9 | Publish every page again (remove `START_ONLY`) | 2026-10-23 | main | |
+| D10 | Home is about Anton only; flagships and feed move off it, overview at `#projects` | 2026-10-25 | main | Replaces the earlier wish for the job assistant high on home. |
+| D11 | Job assistant finished, top priority | 2026-10-25 | blocked | Needs the owner: D1, `JOB_ASSIST_TOKEN`, CV upload and approval. See `docs/site-goals.md`. |
+| D12 | Panel review and polish of every project | 2026-10-24 | doing | Goals in `docs/site-goals.md`. |
+| D13 | Databricks Free Edition port | 2026-10-23 | blocked | The owner said to wait. |
+| D14 | No new humanities or philosophy tracks, no Phase 3, no more clustering posts | 2026-10-23 | blocked | Phase 3 rows above and P2.3 stay as written and are not to be started without the owner. |
+
+P2.1's page was removed from the working tree on 2026-11-01, and `#ask-platform` leads to `#projects`.
+The 50/50 quota decision above is out of date for that reason.
+
 ## Compute
 
 At most one heavy process runs locally at a time; duckdb runs with `memory_limit='1GB'`. Model

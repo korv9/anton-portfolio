@@ -11,7 +11,7 @@ import { l } from '../i18n'
 import ProjectTech from '../projects/ProjectTech'
 import { ProductQuality } from '../quality/QualityPanel'
 import { PHILOSOPHY_TABS, type Route } from '../router'
-import { fetchData } from '../dataSource'
+import { fetchJson } from '../dataSource'
 import { useViewParams } from '../report/useViewParams'
 import ReportShell, {
   DeepPage,
@@ -208,12 +208,6 @@ const DEFAULTS = {
   spanning: 'individual_collective',
 }
 
-async function json<T>(path: string): Promise<T> {
-  const r = await fetchData(path)
-  if (!r.ok) throw new Error(path)
-  return r.json()
-}
-
 export default function PhilosophyAtlasPage({ route }: { route: Route }) {
   const [summary, setSummary] = useState<Summary | null>(null)
   const [atlas, setAtlas] = useState<Record<string, Point[]> | null>(null)
@@ -228,10 +222,10 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
   const [params, set] = useViewParams(route, DEFAULTS)
   useEffect(() => {
     Promise.all([
-      json<Summary>('philosophy/summary.json'),
-      json<Record<string, Point[]>>('philosophy/atlas.json'),
-      json<Cluster[]>('philosophy/clusters.json'),
-      json<{ distribution: Distribution[]; poles: Pole[] }>(
+      fetchJson<Summary>('philosophy/summary.json'),
+      fetchJson<Record<string, Point[]>>('philosophy/atlas.json'),
+      fetchJson<Cluster[]>('philosophy/clusters.json'),
+      fetchJson<{ distribution: Distribution[]; poles: Pole[] }>(
         'philosophy/tensions.json',
       ),
     ])
@@ -246,7 +240,7 @@ export default function PhilosophyAtlasPage({ route }: { route: Route }) {
   const needText = focus != null || params.kluster !== ''
   useEffect(() => {
     if (needText && !passages)
-      json<Record<string, string>>('philosophy/passages.json')
+      fetchJson<Record<string, string>>('philosophy/passages.json')
         .then(setPassages)
         .catch(() => {})
   }, [needText])
@@ -705,6 +699,12 @@ function Evaluation({ ev }: { ev: Summary['run']['evaluation'] }) {
       )}
     >
       <table className="ph-table">
+        <caption>
+          {l(
+            'How far the map follows works and translators',
+            'Hur mycket kartan följer verk och översättare',
+          )}
+        </caption>
         <thead>
           <tr>
             <th scope="col">{l('Measure', 'Mått')}</th>
@@ -844,6 +844,7 @@ function Works({ works }: { works: Work[] }) {
       aria-label={l('The works', 'Verken')}
     >
       <table className="ph-table">
+        <caption>{l('The works', 'Verken')}</caption>
         <thead>
           <tr>
             <th scope="col">{l('Work', 'Verk')}</th>

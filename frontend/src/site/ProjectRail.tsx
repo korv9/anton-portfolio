@@ -8,7 +8,7 @@ import './project-rail.css'
 type Item = { href: string; en: string; sv: string; external?: boolean }
 
 /** The index on every project page: Overview, then the feed, then each project by group. */
-const GROUPS: { en: string; sv: string; items: Item[] }[] = [
+export const GROUPS: { en: string; sv: string; items: Item[] }[] = [
   {
     en: 'Running on the data platform',
     sv: 'Körs på dataplattformen',
@@ -27,7 +27,11 @@ const GROUPS: { en: string; sv: string; items: Item[] }[] = [
       },
       { href: '#sweden', en: 'SWEDEN', sv: 'SWEDEN' },
       { href: '#fraga-lagen', en: 'Allegora', sv: 'Allegora' },
-      { href: '#cluster-visuals', en: 'Cluster Visuals', sv: 'Klusterbilder' },
+      {
+        href: '#cluster-visuals',
+        en: 'Cluster Visuals',
+        sv: 'Klustervisualiseringar',
+      },
     ],
   },
   {

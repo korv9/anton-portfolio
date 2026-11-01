@@ -31,7 +31,7 @@ from pathlib import Path
 
 import duckdb
 import numpy as np
-from mlkit import data, metrics, splits
+from mlkit import data, metrics, provenance, splits
 from scipy.sparse import hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -102,6 +102,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
     inputs = {"speeches": len(speeches), "replied": int(targets.sum()),
               "max_position": MAX_POSITION, "latest": LATEST, "first_marked": FIRST_MARKED,
               "scope": "debates with a reply", "source": "speech_cards excerpt"}
+    inputs = provenance.stamp(inputs, __file__, speeches)
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)

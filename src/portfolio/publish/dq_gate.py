@@ -3,11 +3,16 @@
 The group's subjects come from platform/pipeline.yml (`group:`); each subject's dbt build writes
 platform/target/<target>/run_results.json. A failing, erroring or skipped node blocks the release,
 as it blocks the export in pipeline.py. No results file means the gate did not run: that is
-recorded as not_run, never as a pass.
+recorded as not_run, never as a pass. When some of the group's subjects ran, a missing one blocks
+unless pipeline.yml marks it manual (left out of --all, so its absence is expected).
+
+The row counts are also compared with the active release: losing a large share of a file's rows
+blocks the release, unless PORTFOLIO_ALLOW_ROW_DROP names the file (comma-separated logical paths).
 """
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import yaml
@@ -15,14 +20,26 @@ import yaml
 from portfolio.core.config import PLATFORM
 TARGET = PLATFORM / "target"
 BLOCKING = ("fail", "error", "skipped")
+# A file of at least MIN_ROWS_CHECKED rows may lose at most MAX_ROW_DROP of them per release.
+MAX_ROW_DROP = 0.3
+MIN_ROWS_CHECKED = 100
+
+
+def built_by(group: str) -> dict[str, bool]:
+    """dbt target directory -> whether only manual subjects build it, for the subjects that deliver
+    into the group, in pipeline order."""
+    subjects = yaml.safe_load((PLATFORM / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]
+    found: dict[str, bool] = {}
+    for name, subject in subjects.items():
+        if subject.get("group") == group and any("dbt" in step for step in subject["steps"]):
+            target = subject.get("target", name)
+            found[target] = found.get(target, True) and bool(subject.get("manual"))
+    return found
 
 
 def targets(group: str) -> list[str]:
     """dbt target directories of the subjects that deliver into the group, in pipeline order."""
-    subjects = yaml.safe_load((PLATFORM / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]
-    return list(dict.fromkeys(
-        subject.get("target", name) for name, subject in subjects.items()
-        if subject.get("group") == group and any("dbt" in step for step in subject["steps"])))
+    return list(built_by(group))
 
 
 def summarise(path: Path) -> dict:
@@ -52,7 +69,7 @@ def summarise(path: Path) -> dict:
 
 def dq(group: str) -> dict:
     """The group's dbt gate. Only the last dbt step of a subject leaves a run_results.json."""
-    names = targets(group)
+    names = built_by(group)
     if not names:
         return {"status": "not_run", "reason": "no subject in pipeline.yml builds dbt models for this group"}
     subjects = {name: summarise(TARGET / name / "run_results.json") for name in names}
@@ -60,6 +77,10 @@ def dq(group: str) -> dict:
     if not ran:
         return {"status": "not_run", "reason": "no dbt run_results.json for this group at release time",
                 "subjects": subjects}
+    missing = [n for n, s in subjects.items() if s["status"] == "not_run" and not names[n]]
+    if missing:
+        return {"status": "error", "scope": "dbt build of each subject in the group",
+                "not_run": missing, "subjects": subjects}
     status = "error" if "error" in ran else "warn" if "warn" in ran else "pass"
     return {"status": status, "scope": "dbt build of each subject in the group", "subjects": subjects}
 
@@ -92,13 +113,30 @@ def reconcile(payloads: dict[str, bytes]) -> dict:
             else "match" if checks else "counts_only", "rows": counts, "checks": checks}
 
 
-def gate(group: str, payloads: dict[str, bytes]) -> tuple[dict, dict]:
-    """The manifest's `dq` and `reconcile`; raises before upload when either blocks."""
+def row_drops(active: dict[str, int], published: dict[str, int]) -> dict:
+    """Files that lost more than MAX_ROW_DROP of the active release's rows; a file gone counts as 0.
+    `allowed` is true only for a path named in PORTFOLIO_ALLOW_ROW_DROP."""
+    allowed = {p.strip() for p in os.environ.get("PORTFOLIO_ALLOW_ROW_DROP", "").split(",")}
+    return {path: {"active": before, "published": published.get(path, 0), "allowed": path in allowed}
+            for path, before in active.items()
+            if before >= MIN_ROWS_CHECKED and published.get(path, 0) < before * (1 - MAX_ROW_DROP)}
+
+
+def gate(group: str, payloads: dict[str, bytes], active_rows: dict[str, int] | None = None) -> tuple[dict, dict]:
+    """The manifest's `dq` and `reconcile`; raises before upload when either blocks. active_rows is
+    `reconcile.rows` of the group's active release."""
     quality, counts = dq(group), reconcile(payloads)
     if quality["status"] == "error":
         failing = sorted({n for s in quality["subjects"].values() for n in s.get("failing", [])})
+        failing += [f"{n} (not run)" for n in quality.get("not_run", [])]
         raise ValueError(f"dbt gate blocks {group}: {', '.join(failing[:10])}")
     if counts["status"] == "mismatch":
         bad = [p for p, c in counts["checks"].items() if not c["match"]]
         raise ValueError(f"Row reconciliation failed for {group}: {', '.join(bad)}")
+    drops = row_drops(active_rows or {}, counts["rows"])
+    if blocked := [f"{p} ({d['active']} to {d['published']})" for p, d in drops.items() if not d["allowed"]]:
+        raise ValueError(f"Row drop blocks {group}: {', '.join(blocked[:10])}; if intended, name the "
+                         "paths in PORTFOLIO_ALLOW_ROW_DROP")
+    if drops:
+        counts["drops"] = drops
     return quality, counts

@@ -39,6 +39,8 @@ def _polarization(job_dir: Path, result: dict) -> dict:
             "governing_parties": row["governing_parties"],
             "passages": row["passages"],
             "permutation_p": row["permutation_p"],
+            "auc_low": row.get("low"),
+            "auc_high": row.get("high"),
         })
     return {
         "sessions": sessions,
@@ -69,7 +71,7 @@ def read_card(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     title = text.splitlines()[0].lstrip("# ").strip()
     header = re.search(r"Task `([^`]+)` · run `([^`]+)` · gate \*\*(\w+)\*\*", text)
-    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| ([\d.]+) \| ([^|]+) \|$", text, re.M)
+    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| (-?[\d.]+) \| ([^|]+) \|$", text, re.M)
     results = [{"model": m.strip(), "metric": k.strip(), "value": float(v),
                 "interval": i.strip() if i.strip() != "—" else None}
                for m, k, v, i in rows if m.strip() != "Model"]

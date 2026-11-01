@@ -1,4 +1,4 @@
-"""Run a subject from source to site, as platform/pipeline.yml defines it.
+"""Run a subject from source to R2 release, as platform/pipeline.yml defines it.
 
     python platform/pipeline.py list
     python platform/pipeline.py run welfare
@@ -10,9 +10,10 @@
     python platform/pipeline.py push ai_politics --only raw
     python platform/pipeline.py check                 # the data contracts on the delivered files
 
-The same command runs locally and in GitHub Actions. Publishing changes the live site, so it
-runs only in Actions or when asked for with --only publish. One failed subject does not stop
-the others; the exit code is non-zero if any failed.
+The same command runs locally and in GitHub Actions. Publishing changes the active release in R2
+(the site serves the data committed under frontend/public/data, docs/pipeline.md), so it runs
+only in Actions or when asked for with --only publish. One failed subject does not stop the
+others; the exit code is non-zero if any failed.
 """
 from __future__ import annotations
 
@@ -182,8 +183,11 @@ def publish(config: dict, names: list[str], failed: dict, phases: set[str], run:
                    if s.get("group") == group and (n in names or not s.get("manual"))]
         absent = [n for n in members if n not in names or n in failed]
         print(f"\n== publish {group}", flush=True)
-        if absent and phases != {"publish"}:
+        if absent:
             print(f"  skipped: {', '.join(absent)} did not succeed in this run")
+            # Nothing else reports it when publishing was the whole request.
+            if phases == {"publish"}:
+                failed[f"publish {group}"] = f"{', '.join(absent)} not in this run"
             continue
         if not run.dry_run and not all(os.environ.get(k, "").strip() for k in CREDENTIALS):
             failed[f"publish {group}"] = "R2 credentials are not set"
@@ -206,7 +210,7 @@ def command_run(args, config: dict) -> int:
         raise SystemExit("Name a subject or pass --all (python platform/pipeline.py list)")
     if args.full_refresh:
         os.environ["PORTFOLIO_FULL_REFRESH"] = "1"
-    # Publishing is opt-in outside Actions: a local run never moves the live site by accident.
+    # Publishing is opt-in outside Actions: a local run never moves an active release by accident.
     if not args.only and not args.dry_run and os.environ.get("GITHUB_ACTIONS") != "true":
         phases.discard("publish")
     run, failed = Runner(args.dry_run), {}

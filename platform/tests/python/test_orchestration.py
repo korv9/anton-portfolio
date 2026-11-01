@@ -23,3 +23,13 @@ def test_export_waits_for_a_passing_dbt_build_and_later_subjects_still_run():
     result = cli("run", "cross_domain", "quality", "--only", "export")
     assert result.returncode == 1
     assert result.stdout.count("not exporting") == 2, result.stdout
+
+
+def test_only_publish_keeps_the_group_completeness_check():
+    # public-data has welfare, parliament and taxes; one of them is not the whole group.
+    partial = cli("run", "welfare", "--only", "publish", "--dry-run")
+    assert partial.returncode == 1 and "release.py publish" not in partial.stdout
+    assert "publish public-data: parliament, taxes not in this run" in partial.stdout
+    whole = cli("run", "welfare", "parliament", "taxes", "--only", "publish", "--dry-run")
+    assert whole.returncode == 0, whole.stdout
+    assert "release.py publish --group public-data" in whole.stdout

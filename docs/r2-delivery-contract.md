@@ -124,11 +124,28 @@ före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_res
 för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
 `pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
 `error` (en nod med `fail`, `error` eller `skipped`) stoppar publiceringen. Saknas
-resultatfil, till exempel vid `publish-r2.yml`, blir det `not_run` med `reason`.
+resultatfil för hela gruppen, till exempel vid `publish-r2.yml`, blir det `not_run` med
+`reason`, och publiceringen fortsätter. Har bara några subjects resultat stoppar ett saknat
+subject publiceringen som `error` med listan `not_run`, om det inte är markerat `manual` i
+`pipeline.yml`.
 Bara det sista dbt-steget i ett subject lämnar en resultatfil. `reconcile.rows`
 har radantal per JSON-array, `rows`/`data`-array och Parquetfil. `checks` jämför
 bara där exportören redan skrivit källtabellens antal bredvid en publicerad path
 (`welfare/datasets.json`); avvikelse stoppar. Annars är status `counts_only`.
+
+`reconcile.rows` jämförs också med den aktiva releasens. En fil med minst 100 rader får tappa
+högst 30 % per release, och en borttagen fil räknas som noll rader. Större tapp stoppar
+publiceringen före uppladdning, om inte `PORTFOLIO_ALLOW_ROW_DROP` namnger filens logiska path
+(kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Filerna i grupperna `jobs`, `news`
+och `job-assistant` är objekt utan `rows` eller `data`, så där räknas inga rader och spärren kan
+inte slå till. De grupperna vilar på sina egna valideringar.
+
+`pipeline.py run --only publish` kräver samma fullständighet som en vanlig körning: saknas ett
+subject som inte är `manual` hoppas gruppen över och körningen misslyckas. `data-heartbeat.yml`
+jämför gruppens `published_at` i `manifests/current.json` med subjectets `fresh_within`. Samma
+bytes behåller publiceringstiden, så en grupp vars data inte ändrats inom gränsen räknas som
+inaktuell.
+
 Fälten ingår inte i release-id: samma bytes ger samma release, och ett redan
 uppladdat manifest behåller sina ursprungliga `dq` och `reconcile`.
 
@@ -320,7 +337,7 @@ ett trasigt rollbackmål.
 
 ## Tester
 
-- `platform/tests/python/test_dq_gate.py`: dbt-grind och radavstämning.
+- `platform/tests/python/test_dq_gate.py`: dbt-grind, `not_run`, radtapp och radavstämning.
 - `platform/tests/python/test_retention.py`: aktiv + 2 behålls, rollback- och
   smokemål skyddas, torrkörning raderar inget, avbrutna uploads efter sju dagar.
 - `platform/tests/python/test_release.py`: publisher, katalog och regressioner mot

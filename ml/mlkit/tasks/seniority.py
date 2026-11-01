@@ -29,7 +29,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import brier_score_loss
 from sklearn.model_selection import GroupKFold
 
-from mlkit import metrics, splits
+from mlkit import metrics, provenance, splits
 
 # Built by platform/ingest/jobtech/run_history_pipeline.py. Override with ML_JOBS_DB.
 DATABASE = Path(os.environ.get(
@@ -90,6 +90,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
 
     inputs = {"labelled": len(labelled), "unspecified": unspecified_count, "min_chars": MIN_CHARS,
               "calibration": "grouped", "stability_seeds": STABILITY_SEEDS}
+    inputs = provenance.stamp(inputs, __file__, labelled)
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
@@ -121,6 +122,9 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
     # the majority class.
     majority = np.zeros_like(truth)
     majority_f1 = metrics.cluster_bootstrap(metrics.macro_f1, truth, majority, groups)
+    # A constant score ranks nothing, so its AUC is 0.5 by definition: the match for the headline.
+    constant_auc = {"name": "Majority class (constant score)", "metric": "AUC", "value": 0.5,
+                    "low": None, "high": None}
 
     # Estimated share: sum of calibrated probabilities, not a count of hard predictions.
     counted = float(predicted.mean())
@@ -168,9 +172,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
         "inputs": inputs,
         "headline": {"name": "TF-IDF + calibrated LR", "metric": "AUC", "value": auc,
                      "low": auc_score["low"], "high": auc_score["high"]},
-        "best_baseline": {"name": "Majority class", "metric": "macro-F1",
-                          "value": majority_f1["point"], "low": majority_f1["low"],
-                          "high": majority_f1["high"]},
+        "best_baseline": constant_auc,
         "gate": {
             "rule": "AUC above 0.70, Brier below 0.20, and the calibrated share estimate "
                     "closer to the observed share than counting hard predictions.",
@@ -204,6 +206,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                 "would measure template memorisation. The calibration folds inside the "
                 "training set are grouped by employer too. Intervals bootstrap over employers.",
             "baselines": [
+                constant_auc,
                 {"name": "Majority class", "metric": "macro-F1", "value": majority_f1["point"],
                  "low": majority_f1["low"], "high": majority_f1["high"]},
             ],

@@ -132,11 +132,17 @@ occupation filter and returns about 40,000 ads. Later runs ask JobStream for eve
 the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
 stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
 `job_assistant`, so its fetch log never mixes with the market subject's. The text projection and
-contact redaction come from `platform/publish/job_content.py`: e-mail addresses, contact names and
-phone numbers ("070 123 45 67", "070.123.45.67", "08-788 00 00", "+46 (0)70 123 45 67") become
-"[kontaktuppgift utelämnad]". Each run applies the current redaction to stored texts as well, so
-a wider pattern covers ads stored before it, and the export refuses `texts.json` or
-`texts-remaining.json` with an e-mail address or phone number left.
+contact redaction come from `platform/publish/job_content.py`. E-mail addresses and phone numbers
+("070 123 45 67", "073 - 123 45 67", "(08) 123 45 67", "+46 (0)70 123 45 67") become
+"[kontaktuppgift utelämnad]". A name of two to four capitalised words becomes
+"[kontaktperson utelämnad]" when a contact word or role comes before it ("Kontakta", "rekryterare",
+"Unionen:") or a redacted contact detail sits beside it. Each run applies the current redaction to
+stored texts as well, so a wider pattern covers ads stored before it, and the export refuses
+`texts.json` or `texts-remaining.json` with an e-mail address, phone number or marked name left.
+
+The redaction has known limits. A one-word name stays, because it cannot be told from an employer
+("Kontakta Försvarsmakten"). So does a full name with no contact word or detail beside it, and a
+name made of words on the exclusion list for titles, teams and companies (`NOT_A_NAME`).
 
 - The key is the JobTech ad id. A changed ad replaces its row when its content hash differs, and
   the old version is noted in the row's history. An unchanged repeat does nothing.
@@ -347,7 +353,10 @@ and there is no `terraform` environment, so the setup workflow creates the datab
 ## Monitoring
 
 The run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 8h`, so the existing
-data heartbeat opens an issue when it stops. `runs.jsonl` keeps one row per run, which is the
+data heartbeat opens an issue when it stops, or when the active release's `published_at` is older
+than that. A release with unchanged bytes keeps its publication time. The ad files hold no
+top-level rows, so the row-drop gate cannot fire for this group ([pipeline](pipeline.md)); the
+export's own checks are the guard. `runs.jsonl` keeps one row per run, which is the
 record for the seven days of scheduled operation after the merge.
 
 The cron is `7 * * * *`, but GitHub does not start every scheduled run. The ten runs from

@@ -9,21 +9,20 @@ npm run build            # dist/, after compliance:check and jobs:check
 npm run verify:quick     # types, formatting, unit tests
 ```
 
-The production build shows only the home page; every other address leads to `#start`
-(`START_ONLY` in `src/router.ts`). The dev server and the browser tests keep every page.
-
 ## Where things are
 
 | Path | What it holds |
 |---|---|
 | `src/router.ts` | Every address, the page it opens and the redirects from retired ones |
-| `src/home/` | The home page: profile, experience, project list, cluster preview, chart feed |
+| `src/home/` | The home page: name intro over the debate backdrop, contact, about, experience, education |
+| `src/hub/` | The overview page (`#projects`); `overviewTypes.ts` types the schema and quality summaries it reads |
 | `src/meaning/` | The chart feed (`#what-does-it-even-mean`) and its Trace panel |
 | `src/projects/projectRegistry.ts` | Project names, groups and menu entries |
 | `src/job-assistant/` | The job assistant (`#jobs`, [docs](../docs/job-assistant.md)) |
 | `src/sweden/` | The SWEDEN research pages (`#sweden*`) |
 | `src/symbolic/`, `src/philosophy/`, `src/concepts/` | The three text labs |
-| `src/clusters/`, `src/ask/`, `src/lawqa/`, `src/workersAi/` | Cluster visuals, Ask the platform, Ask the law, browser-side vector search |
+| `src/clusters/`, `src/lawqa/`, `src/workersAi/` | Cluster visuals, Ask the law, browser-side vector search |
+| `src/tech/ModelCards.tsx` | The model cards that `src/clusters/GatedModels.tsx` shows for models that passed their gate |
 | `src/products/` | DrugComb, the thesis, Homie and the DiVA lakehouse pages |
 | `src/compliance/`, `src/companies/`, `src/job-intelligence/` | Not routed; kept because `scripts/check_compliance_release.mjs` and `check_job_companies.mjs` read them |
 | `src/tokens.css` | Design tokens ([design system](../docs/design-system.md)) |

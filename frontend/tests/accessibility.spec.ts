@@ -89,3 +89,29 @@ test('reduced motion stops transitions', async ({ page, isMobile }) => {
     'none',
   )
 })
+
+test('the skip link moves focus to the page, not to the start page', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'no keyboard on a phone')
+  await page.goto('/#replik')
+  await expect(page.locator('h1')).toBeVisible()
+  await page.locator('.skip-link').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('main')).toBeFocused()
+  await expect(page).toHaveURL(/#replik$/)
+})
+
+test('the language toggle keeps focus when the page redraws', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'no keyboard on a phone')
+  await page.goto('/#start')
+  const toggle = page.locator('main .language-toggle')
+  await toggle.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('html')).toHaveAttribute('lang', 'sv')
+  await expect(toggle).toBeFocused()
+})

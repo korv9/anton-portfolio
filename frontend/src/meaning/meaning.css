@@ -226,6 +226,12 @@
 .mean-square:not(.mean-open) .mean-head-note {
   -webkit-line-clamp: 1;
 }
+/* On a phone the whole note shows: it ends with the source, and the chart gives way. */
+@media (max-width: 480px) {
+  .mean-post:not(.mean-open) .mean-head-note {
+    -webkit-line-clamp: unset;
+  }
+}
 .mean-open .mean-head-title {
   font-size: var(--type-chart-title);
   -webkit-line-clamp: unset;

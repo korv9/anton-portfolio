@@ -15,7 +15,7 @@ A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
 release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). Each release's
 group manifest records the dbt results of the group's subjects and its file row counts under
-`dq` and `reconcile`; a blocking dbt result stops the upload
+`dq` and `reconcile`; a blocking dbt result or a large row drop stops the upload
 ([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
 read these releases: it serves the data committed under `frontend/public/data`
 ([storage-and-serving.md](storage-and-serving.md)). No workflow commits data.
@@ -54,9 +54,23 @@ Rules the command keeps:
   tests passed.
 - One failed subject does not stop the others. A subject that `needs` a failed one is skipped.
   The exit code is non-zero if anything failed.
-- A group is published once, and only when every subject in it succeeded in the same run.
+- A group is published once, and only when every subject in it succeeded in the same run. This
+  holds for `--only publish` too: name every non-manual subject of the group, or the group is
+  skipped and the run fails with `publish <group>: <subjects> not in this run`.
 - Publishing changes the active release in R2. Locally it runs only with `--only publish`, and
   needs the R2 credentials in the environment. In Actions it is part of a normal run.
+
+Two gates in `src/portfolio/publish/dq_gate.py` run before the upload:
+
+- dbt results. A failing node blocks. When some of a group's subjects have results and another
+  non-manual one has none, that also blocks. When none has results, for example in
+  `publish-r2.yml` from a fresh checkout, the manifest records `not_run` and the release goes on.
+- Row counts. A file of at least 100 rows in the active release may lose at most 30 % per release,
+  and a file that is gone counts as zero. To let an intended drop through, name its logical paths,
+  comma-separated, in `PORTFOLIO_ALLOW_ROW_DROP`; the manifest records it under `reconcile.drops`.
+  Only top-level arrays, `rows` or `data` arrays and Parquet files are counted. Every file of the
+  jobs, news and job-assistant groups is an object without those keys, so they count zero rows and
+  this gate cannot fire there; their own validators are the check.
 
 `pull` and `push` need the R2 credentials too. `push` deletes remote raw files that are gone
 locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden).
@@ -93,6 +107,7 @@ Sunday morning.
 | diva | `refresh-diva.yml` | by hand | `run diva` | diva | one click |
 | jobs_analysis | `refresh-job-analysis.yml` | by hand | `run jobs_analysis` | jobs-analysis | one click |
 | legacy | none | by hand | `run legacy` | baseline | no |
+| job_assistant | `refresh-job-assistant.yml` | hourly at :07 | `run job_assistant` | job-assistant | yes |
 | politics_check | `ci.yml` | every push | `run politics_check` | none | yes, checks only |
 
 The weekly run also rebuilds the daily subjects, so it stores one complete warehouse in R2
@@ -103,10 +118,10 @@ The weekly run also rebuilds the daily subjects, so it stores one complete wareh
 Each workflow checks out the repository, calls `.github/actions/data-setup` and then names
 subjects. The shared setup checks the four R2 credentials, installs Python and
 `platform/requirements.txt`, optionally the ML dependencies, and restores the stored raw files
-(`pipeline.py pull`). All seven data workflows share the concurrency group `data-refresh`, so
+(`pipeline.py pull`). Nine data workflows share the concurrency group `data-refresh`, so
 two of them never write the same raw manifests or R2 keys at once. `queue: max` lets the runs
 waiting for it start in order; by default GitHub keeps only the newest pending run and cancels
-the others. Each workflow ends with an `alert` job (`.github/actions/failure-issue`): a failed or
+the others. Each except `export-proof.yml` ends with an `alert` job (`.github/actions/failure-issue`): a failed or
 timed-out run opens an issue labelled `data-pipeline-failure`, or comments on the open one, and
 the next successful run closes it. A raw prune (`prune: true`) stops without deleting when more
 than 5 % of a folder's stored files, or a folder without its local fetch log, would go;
@@ -114,7 +129,8 @@ than 5 % of a folder's stored files, or a folder without its local fetch log, wo
 
 What stays in YAML is the handling of failure, which differs per workflow:
 
-- `refresh-jobs.yml` and `refresh-news.yml` call `.github/workflows/data-subject.yml` with
+- `refresh-jobs.yml`, `refresh-news.yml` and `refresh-job-assistant.yml` call
+  `.github/workflows/data-subject.yml` with
   their subjects and keep only their schedule and lock. The called job restores the subjects'
   raw files, builds and exports them, stores the raw files whatever the build did, and
   publishes only if every subject came through.
@@ -144,16 +160,20 @@ After a subject's ingest steps, successful or not, `pipeline.py` records the out
 run, and per raw source the last fetch, the last content change, files, size and this run's
 fetches, changes and failed requests, read from `raw/<source>/_manifest.jsonl`. In Actions the
 file is merged into an uncached copy in R2 outside every release; locally it is written to
-`frontend/public/data/status/` (git-ignored). The tech panel (`frontend/src/tech/IngestionRecords.tsx`) and the feed's freshness labels (`frontend/src/meaning/freshness.ts`) read it. The sources
+`frontend/public/data/status/` (git-ignored). The feed's freshness labels (`frontend/src/meaning/freshness.ts`) and pipeline post (`frontend/src/meaning/posts/how-pipeline.tsx`) read it. The sources
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
 
 Each subject declares `sla: {fresh_within: ...}` and, per layer it writes, the `write` mode its
 code uses (header of `platform/pipeline.yml`; `platform/tests/architecture/test_pipeline_spec.py`
 checks both against the code). Every hour `data-heartbeat.yml` (`platform/publish/heartbeat.py`)
-reads the published `status/ingestion.json` and compares each subject's last successful ingestion
-with its SLA: past it, one issue labelled `data-freshness` opens or is updated, and it closes
-when all are fresh again. Only subjects with ingest steps are recorded, so only they are checked.
+reads the published `status/ingestion.json` and `manifests/current.json`. It compares each
+subject's last successful ingestion, if it has ingest steps, and the `published_at` of its group's
+active release with its SLA: past either, one issue labelled `data-freshness` opens or is updated,
+and it closes when all are fresh again. A subject that only builds is checked through its release,
+and one that ingests but no longer publishes is caught. A release with unchanged bytes keeps its
+publication time, so a group whose data did not change within the SLA reads as stale. A subject
+with `fresh_within: none` is never checked.
 dbt source freshness on the fetch logs warns at the same age and never fails a run.
 
 ## What a run refetches
@@ -207,14 +227,15 @@ the jobs_analysis ingest step.
 ## Secrets and variables
 
 All in the `anton-portfolio` environment, except where noted. The callers of
-`data-subject.yml` (jobs and news) pass `secrets: inherit`: only the called job enters the environment, so the
+`data-subject.yml` (jobs, news and job assistant) pass `secrets: inherit`: only the called job enters the environment, so the
 caller cannot name its secrets. The called job hands `SCB_API_KEY` and `ANTHROPIC_API_KEY` to
-the build only when the caller asks for them (`scb-key`, `summary`).
+the build only when the caller asks for them (`scb-key`, `summary`, `workers-ai`).
 
 | Workflow | Secrets | Variables |
 |---|---|---|
 | `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `publish-r2.yml`, `cluster-jobs.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
 | `refresh-news.yml` | the four above, and optionally `ANTHROPIC_API_KEY` | `R2_PUBLIC_BASE` |
+| `refresh-job-assistant.yml` | the four above, `JOB_ASSIST_TOKEN`, `CLOUDFLARE_AI_TOKEN` or `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_ACCOUNT_ID` (or a variable of that name) | `R2_PUBLIC_BASE` |
 | `ci.yml` | repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, all optional | none |
 
 `R2_PUBLIC_BASE` is `https://data.antonernstsson.com/`. Unset, the catalogue falls back to the

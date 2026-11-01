@@ -2,8 +2,8 @@
 
     python -m mlkit.overnight
 
-Each job is cached on a key built from its config and its inputs, so a rerun that changes
-nothing does nothing. A job that fails is recorded and the queue continues, because losing
+Each job is cached on a key built from its config, its code and its data (mlkit/provenance.py),
+so a rerun that changes nothing does nothing. A job that fails is recorded and the queue continues, because losing
 a whole night to one traceback is the failure mode worth designing against.
 
 Nothing here publishes. Output lands in ml/runs/<run_id>/ and reaches the site only through
@@ -20,7 +20,7 @@ import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 
-from mlkit import cards
+from mlkit import cards, provenance
 from mlkit.tasks import government_defeat, policy_area, polarization, reply, seniority
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -107,12 +107,12 @@ def main() -> None:
             print(f"  failed: {result['error'].splitlines()[-1]}", flush=True)
         result["minutes"] = (time.time() - clock) / 60
         result.setdefault("device", device)
+        if result["status"] == "ok" and result.get("card"):
+            result["card"]["data"].update(provenance.card_fields(result.get("inputs") or {}))
+            cards.write_card(task, stamp, result["card"])
         results.append(result)
         (job_dir / "result.json").write_text(
             json.dumps(result, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
-
-        if result["status"] == "ok" and result.get("card"):
-            cards.write_card(task, stamp, result["card"])
 
     report = cards.write_report(run_dir, results, started_at.isoformat(timespec="minutes"),
                                 time.time() - began)

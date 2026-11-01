@@ -521,13 +521,16 @@ export default function ClusterVisualsPage() {
 function Gallery() {
   const maps = MAPS()
   const debates = maps.find((spec) => spec.id === 'research-debates')!
-  const [run, setRun] = useState<DebateRun | null>(null)
+  const [run, setRun] = useState<DebateRun | 'error' | null>(null)
   useEffect(() => {
     fetchJson<DebateRun>('cluster-research/debate-topics.json').then(
       setRun,
-      () => {},
+      () => setRun('error'),
     )
   }, [])
+  // The row keeps its size while the file loads; a failed file drops these KPIs.
+  const shown = (value: (r: DebateRun) => string) =>
+    run && run !== 'error' ? value(run) : '–'
   // The local lab reads a dev-server export; it is asked for only when the address names it.
   const lab =
     import.meta.env.DEV && /[?&]lab(_|=|&|$)/.test(window.location.hash)
@@ -541,22 +544,22 @@ function Gallery() {
         )}
         kpis={[
           { label: l('Maps', 'Kartor'), value: num(DATASETS.length) },
-          ...(run
-            ? [
+          ...(run === 'error'
+            ? []
+            : [
                 {
                   label: l('Debate passages', 'Debattpassager'),
-                  value: num(run.observations),
+                  value: shown((r) => num(r.observations)),
                 },
                 {
                   label: l('Debate subjects', 'Debattämnen'),
-                  value: num(run.clusters),
+                  value: shown((r) => num(r.clusters)),
                 },
                 {
                   label: l('Passages in no subject', 'Passager utan ämne'),
-                  value: pct(run.noise_share),
+                  value: shown((r) => pct(r.noise_share)),
                 },
-              ]
-            : []),
+              ]),
         ]}
       />
       <SentencePlacer spec={debates} />

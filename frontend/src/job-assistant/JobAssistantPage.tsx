@@ -18,6 +18,7 @@ import Sections from './Sections'
 import { useJobData } from './useJobData'
 import { https, ownerToken, recordsNote, rows as joinRows } from './data'
 import {
+  daysBetween,
   facetCounts,
   listCounts,
   parseQuery,
@@ -72,7 +73,14 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const qKey = queryParams(new URLSearchParams(), query).toString()
   const limit = more.key === qKey ? more.n : PAGE
   const opened = adId ? all.find((r) => r.ad.id === adId) : undefined
-  const selected = opened ?? (adId ? undefined : shown[0])
+  // The list runs nearest deadline first, so the first row can be an ad whose date has passed.
+  const selected =
+    opened ??
+    (adId
+      ? undefined
+      : (shown.find(
+          (r) => (daysBetween(day, r.ad.application_deadline) ?? 0) >= 0,
+        ) ?? shown[0]))
 
   const go = (params: URLSearchParams, push = false) =>
     setHashParams(route.path, params, push)
@@ -146,10 +154,14 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     <div className="ja ds-container" data-moved={moved || undefined}>
       <PageHead
         title="Arbetsförmedla"
-        sentence={l(
-          'Every open Data/IT job ad, compared with my CV.',
-          'Varje öppen Data/IT-annons, jämförd med mitt CV.',
-        )}
+        sentence={
+          data?.matches.profile
+            ? l(
+                'Every open Data/IT job ad, compared with my CV.',
+                'Varje öppen Data/IT-annons, jämförd med mitt CV.',
+              )
+            : l('Every open Data/IT job ad.', 'Varje öppen Data/IT-annons.')
+        }
       />
       <Bar
         data={data}

@@ -66,7 +66,8 @@ The owner does these steps by hand, in this order.
    value of `TF_WORKER_DOMAIN_IDS` (and of `worker_domain_ids` in a local `terraform.tfvars`).
 
 7. **First plan.** Open a pull request that touches `infra/` (or run the workflow without
-   `apply`) and read both plans in the job summary. A local run works the same way:
+   `apply`) and read the change counts in the job summary. The repository is public, so CI
+   keeps the plan itself out of its logs; read it with a local run:
 
    ```sh
    export AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=…   # step 3

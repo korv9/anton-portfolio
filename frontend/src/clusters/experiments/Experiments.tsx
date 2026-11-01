@@ -85,7 +85,9 @@ export default function Experiments({ all }: { all: boolean }) {
       : domain.champion
     return (
       <>
-        <p className="cx-note">{index.coordinates}</p>
+        <p className="cx-note" lang="en">
+          {index.coordinates}
+        </p>
         <nav className="cv-variants" aria-label={l('Domain', 'Domän')}>
           {domains.map(([k]) => (
             <a
@@ -98,7 +100,9 @@ export default function Experiments({ all }: { all: boolean }) {
             </a>
           ))}
         </nav>
-        <p className="cx-question">{domain.question}</p>
+        <p className="cx-question" lang="en">
+          {domain.question}
+        </p>
         {runParam && !owner && (
           <p className="cx-state" role="alert">
             {l(

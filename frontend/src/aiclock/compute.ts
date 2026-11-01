@@ -78,8 +78,6 @@ export type Change = {
 }
 
 const year = (month: string) => month.slice(0, 4)
-const monthsBetween = (a: string, b: string) =>
-  (+year(b) - +year(a)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7))
 
 /** Share of ads per calendar year for one term, from the monthly counts. */
 export function jobYears(rows: JobRow[], term: string) {
@@ -95,16 +93,6 @@ export function jobYears(rows: JobRow[], term: string) {
   return [...by].map(([y, v]) => ({ year: y, ...v, share: v.hits / v.ads }))
 }
 
-/** The first month a series has any match. */
-export const firstHit = <T extends { month: string }>(
-  rows: T[],
-  count: (r: T) => number,
-) =>
-  rows
-    .filter((r) => count(r) > 0)
-    .map((r) => r.month)
-    .sort()[0]
-
 /** Speeches per calendar year: all, mentioning AI, naming the Act. */
 export function speechYears(rows: SpeechRow[]) {
   const by = new Map<string, { speeches: number; ai: number; act: number }>()
@@ -117,13 +105,6 @@ export function speechYears(rows: SpeechRow[]) {
   }
   return [...by].map(([y, v]) => ({ year: y, ...v, share: v.ai / v.speeches }))
 }
-
-export const proposal = (d: Diffusion) =>
-  d.milestones.find((m) => m.milestone_id === 'document-52021pc0206')!
-
-/** Months from the Commission's proposal to a first match. */
-export const sinceProposal = (d: Diffusion, month: string) =>
-  monthsBetween(proposal(d).month, month)
 
 /**
  * The placebo test, read honestly: how many lags have a p-value at all, how many reach 0.05,

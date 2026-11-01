@@ -13,7 +13,7 @@ import { l } from '../i18n'
 import type { Route } from '../router'
 import { useViewParams } from '../report/useViewParams'
 import { Feature } from '../charts/feature/Feature'
-import { fetchData } from '../dataSource'
+import { fetchJson } from '../dataSource'
 import { DataQuestion, Interpretation, QualityBrief } from '../ui/Story'
 import {
   CORPUS_ORDER,
@@ -63,12 +63,6 @@ const DEFAULTS = { begrepp: 'death' }
 const label = (c: { label_en: string; label_sv: string }) =>
   l(c.label_en, c.label_sv)
 
-async function json<T>(path: string): Promise<T> {
-  const r = await fetchData(path)
-  if (!r.ok) throw new Error(path)
-  return r.json()
-}
-
 function Relation({ type, status }: { type: string; status: string }) {
   return (
     <span className="cj-relation">
@@ -87,10 +81,12 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
   > | null>(null)
   const [pairs, setPairs] = useState<Pair[]>([])
   useEffect(() => {
-    json<Record<string, Record<string, Passage[]>>>('concepts/passages.json')
+    fetchJson<Record<string, Record<string, Passage[]>>>(
+      'concepts/passages.json',
+    )
       .then(setPassages)
       .catch(() => setPassages({}))
-    json<Pair[]>('concepts/pairs.json')
+    fetchJson<Pair[]>('concepts/pairs.json')
       .then(setPairs)
       .catch(() => setPairs([]))
   }, [])

@@ -8,7 +8,7 @@ read the relevant source. Define the behavior to preserve or change and its chec
 | Level | Command | Scope |
 | --- | --- | --- |
 | Quick | `npm run verify:quick` | TypeScript, formatting, frontend and Worker unit tests |
-| Full | `npm run verify:full` | Quick checks, one production build, Python suite, security browser tests and complete E2E |
+| Full | `npm run verify:full` | Quick checks, one production build, Wrangler deploy dry run, import layers (`lint-imports`), Python suite, dbt compile against an empty warehouse, security browser tests and complete E2E |
 | Delivery | `npm run verify:delivery` | Real data contracts, pipeline registry and politics delivery reconciliation; may use the network |
 
 Quick checks are the local floor. Add the relevant Python or browser tests for the
@@ -16,6 +16,11 @@ behavior you change. Documentation-only edits need copy and link review. Shared
 frontend, routing, security and integration changes need Full. Data export or
 delivery changes need Delivery as well. GitHub retains all required checks on PRs
 and main, including real delivery checks; local scopes do not replace that gate.
+
+Full runs what `ci.yml` runs without a secret, so `lint-imports` and `dbt` must be on `PATH`. The
+ML tests (`python -m pytest ml/tests ml/experiments/tests -q`) are a separate CI job that is not
+required, and no level runs them. `npm run lint` and `npm run knip` exist; no level or CI job runs
+them.
 
 Use `node scripts/verify.mjs full --plan` to inspect commands without running them.
 Checks stop at the first failure. Logs and each Python run's isolated temporary

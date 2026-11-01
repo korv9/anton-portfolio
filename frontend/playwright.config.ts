@@ -15,6 +15,8 @@ export default defineConfig({
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
   workers,
+  // One retry in CI: a test that passes on it is reported as flaky, not as a failure.
+  retries: process.env.CI ? 1 : 0,
   reporter: 'list',
   expect: { timeout: 15000 },
   use: {

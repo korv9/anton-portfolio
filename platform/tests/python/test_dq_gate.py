@@ -68,3 +68,38 @@ def test_row_counts_and_recorded_source_counts():
     payloads["datasets.json"] = b'[{"table":"t","path":"parquet/t.parquet","rows":4}]'
     with pytest.raises(ValueError, match="parquet/t.parquet"):
         g.gate("jobs-analysis", payloads)
+
+
+BASELINE_SUBJECTS = ("ai_act", "ai_politics", "concepts", "cross_domain", "job_ai_governance", "philosophy",
+                     "philosophy_moral", "politics", "quality_build", "sfs", "symbolic")
+
+
+def test_an_unexpected_not_run_blocks_and_a_manual_one_does_not(target):
+    # The live baseline: every subject of --all ran, the manual ai_act_diffusion did not.
+    for name in BASELINE_SUBJECTS:
+        results(target, name, ("test", "pass"))
+    quality = g.dq("baseline")
+    assert quality["status"] == "pass"
+    assert quality["subjects"]["ai_act_diffusion"]["status"] == "not_run"
+    (target / "sfs" / "run_results.json").unlink()
+    assert g.dq("baseline")["not_run"] == ["sfs"]
+    with pytest.raises(ValueError, match=r"sfs \(not run\)"):
+        g.gate("baseline", {})
+
+
+def test_a_group_with_no_results_stays_not_run(target):
+    # publish-r2.yml stages a release from a fresh checkout (docs/r2-delivery-contract.md).
+    assert g.dq("baseline")["status"] == "not_run"
+
+
+def test_a_large_row_drop_blocks_unless_the_file_is_named(target, monkeypatch):
+    rows = {"a.json": json.dumps(list(range(69))).encode(), "small.json": b"[]", "same.json": b"[1]"}
+    active = {"a.json": 100, "small.json": 99, "same.json": 1}
+    with pytest.raises(ValueError, match=r"a\.json \(100 to 69\).*PORTFOLIO_ALLOW_ROW_DROP"):
+        g.gate("jobs", rows, active)
+    assert "drops" not in g.gate("jobs", rows, {"a.json": 98})[1]  # below the size checked
+    assert "drops" not in g.gate("jobs", rows, {"a.json": 90})[1]
+    monkeypatch.setenv("PORTFOLIO_ALLOW_ROW_DROP", "other.json, a.json")
+    assert g.gate("jobs", rows, active)[1]["drops"] == {"a.json": {"active": 100, "published": 69, "allowed": True}}
+    with pytest.raises(ValueError, match=r"gone\.json \(500 to 0\)"):
+        g.gate("jobs", rows, {"gone.json": 500})

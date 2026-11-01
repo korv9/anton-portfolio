@@ -319,6 +319,7 @@ export default function Language({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={
         l(
           `How often job ads use each kind of expectation, ${first}–${last}. `,
@@ -457,7 +458,10 @@ export default function Language({ route }: { route: Route }) {
               const [c, y] = key.split('|')
               set({ kategori: c, ar: y })
             }}
-            label={l('3D view of the matrix', '3D-vy av matrisen')}
+            label={l(
+              '3D view of the categories by year',
+              '3D-vy av kategorier per år',
+            )}
             fallback={
               <LanguageMatrix
                 cats={cats}

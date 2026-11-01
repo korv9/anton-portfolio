@@ -1,5 +1,8 @@
 # The atlas: six corpora in one space
 
+Version 2 is the published one; its rules and results start at "Version 2: rules fixed before the
+run". The sections Alignment, Clustering and Links between corpora record version 1.
+
 The atlas puts six corpora on one map and clusters them without labels:
 
 - Riksdag party-leader debate passages
@@ -31,7 +34,7 @@ Code is in `ml/atlas/`: `corpora.py` (loaders), `space.py` (alignment, checks, c
 
 All corpora use one model, `paraphrase-multilingual-MiniLM-L12-v2` at revision `e8f8c211226b`, through the shared embedding cache. Vectors for the debates, symbols and philosophy were already cached. The laws, the AI Act and the job adverts took 107 seconds on a GTX 1660 SUPER GPU, which `embed.py` picks when CUDA is available. Only job-advert headlines are published, never their text.
 
-## Alignment
+## Alignment (version 1)
 
 Raw vectors sort by corpus: 97.7% of a passage's 15 nearest neighbours come from its own corpus, against 30.2% at random. Centring each corpus (and each AI Act language) on its own mean only brought that to 93.6%.
 
@@ -48,13 +51,13 @@ Five alignments were compared on a sample of 6,000 passages:
 | **per-corpus ZCA whitening, shrinkage 0.1** | **0.775** |         **0.996** |
 | per-corpus ZCA whitening, shrinkage 0.3     |     0.783 |             0.996 |
 
-Whitening with shrinkage 0.1 was used. Purity remains well above random, because laws, myths and debates mostly do talk about different things.
+Version 1 used whitening with shrinkage 0.1. Purity remains well above random, because laws, myths and debates mostly do talk about different things.
 
-## Clustering
+## Clustering (version 1)
 
 The aligned vectors are reduced with a 10-dimensional cosine UMAP (15 neighbours, seed 0) and clustered with HDBSCAN (`min_cluster_size` 150, `min_samples` 15). The map is a separate 2-D UMAP with 30 neighbours.
 
-The run found 123 clusters, and 39.1% of passages are noise. In 36 clusters at least two corpora each hold 20% or more of the passages. Examples:
+The version 1 run found 123 clusters, and 39.1% of passages were noise. In 36 clusters at least two corpora each held 20% or more of the passages. Examples:
 
 - Migration debates with the reception and aliens laws (71% debates, 22% laws).
 - Children in care: the social services act and debates on the Convention on the Rights of the Child.
@@ -64,7 +67,7 @@ The run found 123 clusters, and 39.1% of passages are noise. In 36 clusters at l
 
 Group terms are class-based TF-IDF and have not been reviewed.
 
-## Links between corpora
+## Links between corpora (version 1)
 
 Each passage in corpus A gets its 5 nearest passages in corpus B. The lift of group a towards group b is:
 
@@ -72,9 +75,9 @@ Each passage in corpus A gets its 5 nearest passages in corpus B. The lift of gr
 P(neighbour in b | passage in a) / P(neighbour in b | passage in A)
 ```
 
-A lift of 1 means no difference from the rest of the corpus, and corpus B's hubs cancel out. The 95% interval resamples A's units 300 times: debates, books, works, laws, articles or employers. Groups need at least 40 passages. A link is shown only when the lower bound is above 1.
+A lift of 1 means no difference from the rest of the corpus, and corpus B's hubs cancel out. The 95% interval resamples A's units 300 times: debates, books, works, laws, articles or employers. Groups need at least 40 passages. In version 1 a link was shown only when the lower bound was above 1.
 
-Clear links, with 95% intervals:
+Clear links in version 1, with 95% intervals:
 
 | From | To                           | Lift | 95% interval |
 | ---- | ---------------------------- | ---: | -----------: |
@@ -134,6 +137,39 @@ Stability: seed 0 found 137 clusters, and 87 of them came back in at least 3 of 
 Links: 3,685 were tested and 71 pass the rule, against 149 under version 1's rule. The three shuffled runs produced 1, 3 and 4 links, 8 in total against a limit of 10.65, so the procedure counts as calibrated. All twelve party links in the table above survive, with lifts within 0.1 of version 1 (for example KD → christian-biblical 1.23, MP → greenhouse-gas emissions act 3.07). New among the clear links: KD → Kierkegaard (1.28, 1.21–1.36) and SD → Kierkegaard (1.19). The largest drops were philosophy → symbols (37 to 9), whose single-work authors had intervals that were too narrow, and job adverts → laws (30 to 12) and debates → job adverts (21 to 7), which the false discovery rate removed. Debates → laws kept all 24. The AI Act still has no clear link to any law.
 
 The full analysis took 766 seconds: 681 for the five seeds and the map in three parallel processes, the rest for the links and their null runs.
+
+## Dimension-reduction benchmark (2026-10-31): not adopted
+
+This benchmark tested whether another reducer gives a better atlas. The published atlas does not use its results and stays on version 2. The code is in `ml/experiments/dr_bench/`; the rules and raw results are in `tmp/dr-bench/`, which Git ignores, so they are summarised here.
+
+Rules, fixed before any method ran:
+
+- Every method was fit on 20,000 passages stratified by corpus, from the Ledoit–Wolf whitened vectors, with seeds 0 to 2. The top methods were then checked on all 77,753 passages with production settings (HDBSCAN 150/15).
+- A cluster is stable when its best match has Jaccard ≥ 0.5 in both other seeds. Version 2's rule is 3 of 4 other seeds, so the baseline here is 83 where version 2 reports 87.
+- To be eligible for the clustering win, a method needs noise at most 5 points above `umap10`, retention at least 0.95 of `umap10`'s, and mean ARI at least 0.80. The most stable clusters then win, and a clear win needs at least 1.10 times the baseline's count.
+- The best map has the lowest rank sum on 15-neighbour preservation and trustworthiness.
+
+Clustering input, on all passages:
+
+| Method                  | Clusters | Stable | Noise, published | Noise, raw | Mean ARI | Mixed |
+| ----------------------- | -------: | -----: | ---------------: | ---------: | -------: | ----: |
+| `umap10`, production    |      137 |     83 |            57.4% |      37.9% |    0.902 |    20 |
+| `umap10` with exact kNN |      101 |     87 |            54.3% |      47.7% |    0.956 |    21 |
+
+On 20,000 passages the exact 15-neighbour graph gave 96 stable clusters against 75, a clear win by the rule. On all passages 87 against 83 falls short of the 92 a clear win needs, though the order holds and ARI rises. It finds fewer clusters, calls more passages noise before unstable clusters are removed, and its 10-d space sorts more by corpus (purity 0.846, aligned vectors 0.774). The baseline's 10-d embeddings were not kept, so the full-data comparison of purity and retention is missing.
+
+The other 20,000-passage candidates did not compete: DensMAP reached 42 stable clusters, PLSCAN 8, LocalMAP 3 and PaCMAP 1, and PCA to 50 dimensions found no clusters. EVoC, comparison only, had 4. TriMap failed to install.
+
+Map, on all passages:
+
+| Method            | 15-neighbour preservation | Trustworthiness | Peak memory |
+| ----------------- | ------------------------: | --------------: | ----------: |
+| UMAP 2-d, current |                     0.094 |           0.655 |     3.76 GB |
+| openTSNE          |                     0.278 |           0.713 |     4.55 GB |
+
+openTSNE also won on 20,000 passages. TorchDR's UMAP ran out of GPU memory on the full set.
+
+Timings are rough, because up to three processes ran at once. Adopting either result would change the published clusters and links, and would need the version 2 checks rerun on it.
 
 ## Limitations
 

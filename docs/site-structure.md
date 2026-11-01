@@ -1,8 +1,6 @@
 # Site structure
 
-How the site is organised and which file decides what. The production build shows only the
-home page: `START_ONLY` in `frontend/src/router.ts` sends every other address to `#start`. The
-dev server and the browser tests keep the full site described here. The visual direction is in
+How the site is organised and which file decides what. The visual direction is in
 [design-system.md](design-system.md); how a page orders its content is in
 [data-storytelling.md](data-storytelling.md).
 
@@ -41,9 +39,9 @@ section addresses. Readers for one speech, debate, article or concept are separa
 Previous and next links follow the group order. Cluster Visuals (`#cluster-visuals`) and the
 chart feed `#what-does-it-even-mean` sit outside the groups.
 
-Three pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
+Two pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
 answers questions over Swedish statutes or the EU AI Act; `?korpus=ai-act` picks the AI Act.
-Ask the platform (`#ask-platform`) answers questions from the repository's own documents.
+Ask the platform's page was removed on 2026-11-01, and `#ask-platform` now leads to `#projects`.
 On `#cluster-visuals`, the card `#cv-place` places a reader's sentence on the party-leader debate
 map.
 

@@ -13,8 +13,10 @@ items within the same session: given this year's agenda, which items does the go
 Points of one committee report are correlated (a lost report often loses several points), so
 intervals resample reports, not rows.
 
-Gate, declared before the first run: the text model ranks defeats better than the committee
-prior, with the lower bound of the paired bootstrap difference above zero.
+Gate, as amended 2026-11-01 (docs/ml-gate-amendments.md): the text model with procedure words
+masked ranks defeats better than two title-procedure flags, with the lower bound of the paired
+bootstrap difference above zero. The first gate compared the unmasked model to the committee
+prior with the same threshold, and two binary flags nearly matched that model.
 """
 from __future__ import annotations
 
@@ -30,15 +32,18 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
 
-from mlkit import data, metrics, splits
+from mlkit import data, metrics, provenance, splits
 
 SOURCE = (data.PUBLIC / "parquet/parliament_roll_calls/*.parquet").as_posix()
 DESIGNATION = re.compile(r"\s*\([^)]*\)\s*$")
 PRIOR_WEIGHT = 20  # pseudo-count pulling a committee's defeat rate toward the overall rate
-# Wording that marks an announcement to the government. Masked in an ablation to show how
-# much of the ranking is that wording rather than the subject.
+# Wording that marks an announcement to the government, and wording that marks a point decided
+# on motions. Both describe procedure, not subject: they are the baseline's two flags, and the
+# judged model has them masked.
 DIRECTIVE = re.compile(r"\b(bör|borde|uppmaning\w*|regeringen\w*|tillkännag\w*|riksdagen)\b",
                        re.IGNORECASE)
+MOTIONS = re.compile(r"\b(motioner|nej)\b", re.IGNORECASE)
+PROCEDURE_MASK = re.compile(rf"{DIRECTIVE.pattern}|\b(motion\w*|nej)\b", re.IGNORECASE)
 
 
 def load() -> list[tuple]:
@@ -79,6 +84,21 @@ def committee_prior(committees, targets, train, test) -> np.ndarray:
     return np.array([rates.get(c, overall) for c in committees[test]])
 
 
+def procedure_flags(titles) -> np.ndarray:
+    return np.array([[bool(DIRECTIVE.search(t)), bool(MOTIONS.search(t))] for t in titles], dtype=float)
+
+
+def flag_model(flags, targets, train, test, meta=None) -> np.ndarray:
+    """Logistic regression on the two flags, optionally with committee and substantive flag."""
+    x_train, x_test = flags[train], flags[test]
+    if meta is not None:
+        onehot = OneHotEncoder(handle_unknown="ignore")
+        x_train = hstack([x_train, onehot.fit_transform(meta[train])]).tocsr()
+        x_test = hstack([x_test, onehot.transform(meta[test])]).tocsr()
+    model = LogisticRegression(max_iter=3000, C=1.0, class_weight="balanced")
+    return model.fit(x_train, targets[train]).predict_proba(x_test)[:, 1]
+
+
 def text_model(titles, committees, substantive, targets, train, test):
     words = TfidfVectorizer(ngram_range=(1, 2), min_df=3, sublinear_tf=True)
     onehot = OneHotEncoder(handle_unknown="ignore")
@@ -95,8 +115,8 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
     rows = load()
     inputs = {"rows": len(rows), "defeats": int(sum(r[5] for r in rows)),
               "source": "parliament_roll_calls", "folds": "leave-one-session-out",
-              "prior_weight": PRIOR_WEIGHT,
-              "directive_mask": DIRECTIVE.pattern}
+              "prior_weight": PRIOR_WEIGHT, "procedure_mask": PROCEDURE_MASK.pattern}
+    inputs = provenance.stamp(inputs, __file__, rows)
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)
@@ -111,31 +131,37 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
     print(f"  {len(rows):,} votes, {targets.sum()} defeats, {len(set(reports.tolist())):,} reports, "
           f"{len(set(sessions.tolist()))} sessions", flush=True)
 
-    masked = np.array([DIRECTIVE.sub(" ", t) for t in titles], dtype=object)
-    text_scores, prior_scores, masked_scores = (np.zeros(len(rows)) for _ in range(3))
+    masked = np.array([PROCEDURE_MASK.sub(" ", t) for t in titles], dtype=object)
+    flags = procedure_flags(titles)
+    meta = np.column_stack([committees, substantive.astype(str)])
+    scores = {name: np.zeros(len(rows)) for name in ("masked", "full", "flags", "flags_meta", "prior")}
     weights = []
     for session in np.unique(sessions):
         split = splits.temporal_split(sessions, session)
         splits.assert_no_group_leak(sessions, split)
-        text_scores[split.test], coef, names = text_model(
-            titles, committees, substantive, targets, split.train, split.test)
-        masked_scores[split.test] = text_model(
-            masked, committees, substantive, targets, split.train, split.test)[0]
-        prior_scores[split.test] = committee_prior(committees, targets, split.train, split.test)
+        scores["masked"][split.test], coef, names = text_model(
+            masked, committees, substantive, targets, split.train, split.test)
+        scores["full"][split.test] = text_model(
+            titles, committees, substantive, targets, split.train, split.test)[0]
+        scores["flags"][split.test] = flag_model(flags, targets, split.train, split.test)
+        scores["flags_meta"][split.test] = flag_model(flags, targets, split.train, split.test, meta)
+        scores["prior"][split.test] = committee_prior(committees, targets, split.train, split.test)
         weights.append(coef)
 
     codes = np.unique(sessions, return_inverse=True)[1].astype(float)
-    text_packed = np.column_stack([text_scores, codes])
-    prior_packed = np.column_stack([prior_scores, codes])
-    headline = metrics.cluster_bootstrap(within_session_auc, targets, text_packed, reports)
-    prior = metrics.cluster_bootstrap(within_session_auc, targets, prior_packed, reports)
-    gain = metrics.paired_cluster_bootstrap(within_session_auc, targets, text_packed, prior_packed,
-                                            reports)
-    masked_auc = metrics.cluster_bootstrap(within_session_auc, targets,
-                                           np.column_stack([masked_scores, codes]), reports)
-    pooled = metrics.cluster_bootstrap(metrics.auc, targets, text_scores, reports)
-    null = metrics.permutation_test(lambda t, s: within_session_auc(t, text_packed), targets,
-                                    text_scores, iterations=200)
+    packed = {name: np.column_stack([values, codes]) for name, values in scores.items()}
+    within = lambda name: metrics.cluster_bootstrap(within_session_auc, targets, packed[name], reports)
+    gain_over = lambda first, second: metrics.paired_cluster_bootstrap(
+        within_session_auc, targets, packed[first], packed[second], reports)
+    headline, flags_auc, full, flags_meta, prior = (
+        within(n) for n in ("masked", "flags", "full", "flags_meta", "prior"))
+    gain = gain_over("masked", "flags")
+    full_gain = gain_over("full", "flags")
+    meta_gain = gain_over("masked", "flags_meta")
+    pooled = metrics.cluster_bootstrap(metrics.auc, targets, scores["masked"], reports)
+    # Rows are shuffled, so this p-value sits at its floor and does not decide anything.
+    null = metrics.permutation_test(lambda t, s: within_session_auc(t, packed["masked"]), targets,
+                                    scores["masked"], iterations=200)
 
     per_session = []
     for session in np.unique(sessions):
@@ -143,7 +169,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
         if 0 < targets[rows_in].sum() < rows_in.sum():
             per_session.append({"session": session, "defeats": int(targets[rows_in].sum()),
                                 "votes": int(rows_in.sum()),
-                                "auc": metrics.auc(targets[rows_in], text_scores[rows_in])})
+                                "auc": metrics.auc(targets[rows_in], scores["masked"][rows_in])})
     # The last session's coefficients describe a model fitted on every other session.
     order = np.argsort(weights[-1])
     terms = {"toward_defeat": [str(names[i]) for i in order[::-1][:20]],
@@ -153,17 +179,26 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
                                                     indent=1), encoding="utf-8")
 
     passed = bool(gain["low"] is not None and gain["low"] > 0)
-    rule = ("Within-session AUC of the text model above the committee prior: lower bound of the "
-            "paired bootstrap difference over reports above zero. Declared before the first run.")
-    detail = (f"Within-session AUC {headline['point']:.3f} against {prior['point']:.3f} for the "
-              f"committee prior; difference {gain['point']:+.3f} "
+    rule = ("Within-session AUC of the text model with procedure words masked, above a baseline of "
+            "two binary title-procedure flags: lower bound of the paired bootstrap difference over "
+            "reports above zero. Amended 2026-11-01 (docs/ml-gate-amendments.md), knowing that fixed "
+            "flags scored 0.663 against the unmasked model's 0.681. The first gate, the unmasked "
+            "model against the committee prior, passed at 0.681 against 0.532 in run 20261030-2145.")
+    detail = (f"Within-session AUC {headline['point']:.3f} with procedure words masked, against "
+              f"{flags_auc['point']:.3f} for the flags; difference {gain['point']:+.3f} "
               f"({gain['low']:+.3f} to {gain['high']:+.3f}).")
     row = lambda name, metric, s: {"name": name, "metric": metric, "value": s["point"],
                                    "low": s["low"], "high": s["high"]}
-    card_headline = row("Title + committee, TF-IDF LR", "within-session AUC", headline)
+    card_headline = row("Title words, procedure masked, + committee, TF-IDF LR",
+                        "within-session AUC", headline)
+    flags_row = row("Two title-procedure flags", "within-session AUC", flags_auc)
+    outcome = ("The gate passed, so the masked model's per-session result may be published."
+               if passed else
+               "The gate failed, so this model is not shown on Cluster Visuals. The first gate's "
+               "pass does not stand against the harder baseline.")
     return {
         "key": key, "inputs": inputs, "headline": card_headline,
-        "best_baseline": row("Committee prior", "within-session AUC", prior),
+        "best_baseline": flags_row,
         "gate": {"rule": rule, "passed": passed, "detail": detail},
         "card": {
             "purpose": "Government defeats in Riksdag roll calls, ranked from the agenda item",
@@ -177,25 +212,35 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
                 "sessions": f"{min(sessions.tolist())} to {max(sessions.tolist())}",
                 "defeats per session": f"0 to {max(p['defeats'] for p in per_session)}; "
                                        "concentrated in minority parliaments",
-                "permutation p-value (200 shuffles)": f"{null['p_value']:.3f}",
+                "permutation p-value (200 shuffles of single rows, floor 0.005; rows are not "
+                "independent and this does not decide the gate)": f"{null['p_value']:.3f}",
                 "source": "Riksdag open data, roll calls as served under parquet/.",
             },
             "split":
-                "Leave one session out: each session is predicted by a model that never saw it. "
-                "The headline only compares items within one session, so learning which years "
-                "were bad earns nothing. Intervals bootstrap committee reports.",
-            "baselines": [row("Committee prior", "within-session AUC", prior)],
-            "also": [row("Title + committee, TF-IDF LR", "pooled AUC", pooled),
-                     row("Text model minus committee prior", "AUC difference", gain),
-                     row("Same, directive wording masked", "within-session AUC", masked_auc)],
+                "Leave one session out: each session is predicted by a model that never saw it, "
+                "but that model does train on later sessions, so this is not a forecast. The "
+                "headline only compares items within one session, so learning which years were "
+                "bad earns nothing. Intervals bootstrap committee reports.",
+            "baselines": [flags_row, row("Committee prior", "within-session AUC", prior)],
+            "also": [row("Title + committee, nothing masked", "within-session AUC", full),
+                     row("Masked model minus flags", "AUC difference", gain),
+                     row("Unmasked model minus flags", "AUC difference", full_gain),
+                     row("Flags + committee + substantive", "within-session AUC", flags_meta),
+                     row("Masked model minus flags + committee + substantive", "AUC difference",
+                         meta_gain),
+                     row("Masked model", "pooled AUC", pooled)],
             "headline": card_headline,
             "gate": {"rule": rule, "passed": passed, "detail": detail},
             "limitations": [
+                outcome,
                 "Titles are written by the Riksdag after the committee has drafted its report, "
-                "and phrasing such as 'Uppmaning till regeringen' already marks an "
-                "announcement the committee majority wants. Masking that wording moves the "
-                f"within-session AUC from {headline['point']:.3f} to {masked_auc['point']:.3f}, "
-                "so the title still describes the committee's report, not the floor debate.",
+                "and phrasing such as 'Uppmaning till regeringen' already marks an announcement "
+                "the committee majority wants. Two binary flags for that wording and for "
+                f"'motioner' or 'nej' reach {flags_auc['point']:.3f} on their own.",
+                "The mask removes the words the audit named. Other procedural wording may remain, "
+                "so the masked score is an upper bound on what the subject carries.",
+                "The flags were picked after an audit had seen them score well on all sessions, "
+                "which favours the baseline. Their weights are still fitted per fold.",
                 "Sessions with a majority government have almost no defeats and add nothing to "
                 "the ranking. The result describes minority parliaments.",
                 "Each roll call is a point of a report. Points are not independent; the "

@@ -22,3 +22,33 @@
   font-size: var(--body-large);
   line-height: 1.55;
 }
+/* The write-ups and, on phones, the projects the index holds in its drawer. */
+.hub-links {
+  margin-top: var(--sp-6);
+}
+.hub-links h2 {
+  margin: 0 0 var(--sp-2);
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hub-links ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  text-underline-offset: 0.2em;
+}
+@media (min-width: 1024px) {
+  .hub-index {
+    display: none;
+  }
+}
