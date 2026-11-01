@@ -172,7 +172,7 @@ export const PLATFORM_SYSTEM = [
 
 // [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
 // quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
-const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
+export const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
 // A quote written just before an [[id]] that has no quote of its own is the same citation turned
 // around, "quote" [[id]]; it is rewritten as [[id]]"quote" and then checked like any other.
 const TURNED = /"([^"]+)"\s*\[\[([^\]]+)\]\](?!\s*:?\s*")/g
