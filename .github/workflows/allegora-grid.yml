@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     # The Cloudflare secrets are secrets of this environment.
     environment: anton-portfolio
+    if: github.ref == 'refs/heads/main'
     # Batch jobs may queue for hours; the script gives up at five and leaves the job running.
     timeout-minutes: 320
     steps:
