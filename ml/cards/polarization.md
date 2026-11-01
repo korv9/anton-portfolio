@@ -1,6 +1,6 @@
 # How distinguishable party language is, by session
 
-Task `polarization` · run `20260927-1416` · gate **passed**
+Task `polarization` · run `20261101-0304` · gate **passed**
 
 ## What the label means
 
@@ -12,14 +12,19 @@ The label is the speaker's party. The measure is how well a classifier separates
 - sessions also measured with KB-BERT: not run: this run used --no-transformers (no GPU)
 - TF-IDF and KB-BERT correlation across those sessions: not computed
 - passages per session: equal per party, minimum 25 per party to qualify
-- per-session AUC range: 0.599 to 0.697
+- per-session AUC range: 0.598 to 0.697
 - trend: +0.0007 AUC per session (OLS standard error 0.0005, too small: neighbouring sessions share members and issues)
-- same seven parties throughout (S, M, C, L, KD, V, MP): mean AUC 0.635 before 2010/11 and 0.641 from it; trend +0.0002 per session
-- same seven parties, compared only within the same debate: mean AUC 0.678 before 2010/11 and 0.717 from it; trend +0.0022 per session
+- same seven parties throughout (S, M, C, L, KD, V, MP): mean AUC 0.635 before 2010/11 and 0.642 from it; trend +0.0002 per session
+- same seven parties, compared only within the same debate: mean AUC 0.677 before 2010/11 and 0.717 from it; trend +0.0023 per session
 - all parties, same eras: 0.638 before 2010/11 and 0.661 from it
 - speech cards with a party: 254,820 (244,725 issue debates, 10,095 party-leader debates)
 - source: Issue and party-leader debates, Swedish Parliament open data
 - seeds per session: 3
+- sessions whose speaker-bootstrap interval lies above 0.5: 33 of 33 (300 resamples, first seed)
+- permutation test: 999 shuffles of party between speakers on the first seed's held-out fold, scored with mean pairwise AUC
+- code digest: bb42d138b3f9a209
+- data digest: f2cdfdcbec3aa3a0
+- git commit: ee9e826ed582d4446004dde4ccdde8a2a5210836-dirty
 
 ## Split
 
@@ -29,14 +34,14 @@ Party names and abbreviations are masked in the text first, so the label cannot 
 
 | Model | Metric | Value | 95% CI |
 |---|---|---|---|
-| Permutation null (shuffled parties) | macro-F1 | 0.125 | — |
+| Permutation null (parties shuffled between speakers) | AUC | 0.499 | — |
 | Mean pairwise AUC | AUC | 0.649 | — |
 
 ## Gate
 
-Beat the permutation null in 80% of sessions, mean AUC > 0.60.
+Beat the permutation null in 80% of sessions, mean AUC > 0.60. The null shuffles party between speakers since 2026-11-01 (docs/ml-gate-amendments.md); the shuffle of rows it replaced could not fail.
 
-Outcome: **passed**. 33 of 33 sessions significant; mean AUC 0.649.
+Outcome: **passed**. 33 of 33 sessions under p 0.05, 30 under the Bonferroni limit 0.0015; mean AUC 0.649.
 
 ## Limitations
 

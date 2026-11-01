@@ -340,11 +340,16 @@ export default {
     const route = { '/api/embed': embed, '/api/answer': answer }[pathname]
     if (!route) return json({ error: 'not found' }, 404)
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405)
-    if (env.RATE_LIMITER) {
-      const key = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
-      if (!(await env.RATE_LIMITER.limit({ key })).success)
-        return json({ error: 'too many requests' }, 429)
-    }
+    // As for job writes: the site's own origin, or no browser at all.
+    const origin = request.headers.get('Origin')
+    if (origin && origin !== new URL(request.url).origin)
+      return json({ error: 'forbidden origin' }, 403)
+    // Workers AI spends the account's neurons, so it is never served unlimited.
+    if (!env.RATE_LIMITER)
+      return json({ error: 'rate limiter is not configured' }, 503)
+    const key = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+    if (!(await env.RATE_LIMITER.limit({ key })).success)
+      return json({ error: 'too many requests' }, 429)
     return route(request, env)
   },
 }

@@ -39,6 +39,8 @@ def _polarization(job_dir: Path, result: dict) -> dict:
             "governing_parties": row["governing_parties"],
             "passages": row["passages"],
             "permutation_p": row["permutation_p"],
+            "auc_low": row.get("low"),
+            "auc_high": row.get("high"),
         })
     return {
         "sessions": sessions,
@@ -51,7 +53,17 @@ def _polarization(job_dir: Path, result: dict) -> dict:
     }
 
 
-PAYLOADS = {"polarization": _polarization}
+def _government_defeat(job_dir: Path, result: dict) -> dict:
+    detail = json.loads((job_dir / "detail.json").read_text(encoding="utf-8"))
+    return {
+        "sessions": [{**row, "auc": round(row["auc"], 4)} for row in detail["per_session"]],
+        "baseline": result["best_baseline"],
+        "terms": detail["terms"],
+        "permutation_p": detail["permutation"]["p_value"],
+    }
+
+
+PAYLOADS = {"polarization": _polarization, "government_defeat": _government_defeat}
 
 
 def read_card(path: Path) -> dict:
@@ -59,7 +71,7 @@ def read_card(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     title = text.splitlines()[0].lstrip("# ").strip()
     header = re.search(r"Task `([^`]+)` · run `([^`]+)` · gate \*\*(\w+)\*\*", text)
-    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| ([\d.]+) \| ([^|]+) \|$", text, re.M)
+    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| (-?[\d.]+) \| ([^|]+) \|$", text, re.M)
     results = [{"model": m.strip(), "metric": k.strip(), "value": float(v),
                 "interval": i.strip() if i.strip() != "—" else None}
                for m, k, v, i in rows if m.strip() != "Model"]

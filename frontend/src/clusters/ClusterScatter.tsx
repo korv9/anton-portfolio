@@ -24,6 +24,8 @@ const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 /** The name of a group that has none of its own: never its bare number. */
 export const unnamed = () => l('No clear theme', 'Inget tydligt tema')
 const SHOWN = 12
+/** The radius of the densest maps' points, drawn as squares. */
+const DOT = 1.1
 
 export default function ClusterScatter({
   points,
@@ -90,7 +92,7 @@ export default function ClusterScatter({
 
   const radius =
     points.length > 20000
-      ? 1.1
+      ? DOT
       : points.length > 5000
         ? 1.5
         : points.length > 1000
@@ -109,18 +111,43 @@ export default function ClusterScatter({
     const css = getComputedStyle(el)
     const colours = COLOURS.map((v) => css.getPropertyValue(v).trim())
     const noise = css.getPropertyValue('--color-chart-muted').trim()
-    const draw = (p: ClusterPoint, alpha: number) => {
+    // One batch per colour, so the fill colour changes a dozen times, not once per point.
+    const draw = (keep: (p: ClusterPoint) => boolean, alpha: number) => {
+      const batches = new Map<string, ClusterPoint[]>()
+      for (const p of points) {
+        if (!keep(p)) continue
+        const fill = p.c < 0 ? noise : colours[tone(p.c)]
+        const batch = batches.get(fill)
+        if (batch) batch.push(p)
+        else batches.set(fill, [p])
+      }
       ctx.globalAlpha = alpha
-      ctx.fillStyle = p.c < 0 ? noise : colours[tone(p.c)]
-      ctx.beginPath()
-      ctx.arc(sx(p.x), sy(p.y), radius, 0, Math.PI * 2)
-      ctx.fill()
+      for (const [fill, batch] of batches) {
+        ctx.fillStyle = fill
+        // Measured on the atlas at 4x CPU: fillRect 211 ms, per-point arcs 833 ms, one arc Path2D
+        // 973 ms. A dot this small reads the same as a square.
+        if (radius <= DOT) {
+          for (const p of batch)
+            ctx.fillRect(
+              sx(p.x) - radius,
+              sy(p.y) - radius,
+              2 * radius,
+              2 * radius,
+            )
+          continue
+        }
+        const path = new Path2D()
+        for (const p of batch) {
+          path.moveTo(sx(p.x) + radius, sy(p.y))
+          path.arc(sx(p.x), sy(p.y), radius, 0, Math.PI * 2)
+        }
+        ctx.fill(path)
+      }
     }
     // Noise first and faint, then the clusters; a picked cluster last and in full.
-    for (const p of points) if (p.c < 0) draw(p, picked == null ? 0.7 : 0.35)
-    for (const p of points)
-      if (p.c >= 0 && p.c !== picked) draw(p, picked == null ? 0.85 : 0.18)
-    if (picked != null) for (const p of points) if (p.c === picked) draw(p, 1)
+    draw((p) => p.c < 0, picked == null ? 0.7 : 0.35)
+    draw((p) => p.c >= 0 && p.c !== picked, picked == null ? 0.85 : 0.18)
+    if (picked != null) draw((p) => p.c === picked, 1)
     ctx.globalAlpha = 1
   }, [points, width, h, picked, sx, sy, radius, tone])
 

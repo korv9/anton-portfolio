@@ -7,7 +7,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The pages outside the registry name themselves; the rest are "Under the hood". */
 const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
-  clusters: { en: 'Cluster Visuals', sv: 'Cluster Visuals' },
+  clusters: { en: 'Cluster Visuals', sv: 'Klustervisualiseringar' },
   meaning: {
     en: 'What does it even mean?',
     sv: 'What does it even mean?',

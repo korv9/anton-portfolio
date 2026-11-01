@@ -5,14 +5,36 @@
  */
 import { l } from '../i18n'
 import PageHead from '../ui/PageHead'
-import type { Summary } from './Headline'
-import type { Quality } from '../tech/WarehouseTables'
-import { ok, useFile } from '../tech/techData'
+import type { Quality, Summary } from './overviewTypes'
+import { ok, useJson as useFile } from '../useJson'
+import { GROUPS } from '../site/ProjectRail'
 import './hub.css'
+
+const docs = (path: string) =>
+  `https://github.com/korv9/anton-portfolio/blob/main/docs/${path}`
+/** The platform written up on GitHub: the case study and the two postmortems. */
+const WRITE_UPS = [
+  {
+    href: docs('case-studies/platform.md'),
+    en: 'Case study: the data platform',
+    sv: 'Fallstudie: dataplattformen',
+  },
+  {
+    href: docs('incidents/2026-10-22-warehouse-wipe.md'),
+    en: 'Postmortem: shared warehouse emptied by a worktree removal',
+    sv: 'Postmortem: delat lager tömt när en worktree togs bort',
+  },
+  {
+    href: docs('incidents/2026-10-22-third-party-text-in-r2.md'),
+    en: 'Postmortem: third-party text pushed to the public R2 bucket',
+    sv: 'Postmortem: tredjepartstext i den publika R2-hinken',
+  },
+]
 
 export default function ProjectsHub() {
   const summary = useFile<Summary>('schema/summary.json')
   const quality = useFile<Quality>('quality/summary.json')
+  const statuses = ok(quality) ? quality.run.check_statuses : undefined
   const kpis = [
     {
       label: l('warehouse rows', 'rader i lagret'),
@@ -27,10 +49,15 @@ export default function ProjectsHub() {
       value: ok(summary) ? summary.tests : '…',
     },
     {
-      label: l('quality checks passing', 'kvalitetskontroller godkända'),
-      value: ok(quality)
-        ? `${quality.run.check_statuses?.pass ?? '–'}/${quality.run.checks}`
-        : '…',
+      label: l(
+        'quality checks passing, of those applicable and measured',
+        'kvalitetskontroller godkända, av dem som gäller och är mätta',
+      ),
+      value: !ok(quality)
+        ? '…'
+        : statuses
+          ? `${statuses.pass ?? 0} ${l('of', 'av')} ${quality.run.checks - (statuses.not_applicable ?? 0) - (statuses.not_measured ?? 0)}`
+          : '–',
     },
   ]
   return (
@@ -63,6 +90,41 @@ export default function ProjectsHub() {
           </dd>
         </div>
       </dl>
+      <section className="hub-links" aria-labelledby="hub-write-ups">
+        <h2 id="hub-write-ups">{l('Written up', 'Nedskrivet')}</h2>
+        <ul>
+          {WRITE_UPS.map((doc) => (
+            <li key={doc.href}>
+              <a href={doc.href} target="_blank" rel="noreferrer">
+                {l(doc.en, doc.sv)} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+      {/* On phones the index is a closed drawer, so the projects are listed here as well. */}
+      <nav className="hub-index" aria-label={l('Projects', 'Projekt')}>
+        {GROUPS.map((group) => (
+          <section key={group.en} className="hub-links">
+            <h2>{l(group.en, group.sv)}</h2>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    {...(item.external
+                      ? { target: '_blank', rel: 'noreferrer' }
+                      : {})}
+                  >
+                    {l(item.en, item.sv)}
+                    {item.external && ' ↗'}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </nav>
     </article>
   )
 }

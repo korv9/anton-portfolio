@@ -34,11 +34,11 @@ test(
   },
 )
 
-test('education follows experience in one column, beside the cluster maps', async ({
+test('education follows experience in one column', async ({
   page,
   isMobile,
 }) => {
-  test.skip(isMobile, 'one column with one map on a phone')
+  test.skip(isMobile, 'one column on a phone')
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/#erfarenhet')
   await page.evaluate(() => document.fonts.ready)
@@ -58,19 +58,7 @@ test('education follows experience in one column, beside the cluster maps', asyn
   expect(education.top).toBeGreaterThan(experience.bottom)
   const column = await box('.home-experience')
   expect(column.width).toBeLessThanOrEqual(641)
-  // The maps sit to the right and stay beside the reading: decorative, drawn, one per slot.
-  const maps = page.locator('.home-map3d')
-  await expect(maps).toHaveCount(3)
-  expect((await box('.home-maps')).left).toBeGreaterThan(column.right)
-  await expect(maps.first()).toHaveCSS('position', 'sticky')
-  await expect(maps.first()).toHaveAttribute('data-ready', 'true', {
-    timeout: 20000,
-  })
-  await expect(maps.first().locator('.home-map3d-scene')).toHaveAttribute(
-    'aria-hidden',
-    'true',
-  )
-  await expect(maps.first().locator('canvas')).toHaveCount(3)
+  await expect(page.locator('main canvas')).toHaveCount(1) // Only the job-ads map below.
 })
 
 test(
@@ -174,11 +162,11 @@ test('the background finishes its fast intro with fully coloured points', async 
 test('home remains usable when the decorative debate map is unavailable', async ({
   page,
 }) => {
-  await page.route('**/umap.json', (route) =>
+  await page.route('**/politics/parliament/backdrop.json', (route) =>
     route.fulfill({ status: 503, body: 'Unavailable' }),
   )
   const failedMap = page.waitForResponse((response) =>
-    response.url().endsWith('/umap.json'),
+    response.url().endsWith('/politics/parliament/backdrop.json'),
   )
   await page.goto('/')
   await failedMap

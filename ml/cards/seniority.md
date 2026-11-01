@@ -24,6 +24,7 @@ Grouped by employer, 30% held out. No employer appears in both folds, because la
 
 | Model | Metric | Value | 95% CI |
 |---|---|---|---|
+| Majority class (constant score) | AUC | 0.500 | — |
 | Majority class | macro-F1 | 0.438 | 0.401 – 0.463 |
 | TF-IDF + calibrated LR, threshold 0.5 | macro-F1 | 0.823 | 0.736 – 0.879 |
 | TF-IDF + calibrated LR | Brier | 0.088 | — |

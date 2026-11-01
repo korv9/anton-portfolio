@@ -49,6 +49,7 @@ async function env(
   const calls: unknown[] = []
   return {
     calls,
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
     AI: {
       run: async (model, input) => {
         calls.push({ model, input })
@@ -364,4 +365,25 @@ test('answer: the checked law answer is retold as a moral allegory, and the answ
   const none = await env([{ response: 'NO_ANSWER' }])
   await worker.fetch(ask(), none)
   assert.equal(none.calls.length, 1)
+})
+
+test('AI routes refuse foreign origins and fail closed without the limiter', async () => {
+  const e = await env({ data: [[0.1]] })
+  const from = (origin?: string) =>
+    new Request('https://site.test/api/embed', {
+      method: 'POST',
+      headers: origin ? { Origin: origin } : {},
+      body: JSON.stringify({ text: 'hej' }),
+    })
+  const foreign = await worker.fetch(from('https://evil.test'), e)
+  assert.equal(foreign.status, 403)
+  assert.equal(e.calls.length, 0)
+  assert.equal((await worker.fetch(from('https://site.test'), e)).status, 200)
+  assert.equal((await worker.fetch(from(), e)).status, 200)
+  const { RATE_LIMITER: _, ...unbound } = e
+  assert.equal(
+    (await worker.fetch(from('https://site.test'), unbound)).status,
+    503,
+  )
+  assert.equal(e.calls.length, 2)
 })

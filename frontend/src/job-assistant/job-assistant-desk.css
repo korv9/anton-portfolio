@@ -186,6 +186,7 @@
 }
 .ja-facts dd {
   overflow-wrap: anywhere;
+  hyphens: auto;
   margin: var(--sp-1) 0 0;
   font-size: var(--body-large);
 }

@@ -2,6 +2,8 @@
 
 Every product reviewed by its own agent against one rule: each product must carry real value and never look unfinished. Full reviews (findings, copy corrections, project-page content, screenshots) are in the session scratchpad `reviews/<id>.md`; this file collects the verdicts and every task.
 
+Paths are as of 2026-10-25. Most files under `frontend/src/hub/`, `frontend/src/tech/` and `frontend/src/ask/` were removed on 2026-11-01, so a row naming one describes the page as it was then. `hub/ProjectsHub.tsx`, `hub/overviewTypes.ts` and `tech/ModelCards.tsx` remain.
+
 P1 = blocks looking finished · P2 = clear improvement · P3 = nice to have. Effort S/M/L.
 
 | Product | P1 | P2 | P3 |

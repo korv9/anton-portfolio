@@ -4,11 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+  # Python is left out: its pins need regenerated hash locks (docs/security.md), which Dependabot
+  # does not do. pip-audit in security.yml reports vulnerable pins.
   - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: weekly
-  - package-ecosystem: pip
-    directory: /platform
+    directories:
+      - /
+      - /.github/actions/data-setup
     schedule:
       interval: weekly

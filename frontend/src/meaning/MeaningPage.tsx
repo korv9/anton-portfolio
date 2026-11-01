@@ -15,7 +15,7 @@ export default function MeaningPage() {
       </h1>
       <p className="mean-lede">
         {l(
-          'I first started building this platform with the idea that I would ingest as much data sources as possible. I was naive when I thought that this would automatically produce actionable insights. Had a realization that the presentation of the data and all its graphs and diagrams are equally important.',
+          'I started building this platform with the idea that I would ingest as many data sources as possible. I was naive to think this would automatically produce actionable insights. Then I realised that the presentation of the data, with all its graphs and diagrams, is just as important.',
           'Jag började bygga den här plattformen med idén att läsa in så många datakällor som möjligt. Jag var naiv som trodde att det automatiskt skulle ge insikter att agera på. Sedan insåg jag att presentationen av datan, med alla dess grafer och diagram, är lika viktig.',
         )}
       </p>

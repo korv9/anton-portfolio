@@ -61,13 +61,15 @@ def test_candidate_failing_frozen_criteria_is_rejected(tmp_path):
     # More stable (a measured gain) but far more dominated by work: must be rejected.
     worse = runs.run_record(p, metrics(0.9, 0.8, 0.5), {}, META, 10, 'worse', ['synthetic'])
     reg.register(worse)
-    assert runs.judge(reg, champion, worse, accept.criteria('philosophy')) == 'rejected'
+    enough = {'work': {'gain': 0.08, 'spread': 0.02}}
+    assert runs.judge(reg, champion, worse, accept.criteria('philosophy'), common=enough) == 'rejected'
     report = reg.load()['runs'][worse['run_id']]['acceptance']
     assert report['failed'] == ['work dominance not worse']
     better = runs.run_record(runs.pipeline('mpnet', 'passage', 'centred', {'method': 'kmeans', 'k': 6}),
                              metrics(0.7, 0.42, 0.5), {}, META, 10, 'better', ['synthetic'])
     reg.register(better)
-    assert runs.judge(reg, champion, better, accept.criteria('philosophy')) == 'candidate'
+    # A real gain needs a common-row comparison beyond seed spread; without one it is rejected.
+    assert runs.judge(reg, champion, better, accept.criteria('philosophy'), common=enough) == 'candidate'
 
 
 def test_chunks_cover_the_whole_passage():

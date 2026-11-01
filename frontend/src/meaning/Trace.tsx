@@ -1,9 +1,10 @@
 /**
  * Where an opened chart's numbers come from: its files, the publisher and the models and tables
- * behind them, their tests, the last ingestion and the last run. Lineage is read from
- * architecture/feed-provenance.json (platform/architecture/feed_provenance.py) when the panel
- * opens; freshness and the run come from the live status the card already holds. Anything not
- * recorded is said to be so, or left out, never filled in.
+ * behind them, their tests, when each file was generated and the last pipeline run. Lineage is read
+ * from architecture/feed-provenance.json (platform/architecture/feed_provenance.py) when the panel
+ * opens; the run comes from the live status the card already holds, which says when the pipeline
+ * ran and not how old the served file is: that is the file's own generated_at. Anything not recorded
+ * is said to be so, or left out, never filled in.
  */
 import { useId, type ReactNode } from 'react'
 import { useData, type Post } from './kit'
@@ -152,6 +153,23 @@ function Lineages({ sources }: { sources: readonly string[] }) {
   )
 }
 
+/** When the served file says it was generated. */
+function Generated({ path, named }: { path: string; named: boolean }) {
+  const data = useData<{ generated_at?: unknown }>(path)
+  const at =
+    data && !(data instanceof Error) && typeof data.generated_at === 'string'
+      ? data.generated_at.slice(0, 10)
+      : null
+  if (data === null) return null
+  return (
+    <span>
+      {named && <code>{file(path)}</code>}
+      {named && ': '}
+      {at ?? l('not recorded in the file', 'står inte i filen')}
+    </span>
+  )
+}
+
 type Fresh = ReturnType<typeof useFresh>
 
 /**
@@ -175,7 +193,8 @@ export function Trace({
 }) {
   const id = useId()
   const state =
-    fresh && (fresh.fresh ? l('on time', 'i tid') : l('overdue', 'försenad'))
+    fresh &&
+    (fresh.fresh ? l('on schedule', 'enligt schema') : l('overdue', 'försenad'))
   return (
     <>
       <button
@@ -200,8 +219,15 @@ export function Trace({
               ))}
             </Row>
             <Lineages sources={post.sources} />
+            <Row term={l('Data generated', 'Data skapad')}>
+              <span className="mean-trace-layers">
+                {post.sources.map((p) => (
+                  <Generated key={p} path={p} named={post.sources.length > 1} />
+                ))}
+              </span>
+            </Row>
             {fresh && (
-              <Row term={l('Ingested', 'Inläst')}>
+              <Row term={l('Pipeline ran', 'Pipelinen kördes')}>
                 {fresh.at
                   ? `${fresh.at.slice(0, 10)}, ${state}`
                   : `${state}; ${l('the time of the last success is not recorded', 'tiden för senaste lyckade körning är inte registrerad')}`}

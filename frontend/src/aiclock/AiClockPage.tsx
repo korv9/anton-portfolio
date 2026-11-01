@@ -3,9 +3,8 @@
  * Riksdag. A head with KPIs, then charts with a legend only, computed on load from the committed
  * ai-act files (compute.ts); method folds away at the foot.
  */
-import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
-import { fetchJson } from '../dataSource'
+import { LoadNote, loaded, useJson } from '../useJson'
 import { ProjectSection } from '../ui/Project'
 import PageHead, { Legend, Method, type Kpi } from '../ui/PageHead'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -24,21 +23,6 @@ import {
   type SpeechSummary,
 } from './compute'
 import './aiclock.css'
-
-function useJson<T>(path: string): T | null {
-  const [value, setValue] = useState<T | null>(null)
-  useEffect(() => {
-    let live = true
-    fetchJson<T>(path).then(
-      (v) => live && setValue(v),
-      (e: Error) => console.warn(e.message),
-    )
-    return () => {
-      live = false
-    }
-  }, [path])
-  return value
-}
 
 const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
 const num = (v: number, digits = 0) =>
@@ -300,13 +284,22 @@ function LawSection({
 // ---------------------------------------------------------------- page
 
 export default function AiClockPage() {
-  const d = useJson<Diffusion>('ai-act/diffusion.json')
-  const jobRows = useJson<JobRow[]>('ai-act/jobs/monthly.json')
-  const jobs = useJson<JobSummary>('ai-act/jobs/summary.json')
-  const speechRows = useJson<SpeechRow[]>('ai-act/politics/monthly.json')
-  const speeches = useJson<SpeechSummary>('ai-act/politics/summary.json')
-  const act = useJson<ActSummary>('ai-act/summary.json')
-  const changes = useJson<Change[]>('ai-act/changes.json')
+  const files = {
+    d: useJson<Diffusion>('ai-act/diffusion.json'),
+    jobRows: useJson<JobRow[]>('ai-act/jobs/monthly.json'),
+    jobs: useJson<JobSummary>('ai-act/jobs/summary.json'),
+    speechRows: useJson<SpeechRow[]>('ai-act/politics/monthly.json'),
+    speeches: useJson<SpeechSummary>('ai-act/politics/summary.json'),
+    act: useJson<ActSummary>('ai-act/summary.json'),
+    changes: useJson<Change[]>('ai-act/changes.json'),
+  }
+  const d = loaded(files.d)
+  const jobRows = loaded(files.jobRows)
+  const jobs = loaded(files.jobs)
+  const speechRows = loaded(files.speechRows)
+  const speeches = loaded(files.speeches)
+  const act = loaded(files.act)
+  const changes = loaded(files.changes)
   const kpis: Kpi[] = []
   if (jobs)
     kpis.push({
@@ -344,6 +337,7 @@ export default function AiClockPage() {
         )}
         kpis={kpis}
       />
+      <LoadNote files={Object.values(files)} />
       <QuestionSection
         d={d}
         end={

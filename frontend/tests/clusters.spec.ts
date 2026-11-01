@@ -18,6 +18,20 @@ test(
     const tiles = page.locator('.cv-tile')
     await expect(tiles).toHaveCount(7)
     await expect(tiles.first()).toHaveAttribute('id', 'cv-map-jobs-detail')
+    // Only models whose gate passed are listed, each with its verdict.
+    const models = page.locator('#cv-models .model-card')
+    await expect(models.first()).toBeAttached()
+    await expect(page.locator('#cv-models .model-verdict.is-held')).toHaveCount(
+      0,
+    )
+    // The atlas reads its counts from meta.json and lists links between corpora.
+    const meta = await (await page.request.get('/data/atlas/meta.json')).json()
+    const shared = page.locator('#cv-atlas')
+    await expect(shared.locator('.cx-question')).toContainText(
+      meta.passages.toLocaleString('en-GB'),
+    )
+    await expect(shared.locator('canvas')).toHaveCount(1)
+    await expect(shared.locator('table').first()).toBeAttached()
     // Maps far down the page have not asked for their data yet.
     await expect(page.locator('#cv-map-debates-legacy canvas')).toHaveCount(0)
     await expect(

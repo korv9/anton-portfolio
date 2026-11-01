@@ -8,7 +8,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from publish.job_content import active, detail, instant, package, public_text, public_url, requirements
+from publish.job_content import active, detail, instant, package, public_text, public_url, redact, requirements
 from publish.job_companies import project, publish, validate_workspace
 from compliance_intelligence.explorer import PRESENTATION_FILES
 from compliance_intelligence.sources import new_output
@@ -151,3 +151,33 @@ def test_latest_50_stable_order_bound_hash_and_lazy_publication(tmp_path,monkeyp
     publish(tmp_path/'resolved',destination/'company-intelligence.json')
     assert (destination/'workspace.json').exists()
     assert (destination/'workspace-remaining.json').exists()
+
+
+@pytest.mark.parametrize('sentence', [
+    'Kontakta Anna Test för frågor.', 'Kontakta gärna rekryterande chef Anna Test.',
+    'Kontaktperson: Anna Test', 'Kontakt:\nAnna Test', 'Frågor om tjänsten till Anna Test.',
+    'Rekryteringsansvarig: Anna-Lena von Test', 'Unionen: Anna Test',
+    'Please contact Anna Test.', 'Questions can be directed to Anna Test.',
+    'Reach out to Anna Test.', 'Contact hiring manager Anna Test', 'Talent Acquisition Partner Anna Test, 070 123 45 67',
+    'Anna Test, 070 123 45 67', 'Anna Test tel. 08-123 45 67', 'Bo Exempel och Anna Test, 070 123 45 67', 'Kontakta Bo Exempel, 070 123 45 67, alternativt Anna Test',
+])
+def test_a_name_marked_by_a_contact_word_or_detail_is_redacted(sentence):
+    text, count = redact(sentence)
+    assert 'Test' not in text and 'Exempel' not in text and count >= 1
+    assert redact(text) == (text, 0)  # the export's check and the rerun in ads.py find nothing more
+
+
+@pytest.mark.parametrize('sentence', [
+    'Kontakta Region Skåne.', 'Kontakta Försvarsmakten.', 'Contact Center Agent sökes.', 'Kontakta HR Sverige.',
+    'Arbetsuppgifter: Python och Power BI. Du rapporterar till Anna Test i Stockholm.',
+    'Contact with Microsoft Azure is part of the role.', 'Work Life balans är viktigt.', 'Öppet 08.00-17.00 och 08.30 - 16.30.',
+    'Sista dag 01-12-2026.',
+])
+def test_the_rest_of_the_ad_is_kept(sentence):
+    assert redact(sentence) == (sentence, 0)
+
+
+@pytest.mark.parametrize('phone', ['073 - 123 45 67', '070–1234567', '070- 123 45 67', '(08) 123 45 67', '08\u202f123-45 67',
+                                   '+46 (70) 1234567', '+46)70 123 45 67', '46 701-23 45 67', '0046 70 123 45 67', '+46 (0)70 123 45 67'])
+def test_phone_shapes_are_redacted(phone):
+    assert redact(f'Ring {phone} idag.')[0] == 'Ring [kontaktuppgift utelämnad] idag.'

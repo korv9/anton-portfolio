@@ -7,9 +7,7 @@ Workers AI demos ([workers-ai.md](workers-ai.md)) and the job assistant's API. R
 served from the files. With `not_found_handling = "none"`, a miss also reaches the script, which
 answers a page address with `index.html` and a missing file (anything under `/data/` or with an
 extension) with 404 (`asset()` in `worker/index.ts`).
-The production build renders only the home page; every other address leads to `#start`
-(`START_ONLY` in `frontend/src/router.ts`). The site's JSON
-is part of those files. Parquet marts and document shards are served from the R2 bucket
+The site's JSON is part of those files. Parquet marts and document shards are served from the R2 bucket
 `anton-portfolio` on the same Cloudflare account, which also holds the versioned data releases
 the site does not read ([storage-and-serving.md](storage-and-serving.md)).
 
@@ -26,9 +24,33 @@ connection is enabled once after the complete R2 bundle is verified.
 2. Cloudflare attempts a branch preview (`npx wrangler preview`, using the
    `[previews]` block in `wrangler.toml`). Check its actual build result before relying
    on a preview. Its origin also needs the bucket's CORS permission.
-3. The owner looks at the preview and approves the merge; merged, it is live.
+3. The owner looks at the preview and merges. No approving review is required: the `main` ruleset
+   (`infra/github/main.tf`) sets zero approvals and enforces the four required checks and
+   resolved review threads. Merged, it is live.
 4. Data refreshes validate, upload and activate their own R2 groups. Once the frontend
    connection is enabled, the site reads the approved version without a code commit or deployment.
+
+## After a deploy: smoke test and rollback
+
+Workers Builds deploys outside GitHub Actions, so no workflow runs after it. Check by hand that
+the live data bundle is whole (read-only, needs no secret):
+
+```sh
+E2E_R2_MANIFEST_URL=https://data.antonernstsson.com/manifests/current.json \
+  E2E_SITE_URL=https://antonernstsson.com \
+  npx playwright test --config frontend/playwright.config.ts live-delivery --project=desktop
+```
+
+To roll the Worker and its static assets back (needs `npx wrangler login` or a token with Workers
+Scripts Edit):
+
+```sh
+npx wrangler versions list            # find the last good version id
+npx wrangler rollback <version-id> --message "why"
+```
+
+This takes effect at once. It does not touch R2 data or the D1 database, and the next push to
+`main` deploys again, so revert the bad commit on `main` too.
 
 ## In the repository
 

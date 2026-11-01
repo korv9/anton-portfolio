@@ -42,8 +42,6 @@ const philosophy = (view: 'baseline' | 'author_centered') => async () => ({
 })
 const triples = (path: string) => () =>
   fetchJson<{ points: Xyc[] }>(path).then((d) => ({ points: d.points }))
-const objects = (points: { x: number; y: number; c: number }[]) =>
-  points.map((p): Xyc => [p.x, p.y, p.c])
 
 /** In the README's order: most striking first. */
 export const DATASETS: Dataset[] = [
@@ -61,7 +59,7 @@ export const DATASETS: Dataset[] = [
       'UMAP · an earlier, unvalidated topic model',
       'UMAP · en tidigare, ovaliderad ämnesmodell',
     ),
-    load: () => loadDebateMap().then((m) => ({ points: objects(m.points) })),
+    load: () => loadDebateMap().then((points) => ({ points })),
   },
   {
     key: 'symbolic-detail',

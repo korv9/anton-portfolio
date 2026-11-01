@@ -41,13 +41,23 @@ const HomiePage = lazy(() =>
 export default function App() {
   const route = useRoute()
   const [language, setLanguage] = useState<Locale>(currentLocale)
+  const toggleHadFocus = useRef(false)
   useEffect(() => {
-    const update = () => setLanguage(currentLocale())
+    const update = () => {
+      toggleHadFocus.current = Boolean(
+        document.activeElement?.matches('.language-toggle'),
+      )
+      setLanguage(currentLocale())
+    }
     window.addEventListener('localechange', update)
     return () => window.removeEventListener('localechange', update)
   }, [])
   useEffect(() => {
     document.documentElement.lang = language
+    // <main> is keyed on the language, so a toggle inside it was replaced and focus fell to body.
+    if (toggleHadFocus.current && document.activeElement === document.body)
+      document.querySelector<HTMLElement>('main .language-toggle')?.focus()
+    toggleHadFocus.current = false
   }, [language])
   // Each page names itself in the tab and the history: "<page> | Anton Ernstsson".
   useEffect(() => {
@@ -85,7 +95,15 @@ export default function App() {
         data-workspace={page === 'home' ? undefined : workspace}
       >
         {page === 'home' && <DebateBackdrop playIntro />}
-        <a className="skip-link" href="#main">
+        <a
+          className="skip-link"
+          href="#main"
+          // The hash belongs to the router: as a plain link this would leave for the start page.
+          onClick={(event) => {
+            event.preventDefault()
+            document.getElementById('main')?.focus()
+          }}
+        >
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
         {/* The start page has no header: it opens on the name alone. Project pages sit beside

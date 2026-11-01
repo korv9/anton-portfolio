@@ -242,8 +242,11 @@ def test_publication_specs_have_disjoint_real_file_owners():
 def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failure(tmp_path, monkeypatch, capsys):
     sys.path.insert(0, str(ROOT / "platform/tests/python"))
     from test_release import S3, spec, write
+    import dq_gate
     import release
 
+    # A local dbt build in platform/target must not count as part of this fixture's release.
+    monkeypatch.setattr(dq_gate, "TARGET", tmp_path / "dbt-target")
     s3 = S3()
     monkeypatch.setattr(release, "client", lambda: (s3, "fixture-bucket"))
     pointers = {}

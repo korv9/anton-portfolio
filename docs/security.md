@@ -1,8 +1,17 @@
 # Security checks
 
-The site serves static files. Production credentials belong in the GitHub
+The site is static files behind a Cloudflare Worker, which also answers the Workers AI and job
+assistant APIs (`worker/`). Production credentials belong in the GitHub
 `anton-portfolio` environment and Cloudflare secrets. PR CI has no R2 credentials.
 Data publication jobs accept only `main` and use the separate environment.
+
+## The Worker
+
+The Worker fails closed. Both `/api/embed` and `/api/answer` take POST only, answer 403 to a request
+with another site's `Origin`, and answer 503 when the `RATE_LIMITER` binding is missing, because
+Workers AI spends the account's neurons. `/api/jobs/*` also answers 503 without the limiter. Job
+writes, CV reads and the draft profile need the `JOB_ASSIST_TOKEN` bearer token, and writes refuse a
+foreign origin (`worker/jobs.ts`). `worker/index.test.ts` tests the AI routes.
 
 ## Local checks
 
@@ -22,10 +31,13 @@ external sites cannot embed the page.
 
 The Security workflow runs on pushes, pull requests and weekly. It audits npm and
 each Python lock, checks the upstream version of the CPU PyTorch wheel, and scans
-Git history with a checksum-verified Gitleaks binary. `.gitleaksignore` contains
-reviewed historical false positives for public identifiers, indicator keys and job
-titles. Each exception names an exact commit, file, rule and line. Review new
-findings individually. A real credential must be revoked, not added to the baseline.
+Git history with a checksum-verified Gitleaks binary. A failed run on `main` opens or
+comments on an issue, and a successful one closes it. `.gitleaks.toml` extends the default rules
+and allowlists the generated files under `frontend/public/data/` and one reviewed commit, so a real
+credential committed into that folder would not be reported. `.gitleaksignore` contains reviewed
+historical false positives for public identifiers, indicator keys and job titles. Each exception
+names an exact commit, file, rule and line. Review new findings individually. A real credential
+must be revoked, not added to the baseline.
 
 ## Updating Python locks
 
@@ -48,8 +60,10 @@ Install the security tools with
 `pip install --require-hashes -r platform/requirements-security.lock`, then run
 `pip-audit --require-hashes --disable-pip -r <lock>` for each lock. The workflow
 audits the upstream PyTorch version separately because pip-audit skips wheel URLs.
-Run the tests before accepting dependency updates. Dependabot checks npm, Python
-declarations and Actions weekly; regenerate the locks for Python updates.
+Run the tests before accepting dependency updates. Dependabot checks npm and Actions
+weekly, including the `data-setup` action. It leaves Python out because it cannot regenerate hash
+locks, so pip-audit in the Security workflow reports vulnerable pins and the locks are regenerated
+by hand.
 
 ## Hosting settings and verification after publication
 
@@ -62,6 +76,7 @@ GitHub settings verified and updated on 15 October 2026:
   Actions, an up-to-date branch and resolved review conversations. The protections
   also apply to administrators; force pushes and branch deletion are disabled.
   The Security workflow in this change must run successfully before merging it.
+  The `ML tests` job added to `ci.yml` on 2026-11-01 is not a required check.
 - No R2 access or secret key was present in repository secrets. R2 credentials
   were present in the separate environment. Their bucket permissions still need
   to be checked in Cloudflare.

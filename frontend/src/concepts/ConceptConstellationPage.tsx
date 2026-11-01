@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
-import { fetchData } from '../dataSource'
+import { fetchJson } from '../dataSource'
 import Journey, { ConceptQuality } from './Journey'
 import ProjectTech from '../projects/ProjectTech'
 import { useViewParams } from '../report/useViewParams'
@@ -144,12 +144,6 @@ const deeper = (concept?: Concept): DeeperLink[] => [
 const label = (c: { label_en: string; label_sv: string }) =>
   l(c.label_en, c.label_sv)
 
-async function json<T>(path: string): Promise<T> {
-  const r = await fetchData(path)
-  if (!r.ok) throw new Error(path)
-  return r.json()
-}
-
 export function Kind({
   kind,
 }: {
@@ -169,10 +163,10 @@ export default function ConceptConstellationPage({ route }: { route: Route }) {
   const [params, set] = useViewParams(route, DEFAULTS)
   useEffect(() => {
     Promise.all([
-      json<ConceptSummary>('concepts/summary.json'),
-      json<Profile[]>('concepts/profiles.json'),
-      json<Relations>('concepts/relations.json'),
-      json<Link[]>('concepts/links.json'),
+      fetchJson<ConceptSummary>('concepts/summary.json'),
+      fetchJson<Profile[]>('concepts/profiles.json'),
+      fetchJson<Relations>('concepts/relations.json'),
+      fetchJson<Link[]>('concepts/links.json'),
     ])
       .then(([summary, profiles, relations, links]) =>
         setData({ summary, profiles, relations, links }),
@@ -815,10 +809,12 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
   > | null>(null)
   const [pairs, setPairs] = useState<Pair[] | null>(null)
   useEffect(() => {
-    json<Record<string, Record<string, Passage[]>>>('concepts/passages.json')
+    fetchJson<Record<string, Record<string, Passage[]>>>(
+      'concepts/passages.json',
+    )
       .then(setPassages)
       .catch(() => setPassages({}))
-    json<Pair[]>('concepts/pairs.json')
+    fetchJson<Pair[]>('concepts/pairs.json')
       .then(setPairs)
       .catch(() => setPairs([]))
   }, [])

@@ -132,7 +132,7 @@ export default function AdDetail({
           {(ad.employment_type || ad.working_hours) && (
             <div>
               <dt className="ja-label">{l('Employment', 'Anställning')}</dt>
-              <dd>
+              <dd lang="sv">
                 {[ad.employment_type, ad.working_hours]
                   .filter(Boolean)
                   .join(', ')}

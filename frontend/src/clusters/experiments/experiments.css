@@ -174,3 +174,20 @@
   font-size: var(--fs-sm);
   line-height: 1.5;
 }
+/* The atlas (Atlas.tsx): a picked cluster's passages, one per corpus present. */
+.cx-detail {
+  max-width: 90ch;
+  margin: var(--sp-4) 0;
+}
+.cx-examples {
+  display: grid;
+  gap: var(--sp-2);
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--fs-sm);
+}
+.cx-examples q {
+  display: block;
+  color: var(--ink-faded);
+}

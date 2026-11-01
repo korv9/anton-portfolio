@@ -95,9 +95,12 @@ const recitalOnly = (e: Example) =>
 /** The answer's text with each [[id]]"quote" as a marked quote that leads to its passage. */
 function Quoted({
   text,
+  lang,
   onJump,
 }: {
   text: string
+  /** The language of the quoted law, when it can differ from the page's. */
+  lang?: string
   onJump: (id: string) => void
 }) {
   const parts: ReactNode[] = []
@@ -106,7 +109,7 @@ function Quoted({
     parts.push(text.slice(at, m.index))
     parts.push(
       <span className="lq-quote" key={m.index}>
-        <q>{m[2]}</q>{' '}
+        <q lang={lang}>{m[2]}</q>{' '}
         <button type="button" className="btn-text" onClick={() => onJump(m[1])}>
           {m[1]}
         </button>{' '}
@@ -245,7 +248,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
   return (
     <ReportFrame>
       <div className="report lq">
-        <section className="report-tab" aria-labelledby="lq-title">
+        <section className="report-tab" aria-label="Allegora">
           <PageHead
             title="Allegora"
             sentence={l(
@@ -451,7 +454,11 @@ export default function AskTheLaw({ route }: { route: Route }) {
                           {l('What the law says', 'Vad lagen säger')}
                         </h3>
                       )}
-                      <Quoted text={shownReply.answer} onJump={jump} />
+                      <Quoted
+                        text={shownReply.answer}
+                        lang={choice === 'sfs' ? 'sv' : undefined}
+                        onJump={jump}
+                      />
                     </>
                   ) : shownReply?.status === 'unverified' ? (
                     <p className="lq-status">
@@ -504,6 +511,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                         <li
                           key={item.id}
                           id={`lq-${item.id}`}
+                          lang={choice === 'sfs' ? 'sv' : undefined}
                           tabIndex={-1}
                           hidden={!all && i >= FIRST}
                         >
@@ -651,6 +659,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
                   </h2>
                   <div className="lq-table">
                     <table>
+                      <caption style={{ textAlign: 'left' }}>
+                        {l(
+                          'Each answer model on the same questions; the chosen one is marked.',
+                          'Varje svarsmodell på samma frågor; den valda är markerad.',
+                        )}
+                      </caption>
                       <thead>
                         <tr>
                           <th scope="col">{l('Model', 'Modell')}</th>

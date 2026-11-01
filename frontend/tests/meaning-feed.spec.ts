@@ -166,7 +166,7 @@ test('the name is there at first paint and the map sleeps after the hero', async
   page,
 }) => {
   // A slow map must not hold the name back or fly in under it.
-  await page.route('**/umap.json', async (route) => {
+  await page.route('**/politics/parliament/backdrop.json', async (route) => {
     await new Promise((r) => setTimeout(r, 2000))
     await route.fulfill({ response: await route.fetch() })
   })
@@ -254,7 +254,7 @@ test('the Source panel opens from the keyboard and says what is not recorded', a
   )
   await expect(panel).toContainText('Lineage not recorded')
   await expect(
-    panel.locator('dt', { hasText: /^(Ingested|Cost)$/ }),
+    panel.locator('dt', { hasText: /^(Pipeline ran|Cost)$/ }),
   ).toHaveCount(0)
   await expect(post.locator('.mean-body')).toHaveAttribute('inert', '')
 

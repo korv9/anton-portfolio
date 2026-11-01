@@ -151,12 +151,14 @@ export default function RunDetail({
           {statusName(file.status, file.published_on_site_page)}
         </span>
       </h3>
-      <p className="cx-question">{run.question}</p>
+      <p className="cx-question" lang="en">
+        {run.question}
+      </p>
       <dl className="cx-facts">
         {facts.map(([k, v]) => (
           <div key={k}>
             <dt>{k}</dt>
-            <dd>{v}</dd>
+            <dd lang="en">{v}</dd>
           </div>
         ))}
       </dl>
@@ -173,7 +175,9 @@ export default function RunDetail({
           onPick={onGroup}
         />
         <figcaption>
-          {file.map.method}. {file.map.note}{' '}
+          <span lang="en">
+            {file.map.method}. {file.map.note}
+          </span>{' '}
           {l(
             `The map shows ${num(points.length)} of the run's points; grey points belong to no group.`,
             `Kartan visar ${num(points.length)} av körningens punkter; grå punkter hör inte till någon grupp.`,

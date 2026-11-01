@@ -4,10 +4,9 @@
 
 - 2026-10-18 [USER] Requested workflow optimization in six areas: CI duplication, verification scope, skill routing, resource checks, workspace lifecycle and responsibility-based extraction.
 
-- 2026-10-18 [USER] Job Intelligence is a compact continuous research terminal; all job, CV and company sections render without reveal controls.
-- 2026-10-18 [CODE] Public mode uses generic newest-first jobs. Personalisation requires an explicit loopback-only local qualification profile; no candidate facts enter public releases.
-- 2026-10-18 [CODE] Canonical job/company resolution, the frozen SCB compliance cohort and independent legal publication gates remain in use.
-- 2026-10-18 [TOOL] Current observed source projection contains 600 Swedish ads; 599 were unexpired at the latest local check, with 25 local recommendations.
+- 2026-11-01 [CODE] Every page is published (`START_ONLY` is gone). `#start` is about Anton, `#projects` is the overview, each project has its own page, and the site has one charcoal theme (`docs/design-system.md`). Observatories and Job Intelligence stay withdrawn since 2026-10-21; their source is unrouted and `compliance:check` and `jobs:check` still read it.
+- 2026-11-01 [CODE] The job assistant (`#jobs`) is the second flagship, the subject `job_assistant` scheduled hourly with an 8 h SLA. Live owner functions are still pending, see 2026-10-27 below; D1 is commented out in `wrangler.toml`.
+- 2026-11-01 [TOOL] dbt: 334 models in the manifest (321 SQL, 13 Python); `platform/models/` holds 325 `.sql` files because four job-cluster models are opt-in.
 
 ## Done / current / next
 
@@ -119,3 +118,13 @@
 - 2026-10-30 [TOOL] Second runner `final` for philosophy and symbolic (41051018576, 41051992370) matched the first runner run exactly: the runner is deterministic; local vs runner is the drift. On the runner bge-small (philosophy) and all symbolic candidates pass. Not promoted: picking the runner as the deciding machine is an owner decision.
 - 2026-10-30 [CODE] Owner chose the runner as deciding machine. Second debates runner `final` (41073947884) matched the first exactly. Stored registries for philosophy, symbolic, debates replaced by the runner repro registries (local ones kept as `registry-local-2026-10-29.json`); symbolic rolled back to its first pass. Champions: f367c26d, a224a175, b33f92b1; jobs unchanged. Cluster Visuals run files from the runner export; local results as "Local run" notes.
 - 2026-10-30 [TOOL] Job-ad runner drill (Actions 41091714598, #207/#208 pass extra flags, rollback only under repro): hold-out 15 %, 435 newer ads; select 54 min / 3.49 GB, final 39 min / 4.61 GB; MiniLM HDBSCAN 10 promoted then rolled back to the refitted champion in the repro registry. Stored jobs registry unchanged.
+- 2026-10-31 [CODE] New mlkit targets: `government_defeat` (roll calls, leave-one-session-out, within-session AUC 0.681 vs committee prior 0.532; first gate passed, superseded 2026-11-01 below) and `reply` (speech draws a reply; first run AUC 0.88 was era/format leakage, rescoped to 2003/04+ debates with replies; text adds +0.016, gate failed). Owner rule: anything that passes its gate may be shown on Cluster Visuals (`GatedModels`).
+- 2026-10-31 [CODE] Atlas (`ml/atlas`, docs/cluster-atlas.md): 77,753 passages from six corpora in one MiniLM-L12 space, per-corpus ZCA whitening (purity 0.977 → 0.775, translation match 0.996), v2: Ledoit–Wolf whitening chosen by a pre-declared rule, 87 of 137 clusters stable over 5 seeds (ARI 0.91–0.93), 22 mixed, 54.6% noise; links need BH q < 0.05 and lower bound > 1 with block bootstrap for single-unit groups (71 of 3,685; shuffled runs 1/3/4, calibrated). Job adverts come from JobTech occupation-field IT, not role_patterns or the CV. Terms unreviewed.
+
+## Audit fixes (uncommitted on korv9/experiments-cv-separation)
+
+- 2026-11-01 [CODE] `government_defeat` failed the amended gate (`docs/ml-gate-amendments.md`, run 20261101-0258): masked model 0.646 vs title-procedure flags 0.661, difference -0.015 (-0.041 to +0.010). It is off Cluster Visuals and its data file is deleted; the card keeps the failure. `polarization` passed its retest with a speaker shuffle: 33 of 33 sessions, 30 under Bonferroni, mean AUC 0.649.
+- 2026-11-01 [CODE] Publication: 30 % row-drop gate on files of 100+ rows (override `PORTFOLIO_ALLOW_ROW_DROP`; it cannot fire for jobs, news or job-assistant, which count zero rows), a partly missing dbt group blocks, `--only publish` keeps group completeness, the heartbeat also compares `published_at`.
+- 2026-11-01 [CODE] Worker AI routes refuse foreign origins and answer 503 without the limiter. `verify:full` gained Wrangler dry run, `lint-imports` and dbt compile; `.gitleaks.toml` added; Dependabot no longer covers Python. Most of `frontend/src/{hub,tech,ask}` removed, including Ask the platform's page.
+- 2026-11-01 [TOOL] Contact names are now redacted when a contact word or detail marks them; one-word names remain. The committed `job-assistant/texts*.json` (generated 2026-10-27) still hold names in 23 + 390 ads that the new rule catches, until a run republishes them.
+- 2026-10-31 [TOOL] DR benchmark, local, NOT ADOPTED (`docs/cluster-atlas.md`): `umap10` with exact kNN gave 87 vs 83 stable clusters on full data, under the 1.10 clear-win line; openTSNE map kNN15 0.278 vs 0.094 for UMAP. The atlas stays on v2.

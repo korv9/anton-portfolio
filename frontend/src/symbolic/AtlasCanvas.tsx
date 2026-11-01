@@ -4,7 +4,8 @@
  * symbol's spread across the map stays visible against the whole. Drawn on a canvas, since a
  * few thousand SVG circles would make hovering sluggish.
  *
- * Hover shows the symbol, book, cluster and a short excerpt; a click picks the point.
+ * Hover shows the symbol, book, cluster and a short excerpt; a click picks the point. The list
+ * under the map, of the points that match the filters, is the keyboard way in.
  *
  * A view can replace the cluster colouring with its own `paint` (the cross-book view mutes
  * book-bound clusters and brings reviewed ones forward) and put `labels` on the map; labels
@@ -18,9 +19,12 @@ import type { AtlasPoint } from './atlasTypes'
 export type Paint = { fill: string; r: number; layer: number }
 export type MapLabel = { x: number; y: number; text: string }
 
+const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const PAD = 18
 const ASPECT = 0.68
 const HIT = 9
+/** Occurrences listed at first, and added by each "more". */
+const LISTED = 12
 
 export default function AtlasCanvas({
   points,
@@ -56,6 +60,11 @@ export default function AtlasCanvas({
   } | null>(null)
   const height = Math.round(width * ASPECT)
   const toPx = useRef<(x: number, y: number) => [number, number]>(() => [0, 0])
+  const [listed, setListed] = useState(LISTED)
+  const listable = useMemo(
+    () => (isLit ? points.filter(isLit) : points),
+    [points, isLit],
+  )
 
   useEffect(() => {
     const el = frame.current
@@ -230,6 +239,35 @@ export default function AtlasCanvas({
           </em>
         </div>
       )}
+      <ul
+        className="atlas-occurrences"
+        aria-label={l('Occurrences on the map', 'Förekomster på kartan')}
+      >
+        {listable.slice(0, listed).map((p) => (
+          <li key={p.occurrence_id}>
+            <button
+              type="button"
+              aria-pressed={selected === p.occurrence_id}
+              onClick={() => onPick(p)}
+            >
+              {p.matched_term} <small>{p.title.split(':')[0]}</small>
+            </button>
+          </li>
+        ))}
+        {listable.length > listed && (
+          <li>
+            <button
+              type="button"
+              onClick={() => setListed(listed + 3 * LISTED)}
+            >
+              {l(
+                `Show more (${num(listable.length - listed)} left)`,
+                `Visa fler (${num(listable.length - listed)} kvar)`,
+              )}
+            </button>
+          </li>
+        )}
+      </ul>
     </div>
   )
 }

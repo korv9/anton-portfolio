@@ -7,9 +7,6 @@ measures is described on the product's own page, in its method drawer.
 The visual direction is "Sverige i höjd": a 3D scene over the whole window is the page's main
 content, and glass panels float above it. Everything else sits below the scene.
 
-The production build currently shows only the start page (`START_ONLY` in
-`frontend/src/router.ts`), so SWEDEN runs in the dev server and the browser tests.
-
 ## Boundary
 
 - Everything lives in `frontend/src/sweden/` and is scoped to `.sweden`. Its tokens never reach
@@ -52,8 +49,9 @@ a hard edge.
 
 ## Tokens
 
-These are defined on `.sweden` in `sweden.css`. Dark is the default; `html[data-sw-theme='light']`
-switches to light.
+These are defined on `.sweden` in `sweden.css`. The page is ivory on charcoal like the rest of the
+site (`--sw-bg` is `#242422`), with no hues and no light theme in the stylesheet. `sweden.css` is the
+source for the values. The table below records the earlier two-theme palette.
 
 | Token                            | Dark                              | Light                             | Use                                  |
 | -------------------------------- | --------------------------------- | --------------------------------- | ------------------------------------ |

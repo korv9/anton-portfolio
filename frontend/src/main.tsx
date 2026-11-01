@@ -18,6 +18,20 @@ if (beaconToken) {
   document.head.append(beacon)
 }
 
+// After a deploy an open tab can ask for chunks that are gone. Reload once for the new build; a
+// second failure within a minute falls through to PageBoundary instead of looping.
+window.addEventListener('vite:preloadError', (event) => {
+  const key = 'anton-portfolio-chunk-reload'
+  try {
+    if (Date.now() - Number(sessionStorage.getItem(key)) < 60_000) return
+    sessionStorage.setItem(key, String(Date.now()))
+  } catch {
+    return
+  }
+  event.preventDefault()
+  location.reload()
+})
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

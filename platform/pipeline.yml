@@ -481,6 +481,7 @@ subjects:
         marker: clusters/three-swedens/run/metrics.json
       - dbt: {select: [tag:clusters]}
       - export: python platform/publish/clusters/export.py
+      - export: python platform/publish/clusters/debate_backdrop.py
       - export: python platform/publish/clusters/three_swedens.py
 
   quality:

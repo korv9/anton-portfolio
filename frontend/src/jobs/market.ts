@@ -65,13 +65,6 @@ export const FIELD_EN: Record<string, string> = {
   'Yrken med teknisk inriktning': 'Engineering and technical work',
 }
 
-export const EMPLOYMENT_EN: Record<string, string> = {
-  'Vanlig anställning': 'Regular employment',
-  Behovsanställning: 'On-call employment',
-  'Sommarjobb / feriejobb': 'Summer job',
-  'Arbete utomlands': 'Work abroad',
-  Okänd: 'Not stated',
-}
 export const HOURS_EN: Record<string, string> = {
   Heltid: 'Full time',
   Deltid: 'Part time',

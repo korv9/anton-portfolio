@@ -1,8 +1,8 @@
-"""Snapshot the GitHub facts the platform page shows: status/github.json.
+"""Snapshot GitHub facts for the site: status/github.json. No page reads it at present.
 
-The page (frontend/src/tech/github.ts) used to ask the GitHub API itself, about 35 unsigned
-requests a view against a limit of 60 an hour per address, so visitors saw 403s. This script
-asks once with the workflow's token and writes what the page reads:
+A page that asked the GitHub API itself made about 35 unsigned requests a view against a limit
+of 60 an hour per address, so visitors saw 403s. This script asks once with the workflow's
+token and writes:
 
   workflows       every workflow under .github/workflows with its 14 newest runs
   scheduled_runs  the scheduled runs of the last 30 days (at most 100, newest first) and the total

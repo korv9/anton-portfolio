@@ -41,9 +41,16 @@
   gap: var(--sp-5);
   margin: var(--sp-6) 0 var(--sp-section);
 }
+@media (max-width: 760px) {
+  .page-head-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 .page-head-kpis > div {
   display: flex;
   flex-direction: column-reverse;
+  /* Values line up across a row when one label runs longer. */
+  justify-content: flex-end;
   gap: var(--sp-2);
 }
 .page-head-kpis dd {
@@ -54,17 +61,6 @@
   letter-spacing: -0.04em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-}
-.page-head-kpis > div:first-child dd {
-  background: linear-gradient(
-    to bottom right,
-    var(--color-accent-focal) 0%,
-    var(--color-ink-secondary) 55%,
-    var(--muted) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 .page-head-kpis dt {
   color: var(--muted);

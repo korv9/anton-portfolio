@@ -125,9 +125,9 @@ export default function SentencePlacer({
       .map(([party, value]) => ({ key: party, label: party, value, party }))
   }, [placed])
 
-  // Holds the hero's place, so the gallery below does not start loading under it.
-  if (!examples) return <div className="cv-status" aria-busy="true" />
-  if (!examples.length) return instead ?? null
+  // The head and form draw at once and hold the hero's place, so nothing below moves when the
+  // examples and the map arrive; only a failed or empty file removes the section.
+  if (examples && !examples.length) return instead ?? null
   return (
     <section
       className="cv-place"
@@ -183,11 +183,12 @@ export default function SentencePlacer({
           </button>
         </div>
         <div
-          className="cv-variants"
+          className="cv-variants cv-place-examples"
           role="group"
           aria-label={l('Examples', 'Exempel')}
+          aria-busy={!examples}
         >
-          {examples.map((e) => (
+          {examples?.map((e) => (
             <button
               key={e.text}
               type="button"
@@ -218,7 +219,7 @@ export default function SentencePlacer({
           />
         ) : (
           <p
-            className="cv-status"
+            className="cv-status cv-place-wait"
             role="status"
             aria-busy="true"
             aria-label={l('Loading', 'Laddar')}

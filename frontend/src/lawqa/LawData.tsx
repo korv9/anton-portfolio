@@ -4,9 +4,8 @@
  * application and by what the Digital Omnibus changed (ai-act/articles.json, summary.json).
  * Both files are small (16 kB and 98 kB); the question corpus still loads only on first use.
  */
-import { useEffect, useState } from 'react'
 import { l } from '../i18n'
-import { fetchJson } from '../dataSource'
+import { LoadNote, ok, useJson } from '../useJson'
 
 type Sfs = {
   kinds: { kind: string; documents: number; repealed: number }[]
@@ -93,14 +92,6 @@ const day = (iso: string) =>
 const regulation = (celex: string) =>
   `${l('Regulation', 'Förordning')} (EU) ${celex.slice(1, 5)}/${Number(celex.slice(6))}`
 
-function useJson<T>(path: string) {
-  const [data, setData] = useState<T | null>(null)
-  useEffect(() => {
-    fetchJson<T>(path).then(setData, () => {})
-  }, [path])
-  return data
-}
-
 /** In force and repealed per decade issued; the years before 1900 form one bar. */
 function decades(years: Sfs['years']) {
   const rows = new Map<
@@ -121,7 +112,7 @@ const decadeName = (d: number) =>
 
 function StatuteBook({ laws }: { laws: Law[] }) {
   const sfs = useJson<Sfs>('sfs/overview.json')
-  if (!sfs) return null
+  if (!ok(sfs)) return <LoadNote files={[sfs]} />
   const all = sfs.kinds.reduce((s, k) => s + k.documents, 0)
   const repealed = sfs.kinds.reduce((s, k) => s + k.repealed, 0)
   const rows = decades(sfs.years)
@@ -238,7 +229,8 @@ function StatuteBook({ laws }: { laws: Law[] }) {
 function AiAct() {
   const articles = useJson<Article[]>('ai-act/articles.json')
   const summary = useJson<Summary>('ai-act/summary.json')
-  if (!articles || !summary) return null
+  if (!ok(articles) || !ok(summary))
+    return <LoadNote files={[articles, summary]} />
   const today = new Date().toISOString().slice(0, 10)
   const dates = [...new Set(articles.map((a) => a.applies_from))].sort()
   const at = (d: string) => articles.filter((a) => a.applies_from === d)

@@ -73,10 +73,13 @@ def final(deadline) -> dict:
         with runtime.measure() as res:
             rep = sel.representation(obs, rep_name, deadline)
             # Centring is already applied with the champion's rule, so fit only normalises ('raw').
+            labelings: list = []
             labels, _, metrics = fit.evaluate_candidate(
-                rep, {**pipe, 'representation': {'kind': 'raw'}}, EVAL_SEEDS, confounders)
+                rep, {**pipe, 'representation': {'kind': 'raw'}}, EVAL_SEEDS, confounders,
+                keep_labelings=labelings)
             metrics['time'] = sel.time_coverage(labels, obs.decade.to_numpy())
         np.save(RESULTS / 'final' / f'{label}-labels.npy', labels)
+        np.save(RESULTS / 'final' / f'{label}-seed-labels.npy', np.stack(labelings))
         run = {'domain': 'debates', 'question': QUESTION, 'corpus': CORPUS, 'label': label,
                'sample': {'side': 'evaluation', 'observations': len(obs), 'debates': int(obs.debate_id.nunique())},
                'dataset_version': dataset, 'pipeline': pipe, 'seeds': EVAL_SEEDS, 'role': 'evaluation',
@@ -84,6 +87,15 @@ def final(deadline) -> dict:
         run['run_id'] = contract.run_id('debates', dataset, pipe, EVAL_SEEDS, 'evaluation')
         marks.put(label, run)
     return decide(marks)
+
+
+def common_with_champion(label: str) -> dict | None:
+    """Common-row comparison for a run fitted with every seed's labels saved; None for older runs."""
+    paths = [RESULTS / 'final' / f'{name}-seed-labels.npy' for name in (label, 'champion')]
+    if not all(path.exists() for path in paths):
+        return None
+    mine, theirs = (list(np.load(path)) for path in paths)
+    return accept.common_rows(mine, theirs, {'party': evaluation_side().party.to_numpy()})
 
 
 def decide(marks) -> dict:
@@ -94,23 +106,27 @@ def decide(marks) -> dict:
     rules, sha = accept.criteria('debates')
     champ = runs['champion']
     reg.register(champ, 'champion', 'published pipeline refitted under the protocol, no consensus')
-    out, promoted = {}, any(h['action'] == 'promote' for h in reg.load()['history'])
-    # Every candidate is judged against the refitted champion. At most one is promoted: the first
-    # that passes in RUNS order (ordered by how small a change it is from the champion).
+    out, reports = {}, {}
+    promoted = any(h['action'] == 'promote' for h in reg.load()['history'])
+    # Every candidate is judged against the refitted champion. At most one is promoted: the passed
+    # candidate with the largest gain over seed spread on commonly assigned rows.
     for label in RUNS:
         run = runs.get(label)
         if label == 'champion' or run is None:
             continue
         entry = reg.register(run, 'candidate', 'chosen on the selection side')
         if entry['status'] == 'candidate' and 'acceptance' not in entry:
-            report = accept.check(run, champ, rules, sha)
+            report = accept.check(run, champ, rules, sha, common_with_champion(label))
             status = reg.decide(run['run_id'], report)
-            if report['passed'] and not promoted:
-                reg.promote(run['run_id'], 'passed every frozen criterion (registry only; Replik unchanged)')
-                status, promoted = 'champion', True
+            reports[label] = report
             out[label] = {'status': status, 'failed': report['failed']}
         else:
             out[label] = {'status': entry['status'], 'failed': entry.get('acceptance', {}).get('failed')}
+    chosen = accept.pick(reports)
+    if chosen and not promoted:
+        reg.promote(runs[chosen]['run_id'], 'largest gain over seed spread among passed candidates '
+                                            '(registry only; Replik unchanged)')
+        out[chosen]['status'] = 'champion'
     atomic_json(RESULTS / 'decision.json', out)
     return out
 

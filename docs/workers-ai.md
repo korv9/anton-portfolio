@@ -1,8 +1,10 @@
 # Workers AI
 
-Tre demos använder Cloudflare Workers AI: en besökares mening placerad på kartan över
-partiledardebatterna, frågor med citat över ett urval av SFS och EU:s AI-förordning (Allegora,
-`#fraga-lagen`, här kallad Fråga lagen) och frågor om hur plattformen själv är byggd (Fråga plattformen).
+Två demos på sajten använder Cloudflare Workers AI: en besökares mening placerad på kartan över
+partiledardebatterna och frågor med citat över ett urval av SFS och EU:s AI-förordning (Allegora,
+`#fraga-lagen`, här kallad Fråga lagen). Den tredje, Fråga plattformen, handlade om hur plattformen
+själv är byggd. Dess sida togs bort den 2026-11-01. Workern tar kvar korpusen `platform`, och
+avsnittet nedan beskriver hur korpusen byggdes och hur den klarade evalen.
 
 ## Regeln
 
@@ -41,7 +43,8 @@ Ett citat skrivs `[[id]]"citat"`. Sedan 2026-10-22 godtar Workern också den omv
 Ändringen gäller alla korpusar. Evalen för Fråga lagen nedan kördes före den, så fråga 7 räknas
 där som stoppad.
 
-Bindningen `RATE_LIMITER` släpper igenom 20 anrop per minut och besökare. Är dagens kvot slut
+Bindningen `RATE_LIMITER` släpper igenom 20 anrop per minut och besökare. Saknas bindningen svarar
+Workern 503, och ett anrop från en annan webbplats (`Origin`) får 403. Är dagens kvot slut
 svarar Workern 503 med `reason: quota`, och sidorna visar då bara de förberäknade exemplen.
 
 ## Modellval
@@ -291,19 +294,12 @@ Inbäddning och komprimering är samma som för Fråga lagen: `workers_ai.py emb
 `meta.json` och verifieringslistorna under `frontend/public/data/workers-ai/platform/`. 1 423
 stycken gav recall@10 0,952 med 256 dimensioner och 0,979 med 384; 256 levereras.
 
-Komponenten `frontend/src/ask/AskThePlatform.tsx` laddar korpusen först när läsaren går till
-fältet. Varje citat länkar till sin fil vid sin commit på GitHub. När ett citerat stycke nämner en
-nod i grafen som är en källa, rådata, en silver- eller guldmodell eller en publicerad fil ritas en
-väg i fem steg: källa, rådata, silver, guld och publicerad fil (`frontend/src/ask/lineage.ts`).
-En modell väljs före andra noder. Ett steg som vägen inte passerar visas som saknat. Komponenten är
-monterad på plattformssidan (`frontend/src/tech/PlatformSections.tsx`) och öppnar där på det första
-exemplets svar; innan korpusen laddats visas citatens filnamn, lästa ur styckets id. Den nås också
-på testadressen `#ask-platform`. Fältets platshållare är exempelfrågan om datafilernas adress, som
-verifierades, inte fråga 1 om juniorandelen, som inte gör det.
+Komponenten, dess väg från källa till publicerad fil och Playwright-testet togs bort med sidan den
+2026-11-01 (se Git-historiken). `#ask-platform` leder nu till `#projects`.
 
-Är kvoten slut svarar Workern 503 med `reason: quota`, och komponenten visar då tre förberäknade
-exempel (`examples.json`, frågorna 2, 7 och 10 i evalen, med sina vektorer och kontrollerade svar).
-Det testas både i Workern och i `frontend/tests/ask-platform.spec.ts` med ett stubbat 503-svar.
+Är kvoten slut svarar Workern 503 med `reason: quota`. `examples.json` ligger kvar med tre
+förberäknade exempel (frågorna 2, 7 och 10 i evalen, med sina vektorer och kontrollerade svar).
+Workerns del testas i `worker/index.test.ts`.
 
 ### Eval
 

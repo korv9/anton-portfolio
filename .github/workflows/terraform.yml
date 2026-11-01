@@ -36,7 +36,6 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_STATE_SECRET_ACCESS_KEY }}
   AWS_ENDPOINT_URL_S3: https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com
   TF_VAR_account_id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-  TF_VAR_worker_domain_ids: ${{ vars.TF_WORKER_DOMAIN_IDS }}
 
 jobs:
   plan:
@@ -55,7 +54,7 @@ jobs:
       # Each stack gets only its own provider token.
       CLOUDFLARE_API_TOKEN: ${{ matrix.stack == 'cloudflare' && secrets.CLOUDFLARE_API_TOKEN || '' }}
       GITHUB_TOKEN: ${{ matrix.stack == 'github' && secrets.TF_GITHUB_TOKEN || '' }}
-      HAS_CREDENTIALS: ${{ secrets.TF_STATE_ACCESS_KEY_ID != '' }}
+      HAS_CREDENTIALS: ${{ secrets.TF_STATE_ACCESS_KEY_ID != '' && vars.TF_WORKER_DOMAIN_IDS != '' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -71,18 +70,20 @@ jobs:
         if: env.HAS_CREDENTIALS == 'true'
         env:
           STACK: ${{ matrix.stack }}
+          TF_VAR_worker_domain_ids: ${{ vars.TF_WORKER_DOMAIN_IDS }}
         run: |
           terraform init -input=false -reconfigure
-          terraform plan -input=false -no-color -lock-timeout=60s -out=tfplan
+          # The repository is public: only change counts, never the plan, in logs or the summary.
+          terraform plan -input=false -no-color -lock-timeout=60s -out=tfplan > /dev/null
           {
             echo "### Terraform plan: $STACK"
-            echo '```'
-            terraform show -no-color tfplan
-            echo '```'
+            terraform show -json tfplan | jq -r '[.resource_changes[]?.change.actions | join("+")
+              | select(. != "no-op")] | group_by(.) | map("\(.[0]): \(length)") | join(", ")
+              | if . == "" then "No changes" else . end'
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Note the skipped plan
         if: env.HAS_CREDENTIALS != 'true'
-        run: echo 'Plan skipped, no state credentials in this run.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Plan skipped, no state credentials or TF_WORKER_DOMAIN_IDS in this run.' >> "$GITHUB_STEP_SUMMARY"
 
   apply:
     name: Apply (${{ inputs.stack }})
@@ -108,12 +109,15 @@ jobs:
       - name: Plan, record and apply exactly that plan
         env:
           STACK: ${{ inputs.stack }}
+          # Empty fails the parse, on purpose: an empty map would plan to destroy the custom domains.
+          TF_VAR_worker_domain_ids: ${{ vars.TF_WORKER_DOMAIN_IDS }}
         run: |
-          terraform plan -input=false -no-color -lock-timeout=60s -out=tfplan
+          # The repository is public: only change counts, never the plan, in logs or the summary.
+          terraform plan -input=false -no-color -lock-timeout=60s -out=tfplan > /dev/null
           {
             echo "### Terraform apply: $STACK"
-            echo '```'
-            terraform show -no-color tfplan
-            echo '```'
+            terraform show -json tfplan | jq -r '[.resource_changes[]?.change.actions | join("+")
+              | select(. != "no-op")] | group_by(.) | map("\(.[0]): \(length)") | join(", ")
+              | if . == "" then "No changes" else . end'
           } >> "$GITHUB_STEP_SUMMARY"
           terraform apply -input=false -no-color -lock-timeout=60s tfplan

@@ -351,6 +351,7 @@ export default function Similarity({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={
         view === 'map'
           ? l(

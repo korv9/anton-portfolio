@@ -6,7 +6,7 @@
  * Nothing here holds a finding: pages compute their statements from published data, and a
  * product without validated data shows an EmptyState instead.
  */
-import type { ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { ExploreSection } from '../ui/Story'
 import type { Evidence, SwedenProduct } from './products'
@@ -195,9 +195,12 @@ export function Scene({
   legend,
   control,
   info,
+  defer = false,
   children,
 }: {
   product: SwedenProduct
+  /** Mount the visual only when it nears the screen: a WebGL scene costs seconds on a phone. */
+  defer?: boolean
   /** One sentence on what the visual shows. */
   line: ReactNode
   legend?: ReactNode
@@ -206,12 +209,27 @@ export function Scene({
   children: ReactNode
 }) {
   const titleId = `sw-title-${product.id}`
+  const visual = useRef<HTMLDivElement>(null)
+  const [near, setNear] = useState(!defer)
+  useEffect(() => {
+    const el = visual.current
+    if (near || !el) return
+    if (typeof IntersectionObserver === 'undefined') return setNear(true)
+    const observer = new IntersectionObserver(
+      ([entry]) => entry.isIntersecting && setNear(true),
+      { rootMargin: '300px 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [near])
   return (
     <div className="sw-scene" role="group" aria-labelledby={titleId}>
       <header className="sw-scene-title">
         <h2 id={titleId}>{b(product.question)}</h2>
       </header>
-      <div className="sw-scene-visual">{children}</div>
+      <div className="sw-scene-visual" ref={visual}>
+        {near && children}
+      </div>
       <p className="sw-line">{line}</p>
       {(legend || control || info) && (
         <div className="sw-scene-panels">
@@ -256,10 +274,10 @@ export function SwedenResearchPage({
     <ProductSection product={product}>
       {scene}
       <ExploreSection
-        title={l(
-          'Findings, explore, method and readings',
-          'Resultat, utforska, metod och tolkningar',
-        )}
+        title={`${b(product.short)}: ${l(
+          'findings, explore, method and readings',
+          'resultat, utforska, metod och tolkningar',
+        )}`}
         summary={exploreSummary}
       >
         {ordered.length > 0 && (
