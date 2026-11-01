@@ -34,9 +34,11 @@ const ROOT = join(import.meta.dirname, '..', '..', '..')
 const SFS = join(ROOT, 'frontend', 'public', 'data', 'workers-ai', 'sfs')
 const OUT = join(ROOT, 'tmp', 'allegora-grid')
 const PROJECT = 'allegora-513419'
-const REGION = 'europe-west4'
+// Gemini 3 and later run on multi-region endpoints, not in single European regions.
+const REGION = 'eu'
+const HOST = 'https://aiplatform.eu.rep.googleapis.com'
 const BUCKET = 'allegora-513419-batch'
-const MODEL = process.env.VERTEX_MODEL ?? 'gemini-2.5-flash'
+const MODEL = process.env.VERTEX_MODEL ?? 'gemini-3.8-flash'
 const K = 8
 const POLL_MS = 60_000
 const WAIT_MS = 5 * 60 * 60_000
@@ -93,7 +95,7 @@ async function batch(name: string, lines: string[]) {
     `https://storage.googleapis.com/upload/storage/v1/b/${BUCKET}/o?uploadType=media&name=${encodeURIComponent(object)}`,
     { method: 'POST', body: `${lines.join('\n')}\n` },
   )
-  const api = `https://${REGION}-aiplatform.googleapis.com/v1/projects/${PROJECT}/locations/${REGION}/batchPredictionJobs`
+  const api = `${HOST}/v1/projects/${PROJECT}/locations/${REGION}/batchPredictionJobs`
   const job = (await (
     await vertex(api, {
       method: 'POST',
@@ -108,7 +110,7 @@ async function batch(name: string, lines: string[]) {
       }),
     })
   ).json()) as { name: string }
-  const url = `https://${REGION}-aiplatform.googleapis.com/v1/${job.name}`
+  const url = `${HOST}/v1/${job.name}`
   console.log(`job ${job.name}`)
   for (const start = Date.now(); Date.now() - start < WAIT_MS; ) {
     const state = (await (await vertex(url)).json()) as { state: string; error?: unknown }
