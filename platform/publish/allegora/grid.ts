@@ -42,6 +42,19 @@ export const inLaw = (id: string, sfs: string) =>
 export const cellQuestion = (law: Law, question: string) =>
   `${law.title}: ${question}`
 
+/** Gemini counts its thinking as output, so the Worker's limits alone could cut an answer short. */
+const THINKING = 6000
+
+/** Multi-region locations have their own hostnames; a single region is a prefix. */
+export function vertexHost(location: string) {
+  if (location === 'global') return 'https://aiplatform.googleapis.com'
+  if (location === 'eu' || location === 'us')
+    return `https://aiplatform.${location}.rep.googleapis.com`
+  if (/^[a-z]+-[a-z]+\d+$/.test(location))
+    return `https://${location}-aiplatform.googleapis.com`
+  throw new Error(`unknown location: ${location}`)
+}
+
 type Sent = { system: string; user: string; temperature: number; maxTokens: number }
 
 /** The same message as /api/answer sends its model. */
@@ -51,7 +64,7 @@ export function answerPrompt(question: string, passages: Item[]): Sent {
     system: SYSTEM,
     user: `${context}\n\nQuestion: ${question}`,
     temperature: 0.1,
-    maxTokens: 2048,
+    maxTokens: THINKING + 2048,
   }
 }
 
@@ -61,7 +74,7 @@ export function allegoryPrompt(question: string, checked: string): Sent {
     system: ALLEGORY_SYSTEM,
     user: `Question: ${question}\n\nChecked answer: ${plain}`,
     temperature: 0.7,
-    maxTokens: 600,
+    maxTokens: THINKING + 600,
   }
 }
 

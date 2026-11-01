@@ -8,6 +8,7 @@ import {
   judge,
   parseOutputs,
   usableAllegory,
+  vertexHost,
 } from '../../../platform/publish/allegora/grid.ts'
 
 const passage = {
@@ -16,6 +17,16 @@ const passage = {
   url: 'https://example.test',
   text: 'Minsta uppsägningstid är en månad.',
 }
+
+test('each kind of Vertex location has its own host, and nothing else is sent a token', () => {
+  assert.equal(vertexHost('eu'), 'https://aiplatform.eu.rep.googleapis.com')
+  assert.equal(vertexHost('global'), 'https://aiplatform.googleapis.com')
+  assert.equal(
+    vertexHost('europe-west3'),
+    'https://europe-west3-aiplatform.googleapis.com',
+  )
+  assert.throws(() => vertexHost('evil.example/x'))
+})
 
 test('a law takes its own passages, not those of a law with a similar number', () => {
   assert.ok(inLaw('sfs-1982-80-11', '1982:80'))

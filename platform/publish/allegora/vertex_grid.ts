@@ -26,6 +26,7 @@ import {
   judge,
   parseOutputs,
   usableAllegory,
+  vertexHost,
   type Item,
   type Output,
 } from './grid.ts'
@@ -34,9 +35,8 @@ const ROOT = join(import.meta.dirname, '..', '..', '..')
 const SFS = join(ROOT, 'frontend', 'public', 'data', 'workers-ai', 'sfs')
 const OUT = join(ROOT, 'tmp', 'allegora-grid')
 const PROJECT = 'allegora-513419'
-// Gemini 3 and later run on multi-region endpoints, not in single European regions.
-const REGION = 'eu'
-const HOST = 'https://aiplatform.eu.rep.googleapis.com'
+const LOCATION = process.env.VERTEX_LOCATION?.trim() || 'eu'
+const HOST = vertexHost(LOCATION)
 const BUCKET = 'allegora-513419-batch'
 const MODEL = process.env.VERTEX_MODEL ?? 'gemini-3.8-flash'
 const K = 8
@@ -95,7 +95,7 @@ async function batch(name: string, lines: string[]) {
     `https://storage.googleapis.com/upload/storage/v1/b/${BUCKET}/o?uploadType=media&name=${encodeURIComponent(object)}`,
     { method: 'POST', body: `${lines.join('\n')}\n` },
   )
-  const api = `${HOST}/v1/projects/${PROJECT}/locations/${REGION}/batchPredictionJobs`
+  const api = `${HOST}/v1/projects/${PROJECT}/locations/${LOCATION}/batchPredictionJobs`
   const job = (await (
     await vertex(api, {
       method: 'POST',
@@ -165,7 +165,7 @@ async function main() {
   }
   const characters = cells.reduce((sum, c) => sum + c.prompt.system.length + c.prompt.user.length, 0)
   console.log(
-    `${laws.length} laws, ${cells.length} cells, ${MODEL} in ${REGION}, about ${Math.round(characters / 4)} input tokens`,
+    `${laws.length} laws, ${cells.length} cells, ${MODEL} in ${LOCATION}, about ${Math.round(characters / 4)} input tokens`,
   )
   if (command === 'plan') return
 
@@ -189,7 +189,7 @@ async function main() {
     schema_version: 1,
     created: new Date().toISOString(),
     model: MODEL,
-    region: REGION,
+    location: LOCATION,
     embed_model: EMBED_MODEL,
     laws_fetched: meta.fetched,
     source_sha256: hash(cells.map((c) => c.passages.map((p) => p.text).join()).join()),
