@@ -46,7 +46,10 @@ test('only verbatim quotes pass; a refusal and a failed line never do', () => {
     'unverified',
   )
   assert.equal(judge('NO_ANSWER', [passage]).status, 'no_answer')
-  assert.equal(judge('Inget citat alls.', [passage]).status, 'no_answer')
+  assert.deepEqual(judge('Inget citat alls.', [passage]), {
+    status: 'no_answer',
+    reply: 'Inget citat alls.',
+  })
   assert.equal(judge(null, [passage]).status, 'failed')
 })
 
