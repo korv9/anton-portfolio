@@ -1,0 +1,149 @@
+# Job ads near real time with Airflow
+
+The job assistant (`#jobs`, [job-assistant.md](job-assistant.md)) gets new, changed and removed Data/IT
+ads by polling JobStream every ten minutes. Airflow schedules the flow; the work is done by the
+existing modules. This is near real time by polling, not streaming: an ad changed at the source
+reaches the publication files within one or two polling intervals plus the run time.
+
+Start and stop instructions: [infra/airflow/README.md](../infra/airflow/README.md).
+
+## Flow
+
+`infra/airflow/dags/job_ads_near_realtime.py` runs four tasks every ten minutes. Each task is one
+stage of `platform/job_assistant/realtime.py`:
+
+| Stage | Reuses | Writes |
+|---|---|---|
+| `collect` | `ads.py` (JobStream, raw store with provenance, id plus hash store) | `ads.json`, `state.json`, `raw/stream-*.json.gz`, `_manifest.jsonl`, `runs.jsonl` |
+| `analyse` | `ml/jobs/embeddings.embed` (cache by text hash), `ml/jobs/registry.py` (current model), `rank.py` (matches, Workers AI cache and budget) | `clusters.json`, `matches.json`, the embedding cache |
+| `build` | dbt `tag:job_assistant`, `export.py`, `export.py --check` | `frontend/public/data/job-assistant/*.json` (ignored by Git) |
+| `publish` | `release.py publish --group job-assistant` with `JOB_ADS_PUBLISH=r2`; otherwise the delivery check only | nothing in Git; no site build |
+
+Every stage records itself in `warehouse/raw/job_assistant/pipeline.json` (`last` and `ok` per
+stage) and appends one line to `realtime_runs.jsonl` with its duration, outcome and counts.
+
+## JobStream contract (checked 2026-11-02)
+
+- OpenAPI `JobStream` 2.1.1 at `https://jobstream.api.jobtechdev.se/swagger.json`. `/stream` takes
+  `date` (required), `updated-before-date`, `occupation-concept-id` and `location-concept-id`. A
+  `/v2/stream` with `updated-after` and `updated-before` exists; the flow stays on `/stream`, which
+  `ads.py` already used.
+- One request a minute. A ten-minute run normally makes one request. After a pause the run reads
+  six-hour windows and waits 61 seconds between them (`ads.SPACING`).
+- Status 400, 429 or 500 on error. `rawstore.session()` retries 429 and 5xx with backoff;
+  anything still failing is logged in `_manifest.jsonl` and stops the run before the cursor moves.
+- An answer is a JSON list of events. New and changed ads look the same. A removal is
+  `{"id", "removed": true, "removed_date", ...}`. The guide shows the occupation fields of a
+  removal as plain ids; the live service sends `{"concept_id": ...}`. Both forms are read.
+- An empty list is a valid answer with no changes; it moves the cursor. A 200 whose body is not a
+  list is an error.
+- Removal events disappear after 90 days, so a stopped flow must restart within that period.
+
+## Correctness rules
+
+| Rule | How |
+|---|---|
+| Overlap | Each run reads from `JOB_STREAM_OVERLAP_MINUTES` (default 10) before the stored cursor, so an event the source indexes late is still read. The cursor itself never moves back. |
+| Idempotence | An ad is keyed by its JobTech id. Its row changes only when the content hash changes, so overlapping windows and duplicate events count as `unchanged`. |
+| Order | Each event has a source time: the ad's `timestamp`, or `removed_date`. An event older than the ad's stored `source_updated` is counted as `stale` and skipped, so a late older version or an old removal never overwrites a newer state. |
+| Checkpoint | `ads.json` is written atomically before `state.json` moves. A run stopped halfway repeats only the window it did not finish. |
+| Stages | The collect cursor is separate from analysis and publication state. `analyse` records the cursor and model it consumed, `build` the cursor it built from, and `publish` the build it shipped. A stage whose input is unchanged reports `skipped`; `build` refuses to run on a store the analysis has not caught up with. A failed stage is retried by Airflow or picked up by the next run. |
+| Overlapping runs | The DAG allows one active run and does not catch up. `realtime.py` also holds `pipeline.lock`. The next stage takes it over when the process that holds it has gone (a task killed on timeout), or after 45 minutes. |
+
+## Analysis with the current model
+
+- Only new and changed ads are embedded. Their text is `ml.jobs.prepare.semantic_text` (title,
+  description, skills) and goes through `embed`, whose Parquet cache is keyed by text hash; a text
+  seen before costs nothing.
+- The current model is `current` in `ml/jobs/registry.json`: the published clustering run
+  `efd2e318dc1621b2`, MiniLM at revision `e8f8c21`. An ad is assigned to the cluster that most of its
+  five nearest reference ads belong to. This approximates the run's UMAP and HDBSCAN fit without
+  refitting it.
+- The change signals per cluster are the open ads and the ads new, changed and removed in the pass.
+  `rank.py` redoes a match only when the ad's hash, the profile or the engine changes, as before.
+- The model is never retrained by this flow. `job_cluster_candidate` trains a candidate weekly
+  and runs the gate. Promotion and rollback are manual commands, and every one is recorded in the
+  register.
+
+**Gate.** The vote is checked on a stable 30 % of the reference ads (hash split). It must agree
+with the run's own labels at least 65 % of the time, and every cluster must keep 20 reference
+ads. The published run scored 0.685 on 1,586 held-out ads; 5,287 of its 35,861 ads have a cached
+embedding locally. Nearest centroid scored 0.647 on the same kind of split, so the five-neighbour
+vote was chosen.
+
+## Measurements
+
+Real runs on 2026-11-02 against the live JobStream, on a Windows 10 laptop (Python 3.12, CPU only),
+`JOB_ADS_PUBLISH=local`. The stages ran in the DAG's order through `tmp/cycle.py`, which samples the
+peak memory of each stage and its children. Airflow itself could not run on this machine: Docker and
+WSL are not installed, and Airflow does not run natively on Windows. Both DAG files were parsed with
+Airflow 3.3.2 (`job_ads_near_realtime`: `*/10 * * * *`, one active run, no catch-up, four tasks with
+three retries, exponential backoff and timeouts).
+
+**Catch-up** from the cursor 2026-10-30 16:44 local time: 12 six-hour windows in 11 min 19 s (one
+request a minute), 490 events, 2 empty answers, 121 new, 16 changed, 287 removed, 0 stale. The first
+analysis embedded 2,210 texts (45 came from the cache) in 88 s, peak 1.8 GB. The build took 28 s.
+
+**Two consecutive ten-minute runs** (UTC start time):
+
+| Run | Stage | Wall | Peak RSS | Result |
+|---|---|---|---|---|
+| 13:40 | collect | 4.1 s | 132 MB | 13 events: 2 new, 2 removed, 7 unchanged from the overlap, 0 stale |
+| | analyse | 23.8 s | 1,709 MB | 2 texts embedded, 2 ads assigned; profile route answered 503, no matches |
+| | build | 17.1 s | 560 MB | 2,254 open ads, 46 duplicates, 849 removed; delivery check passed |
+| | publish | 4.1 s | 129 MB | 4 changes; source to validated result 1.9 to 16.0 min |
+| 13:50 | collect | 7.6 s | 128 MB | 9 events: 4 new, 2 changed, 1 removed, 1 unchanged, 0 stale |
+| | analyse | 23.3 s | 1,733 MB | 6 texts embedded, 6 ads assigned |
+| | build | 16.9 s | 653 MB | 2,257 open ads; delivery check passed |
+| | publish | 4.1 s | 132 MB | 7 changes; source to validated result 2.1 to 10.9 min |
+
+A run takes about 50 s, so the ten-minute interval leaves a wide margin. The delay is measured
+from the source's own change time (`timestamp` or `removed_date`) to the end of `publish`, so it
+includes JobStream's indexing lag and the wait for the next poll.
+
+**Restart after a partial failure.** At 13:51 a real `collect` stored one new ad (cursor 14:50 local
+time). `analyse` was then killed by force six seconds in, leaving `pipeline.lock` and an unchanged
+analysis state. The next `analyse` took over the lock because its process was gone, assigned the
+ad, and `build` and `publish` followed. The change was published 3.2 min after its source time.
+Afterwards the store held 3,109 ads under 3,109 ids, the published `ads.json` 3,109 under 3,109
+ids, and all 2,259 open ads had a cluster.
+
+**Embedding use.** Local MiniLM on CPU, no fees: 2 to 6 texts a run. Of the 18 to 19 s, nearly all
+is loading the model; that load also sets the 1.7 GB peak. Workers AI used 0 neurons in these runs
+because the profile route answered 503 (D1 is not set up), so `rank.py` matched nothing.
+
+**Storage.** One answer is about 15 KB gzipped (about 2 MB a day at 144 runs). `ads.json` is
+rewritten each run (16 MB). The embedding cache is 30 MB.
+
+## What continuous operation needs
+
+1. **A host that is always on.** The laptop sleeps. Any Linux machine with Docker can run
+   `infra/airflow/docker-compose.yml` unchanged.
+2. **One scheduler.** Set the repository variable `JOB_ADS_SCHEDULER=airflow`, so the hourly GitHub
+   workflow stands down, and only then set `JOB_ADS_PUBLISH=r2` with the R2 secrets in
+   `infra/airflow/.env`.
+3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
+   each run; the Airflow host keeps it on local disk. Add a daily `warehouse_store.py` push of the
+   store, or a disk backup, so a lost host does not lose the history.
+4. **Alerts.** Failed tasks are visible only in the Airflow UI. Add a failure callback or an
+   external check on `ads.json` `pipeline.last_fetch` (the page already warns after eight hours).
+5. **Memory.** Loading the model in each run needs about 1.7 GB. A 4 GB host is enough. A model kept
+   loaded in a long-running worker, or Workers AI embeddings, would cut both the peak and the 18 s.
+6. **The job history warehouse** (`warehouse/jobtech/history.duckdb`) on the host before
+   `job_cluster_candidate` can train. It is absent on this laptop, so the weekly DAG is untested.
+7. **Secrets** for Workers AI and the owner profile (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`),
+   and the owner functions in [job-assistant.md](job-assistant.md), before matches are made.
+
+## Proposed host and cost
+
+Not created; a budget has to be approved first. Prices were checked on 2026-11-02 and vary between
+sources, so check them on the provider's page before ordering.
+
+| Option | Size | Approx. per month | Comment |
+|---|---|---|---|
+| Hetzner Cloud CX23 (recommended) | 2 vCPU, 4 GB, 40 GB | €5.49 + €0.50 IPv4 | Enough for one 50 s run every ten minutes and Postgres. Reported as hard to order in some EU locations in October 2026. |
+| Hetzner Cloud CPX22 | 2 vCPU, 4 GB, 80 GB | about €19.49 | Fallback when CX23 cannot be ordered. |
+| Managed Airflow (AWS MWAA, Google Cloud Composer) | smallest class | hundreds of dollars | The smallest MWAA class lists 2.10 CNY an hour in AWS China; AWS's own example prices a large environment at $0.99 an hour. Too much for one DAG. |
+
+The recommended host adds R2 traffic only for the published group; at about 50 s a run, compute is
+under 15 % of one core.

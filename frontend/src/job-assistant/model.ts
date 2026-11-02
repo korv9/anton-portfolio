@@ -117,6 +117,12 @@ export type Delivered = {
   ads: {
     generated_at: string
     fetched_until: string | null
+    /** platform/job_assistant/export.py `pipeline`: absent in files written before it. */
+    pipeline?: {
+      flow: 'realtime' | 'hourly'
+      last_fetch: { at: string; fetched_until: string | null } | null
+      latency_minutes: { median: number | null; publications: number }
+    }
     counts: { current: number; removed: number; duplicates: number }
     runs: { day: string; runs: number; runs_ok: number; runs_failed: number }[]
     ads: Ad[]

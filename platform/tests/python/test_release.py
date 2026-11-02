@@ -478,7 +478,8 @@ def test_job_assistant_release_carries_no_owner_records():
     assert not private & set(export.FIELDS)
     now = datetime.now(timezone.utc)
     ad = {k: None for k in export.FIELDS} | {"id": "1", "source_url": "https://example.test/1"}
-    data = {"schema_version": 1, "generated_at": now.isoformat(), "ads": [ad], "runs": [{"runs_ok": 1}]}
+    data = {"schema_version": 1, "generated_at": now.isoformat(), "ads": [ad], "runs": [{"runs_ok": 1}],
+            "pipeline": {"last_fetch": {"at": now.isoformat()}}}
     assert export.problems(data, now) == []
     data["ads"] = [ad | {"status": "applied", "note": "sent"}]
     assert "ad 1: fields differ from the contract" in export.problems(data, now)

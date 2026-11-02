@@ -103,7 +103,8 @@ def test_ad_that_leaves_data_it_is_removed(raw):
 
 def test_republished_ad_reopens(raw):
     answers = {"snapshot": [ad("1")], "2026-10-23T05:50:00": [removed("1")],
-               "2026-10-23T06:00:00": [ad("1")]}
+               # Republished after the removal, so the source stamps it later than removed_date.
+               "2026-10-23T06:00:00": [ad("1", timestamp=1792760000000)]}
     store.run(datetime(2026, 10, 23, 6, 0), Http(answers), clock)
     store.run(datetime(2026, 10, 23, 7, 0), Http(answers), clock)
     row = stored(raw)["1"]

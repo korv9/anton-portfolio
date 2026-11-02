@@ -352,6 +352,10 @@ and there is no `terraform` environment, so the setup workflow creates the datab
 
 ## Monitoring
 
+A ten-minute flow scheduled by Airflow, with the same store and release group, is described in
+[job-ads-airflow.md](job-ads-airflow.md). Until the repository variable `JOB_ADS_SCHEDULER` is set
+to `airflow`, the hourly GitHub workflow below stays the scheduler.
+
 The run is a subject in `platform/pipeline.yml` with `sla.fresh_within: 8h`, so the existing
 data heartbeat opens an issue when it stops, or when the active release's `published_at` is older
 than that. A release with unchanged bytes keeps its publication time. The ad files hold no

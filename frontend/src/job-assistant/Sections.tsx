@@ -5,7 +5,7 @@
 import { l } from '../i18n'
 import Owner from './Owner'
 import type { Delivered, Records } from './data'
-import { cvLevelLabel } from './labels'
+import { clock, cvLevelLabel } from './labels'
 
 type Props = {
   data: Delivered
@@ -127,6 +127,7 @@ export default function Sections({
             'Schemalagda körningar, senaste sju dagarna',
           )}
         </h2>
+        <Freshness ads={data.ads} />
         <div className="ja-table-wrap">
           <table className="ja-table">
             <thead>
@@ -163,5 +164,32 @@ export default function Sections({
         />
       )}
     </div>
+  )
+}
+
+/** The last successful fetch and publication, and the measured delay from the source's change time. */
+function Freshness({ ads }: { ads: Delivered['ads'] }) {
+  const fetch = ads.pipeline?.last_fetch
+  const median = ads.pipeline?.latency_minutes.median
+  const day = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Stockholm',
+  }).format(new Date())
+  return (
+    <p className="ja-freshness">
+      {fetch && (
+        <>
+          {l('Last fetch', 'Senaste hämtning')}{' '}
+          <time dateTime={fetch.at}>{clock(fetch.at, day)}</time>.{' '}
+        </>
+      )}
+      {l('Last publication', 'Senaste publicering')}{' '}
+      <time dateTime={ads.generated_at}>{clock(ads.generated_at, day)}</time>.
+      {median != null &&
+        ' ' +
+          l(
+            `Median delay from an ad's change at the source to publication, last day: ${Math.round(median)} min (near real time by polling every ten minutes).`,
+            `Mediantid från att en annons ändras hos källan till publicering, senaste dygnet: ${Math.round(median)} min (nära realtid genom polling var tionde minut).`,
+          )}
+    </p>
   )
 }
