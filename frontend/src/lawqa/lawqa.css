@@ -118,18 +118,53 @@
   justify-content: space-between;
   gap: var(--sp-3);
 }
-/* The answer and its sources. */
-.lq-body {
+/* The conversation (Thread.tsx): each question, its fable, and the law folded under it. */
+.lq-thread {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-7);
-  align-items: start;
+  max-width: 90ch;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.lq-result {
+.lq-turn {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--sp-7);
+  gap: var(--sp-4);
   min-width: 0;
+}
+.lq-ask {
+  justify-self: end;
+  max-width: min(100%, 60ch);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius);
+  background: var(--lq-tint);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.lq-turn .lq-allegory {
+  margin: 0;
+}
+.lq-law summary {
+  width: fit-content;
+  min-height: 40px;
+  padding-block: 0.35rem;
+  color: var(--muted);
+  font-size: var(--small);
+  cursor: pointer;
+}
+.lq-law summary:hover {
+  color: var(--ink);
+}
+.lq-law summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.lq-law[open] summary {
+  margin-bottom: var(--sp-4);
+}
+.lq-law .lq-answer {
+  margin-bottom: var(--sp-5);
 }
 .project-shell #main .lq h2 {
   margin: 0 0 var(--sp-3);

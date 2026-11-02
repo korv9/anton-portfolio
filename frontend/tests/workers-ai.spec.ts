@@ -46,7 +46,7 @@ test(
   },
 )
 
-test('a question shows its passages, then the checked answer', async ({
+test('a question is answered with a fable, the checked law folded under it', async ({
   page,
 }) => {
   const requested = await serveExports(page)
@@ -74,8 +74,8 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Allegora')
   await expect(page.getByText('not legal advice')).toBeVisible()
   await expect(page.locator('.lq-examples button')).toHaveCount(1)
-  // The page opens on the first example's checked answer; the corpus waits for the reader.
-  await expect(page.locator('.lq-quote q')).toHaveText('Fixture paragraph 1.')
+  // The conversation starts empty; the corpus waits for the reader.
+  await expect(page.locator('.lq-thread')).toHaveCount(0)
   expect(requested).not.toContain('sfs/meta.json')
   // Below the tool, the statute book and the AI Act as data, read from their own small files.
   await expect(page.locator('#lq-book-title')).toHaveText('The statute book')
@@ -84,38 +84,49 @@ test('a question shows its passages, then the checked answer', async ({
   await expect(page.locator('#lq-act-title')).toHaveText('The AI Act')
   await expect(page.locator('.lq-articles li').first()).toBeVisible()
   expect(requested).not.toContain('sfs/meta.json')
-  await page.getByRole('button', { name: 'Show the 8 passages found' }).click()
+  const box = page.getByLabel('Your question')
+  await box.fill('Vem omfattas av lagen?')
+  await expect.poll(() => requested).toContain('sfs/meta.json')
   await page.getByText('How it is made').click()
   await expect(page.getByText('(fetched 2026-10-14)')).toBeVisible()
   await expect(page.locator('.lq-laws li')).toHaveCount(1)
-  await expect(page.locator('.lq-passages li:visible')).toHaveCount(3)
-  await page.getByRole('button', { name: 'Show all 8' }).click()
-  await expect(page.locator('.lq-passages li:visible')).toHaveCount(8)
-  await page.getByLabel('Your question').fill('Vem omfattas av lagen?')
   await page.getByRole('button', { name: 'Ask', exact: true }).click()
-  await expect(page.locator('.lq-passages li')).toHaveCount(8)
-  await expect(page.locator('.lq-quote')).toContainText(
-    '✓ checked word for word',
-  )
-  // The moral allegory leads; the checked answer it was told from follows under its own heading.
+  await expect(box).toHaveValue('')
+  await expect(page.locator('.lq-ask')).toHaveText('Vem omfattas av lagen?')
+  // The fable is the answer; the checked law and its passages are folded under it.
   await expect(page.locator('.lq-allegory p')).toHaveText([
     'En räv och en hare arbetade i samma verkstad.',
     'Sensmoral: regeln gäller alla.',
   ])
+  await expect(page.locator('.lq-quote')).toBeHidden()
+  await page.getByText('Show the legal text').click()
   await expect(
     page.getByRole('heading', { name: 'What the law says' }),
   ).toBeVisible()
+  await expect(page.locator('.lq-quote')).toContainText(
+    '✓ checked word for word',
+  )
+  await expect(page.locator('.lq-passages li:visible')).toHaveCount(3)
+  await page.getByRole('button', { name: 'Show all 8' }).click()
+  await expect(page.locator('.lq-passages li:visible')).toHaveCount(8)
   expect(asked[0].corpus).toBe('sfs')
   expect(asked[0].passages).toHaveLength(8)
   await page.locator('.lq-quote button').click()
-  await expect(page.locator(`[id="lq-${LAW[0].id}"]`)).toBeFocused()
-
-  verified = false
-  await page.getByRole('button', { name: 'Ask', exact: true }).click()
   await expect(
-    page.getByText('The answer could not be verified against the legal text'),
+    page.locator(`.lq-passages li[id$="-${LAW[0].id}"]`),
+  ).toBeFocused()
+
+  // A failed check is answered by the fixed owl fable; the first turn stays.
+  verified = false
+  await box.fill('Och lärlingar?')
+  await page.getByRole('button', { name: 'Ask', exact: true }).click()
+  await expect(page.locator('.lq-turn')).toHaveCount(2)
+  await expect(
+    page.getByText('The answer could not be verified against the legal text.'),
   ).toBeVisible()
-  await expect(page.locator('.lq-passages li')).toHaveCount(8)
+  await expect(page.locator('.lq-turn').nth(1)).toContainText(
+    'Moral: Whoever does not know should not pretend to.',
+  )
 
   // The evaluation: the chosen model's figures and the comparison, gpt-oss cost as a lower bound.
   const kpis = page.locator('.page-head-kpis')
@@ -166,12 +177,13 @@ test(
       "Today's Workers AI allocation is used up",
     )
 
-    // The example's published answer cites with a colon and still renders as a checked quote.
+    // Without the Worker an example falls back to its published answer, which has no fable;
+    // it cites with a colon and still renders as a checked quote.
     await page.goto('/#fraga-lagen')
     await page
       .getByRole('button', { name: 'Fixture question near paragraph 1?' })
       .click()
-    await expect(page.getByLabel('Your question')).toHaveValue(
+    await expect(page.locator('.lq-ask')).toHaveText(
       'Fixture question near paragraph 1?',
     )
     await expect(page.locator('.lq-passages li').first()).toContainText(
