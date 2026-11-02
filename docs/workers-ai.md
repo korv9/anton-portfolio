@@ -181,7 +181,9 @@ exempel och ber läsaren fråga med egna ord.
 ## Hela författningssamlingen
 
 Utöver de 40 lagarna i `configs/workers_ai/sfs_selection.yaml` finns hela SFS som dataprodukt,
-utan inbäddningar och utan anrop till Workers AI. Demon läser fortfarande bara urvalet.
+utan inbäddningar och utan anrop till Workers AI. Allegora söker i alla lagar och förordningar som
+gäller med ett index på Google Cloud ([allegora-gcp.md](allegora-gcp.md)); AI-förordningen och
+plattformskorpusen söks fortfarande i webbläsaren.
 
 `python platform/ingest/sfs/ingest.py --all` läser Riksdagens dokumentlista med `doktyp=sfs`
 till `raw/sfs/catalogue.json`. API:t lämnar högst 50 sidor om 200 träffar per fråga, så listan

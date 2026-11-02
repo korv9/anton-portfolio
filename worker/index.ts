@@ -3,11 +3,16 @@
  * POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer answers a question
  * from passages the browser found, after checking that every passage is verbatim published text
  * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
- * passage. Visitor text is never logged
- * or stored. All vector search happens in the browser. /api/jobs/* is the job assistant's owner
- * records (worker/jobs.ts): public reads, token-protected writes and CV files.
+ * passage. Visitor text is never logged or stored. Vector search happens in the browser, except
+ * for corpus 'sfs-all', every Swedish law and ordinance in force: there the Worker asks
+ * Allegora's search service on Cloud Run (platform/publish/allegora/search_service.py) for the
+ * passages, so they need no check. With ANTHROPIC_API_KEY the answers come from Claude
+ * (claude.ts) instead of Gemma. /api/jobs/* is the job assistant's owner records
+ * (worker/jobs.ts): public reads, token-protected writes and CV files.
  */
+import { claude } from './claude.ts'
 import { jobs, readCapped, type JobsEnv } from './jobs.ts'
+import { take, type Kv } from './quota.ts'
 
 export type Env = JobsEnv & {
   AI: { run: (model: string, input: unknown) => Promise<unknown> }
@@ -15,6 +20,13 @@ export type Env = JobsEnv & {
   RATE_LIMITER?: {
     limit: (o: { key: string }) => Promise<{ success: boolean }>
   }
+  /** wrangler.toml var and Cloudflare secret: the search service and the key it checks. */
+  ALLEGORA_SEARCH_URL?: string
+  ALLEGORA_SEARCH_KEY?: string
+  /** Cloudflare secret: with it the answer and its fable come from Claude (claude.ts). */
+  ANTHROPIC_API_KEY?: string
+  /** Workers KV: Allegora's daily question counts (quota.ts). */
+  QUOTA?: Kv
 }
 
 export const EMBED_MODEL = '@cf/baai/bge-m3'
@@ -26,7 +38,7 @@ export const ANSWER_OPTIONS: Record<string, unknown> = {
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
 export const MAX_PASSAGE = 5000
-const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform']
+const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform', 'sfs-all']
 
 // Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
 const SPACE =
@@ -113,6 +125,39 @@ async function embed(request: Request, env: Env) {
 }
 
 type Passage = { id: string; text: string }
+export type Hit = Passage & {
+  title: string
+  url: string
+  law: string
+  score: number
+}
+
+/** The eight passages nearest the question among all laws in force, or null when the service fails. */
+async function search(env: Env, question: string): Promise<Hit[] | null> {
+  if (!env.ALLEGORA_SEARCH_URL || !env.ALLEGORA_SEARCH_KEY) return null
+  try {
+    const response = await fetch(`${env.ALLEGORA_SEARCH_URL}/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Allegora-Key': env.ALLEGORA_SEARCH_KEY,
+      },
+      body: JSON.stringify({ question, k: MAX_PASSAGES }),
+    })
+    if (!response.ok) return null
+    const { hits } = (await response.json()) as { hits: Hit[] }
+    return hits.map(({ id, title, url, text, law, score }) => ({
+      id,
+      title,
+      url,
+      text,
+      law,
+      score,
+    }))
+  } catch {
+    return null
+  }
+}
 
 /** Every passage must be one of the corpus's published passages, word for word. */
 async function published(
@@ -211,7 +256,17 @@ async function answer(request: Request, env: Env) {
   const input = await body(request)
   const question = sentence(input?.question)
   const corpus = String(input?.corpus)
-  const passages = input?.passages
+  if (corpus === 'sfs-all' && question) {
+    // Every law in force is searched on Google Cloud and answered by Claude: a daily allowance.
+    if (!env.QUOTA) return json({ error: 'quota is not configured' }, 503)
+    const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+    const taken = await take(env.QUOTA, ip)
+    if (!taken.ok) return json({ reason: taken.reason }, 429)
+  }
+  const hits =
+    corpus === 'sfs-all' && question ? await search(env, question) : undefined
+  if (hits === null) return json({ reason: 'error' }, 503)
+  const passages = hits ?? input?.passages
   if (
     !question ||
     !CORPORA.includes(corpus) ||
@@ -227,43 +282,29 @@ async function answer(request: Request, env: Env) {
   )
     return json({ error: 'question, corpus and passages [{id, text}]' }, 400)
   const found = (passages as Passage[]).map(({ id, text }) => ({ id, text }))
-  if (!(await published(request, env, corpus, found)))
+  if (!hits && !(await published(request, env, corpus, found)))
     return json({ error: 'passages must be published text' }, 400)
 
   let text: string
   let usage: unknown
+  let model: string
   try {
-    const out = (await env.AI.run(ANSWER_MODEL, {
-      messages: [
-        {
-          role: 'system',
-          content: corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
-        },
-        {
-          role: 'user',
-          content: `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
-        },
-      ],
-      max_tokens: 2048,
-      temperature: 0.1,
-      ...ANSWER_OPTIONS,
-    })) as {
-      response?: string
-      choices?: { message?: { content?: string } }[]
-      usage?: unknown
-    }
-    text = (out.response ?? out.choices?.[0]?.message?.content ?? '').trim()
-    usage = out.usage
+    ;({ text, usage, model } = await generate(
+      env,
+      corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
+      `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
+      { maxTokens: 2048, temperature: 0.1 },
+    ))
   } catch (error) {
     return unavailable(error)
   }
   const quotes = checkQuotes(text, found)
   // A refusal, or an answer that quotes nothing, has nothing to check.
   if (/^NO_ANSWER\W*$/.test(text) || !quotes.length)
-    return json({ status: 'no_answer', passages: found })
+    return json({ status: 'no_answer', passages: found, hits })
   // Generated in full, then checked: an answer with a quote that is not in its source is dropped.
   if (!quotes.every((q) => q.verbatim))
-    return json({ status: 'unverified', passages: found })
+    return json({ status: 'unverified', passages: found, hits })
   const checked = canonical(text)
   const allegory =
     corpus === 'platform' ? null : await retell(env, question, checked)
@@ -272,9 +313,39 @@ async function answer(request: Request, env: Env) {
     ...(allegory && { allegory }),
     answer: checked,
     quotes: quotes.map(({ id, quote }) => ({ id, quote })),
-    model: ANSWER_MODEL,
+    model,
     usage,
+    hits,
   })
+}
+
+/**
+ * One generation: Claude when the Worker has its key, otherwise Gemma on Workers AI. Claude
+ * takes no temperature.
+ */
+async function generate(
+  env: Env,
+  system: string,
+  user: string,
+  { maxTokens, temperature }: { maxTokens: number; temperature: number },
+) {
+  if (env.ANTHROPIC_API_KEY)
+    return claude(env.ANTHROPIC_API_KEY, system, user, maxTokens)
+  const out = (await env.AI.run(ANSWER_MODEL, {
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature,
+    ...ANSWER_OPTIONS,
+  })) as {
+    response?: string
+    choices?: { message?: { content?: string } }[]
+    usage?: unknown
+  }
+  const text = (out.response ?? out.choices?.[0]?.message?.content ?? '').trim()
+  return { text, usage: out.usage, model: ANSWER_MODEL }
 }
 
 /**
@@ -286,28 +357,14 @@ async function retell(env: Env, question: string, checked: string) {
     quote ? `"${quote}"` : '',
   )
   try {
-    const out = (await env.AI.run(ANSWER_MODEL, {
-      messages: [
-        { role: 'system', content: ALLEGORY_SYSTEM },
-        {
-          role: 'user',
-          content: `Question: ${question}
+    const { text: story } = await generate(
+      env,
+      ALLEGORY_SYSTEM,
+      `Question: ${question}
 
 Checked answer: ${plainAnswer}`,
-        },
-      ],
-      max_tokens: 600,
-      temperature: 0.7,
-      ...ANSWER_OPTIONS,
-    })) as {
-      response?: string
-      choices?: { message?: { content?: string } }[]
-    }
-    const story = (
-      out.response ??
-      out.choices?.[0]?.message?.content ??
-      ''
-    ).trim()
+      { maxTokens: 600, temperature: 0.7 },
+    )
     return story && !story.includes('[[') ? story : null
   } catch {
     return null
