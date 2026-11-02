@@ -17,6 +17,13 @@ A changed ad replaces its row only when its content hash differs; the old hash g
 A removed ad keeps its row with `removed_at`, so the owner's status still points at something.
 ads.json is written atomically before the cursor moves, so a run stopped halfway asks for the same
 window again, and the id plus hash rule makes the repeat harmless.
+
+Each run starts `overlap` before the stored cursor (JOB_STREAM_OVERLAP_MINUTES, default 10 on the
+command line), so an event JobStream indexes late is still read. An event is applied only when its
+source time (the ad's `timestamp`, or `removed_date`) is not older than the one stored in
+`source_updated`, so a repeated or late answer never undoes a newer state. JobStream allows one
+request a minute: windows after the first wait `SPACING`. An answer that is not a JSON list is an
+error and stops the run before the cursor moves; an empty list is a valid answer with no changes.
 """
 from __future__ import annotations
 
@@ -45,6 +52,7 @@ WINDOW = timedelta(hours=6)
 STAMP = "%Y-%m-%dT%H:%M:%S"
 ATTEMPTS = 4
 BOOTSTRAP_DAYS = 60
+SPACING = 61  # seconds between JobStream requests; its rate limit is one a minute
 pause = time.sleep
 
 
@@ -130,19 +138,36 @@ def reredact(ads: dict) -> int:
     return changed
 
 
+def source_time(ad: dict) -> str | None:
+    """When the source changed this ad, as a local STAMP: removed_date, or the ad's timestamp."""
+    if ad.get("removed"):
+        return (ad.get("removed_date") or "")[:19] or None
+    return ad.get("timestamp") and datetime.fromtimestamp(ad["timestamp"] / 1000, LOCAL).strftime(STAMP)
+
+
 def apply(ads: dict, items: list[dict], seen: str) -> dict:
-    """Fold one JobStream answer into the store; returns counts. Repeating an answer changes nothing."""
-    counts = {"new": 0, "changed": 0, "removed": 0, "unchanged": 0, "other_field": 0}
+    """Fold one JobStream answer into the store; returns counts. Repeating an answer changes nothing,
+    and an event older than the stored state of its ad is counted as stale and skipped."""
+    counts = {"new": 0, "changed": 0, "removed": 0, "unchanged": 0, "other_field": 0, "stale": 0}
+    times = []  # source times of the events that changed the store, for the latency measure
     for ad in items:
-        field = (ad.get("occupation_field") or {}).get("concept_id")
+        field = ad.get("occupation_field")
+        field = field.get("concept_id") if isinstance(field, dict) else field
         key = str(ad["id"])
         old = ads.get(key)
+        at = source_time(ad)
+        if old and at and at < (old.get("source_updated") or old.get("changed") or ""):
+            counts["stale"] += 1
+            continue
+        if old and at:
+            old["source_updated"] = at
         if field not in (None, IT_FIELD):
             # An ad moved out of Data/IT is no longer current here; without removed_at it would stay forever.
             if old and not old.get("removed_at"):
                 old["removed_at"] = seen
                 old["history"].append({"at": seen, "event": "left_field"})
                 counts["removed"] += 1
+                times.append(at)
             counts["other_field"] += 1
             continue
         if ad.get("removed"):
@@ -150,17 +175,24 @@ def apply(ads: dict, items: list[dict], seen: str) -> dict:
                 old["removed_at"] = ad.get("removed_date") or seen
                 old["history"].append({"at": seen, "event": "removed"})
                 counts["removed"] += 1
+                times.append(at)
             continue
         row = project(ad, seen)
+        row["source_updated"] = at
         if old is None:
             ads[key] = {**row, "removed_at": None, "history": [{"at": seen, "event": "new", "hash": row["content_hash"]}]}
             counts["new"] += 1
+            times.append(at)
         elif old["content_hash"] != row["content_hash"] or old.get("removed_at"):
             history = old["history"] + [{"at": seen, "event": "changed", "hash": row["content_hash"]}]
             ads[key] = {**row, "first_seen": old["first_seen"], "removed_at": None, "history": history}
             counts["changed"] += 1
+            times.append(at)
         else:
             counts["unchanged"] += 1
+    times = sorted(t for t in times if t)
+    if times:
+        counts["earliest"], counts["latest"] = times[0], times[-1]
     return counts
 
 
@@ -180,8 +212,13 @@ def duplicates(ads: dict) -> None:
 def fetch(http, path: str, params: dict, name: str) -> list[dict]:
     url = f"{STREAM_URL}/{path}?" + "&".join(f"{k}={v}" for k, v in params.items())
     for attempt in range(1, ATTEMPTS + 1):
-        response = http.get(url, timeout=900)
-        response.raise_for_status()
+        # rawstore.session() already retries 429 and 5xx with backoff; what still fails is raised.
+        try:
+            response = http.get(url, timeout=900)
+            response.raise_for_status()
+        except Exception as error:
+            rawstore.record_error(SOURCE, f"raw/{name}.json.gz", url, error)
+            raise
         try:
             items = json.loads(response.content)
         except json.JSONDecodeError:
@@ -189,6 +226,9 @@ def fetch(http, path: str, params: dict, name: str) -> list[dict]:
                 raise
             time.sleep(10 * attempt)
             continue
+        if not isinstance(items, list):
+            # A 200 with an error object is not "no changes": stop before the cursor moves.
+            raise ValueError(f"{name}: JobStream answered {type(items).__name__}, not a list")
         rawstore.store(SOURCE, f"raw/{name}.json.gz", response.content, url=url)
         return items
     raise AssertionError("unreachable")
@@ -217,8 +257,9 @@ def bootstrap(http, until: datetime) -> list[dict]:
     return found
 
 
-def run(until: datetime, http=None, now=None) -> dict:
-    """Bring the store up to `until` (Stockholm local time, naive). Returns this run's record."""
+def run(until: datetime, http=None, now=None, overlap: timedelta = timedelta(0)) -> dict:
+    """Bring the store up to `until` (Stockholm local time, naive), reading from `overlap` before the
+    cursor. Returns this run's record."""
     now = now or (lambda: datetime.now(timezone.utc).isoformat(timespec="seconds"))
     http = http or rawstore.session()
     folder = store_dir()
@@ -241,8 +282,11 @@ def run(until: datetime, http=None, now=None) -> dict:
             write_atomic(state_path, {"fetched_until": start.strftime(STAMP)})
             record["windows"].append({"snapshot": until.strftime(STAMP), **counts})
             state = {"fetched_until": start.strftime(STAMP)}
-        start = datetime.strptime(state["fetched_until"], STAMP)
+        cursor = datetime.strptime(state["fetched_until"], STAMP)
+        start = cursor - overlap
         while start < until:
+            if record["windows"] and "from" in record["windows"][-1]:
+                pause(SPACING)
             end = min(start + WINDOW, until)
             params = {"date": start.strftime(STAMP), "updated-before-date": end.strftime(STAMP),
                       "occupation-concept-id": IT_FIELD}
@@ -250,8 +294,11 @@ def run(until: datetime, http=None, now=None) -> dict:
             counts = apply(ads, items, now())
             duplicates(ads)
             save_ads(ads_path, ads)
-            write_atomic(state_path, {"fetched_until": end.strftime(STAMP)})
-            record["windows"].append({"from": start.strftime(STAMP), "to": end.strftime(STAMP), **counts})
+            # The overlap reads behind the cursor; the cursor itself never moves back.
+            cursor = max(cursor, end)
+            write_atomic(state_path, {"fetched_until": cursor.strftime(STAMP)})
+            record["windows"].append({"from": start.strftime(STAMP), "to": end.strftime(STAMP),
+                                      "items": len(items), **counts})
             start = end
         record["outcome"] = "ok"
     except Exception as error:
@@ -273,7 +320,7 @@ def main() -> None:
     args = ap.parse_args()
     until = (datetime.strptime(args.until, "%Y-%m-%dT%H:%M") if args.until
              else datetime.now(LOCAL).replace(tzinfo=None, second=0, microsecond=0) - timedelta(minutes=5))
-    record = run(until)
+    record = run(until, overlap=timedelta(minutes=int(os.environ.get("JOB_STREAM_OVERLAP_MINUTES", "10"))))
     print(json.dumps({k: record[k] for k in ("outcome", "ads", "current")}), len(record["windows"]), "windows")
 
 

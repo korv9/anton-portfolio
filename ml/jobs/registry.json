@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "current": "efd2e318dc1621b2",
+  "history": [
+    {
+      "at": "2026-11-02T13:22:53+00:00",
+      "action": "promote",
+      "run_id": "efd2e318dc1621b2",
+      "from": null,
+      "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+      "gate": {
+        "run_id": "efd2e318dc1621b2",
+        "passed": true,
+        "reasons": [],
+        "k": 5,
+        "held_out_agreement": 0.6854,
+        "held_out": 1586,
+        "reference_ads": 5287,
+        "members": {
+          "-1": 345,
+          "0": 221,
+          "1": 620,
+          "2": 85,
+          "3": 134,
+          "4": 99,
+          "5": 130,
+          "6": 1615,
+          "7": 284,
+          "8": 1387,
+          "9": 367
+        },
+        "evaluated_at": "2026-11-02T13:22:53+00:00"
+      }
+    }
+  ]
+}

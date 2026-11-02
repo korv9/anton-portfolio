@@ -1,0 +1,126 @@
+name: Check the Airflow job ads flow
+
+# Manual, and on a push that changes the stack or the flow. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
+# job_ads_near_realtime every ten minutes for a while, restarts the stack to show that the metadata
+# persists, and keeps the evidence as an artifact (docs/job-ads-airflow.md). It reads the job
+# assistant's store and the current cluster model's reference vectors from the bucket's public address,
+# so it needs no secrets, and writes nothing back: JOB_ADS_PUBLISH stays local, so the files are checked
+# but not uploaded, and nothing is deployed.
+#
+# With publish (manual, from main only: the R2 secrets are in the anton-portfolio environment), Airflow
+# is this flow's scheduler for the run: every ten-minute run uploads its validated job-assistant
+# release to R2, and the ad store goes back to R2 at the end, so the hourly refresh continues from
+# Airflow's cursor. It requires the repository variable JOB_ADS_SCHEDULER=airflow, which makes the
+# hourly refresh stand down, so the store and the release never have two writers. A runner job lasts
+# at most six hours: near real time by polling for a window, not operation around the clock.
+
+on:
+  push:
+    paths:
+      - infra/airflow/**
+      - platform/job_assistant/realtime.py
+      - .github/workflows/airflow-job-ads-check.yml
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: Minutes Airflow schedules before the restart
+        default: '25'
+      publish:
+        description: Upload each run's release and the ad store to R2 (main only; needs JOB_ADS_SCHEDULER=airflow)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  airflow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    # An empty name runs the job without an environment, so pushes on branches need no secrets.
+    environment: ${{ inputs.publish && 'anton-portfolio' || '' }}
+    env:
+      # The r2.dev address: the custom domain's bot protection answers runners with 403.
+      PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
+      MINUTES: ${{ inputs.minutes || '25' }}
+      COMPOSE: docker compose -f infra/airflow/docker-compose.yml
+      EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
+      PUBLISH: ${{ inputs.publish && 'r2' || 'local' }}
+    steps:
+      - name: Refuse a second writer
+        if: inputs.publish && vars.JOB_ADS_SCHEDULER != 'airflow'
+        run: |
+          echo "::error::Set the repository variable JOB_ADS_SCHEDULER=airflow first; otherwise the hourly refresh also writes the store and the release."
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Restore the ad store and the current model's reference vectors
+        run: |
+          run=$(python3 -c "import json; print(json.load(open('ml/jobs/registry.json'))['current'])")
+          for key in raw/job_assistant/ads.json raw/job_assistant/state.json raw/job_assistant/runs.jsonl                      features/job_clusters/reference-$run.npz; do
+            curl -fsS --create-dirs -o "warehouse/$key" "${PUBLIC%/}/warehouse/$key"
+          done
+      - name: Build and start Airflow
+        env:
+          R2_ACCOUNT_ID: ${{ inputs.publish && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ inputs.publish && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ inputs.publish && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ inputs.publish && secrets.R2_BUCKET || '' }}
+          R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+        run: |
+          printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\nJOB_ADS_PUBLISH=%s\n' "$(id -u)" "$(openssl rand -hex 32)" "$PUBLISH" > infra/airflow/.env
+          if [ "$PUBLISH" = r2 ]; then
+            printf 'R2_ACCOUNT_ID=%s\nR2_ACCESS_KEY_ID=%s\nR2_SECRET_ACCESS_KEY=%s\nR2_BUCKET=%s\nR2_PUBLIC_BASE=%s\n' \
+              "$R2_ACCOUNT_ID" "$R2_ACCESS_KEY_ID" "$R2_SECRET_ACCESS_KEY" "$R2_BUCKET" "$R2_PUBLIC_BASE" >> infra/airflow/.env
+          fi
+          $COMPOSE build
+          $COMPOSE up -d
+      - name: Unpause the DAG and let Airflow schedule it
+        run: |
+          until $COMPOSE exec -T airflow-scheduler airflow dags list 2>/dev/null | grep -q job_ads_near_realtime; do sleep 10; done
+          $COMPOSE exec -T airflow-scheduler airflow dags unpause job_ads_near_realtime
+          sleep $(( MINUTES * 60 ))
+      - name: Restart the stack; the metadata is on the airflow-db volume
+        run: |
+          mkdir -p "$EVIDENCE"
+          $COMPOSE exec -T airflow-scheduler airflow dags list-runs job_ads_near_realtime -o json > "$EVIDENCE/runs-before.json"
+          docker stats --no-stream > "$EVIDENCE/docker-stats.txt"
+          $COMPOSE down
+          $COMPOSE up -d
+          # Wait for one more scheduled run to finish after the restart.
+          n=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-before.json")
+          for i in $(seq 1 90); do
+            $COMPOSE exec -T airflow-scheduler airflow dags list-runs job_ads_near_realtime -o json > "$EVIDENCE/runs-after.json" 2>/dev/null || true
+            python3 - "$EVIDENCE/runs-after.json" "$n" <<'EOF' && break
+          import json, sys
+          runs = json.load(open(sys.argv[1]))
+          done = [r for r in runs if r["state"] in ("success", "failed")]
+          sys.exit(0 if len(done) > int(sys.argv[2]) else 1)
+          EOF
+            sleep 20
+          done
+      - name: Collect the evidence
+        if: always()
+        run: |
+          mkdir -p "$EVIDENCE"
+          for id in $(python3 -c "import json,sys; print(' '.join(r['run_id'] for r in json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-after.json"); do
+            name=$(echo "tasks-$id.json" | tr ':+' '__')
+            $COMPOSE exec -T airflow-scheduler airflow tasks states-for-dag-run job_ads_near_realtime "$id" -o json > "$EVIDENCE/$name" || true
+          done
+          cp warehouse/raw/job_assistant/pipeline.json warehouse/raw/job_assistant/realtime_runs.jsonl "$EVIDENCE/" || true
+          $COMPOSE logs --no-color > "$EVIDENCE/compose.log" 2>&1 || true
+          python3 infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
+      # Before `down -v`: the hourly refresh restores this store and continues from its cursor.
+      - name: Store the ad store in R2
+        if: always() && inputs.publish
+        run: $COMPOSE exec -T -w /opt/portfolio airflow-scheduler sh -c '"$PORTFOLIO_PYTHON" platform/pipeline.py push job_assistant'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: airflow-evidence
+          path: tmp/airflow-evidence
+          retention-days: 14
+      - name: Stop Airflow
+        if: always()
+        run: $COMPOSE down -v

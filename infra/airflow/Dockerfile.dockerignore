@@ -1,0 +1,3 @@
+# Build context is platform/ (docker-compose.yml); only the pins are needed.
+*
+!requirements.txt

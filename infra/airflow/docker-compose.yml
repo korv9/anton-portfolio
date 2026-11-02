@@ -1,0 +1,81 @@
+# Local Airflow for the job ads flow; start and stop as in infra/airflow/README.md.
+# Metadata lives in Postgres on the named volume airflow-db, so DAG runs, task history and retries
+# survive `docker compose down` (only `down -v` deletes them). The repository is mounted read-write
+# at /opt/portfolio: the flow's store is the checkout's warehouse/raw/job_assistant.
+x-airflow: &airflow
+  build:
+    context: ../../platform
+    dockerfile: ../infra/airflow/Dockerfile
+  image: anton-portfolio-airflow:3.3.2
+  env_file:
+    - path: .env
+      required: false
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/portfolio/infra/airflow/dags
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+    # Local only: every user of the UI on localhost is an admin.
+    AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_ALL_ADMINS: "true"
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET:-local-only-change-me}
+    JOB_STREAM_OVERLAP_MINUTES: ${JOB_STREAM_OVERLAP_MINUTES:-10}
+    # local: validate the publication files only. r2: upload through release.py (needs R2 secrets in .env).
+    JOB_ADS_PUBLISH: ${JOB_ADS_PUBLISH:-local}
+    HF_HOME: /opt/portfolio/warehouse/ml/jobs/models
+  volumes:
+    - ../..:/opt/portfolio
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:16.10
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - airflow-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+    restart: unless-stopped
+
+  airflow-init:
+    <<: *airflow
+    command: ["db", "migrate"]
+    restart: "no"
+
+  airflow-apiserver:
+    <<: *airflow
+    command: ["api-server"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow
+    command: ["scheduler"]
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-dag-processor:
+    <<: *airflow
+    command: ["dag-processor"]
+    restart: unless-stopped
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+volumes:
+  airflow-db:

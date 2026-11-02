@@ -21,6 +21,11 @@
 - 2026-10-27 [TOOL] Manual evaluation (AI agent on the owner's behalf) in `docs/job-assistant-evaluation.md`: list precision 16/36 (v1) to 9/13 (v3); v4 local counts 1 strong, 18 possible, 109 stretch, 2,068 outside. Status persistence verified with wrangler dev and local D1.
 - 2026-10-27 [USER-PENDING] Live owner functions still need: Cloudflare token permission Account > D1 > Edit (setup run 40580520662 failed on it), then setup workflow, D1 id in wrangler.toml, secret JOB_ASSIST_TOKEN, CV upload and approval.
 
+- 2026-11-02 [CODE] Job ads near real time by polling: Airflow DAG `job_ads_near_realtime` (`infra/airflow/`, every ten minutes) runs `platform/job_assistant/realtime.py` stages collect, analyse, build, publish. Overlap, source-time ordering, stage state in `pipeline.json`, lock. Cluster model register `ml/jobs/registry.json` (current `efd2e318dc1621b2`, gate 0.685), manual promote/rollback. Details and measurements: `docs/job-ads-airflow.md`.
+- 2026-11-02 [TOOL] Airflow 3.3.2 in Docker scheduled five consecutive successful runs on a GitHub runner (run 41461235380), metadata kept across a restart; `.github/workflows/airflow-job-ads-check.yml`.
+- 2026-11-02 [TOOL] On the owner's request one local cycle published to R2 through realtime.py (`job-assistant` release 4796a58a6ae2, 15:05 UTC); the live page showed last fetch and publication.
+- 2026-11-02 [USER] Keep the hourly GitHub refresh as production scheduler until an always-on Airflow host exists; then set `JOB_ADS_SCHEDULER=airflow` and `JOB_ADS_PUBLISH=r2`. Host budget not approved.
+
 ## Working set
 
 - 2026-10-18 [CODE] `.github/workflows/ci.yml`, `.github/workflows/security.yml`, `CLAUDE.md`, `docs/development.md`
