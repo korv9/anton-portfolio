@@ -1,12 +1,17 @@
 name: Check the Airflow job ads flow
 
-# Manual only. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
+# Manual, and on a push that changes the stack or the flow. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
 # job_ads_near_realtime every ten minutes for a while, restarts the stack to show that the metadata
 # persists, and keeps the evidence as an artifact (docs/job-ads-airflow.md). It reads the job
 # assistant's raw store and the current cluster model's reference vectors from R2 and writes nothing
 # back: JOB_ADS_PUBLISH stays local, so the files are checked but not uploaded, and nothing is deployed.
 
 on:
+  push:
+    paths:
+      - infra/airflow/**
+      - platform/job_assistant/realtime.py
+      - .github/workflows/airflow-job-ads-check.yml
   workflow_dispatch:
     inputs:
       minutes:
@@ -25,7 +30,7 @@ jobs:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       R2_BUCKET: ${{ secrets.R2_BUCKET }}
-      MINUTES: ${{ inputs.minutes }}
+      MINUTES: ${{ inputs.minutes || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
     steps:
