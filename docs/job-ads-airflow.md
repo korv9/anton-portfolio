@@ -98,6 +98,13 @@ added: the metadata persisted on the `airflow-db` volume. No event was stale. Wh
 runs the stack used about 1.3 GB: scheduler 793 MB, API server 276 MB, DAG processor 175 MB,
 Postgres 45 MB. `infra/airflow/check_runs.py` checks these properties from the CLI's JSON.
 
+**Publication to R2.** On 2026-11-02 at 15:05 UTC a full local cycle ran with `JOB_ADS_PUBLISH=r2`:
+54 events (21 new, 4 changed, 22 removed), 25 ads assigned, and `release.py` checked and activated
+release `4796a58a6ae2` of the `job-assistant` group in 11.8 s. The 47 changes reached the live site
+4.8 to 73.3 minutes after their source times (the longest had waited since the last local run). The
+live page then read: "Last fetch 16:04. Last publication 16:05. Median delay … 16 min". Until
+Airflow is the scheduler, the next hourly GitHub run replaces that release with its own.
+
 **Catch-up** from the cursor 2026-10-30 16:44 local time: 12 six-hour windows in 11 min 19 s (one
 request a minute), 490 events, 2 empty answers, 121 new, 16 changed, 287 removed, 0 stale. The first
 analysis embedded 2,210 texts (45 came from the cache) in 88 s, peak 1.8 GB. The build took 28 s.
