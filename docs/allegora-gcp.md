@@ -3,7 +3,7 @@
 Allegora (`#fraga-lagen`) söker i alla lagar och förordningar som gäller, inte bara i de 40
 utvalda lagarna i `configs/workers_ai/sfs_selection.yaml`. Sökningen körs på Google Cloud i
 projektet `allegora-513419`, region `europe-west4`. Svaret, citatkontrollen och fabeln görs
-av Workern. Svaret och fabeln skrivs av Claude Haiku 5.5 utan thinking (`worker/claude.ts`)
+av Workern. Svaret och fabeln skrivs av Claude Sonnet 5.5 utan thinking (`worker/claude.ts`)
 när Workern har Cloudflare-secreten `ANTHROPIC_API_KEY`, annars av Gemma på Workers AI
 ([workers-ai.md](workers-ai.md)).
 
