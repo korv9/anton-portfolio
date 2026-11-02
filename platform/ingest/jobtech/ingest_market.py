@@ -36,6 +36,7 @@ from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
 import requests
+from portfolio.storage.rawstore import RAW
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -45,7 +46,7 @@ except ImportError:
     from ingest_history import download
 
 REPO = Path(__file__).resolve().parents[3]
-OUT = REPO / "warehouse/raw/jobtech/market"
+OUT = RAW / "jobtech/market"  # the same root as the stream and dbt (PORTFOLIO_RAW)
 ARCHIVES = REPO / "warehouse/jobtech/archives"
 INDEX = "https://data.arbetsformedlingen.se/annonser/historiska/"
 FIRST_YEAR = 2020

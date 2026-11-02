@@ -1,5 +1,9 @@
 # 2026-10-22/23: third-party text pushed to the public R2 bucket
 
+Status: resolved. The files were deleted from the bucket and `LOCAL_ONLY` keeps them local. The
+same gap later let raw job-ad answers with contact details reach the bucket; that finding is open,
+see [storage-and-serving.md](../storage-and-serving.md).
+
 ## Summary
 
 The R2 bucket that stores the warehouse is public, so anything pushed to it is

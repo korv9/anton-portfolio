@@ -17,10 +17,19 @@ frontend, routing, security and integration changes need Full. Data export or
 delivery changes need Delivery as well. GitHub retains all required checks on PRs
 and main, including real delivery checks; local scopes do not replace that gate.
 
-Full runs what `ci.yml` runs without a secret, so `lint-imports` and `dbt` must be on `PATH`. The
-ML tests (`python -m pytest ml/tests ml/experiments/tests -q`) are a separate CI job that is not
-required, and no level runs them. `npm run lint` and `npm run knip` exist; no level or CI job runs
-them.
+Every Full step also runs in `ci.yml`, but CI runs more. Delivery covers its pipeline dry run,
+`data:check` and `politics:check`. No level covers `dbt parse` with
+`platform/publish/validate_semantic_layer.py`, the ML tests
+(`python -m pytest ml/tests ml/experiments/tests -q`, a separate CI job that is not required) or
+`security.yml` (npm and pip audits, the Gitleaks history scan). Preflight for Full stops early when
+`lint-imports` or `dbt` is missing from `PATH`. `npm run knip` exists; no level or CI job runs it.
+There is no lint script.
+
+In a Git worktree, `pip install -e .` may point the `portfolio` package at another checkout. The
+package then runs that checkout's `src` and finds that checkout's root, so it writes to its
+warehouse. Run Python in the worktree with `PYTHONPATH=src`; `PORTFOLIO_ROOT=<worktree>` also pins
+the root. Locally, Playwright reuses any server already on port 5173, which may be another
+checkout's dev server; set `PLAYWRIGHT_PORT` to a free port so the tests start their own.
 
 Use `node scripts/verify.mjs full --plan` to inspect commands without running them.
 Checks stop at the first failure. Logs and each Python run's isolated temporary

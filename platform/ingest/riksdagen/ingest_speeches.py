@@ -24,7 +24,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 import rawstore  # noqa: E402
 
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
-ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{6})\.json\.zip")
+# Session codes have six digits (201617), except 1999/2000, which has eight (19992000).
+ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{8}|\d{6})\.json\.zip")
 SOURCE = "riksdagen"
 PAUSE = 3.0
 

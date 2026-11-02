@@ -86,13 +86,14 @@ def dq(group: str) -> dict:
 
 
 def rows(path: str, value) -> int | None:
-    """Rows of a tabular file: a JSON array, a JSON object's `rows` or `data` array, or Parquet."""
+    """Rows of a tabular file: a JSON array, a JSON object's `rows`, `data` or `items` array (the
+    news feed, the Workers AI passage lists), or Parquet."""
     if path.endswith(".parquet"):
         import pyarrow as pa
         import pyarrow.parquet as pq
         return pq.ParquetFile(pa.BufferReader(value)).metadata.num_rows
     if isinstance(value, dict):
-        value = next((value[k] for k in ("rows", "data") if isinstance(value.get(k), list)), None)
+        value = next((value[k] for k in ("rows", "data", "items") if isinstance(value.get(k), list)), None)
     return len(value) if isinstance(value, list) else None
 
 

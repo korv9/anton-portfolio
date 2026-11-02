@@ -50,7 +50,6 @@ map.
 | What                                                                  | File                                       |
 | --------------------------------------------------------------------- | ------------------------------------------ |
 | Project names, descriptions, addresses and menu grouping              | `frontend/src/projects/projectRegistry.ts` |
-| Topic links under each project                                        | `frontend/src/projects/topics.ts`          |
 | Hash routing, report tabs, deep dives and redirects for old addresses | `frontend/src/router.ts`                   |
 | Shared report frame                                                   | `frontend/src/report/ReportShell.tsx`      |
 

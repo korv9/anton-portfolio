@@ -14,13 +14,22 @@ stage of `platform/job_assistant/realtime.py`:
 
 | Stage | Reuses | Writes |
 |---|---|---|
-| `collect` | `ads.py` (JobStream, raw store with provenance, id plus hash store) | `ads.json`, `state.json`, `raw/stream-*.json.gz`, `_manifest.jsonl`, `runs.jsonl` |
+| `collect` | `ads.py` (JobStream, raw store with provenance, id plus hash store) | `ads.json`, `state.json`, `raw/stream-*.json.gz` (local only, never pushed), `_manifest.jsonl`, `runs.jsonl` |
 | `analyse` | `ml/jobs/assign.py`, run as a command, with `ml/jobs/embeddings.embed` (cache by text hash), `ml/jobs/registry.py` (current model), `rank.py` (matches, Workers AI cache and budget) | `clusters.json`, `matches.json`, the embedding cache |
 | `build` | dbt `tag:job_assistant`, `export.py`, `export.py --check` | `frontend/public/data/job-assistant/*.json` (ignored by Git) |
 | `publish` | `release.py publish --group job-assistant` with `JOB_ADS_PUBLISH=r2`; otherwise the delivery check only | nothing in Git; no site build |
 
 Every stage records itself in `warehouse/raw/job_assistant/pipeline.json` (`last` and `ok` per
 stage) and appends one line to `realtime_runs.jsonl` with its duration, outcome and counts.
+Nothing reads `clusters.json` except the per-cluster signal counts that `analyse` writes into
+`pipeline.json`; a failed assignment still stops the run before `build` and `publish`.
+
+The page's last fetch is the last successful run in `runs.jsonl`, which both the hourly GitHub flow
+and `collect` write. Its median delay counts only publications uploaded to R2
+(`JOB_ADS_PUBLISH=r2`); local checks are left out.
+
+`python platform/job_assistant/realtime.py push` stores the ad store in R2 (`pipeline.py push
+job_assistant`) under the same lock as the stages, so the store is never uploaded mid-write.
 
 ## JobStream contract (checked 2026-11-02)
 
@@ -48,7 +57,7 @@ stage) and appends one line to `realtime_runs.jsonl` with its duration, outcome 
 | Order | Each event has a source time: the ad's `timestamp`, or `removed_date`. An event older than the ad's stored `source_updated` is counted as `stale` and skipped, so a late older version or an old removal never overwrites a newer state. |
 | Checkpoint | `ads.json` is written atomically before `state.json` moves. A run stopped halfway repeats only the window it did not finish. |
 | Stages | The collect cursor is separate from analysis and publication state. `analyse` records the cursor and model it consumed, `build` the cursor it built from, and `publish` the build it shipped. A stage whose input is unchanged reports `skipped`; `build` refuses to run on a store the analysis has not caught up with. A failed stage is retried by Airflow or picked up by the next run. |
-| Overlapping runs | The DAG allows one active run and does not catch up. `realtime.py` also holds `pipeline.lock`. The next stage takes it over when the process that holds it has gone (a task killed on timeout), or after 45 minutes. |
+| Overlapping runs | The DAG allows one active run and does not catch up. `realtime.py` also holds `warehouse/raw/job_assistant.lock.tmp`, beside the store; whole-tree pushes skip `.tmp` files. The next stage takes it over when the process that holds it has gone (a task killed on timeout), or after 45 minutes. |
 
 ## Analysis with the current model
 
@@ -56,7 +65,12 @@ stage) and appends one line to `realtime_runs.jsonl` with its duration, outcome 
   description, skills) and goes through `embed`, whose Parquet cache is keyed by text hash; a text
   seen before costs nothing.
 - The current model is `current` in `ml/jobs/registry.json`: the published clustering run
-  `efd2e318dc1621b2`, MiniLM at revision `e8f8c21`. An ad is assigned to the cluster that most of its
+  `efd2e318dc1621b2`, MiniLM at revision `e8f8c21`. Its reference vectors
+  (`warehouse/features/job_clusters/reference-efd2e318dc1621b2.npz`) were taken from the first
+  cached text version of each ad, which need not be the version the run was fitted on. New runs
+  record that version in `runs/<id>/inputs.parquet`, and `registry.reference` uses it (without it,
+  ads with several cached versions are left out). The live artefact stays as it is until the owner
+  promotes a refit. An ad is assigned to the cluster that most of its
   five nearest reference ads belong to. This approximates the run's UMAP and HDBSCAN fit without
   refitting it.
 - The change signals per cluster are the open ads and the ads new, changed and removed in the pass.
@@ -127,7 +141,7 @@ from the source's own change time (`timestamp` or `removed_date`) to the end of 
 includes JobStream's indexing lag and the wait for the next poll.
 
 **Restart after a partial failure.** At 13:51 a real `collect` stored one new ad (cursor 14:50 local
-time). `analyse` was then killed by force six seconds in, leaving `pipeline.lock` and an unchanged
+time). `analyse` was then killed by force six seconds in, leaving the lock file (then `pipeline.lock` inside the store) and an unchanged
 analysis state. The next `analyse` took over the lock because its process was gone, assigned the
 ad, and `build` and `publish` followed. The change was published 3.2 min after its source time.
 Afterwards the store held 3,109 ads under 3,109 ids, the published `ads.json` 3,109 under 3,109
@@ -148,8 +162,8 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    workflow stands down, and only then set `JOB_ADS_PUBLISH=r2` with the R2 secrets in
    `infra/airflow/.env`.
 3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
-   each run; the Airflow host keeps it on local disk. Add a daily `warehouse_store.py` push of the
-   store, or a disk backup, so a lost host does not lose the history.
+   each run; the Airflow host keeps it on local disk. Schedule `realtime.py push` daily, or keep a
+   disk backup, so a lost host does not lose the history.
 4. **Alerts.** Failed tasks are visible only in the Airflow UI. Add a failure callback or an
    external check on `ads.json` `pipeline.last_fetch` (the page already warns after eight hours).
 5. **Memory.** The idle stack uses about 1.3 GB and loading the model in a run about 1.7 GB more,

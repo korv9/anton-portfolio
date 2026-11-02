@@ -42,7 +42,8 @@ others are still read, and the next run tries again.
      words of national politics.
 3. **Export**: `platform/publish/export_news.py` writes `frontend/public/data/parliament/news.json`:
    the political items of the last 60 days, topics, items per party in 30 days, and each
-   source's last fetch.
+   source's last fetch and last success in UTC. An item dated after the export time is left out,
+   since the delivery check refuses future timestamps.
 4. **Summarise**: `platform/publish/summarize_news.py` writes
    `parliament/news-summaries.json`, a summary of the last seven days with the articles it
    cites. It runs only when `ANTHROPIC_API_KEY` is set. See below for what happens when it fails.

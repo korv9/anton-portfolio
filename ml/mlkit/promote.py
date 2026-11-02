@@ -4,7 +4,8 @@
 
 For every task in the run that finished and passed its gate, the aggregate output is written
 to frontend/public/data/ml/<task>.json. A task that failed its gate, or ran only partly, is
-refused and named. The model register (ml/models.json) is rebuilt from the committed cards
+refused and named. A task whose card says its gate failed loses any file an earlier run
+published. The model register (ml/models.json) is rebuilt from the committed cards
 every time, so the site shows each model's current verdict, passed or not, with a link to
 its card.
 
@@ -122,7 +123,11 @@ def main() -> None:
 
     register = [read_card(path) for path in sorted(CARDS.glob("*.md"))]
     for entry in register:
-        entry["published"] = (OUT / f"{entry['task']}.json").is_file()
+        published = OUT / f"{entry['task']}.json"
+        if not entry["gate_passed"] and published.is_file():
+            published.unlink()  # a file from an earlier passed run must not outlive a failed verdict
+            print(f"  {entry['task']}: gate not passed, removed its published file")
+        entry["published"] = published.is_file()
     write(OUT / "models.json", register)
     print(f"register: {len(register)} models; promoted {promoted or 'nothing'}")
 

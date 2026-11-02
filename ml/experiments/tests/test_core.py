@@ -250,3 +250,12 @@ def test_pick_takes_the_largest_margin_not_the_first_pass():
     report = lambda passed, gain: {'passed': passed, 'criteria': [{'common_gain': 'f', 'gain': gain, 'spread': 0.01}]}
     assert accept.pick({'first': report(True, 0.02), 'second': report(True, 0.05), 'failed': report(False, 0.9)}) == 'second'
     assert accept.pick({'failed': report(False, 0.9)}) is None
+
+
+def test_acceptance_fails_a_nan_metric_and_an_empty_rule_set(tmp_path):
+    rule = [{'name': 'gain', 'metric': 'seed_stability.ari_mean', 'better_than_champion': 0.01}]
+    nan = make_run(metrics={'noise_share': 0.1, 'cluster_count': 3, 'seed_stability': {'ari_mean': float('nan')}})
+    assert accept.check(nan, None, rule, 'sha')['failed'] == ['gain']  # no champion is no excuse for NaN
+    (tmp_path / 'empty.yaml').write_text(yaml.safe_dump({'frozen_at': '2026-11-02', 'criteria': []}))
+    with pytest.raises(ValueError):
+        accept.criteria('empty', tmp_path)

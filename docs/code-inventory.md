@@ -1,5 +1,8 @@
 # Code inventory
 
+Historical: a snapshot that is not kept current. Paths and statuses below are as of the date
+given; check the code before acting on a row.
+
 Snapshot of `origin/loop` at `38343334` on 2026-10-23. Nothing was deleted. Each row gives
 the search that backs its status. "check" means the evidence is incomplete or a deletion
 would change a contract, so a person decides.
@@ -176,6 +179,7 @@ command. The rest:
 | `platform/ingest/statskontoret/outturn_ingest.py` | test-only | `test_outturn_ingest.py:6`; writes `warehouse/outturn.sqlite`, and `outturn.sqlite` occurs nowhere else. dbt reads the committed `politics/parliament/budgets/outturn-areas.json` instead (`models/bronze/politics/sources.yml:64`), and no tracked code writes that file | check: either restore the step that turns the SQLite file into `outturn-areas.json`, or delete the ingest and its test |
 | `platform/ingest/riksdagen/policy_ingest.py` | test-only | `test_policy_ingest.py:3`; writes `policy.sqlite`, which occurs nowhere else | check, as above |
 | `platform/ingest/riksdagen/issue_ingest.py` | test-only | `test_issue_ingest.py:9`; writes `issue_speeches.sqlite`, which occurs nowhere else | check, as above |
+| `platform/ingest/riksdagen/ingest.py` | test-only | added 2026-11-02: imported only by `platform/tests/ingest/test_ingest.py`; writes `warehouse/debates.sqlite` and `speeches.csv`, which no subject or workflow reads | check, as above |
 | `scripts/check_security_headers.py` | test-only | loaded by `platform/tests/architecture/test_security.py:9`; manual commands in `docs/security.md:76` | keep |
 
 Other scripts: `scripts/rank_local_jobs.mjs` (command in `docs/job-intelligence.md:127`) and

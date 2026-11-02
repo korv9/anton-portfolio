@@ -68,12 +68,21 @@ Two gates in `src/portfolio/publish/dq_gate.py` run before the upload:
 - Row counts. A file of at least 100 rows in the active release may lose at most 30 % per release,
   and a file that is gone counts as zero. To let an intended drop through, name its logical paths,
   comma-separated, in `PORTFOLIO_ALLOW_ROW_DROP`; the manifest records it under `reconcile.drops`.
-  Only top-level arrays, `rows` or `data` arrays and Parquet files are counted. Every file of the
-  jobs, news and job-assistant groups is an object without those keys, so they count zero rows and
-  this gate cannot fire there; their own validators are the check.
+  Only top-level arrays, `rows`, `data` or `items` arrays and Parquet files are counted, so the
+  news feed and the Workers AI passage lists (`items`) are covered. `jobs/market.json` and the
+  job-assistant files are objects without those keys, and the `diva` and `jobs-analysis` points
+  files change path every run, so the gate cannot fire for them; their own validators are the
+  check.
 
 `pull` and `push` need the R2 credentials too. `push` deletes remote raw files that are gone
-locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden).
+locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden). Pull and push
+record each stored file's SHA-256 in `warehouse/.<tree>-pulled.json` (git-ignored). When a stored
+file changed in the bucket after this machine last pulled it, push skips a local copy that is
+unchanged since that pull and refuses one that changed: the other files are uploaded and the push
+exits non-zero, naming the conflicting keys. Files never pulled on this machine are uploaded as
+before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
+`src/portfolio/storage/warehouse_store.py` are never pushed (see
+[storage-and-serving.md](storage-and-serving.md)).
 
 ## Subjects
 
@@ -172,7 +181,9 @@ subject's last successful ingestion, if it has ingest steps, and the `published_
 active release with its SLA: past either, one issue labelled `data-freshness` opens or is updated,
 and it closes when all are fresh again. A subject that only builds is checked through its release,
 and one that ingests but no longer publishes is caught. A release with unchanged bytes keeps its
-publication time, so a group whose data did not change within the SLA reads as stale. A subject
+publication time, so a group whose data did not change within the SLA reads as stale. The
+heartbeat measures R2 releases, but the site reads the JSON committed in Git for every group
+except `job-assistant`, so a fresh release can read healthy while the page shows older data. A subject
 with `fresh_within: none` is never checked.
 dbt source freshness on the fetch logs warns at the same age and never fails a run.
 

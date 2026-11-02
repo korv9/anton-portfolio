@@ -48,7 +48,7 @@ if (preflight.error) throw preflight.error
 if (preflight.status !== 0) process.exit(preflight.status ?? 1)
 
 if (mode === 'full') {
-  const { chromium } = await import('playwright')
+  const { chromium } = await import('@playwright/test')
   const executable =
     process.env.PLAYWRIGHT_CHROMIUM_PATH ?? chromium.executablePath()
   if (!existsSync(executable)) {

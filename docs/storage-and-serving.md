@@ -11,12 +11,25 @@ when, is in [pipeline.md](pipeline.md). The rules for a versioned release are in
 | Code, dbt models, seeds, schemas, test fixtures | Git | Commits |
 | The site's JSON, 1,703 files in the catalogue | `frontend/public/data/` in Git, which the site reads; also in R2 releases, which it does not | The exports; a group's publish step |
 | Parquet marts (68 files) and document shards (4,625) | R2 bucket `anton-portfolio` | A group's publish step |
-| Raw source files, ML features, the DuckDB warehouse | R2, under `warehouse/` | `pipeline.py push`, `build-warehouse.yml` |
+| Raw source files, ML features, the DuckDB warehouse | R2 bucket `anton-portfolio`, under `warehouse/`, except the `LOCAL_ONLY` folders | `pipeline.py push`, `build-warehouse.yml` |
 | Secrets | GitHub and Cloudflare secrets | By hand |
 
-The counts are from `catalog.json` on 23 October 2026 (6,396 entries). The bucket is public and holds only
-open data. A folder called `private` in a public bucket is not an access boundary; private
-originals, such as the degree project's source material, are not uploaded.
+The counts are from `catalog.json` on 23 October 2026 (6,396 entries). The bucket is public and is
+meant to hold only open data. A folder called `private` in a public bucket is not an access
+boundary; private originals, such as the degree project's source material, are not uploaded.
+`LOCAL_ONLY` in `src/portfolio/storage/warehouse_store.py` keeps folders on the machine: texts whose
+licence forbids redistribution (`raw/philosophy_moral`, `features/philosophy/moral/run`) and the
+JobStream and JobSearch answers as served (`raw/job_assistant/raw`, `raw/jobtech/stream/raw`),
+which carry recruiters' e-mail addresses and phone numbers.
+
+Open findings, 2026-11-02:
+
+- Answers pushed before that exclusion are still public under `warehouse/raw/job_assistant/raw/`
+  and `warehouse/raw/jobtech/stream/raw/` until the owner deletes them.
+- `warehouse/raw/jobtech/cluster-corpus/` holds JobTech's archive descriptions without contact
+  redaction. They are a copy of JobTech's own public data; keeping them is an owner decision.
+- Terraform creates a private bucket, `anton-portfolio-warehouse` (`infra/cloudflare/main.tf`),
+  empty. Moving `warehouse/` into it is planned, not done.
 
 ## The catalogue
 
@@ -34,6 +47,11 @@ Entries written by catalogue version 2 carry the SHA-256 and size of the exact b
 for files that were moved to R2 under version 1 keep a hash taken after CRLF was normalised
 and are marked `sha256-crlf-normalized`; they are read back with that rule and get an exact
 hash the next time they are published.
+
+Known drift, 2026-11-02: the committed `catalog.json` and `delivery.json` still carry
+`schema_version: 1`, which `build_catalog.py` would write as 2, and `delivery.json` lists the
+shard prefix `workers-ai/debate/shards/` twice. The committed files predate the generator's
+version 2; a rerun of `npm run data:catalog` has not been checked against them.
 
 ## How the site resolves a path
 

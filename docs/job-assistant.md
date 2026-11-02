@@ -16,7 +16,7 @@ same way: raw files with provenance, dbt layers with tests, versioned delivery t
 | Layer | What | Where |
 | --- | --- | --- |
 | Source | JobTech JobSearch (first run) and JobStream (every hour), CC0; the owner's CV | `platform/job_assistant/ads.py`, `cv.py` |
-| Raw | Every answer as served with its provenance line; the ad store, match store and run log | `warehouse/raw/job_assistant/` |
+| Raw | Every answer as served with its provenance line (kept on the machine that fetched it); the ad store, match store and run log | `warehouse/raw/job_assistant/` |
 | Matching | Rules, bge-m3 vectors and checked explanations, run before dbt | `rank.py`, `match.py`, `ai.py` |
 | Bronze | Typed views of the stores: ads, ad events, matches, profile, runs | `platform/models/bronze/job_assistant/` |
 | Silver | Judgements, quotes and conditions unpacked to one row each | `platform/models/silver/job_assistant/` |
@@ -88,11 +88,14 @@ conditions to check.
 
 ## Data model
 
-Everything except the uploaded CV files and the owner's statuses, notes and labels is public. The pipeline's files sit under
-`warehouse/raw/job_assistant/` and the released group `job-assistant` in the public R2 bucket. The
-owner's own records sit in a D1 database behind the Worker. Uploaded CV files (drafts and older
+Everything except the uploaded CV files, the unapproved draft and the owner's statuses, notes and
+labels is public. The pipeline's files sit under `warehouse/raw/job_assistant/` and the released
+group `job-assistant` in the public R2 bucket, except the answers as served
+(`raw/job_assistant/raw/`), which carry recruiters' contact details and stay local (see Ingestion).
+The owner's own records sit in a D1 database behind the Worker. Uploaded CV files (drafts and older
 versions included) never go to R2: they stay in D1 and only the owner token reads them. The
-approved profile and the draft, with their CV quotes, are public by the owner's choice.
+approved profile, with its CV quotes, is public by the owner's choice; the draft is read only with
+the owner token.
 
 | Record | Store | Grain and main fields |
 | --- | --- | --- |
@@ -131,7 +134,11 @@ until it changes and the stream brings it in; most Platsbanken ads close within 
 occupation filter and returns about 40,000 ads. Later runs ask JobStream for every change since
 the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
 stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
-`job_assistant`, so its fetch log never mixes with the market subject's. The text projection and
+`job_assistant`, so its fetch log never mixes with the market subject's. These answers hold
+recruiters' e-mail addresses and phone numbers before redaction, so `warehouse_store.py` never
+pushes `raw/job_assistant/raw/` (`LOCAL_ONLY`); runs resume from the redacted `ads.json`. Earlier
+pushes put `stream-*.json.gz` answers in the public bucket under `warehouse/raw/job_assistant/raw/`.
+Found 2026-11-02; the push side is fixed, and the stored objects stay until the owner deletes them. The text projection and
 contact redaction come from `platform/publish/job_content.py`. E-mail addresses and phone numbers
 ("070 123 45 67", "073 - 123 45 67", "(08) 123 45 67", "+46 (0)70 123 45 67") become
 "[kontaktuppgift utelämnad]". A name of two to four capitalised words becomes
@@ -279,7 +286,8 @@ digests, and refuses a write whose `Origin` header names another site. Writes wi
 come from the Actions run. A missing or wrong token gets 401 and changes nothing. All job routes
 use the rate limit of 20 requests a minute per visitor, counted apart for reads and writes so
 public reads cannot use up the write budget; without the limiter binding the routes answer 503.
-A body whose declared length is over the limit is refused before it is read. Two approvals of the
+A body whose declared length is over the limit is refused before it is read, and a body sent
+without a length (chunked) stops being read once it passes the limit (`readCapped`). Two approvals of the
 same version number cannot both be stored: the second gets 409. There is no open write endpoint.
 
 | Route | Read | Write (token) |
