@@ -26,6 +26,11 @@ binding = "AI"
 [vars]
 ALLEGORA_SEARCH_URL = "https://allegora-search-877662270161.europe-west4.run.app"
 
+# Allegora's daily question counts (worker/quota.ts): 10 per visitor, 200 for the site.
+[[kv_namespaces]]
+binding = "QUOTA"
+id = "c6ad9f69839444deacf9c661e457ca30"
+
 # Per visitor IP and Cloudflare location: 20 AI requests a minute. The daily neuron allocation
 # stays the hard limit.
 [[ratelimits]]

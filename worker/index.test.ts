@@ -417,7 +417,12 @@ test('answer: sfs-all takes its passages from the search service, unchecked agai
       e,
     )
     assert.equal(off.status, 503, 'no service configured')
+    const kv = new Map<string, string>()
     Object.assign(e, {
+      QUOTA: {
+        get: async (k: string) => kv.get(k) ?? null,
+        put: async (k: string, v: string) => void kv.set(k, v),
+      },
       ALLEGORA_SEARCH_URL: 'https://search.test',
       ALLEGORA_SEARCH_KEY: 'k',
     })
@@ -448,4 +453,29 @@ test('answer: sfs-all takes its passages from the search service, unchecked agai
   } finally {
     globalThis.fetch = real
   }
+})
+
+test('quota: PER_VISITOR questions a visitor a day, then 429; a new day starts over', async () => {
+  const { take, PER_VISITOR } = await import('./quota.ts')
+  const kv = new Map<string, string>()
+  const store = {
+    get: async (k: string) => kv.get(k) ?? null,
+    put: async (k: string, v: string) => void kv.set(k, v),
+  }
+  const day = new Date('2026-11-02T12:00:00Z')
+  for (let i = 0; i < PER_VISITOR; i++)
+    assert.equal((await take(store, '1.2.3.4', day)).ok, true)
+  assert.deepEqual(await take(store, '1.2.3.4', day), {
+    ok: false,
+    reason: 'limit',
+  })
+  assert.equal((await take(store, '5.6.7.8', day)).ok, true)
+  assert.equal(
+    (await take(store, '1.2.3.4', new Date('2026-11-03T00:00:01Z'))).ok,
+    true,
+  )
+  assert.ok(
+    ![...kv.keys()].some((k) => k.includes('1.2.3.4')),
+    'IPs are hashed',
+  )
 })

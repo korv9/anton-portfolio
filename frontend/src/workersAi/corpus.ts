@@ -77,8 +77,11 @@ export function nearest<Item>(c: Corpus<Item>, vector: number[], k: number) {
   }))
 }
 
-/** Why the Worker gave no answer: the day's AI quota, a failed call, too many requests, or no Worker. */
-export type Reason = 'quota' | 'error' | 'busy' | 'offline'
+/**
+ * Why the Worker gave no answer: the day's AI quota, a failed call, too many requests, no Worker,
+ * or Allegora's daily allowance spent by the visitor ('limit') or by the whole site ('site').
+ */
+export type Reason = 'quota' | 'error' | 'busy' | 'offline' | 'limit' | 'site'
 export class Unavailable extends Error {
   reason: Reason
   constructor(reason: Reason) {
@@ -115,6 +118,15 @@ export const fallback = (reason: Reason, examples = true) =>
           'The model did not answer. Try again in a moment.',
           'Modellen svarade inte. Försök igen om en stund.',
         ),
+    // Allegora's daily allowance (worker/quota.ts), said plainly.
+    limit: l(
+      "Sorry, Anton can't afford to provide more tokens today.",
+      'Tyvärr, Anton har inte råd med fler tokens i dag.',
+    ),
+    site: l(
+      "Sorry, Anton can't afford to provide more tokens today.",
+      'Tyvärr, Anton har inte råd med fler tokens i dag.',
+    ),
     offline: examples
       ? l(
           'The AI service is not reachable here, so only the examples work.',
@@ -138,6 +150,10 @@ async function call<T>(path: string, body: unknown): Promise<T> {
   if (response.status === 503) {
     const { reason } = await response.json().catch(() => ({}))
     throw new Unavailable(reason === 'quota' ? 'quota' : 'error')
+  }
+  if (response.status === 429) {
+    const { reason } = await response.json().catch(() => ({}))
+    if (reason === 'limit' || reason === 'site') throw new Unavailable(reason)
   }
   throw new Unavailable(
     response.status === 429
@@ -169,7 +185,9 @@ export type Answer = (
       model: string
     }
   | { status: 'unverified' | 'no_answer'; passages: Passage[] }
-) & { hits?: Found[] }
+) & {
+  hits?: Found[]
+}
 
 export const answer = (question: string, corpus: string, passages: Passage[]) =>
   call<Answer>('answer', { question, corpus, passages })

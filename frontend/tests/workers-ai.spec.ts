@@ -134,6 +134,17 @@ test('a question is answered with a fable, the checked law folded under it', asy
     'Moral: Whoever does not know should not pretend to.',
   )
 
+  // The visitor's questions for the day are spent: the turn gets the allowance's reply instead.
+  await page.unroute('**/api/answer')
+  await page.route('**/api/answer', (route) =>
+    route.fulfill({ status: 429, json: { reason: 'limit' } }),
+  )
+  await box.fill('En till?')
+  await page.getByRole('button', { name: 'Ask', exact: true }).click()
+  await expect(page.locator('.lq-turn').nth(2)).toContainText(
+    "Sorry, Anton can't afford to provide more tokens today.",
+  )
+
   // The AI Act is still reached by its address. Without examples it invites a question.
   await page.goto('/#fraga-lagen?korpus=ai-act')
   await expect(page.locator('.lq-examples')).toHaveCount(0)

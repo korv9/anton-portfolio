@@ -18,6 +18,10 @@ fortfarande av Workern med Gemma på Workers AI ([workers-ai.md](workers-ai.md))
    Kontrollen mot publicerade verifieringslistor behövs inte här, eftersom styckena kommer från
    tjänsten och inte från webbläsaren.
 
+Varje besökare får 10 frågor per dygn (UTC) och sajten 200 totalt. Workern räknar i Workers KV
+(`QUOTA`, `worker/quota.ts`) med IP-adressen hashad. Fråga nummer 11 får svaret "Tyvärr, Anton har
+inte råd med fler tokens i dag."
+
 Svarar inte tjänsten svarar Workern 503 med `reason: "error"`, och sidan visar samma rad som när
 modellen inte svarar.
 

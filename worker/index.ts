@@ -12,6 +12,7 @@
  */
 import { claude } from './claude.ts'
 import { jobs, type JobsEnv } from './jobs.ts'
+import { take, type Kv } from './quota.ts'
 
 export type Env = JobsEnv & {
   AI: { run: (model: string, input: unknown) => Promise<unknown> }
@@ -24,6 +25,8 @@ export type Env = JobsEnv & {
   ALLEGORA_SEARCH_KEY?: string
   /** Cloudflare secret: with it the answer and its fable come from Claude (claude.ts). */
   ANTHROPIC_API_KEY?: string
+  /** Workers KV: Allegora's daily question counts (quota.ts). */
+  QUOTA?: Kv
 }
 
 export const EMBED_MODEL = '@cf/baai/bge-m3'
@@ -251,6 +254,13 @@ async function answer(request: Request, env: Env) {
   const input = await body(request)
   const question = sentence(input?.question)
   const corpus = String(input?.corpus)
+  if (corpus === 'sfs-all' && question) {
+    // Every law in force is searched on Google Cloud and answered by Claude: a daily allowance.
+    if (!env.QUOTA) return json({ error: 'quota is not configured' }, 503)
+    const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+    const taken = await take(env.QUOTA, ip)
+    if (!taken.ok) return json({ reason: taken.reason }, 429)
+  }
   const hits =
     corpus === 'sfs-all' && question ? await search(env, question) : undefined
   if (hits === null) return json({ reason: 'error' }, 503)
