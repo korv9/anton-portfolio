@@ -115,10 +115,15 @@ jobs:
       - name: Store the ad store in R2
         if: always() && inputs.publish
         run: |
-          # Pause first and wait for a running stage to release its lock, so the store is not pushed mid-write.
+          # Pause first, then push under realtime.py's lock, so the store is never pushed while a stage
+          # writes it (a stage that starts between two checks of a lock file would race the upload).
           $COMPOSE exec -T airflow-scheduler airflow dags pause job_ads_near_realtime || true
-          for i in $(seq 1 90); do [ -e warehouse/raw/job_assistant/pipeline.lock ] || break; sleep 10; done
-          $COMPOSE exec -T -w /opt/portfolio airflow-scheduler sh -c '"$PORTFOLIO_PYTHON" platform/pipeline.py push job_assistant'
+          # Wait for a running stage to release the lock, then push once: a real push failure fails here.
+          for i in $(seq 1 90); do
+            [ -e warehouse/raw/job_assistant.lock.tmp ] || break
+            sleep 10
+          done
+          $COMPOSE exec -T -w /opt/portfolio airflow-scheduler sh -c '"$PORTFOLIO_PYTHON" platform/job_assistant/realtime.py push'
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

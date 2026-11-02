@@ -5,6 +5,7 @@
     python platform/job_assistant/realtime.py build      # dbt tag:job_assistant, export, delivery check
     python platform/job_assistant/realtime.py publish    # the checked files through release.py
     python platform/job_assistant/realtime.py status
+    python platform/job_assistant/realtime.py push       # the store to R2 (pipeline.py push), under the lock
 
 Each stage records its own state in warehouse/raw/job_assistant/pipeline.json, so a failed stage is
 run again without repeating the ones before it: collect owns the cursor (state.json, moved only after
@@ -71,8 +72,10 @@ def alive(pid: int) -> bool:
 @contextmanager
 def lock():
     """One writer at a time. A lock whose process has gone (a task killed on timeout), or one older
-    than LOCK_STALE, is taken over."""
-    path = folder() / "pipeline.lock"
+    than LOCK_STALE, is taken over. It sits beside the store, not in it: pipeline.py push uploads
+    every file under raw/job_assistant, and a lock pushed with the store would come back on a pull.
+    The .tmp suffix keeps a whole-tree push (warehouse_store.tree_files) from uploading it too."""
+    path = folder().with_name("job_assistant.lock.tmp")
     path.parent.mkdir(parents=True, exist_ok=True)
     try:
         fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
@@ -196,9 +199,10 @@ def publish(status: dict) -> dict:
     done = (status.get("publish") or {}).get("ok") or {}
     if not built:
         raise RuntimeError("nothing built yet: run build first")
-    if done.get("generated_at") == built["generated_at"]:
-        return {"outcome": "skipped", "generated_at": built["generated_at"]}
     mode = os.environ.get("JOB_ADS_PUBLISH", "local")
+    # A build only checked (local) is still uploaded once publication turns on.
+    if done.get("generated_at") == built["generated_at"] and done.get("mode") in (mode, "r2"):
+        return {"outcome": "skipped", "generated_at": built["generated_at"]}
     if mode == "r2":
         run([sys.executable, "platform/publish/release.py", "publish", "--group", "job-assistant",
              "--root", "frontend/public/data", "--spec", "configs/delivery/job-assistant.json"], "realtime-release.log")
@@ -224,6 +228,11 @@ def main() -> None:
     name = sys.argv[1] if len(sys.argv) > 1 else "status"
     if name == "status":
         print(json.dumps(read("pipeline.json", {}), ensure_ascii=False, indent=1))
+        return
+    if name == "push":
+        # Under the lock, so the store is never uploaded while a stage is writing it.
+        with lock():
+            run([sys.executable, "platform/pipeline.py", "push", "job_assistant"], "realtime-push.log")
         return
     print(json.dumps(stage(name, STAGES[name]), ensure_ascii=False))
 

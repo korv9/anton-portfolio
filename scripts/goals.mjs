@@ -6,7 +6,7 @@
  *   npm run goals -- https://antonernstsson.com
  * Exits 1 while any route fails, so it can stand as the finish line.
  */
-import { chromium } from 'playwright'
+import { chromium } from '@playwright/test'
 
 const base = (process.argv[2] ?? 'http://127.0.0.1:5173').replace(/\/$/, '')
 const ROUTES = [

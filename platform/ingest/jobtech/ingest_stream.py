@@ -195,9 +195,12 @@ def main() -> None:
                and str(ad["id"]) not in seen]
         seen.update(r["id"] for r in new)
         if new:
-            pq.write_table(pa.Table.from_pylist(new, schema=AD_SCHEMA),
-                           STREAM / "ads" / f"{start:%Y-%m-%dT%H%M}.parquet",
-                           compression="zstd")
+            path = STREAM / "ads" / f"{start:%Y-%m-%dT%H%M}.parquet"
+            table = pa.Table.from_pylist(new, schema=AD_SCHEMA)
+            if path.exists():  # a rerun after a stop before the state write: add, never replace
+                table = pa.concat_tables([pq.read_table(path, schema=AD_SCHEMA), table])
+            pq.write_table(table, path.with_suffix(".tmp"), compression="zstd")
+            path.with_suffix(".tmp").replace(path)
         removed = sum(1 for ad in items if ad.get("removed"))
         print(f"{start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M}: {len(items):,} changes, "
               f"{len(new):,} new ads, {removed:,} removed", flush=True)

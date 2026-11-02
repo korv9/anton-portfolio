@@ -38,25 +38,26 @@ RUN_DAYS = 7
 
 
 def pipeline(state: dict, now: datetime) -> dict:
-    """The last successful fetch, and the latency of the last day's publications, for the page.
+    """The last successful fetch, and the latency of the last day's uploaded publications, for the page.
 
-    realtime.py (Airflow) records its stages in pipeline.json and realtime_runs.jsonl; without them,
-    the hourly GitHub run's runs.jsonl gives the last fetch and there is no latency measure.
+    Both flows fetch through ads.py, which logs every run in runs.jsonl: the last ok run there is the
+    last fetch. pipeline.json and realtime_runs.jsonl (realtime.py, Airflow) travel with the store, so
+    after an Airflow session the hourly runs restore them: the flow is realtime only while Airflow's
+    last collect is what moved the cursor, and latency counts only publications uploaded to R2.
     """
     folder = store_dir()
     status = json.loads((folder / "pipeline.json").read_text(encoding="utf-8")) if (folder / "pipeline.json").exists() else {}
-    collect = (status.get("collect") or {}).get("ok")
-    if collect:
-        fetch = {"at": collect["finished"], "fetched_until": collect["fetched_until"]}
-    else:
-        runs = (folder / "runs.jsonl").read_text(encoding="utf-8").splitlines() if (folder / "runs.jsonl").exists() else []
-        last = next((json.loads(r) for r in reversed(runs) if json.loads(r)["outcome"] == "ok"), None)
-        fetch = last and {"at": last["finished"], "fetched_until": state.get("fetched_until")}
+    collect = (status.get("collect") or {}).get("ok") or {}
+    runs = (folder / "runs.jsonl").read_text(encoding="utf-8").splitlines() if (folder / "runs.jsonl").exists() else []
+    last = next((r for r in map(json.loads, reversed(runs)) if r["outcome"] == "ok"), None)
+    fetch = last and {"at": last["finished"], "fetched_until": state.get("fetched_until")}
     since = (now - timedelta(days=1)).isoformat()
     log = folder / "realtime_runs.jsonl"
     latencies = sorted(e["latency"]["max_minutes"] for e in map(json.loads, log.read_text(encoding="utf-8").splitlines() if log.exists() else [])
-                       if e["stage"] == "publish" and e["outcome"] == "ok" and e.get("latency") and e["finished"] >= since)
-    return {"flow": "realtime" if status else "hourly", "last_fetch": fetch,
+                       if e["stage"] == "publish" and e["outcome"] == "ok" and e.get("mode") == "r2"
+                       and e.get("latency") and e["finished"] >= since)
+    realtime = bool(collect) and collect.get("fetched_until") == state.get("fetched_until")
+    return {"flow": "realtime" if realtime else "hourly", "last_fetch": fetch,
             "latency_minutes": {"median": latencies[len(latencies) // 2] if latencies else None,
                                 "publications": len(latencies)}}
 

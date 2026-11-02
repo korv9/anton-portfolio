@@ -14,7 +14,8 @@ def check(level, root=ROOT):
     if free < MIN_FREE[level]:
         raise RuntimeError(f'{free:.1f} GiB free; {level} requires {MIN_FREE[level]} GiB. '
                            'Free space before retrying; no files were removed.')
-    for command in ('git', 'node'):
+    # Full calls lint-imports and dbt from PATH (verify.mjs); fail here, not after the build.
+    for command in ('git', 'node') + (('lint-imports', 'dbt') if level == 'full' else ()):
         if not shutil.which(command):
             raise RuntimeError(f'{command} is unavailable on PATH')
     if not (root / 'node_modules/typescript/bin/tsc').is_file():

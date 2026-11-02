@@ -225,3 +225,12 @@ def test_why_walks_back_and_history_is_chronological():
     hist = query.history("concept-constellation", store.read_events())
     assert [e["id"] for e in hist][-1] == decision["id"]
     assert query.search("translator centring", store.read_events())[0][1]["id"] == idea["id"]
+
+
+def test_a_journal_line_without_created_at_is_named_not_a_bare_key_error(home):
+    path = home / "private/journal/2026-10-07.jsonl"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"id": "idea-2026-10-07-001", "type": "idea", "title": "Old"}) + "\n",
+                    encoding="utf-8")
+    with pytest.raises(ValueError, match=r"2026-10-07\.jsonl:1: created_at missing"):
+        store.read_events()

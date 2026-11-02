@@ -30,7 +30,7 @@ by the owner; record the change here with a date.
 | Feed chapters | Chapter headings are allowed in the feed. "How it's made" is the last chapter of the home feed. |
 | Pre-registrations | Each one is committed before the analysis it governs. |
 | Elections | `fct_election_municipality` is built in Actions and published. |
-| Workers AI | The daily neuron quota is split 50/50 between Ask the law and Ask the platform. When the quota runs out, both show precomputed answers. |
+| Workers AI | The daily neuron quota is split 50/50 between Ask the law and Ask the platform. When the quota runs out, both show precomputed answers. Ask the platform's page was removed on 2026-11-01. |
 | I-7 (unemployment and the vote) | Stays a method note. It does not appear on the recruiter page. |
 | Offline | The 3D SWEDEN views stay offline. At most one symbolic-atlas post. Job-cluster posts are relabelled "map of ad language". DrugComb leaves the feed and keeps its repo card. |
 | Compute | At most 2 local workers at a time. All heavy compute runs in GitHub Actions. |

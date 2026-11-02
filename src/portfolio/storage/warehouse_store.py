@@ -60,8 +60,12 @@ CLUSTER_LAB_PREFIX = PREFIX + "cluster_lab/"
 TREES = ("raw", "features", "cluster_lab")
 # Folders that never leave the machine: the bucket is public. Raw: licences or authors do not allow
 # redistribution (MFRC Reddit comments, the GPL-3.0 eMFD, ETHICS scenarios); only the figures derived
-# from them are stored, under features/. Features: text working files (the Riksdag passage sample).
-LOCAL_ONLY = {"raw": ("philosophy_moral",), "features": ("philosophy/moral/run",)}
+# from them are stored, under features/. JobStream and JobSearch answers as served (job_assistant/raw,
+# jobtech/stream/raw) carry recruiters' e-mails and phone numbers; nothing reads them back, runs
+# resume from the redacted ads.json and the counted stream/ads. Features: text working files (the
+# Riksdag passage sample).
+LOCAL_ONLY = {"raw": ("philosophy_moral", "job_assistant/raw", "jobtech/stream/raw"),
+              "features": ("philosophy/moral/run",)}
 # A prune deletes stored files that are absent locally; more than this share of a folder's stored
 # files is taken as an incomplete local tree, not a cleanup. Raise it (--max-delete-pct or
 # PRUNE_MAX_DELETE_PCT) only for an intentional cleanup.
@@ -135,6 +139,30 @@ def git_commit() -> str | None:
         return None
 
 
+def pulled_path(root: Path) -> Path:
+    """Beside the tree, never in it: what each stored key's SHA-256 was when this machine last
+    pulled or pushed it. A push compares it with the bucket so it never overwrites a newer copy."""
+    return root.parent / f".{root.name}-pulled.json"
+
+
+def read_pulled(root: Path) -> dict[str, str]:
+    path = pulled_path(root)
+    try:
+        return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    except ValueError:
+        # Only the overwrite protection is lost: every key counts as never pulled.
+        print(f"warning: unreadable pull ledger {path}; pushes overwrite as before", file=sys.stderr)
+        return {}
+
+
+def write_pulled(root: Path, seen: dict[str, str]) -> None:
+    if seen:
+        path = pulled_path(root)
+        temporary = path.with_name(path.name + ".tmp")
+        temporary.write_text(json.dumps({**read_pulled(root), **seen}, sort_keys=True), encoding="utf-8")
+        os.replace(temporary, path)
+
+
 def tree_files(root: Path) -> list[Path]:
     if root.is_file():
         return [] if root.name.endswith(".tmp") else [root]
@@ -158,8 +186,9 @@ def prune_refusal(name: str, sub: str, local: int, stored: int, stale: int, max_
 
 
 def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
-              max_delete_pct: float = MAX_DELETE_PCT) -> tuple[int, int, int]:
-    """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes).
+              max_delete_pct: float = MAX_DELETE_PCT) -> tuple[int, int, int, list[str]]:
+    """Upload a tree's files whose SHA-256 differs from the stored copy. Returns (files, sent, bytes,
+    conflicts): the keys left alone because the bucket holds a newer copy than this machine pulled.
 
     `sub` limits it to one folder of the tree (jobtech/stream), for the daily refreshes.
     """
@@ -172,17 +201,32 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
     files = [p for p in files
              if not any(f"{p.relative_to(root).as_posix()}/".startswith(f"{k}/") for k in kept)]
 
+    pulled, seen, conflicts = read_pulled(root), {}, []
+
     def one(path: Path) -> int:
         key = prefix + path.relative_to(root).as_posix()
         digest = sha256(path)
         meta = remote_meta(s3, bucket, key)
         if meta and meta["sha256"] == digest and meta["size"] == path.stat().st_size:
+            seen[key] = digest
+            return 0
+        # Another job (cluster-jobs.yml runs outside the data-refresh lock) stored a newer copy
+        # after this machine pulled: an untouched local copy stays behind, a changed one is refused.
+        # A key absent at the pull but created in the bucket before this push is still last writer
+        # wins; the window is one build, accepted.
+        if meta and meta["sha256"] and key in pulled and meta["sha256"] != pulled[key]:
+            if digest != pulled[key]:
+                conflicts.append(key)
             return 0
         s3.upload_file(str(path), bucket, key, ExtraArgs={"Metadata": {"sha256": digest}})
+        seen[key] = digest
         return path.stat().st_size
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        sent = list(pool.map(one, files))
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            sent = list(pool.map(one, files))
+    finally:
+        write_pulled(root, seen)
     if prune:
         wanted = prefix + sub.strip("/")
         local = {prefix + p.relative_to(root).as_posix() for p in files}
@@ -195,7 +239,7 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
             sys.exit(f"Refusing to prune {wanted}: {refusal}. Nothing was deleted; uploads are kept.")
         for key in stale:
             s3.delete_object(Bucket=bucket, Key=key)
-    return len(files), sum(1 for b in sent if b), sum(sent)
+    return len(files), sum(1 for b in sent if b), sum(sent), sorted(conflicts)
 
 
 def push_db(s3, bucket: str, counts: dict[str, int | None]) -> dict:
@@ -266,6 +310,9 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
         keys += [(o["Key"], o["Size"]) for o in page.get("Contents", [])
                  if (sub and (o["Key"] == wanted or o["Key"].startswith(wanted + "/")))
                  or (not sub and not any(o["Key"].startswith(prefix + p + "/") for p in ON_DEMAND))]
+    # Stored before they were kept local; a pull does not bring them back onto a runner.
+    keys = [(k, n) for k, n in keys
+            if not any(f"{k[len(prefix):]}/".startswith(f"{p}/") for p in LOCAL_ONLY.get(name, ()))]
 
     def one(item: tuple[str, int]) -> int:
         key, size = item
@@ -278,6 +325,7 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
         meta = remote_meta(s3, bucket, key)
         if target.is_file() and target.stat().st_size == size:
             if meta and meta["sha256"] == sha256(target):
+                seen[key] = meta["sha256"]
                 return 0
         target.parent.mkdir(parents=True, exist_ok=True)
         temporary = target.with_name(target.name + ".tmp")
@@ -289,10 +337,17 @@ def pull_tree(s3, bucket: str, name: str, sub: str = "") -> int:
             os.replace(temporary, target)
         finally:
             temporary.unlink(missing_ok=True)
+        # Only once the local copy is the stored one: a failed download must not vouch for it.
+        if meta and meta["sha256"]:
+            seen[key] = meta["sha256"]
         return 1
 
-    with ThreadPoolExecutor(max_workers=8) as pool:
-        fetched = sum(pool.map(one, keys))
+    seen: dict[str, str] = {}
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            fetched = sum(pool.map(one, keys))
+    finally:
+        write_pulled(root, seen)
     print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {len(keys)} stored, "
           f"{fetched} fetched to {root}")
     return fetched
@@ -337,17 +392,22 @@ def main() -> int:
             pull_db(s3, bucket)
         return 0
     counts: dict[str, int | None] = {}
+    conflicts: list[str] = []
     for name in TREES:
         if args.only in (None, name):
             for sub in folders(name, subs):
-                counts[name], sent, sent_bytes = push_tree(s3, bucket, name, sub, args.prune,
-                                                               args.max_delete_pct)
+                counts[name], sent, sent_bytes, refused = push_tree(s3, bucket, name, sub, args.prune,
+                                                                    args.max_delete_pct)
+                conflicts += refused
                 print(f"{name.capitalize()} files{' in ' + sub if sub else ''}: {counts[name]} "
                       f"on disk, {sent} uploaded ({sent_bytes / 1e6:.0f} MB)")
     if args.only in (None, "db"):
         manifest = push_db(s3, bucket, counts)
         print(f"Warehouse stored: {manifest['bytes'] / 1e6:.0f} MB, "
               f"{manifest['gzip_bytes'] / 1e6:.0f} MB compressed, sha256 {manifest['sha256'][:12]}…")
+    if conflicts:
+        sys.exit(f"Refused to overwrite {len(conflicts)} files changed in the bucket since this machine "
+                 f"pulled them: {', '.join(conflicts[:10])}. Pull them, redo the change, push.")
     return 0
 
 

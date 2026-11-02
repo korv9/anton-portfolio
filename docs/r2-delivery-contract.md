@@ -129,22 +129,24 @@ resultatfil för hela gruppen, till exempel vid `publish-r2.yml`, blir det `not_
 subject publiceringen som `error` med listan `not_run`, om det inte är markerat `manual` i
 `pipeline.yml`.
 Bara det sista dbt-steget i ett subject lämnar en resultatfil. `reconcile.rows`
-har radantal per JSON-array, `rows`/`data`-array och Parquetfil. `checks` jämför
+har radantal per JSON-array, `rows`/`data`/`items`-array och Parquetfil. `checks` jämför
 bara där exportören redan skrivit källtabellens antal bredvid en publicerad path
 (`welfare/datasets.json`); avvikelse stoppar. Annars är status `counts_only`.
 
 `reconcile.rows` jämförs också med den aktiva releasens. En fil med minst 100 rader får tappa
 högst 30 % per release, och en borttagen fil räknas som noll rader. Större tapp stoppar
 publiceringen före uppladdning, om inte `PORTFOLIO_ALLOW_ROW_DROP` namnger filens logiska path
-(kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Filerna i grupperna `jobs`, `news`
-och `job-assistant` är objekt utan `rows` eller `data`, så där räknas inga rader och spärren kan
-inte slå till. De grupperna vilar på sina egna valideringar.
+(kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Nyhetsflödet och Workers AI:s
+passagelistor räknas genom `items`. `jobs/market.json` och filerna i `job-assistant` är objekt
+utan de nycklarna, och punktfilerna i `diva` och `jobs-analysis` byter path varje körning, så där
+kan spärren inte slå till. De vilar på sina egna valideringar.
 
 `pipeline.py run --only publish` kräver samma fullständighet som en vanlig körning: saknas ett
 subject som inte är `manual` hoppas gruppen över och körningen misslyckas. `data-heartbeat.yml`
 jämför gruppens `published_at` i `manifests/current.json` med subjectets `fresh_within`. Samma
 bytes behåller publiceringstiden, så en grupp vars data inte ändrats inom gränsen räknas som
-inaktuell.
+inaktuell. Sajten läser JSON som är incheckad i Git för alla grupper utom `job-assistant`, så en
+färsk release kan se frisk ut medan sidan visar äldre data.
 
 Fälten ingår inte i release-id: samma bytes ger samma release, och ett redan
 uppladdat manifest behåller sina ursprungliga `dq` och `reconcile`.
@@ -289,8 +291,10 @@ Varje release läses tillbaka och verifieras före den enda aktiveringen.
 
 Obligatoriska grupper är `baseline`, `jobs`, `jobs-analysis`, `news` och
 `public-data`. `diva` tas med först när en verklig export eller katalogpost finns.
-`sweden` saknas i workflowets grupplista (`publish-r2.yml`) och publiceras bara av
-pipelinekörningar.
+`sweden` och `job-assistant` saknas i workflowets grupplista (`publish-r2.yml`) och
+publiceras bara av pipelinekörningar. Aktiveringen slås ihop med manifestets nuvarande grupper,
+så `manifests/current.json` behåller deras pekare; ett nytt manifest som
+`manifests/pipeline-smoke.json` saknar dem.
 Materialisering och verifiering kör fyra oberoende operationer åt gången, och
 köat arbete avbryts vid fel. Materialiseringen jämför binärfilers storlek mot
 de råa bytesen och behåller den historiska hashregeln för äldre katalogposter.

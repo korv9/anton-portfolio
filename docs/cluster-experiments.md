@@ -11,7 +11,9 @@ The champion of a domain is the pipeline its site page publishes today. A candid
 only when it meets every criterion in `configs/experiments/<domain>.yaml`. Those files were written
 before the final evaluation and carry a `frozen_at` date; the acceptance report stores the file's
 SHA-256, so a later edit is visible. Criteria are checked one by one and reported with both
-values. There is no weighted total. If no candidate passes, the champion stays, and the rejected
+values. There is no weighted total. A missing or non-finite (NaN) metric fails its criterion,
+and a file without criteria is refused, so an empty rule set cannot pass a candidate. If no
+candidate passes, the champion stays, and the rejected
 candidates stay in the registry with their reports.
 
 ## Data and splits

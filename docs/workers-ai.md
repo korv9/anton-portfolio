@@ -37,6 +37,10 @@ webbläsaren, mot komprimerade vektorer som byggts offline.
   tokens och returneras bara om varje citat står ordagrant i sitt stycke. `platform` har en egen
   systemprompt (`PLATFORM_SYSTEM`) med samma regler för citaten.
 
+Kontrollen visar att styckena är publicerad text (hashen stämmer) och att citaten står i dem. Den
+visar inte att svaret besvarar frågan rätt eller att texten runt citaten stämmer. "Verifierat"
+betyder i hela dokumentet just detta.
+
 Ett citat skrivs `[[id]]"citat"`. Sedan 2026-10-22 godtar Workern också den omvända ordningen,
 `"citat" [[id]]`, när id:t inte har något eget citat efter sig. Den skrivs om till
 `[[id]]"citat"` innan kontrollen, så citatet måste fortfarande stå ordagrant i sitt stycke.
@@ -293,8 +297,9 @@ inbäddning.
 
 Inbäddning och komprimering är samma som för Fråga lagen: `workers_ai.py embed` med
 `--agent platform` och sedan `compress`. `export_law_corpora.py meta --corpus platform` skriver
-`meta.json` och verifieringslistorna under `frontend/public/data/workers-ai/platform/`. 1 423
-stycken gav recall@10 0,952 med 256 dimensioner och 0,979 med 384; 256 levereras.
+`meta.json` och verifieringslistorna under `frontend/public/data/workers-ai/platform/`. 22
+oktober-bygget med 1 423 stycken gav recall@10 0,952 med 256 dimensioner och 0,979 med 384; 256
+levereras. Den levererade korpusen på 1 399 stycken är inte mätt på nytt.
 
 Komponenten, dess väg från källa till publicerad fil och Playwright-testet togs bort med sidan den
 2026-11-01 (se Git-historiken). `#ask-platform` leder nu till `#projects`.
@@ -325,7 +330,9 @@ radbrytningar tas bort på båda sidor innan citatet söks i stycket, men orden 
 Räknat om på samma råtext, utan nya anrop, blir körningarna 1 till 4 då 15, 15, 14 och 13 av 20
 (75, 75, 70 och 65 %). Ingen ny körning gjordes, eftersom neuronkvoten var slut den dagen.
 
-Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor. De tre missarna:
+Sökningen hittade ett förväntat stycke bland de åtta första för 17 av 20 frågor. Frågan om
+dygnskvoten väntar sig `docs/workers-ai.md#workern`, som saknas i den levererade korpusen, så en
+ny körning mot den räknar frågan som miss och underskattar träffarna. De tre missarna:
 
 - Fråga 1, hur juniorandelen testas. Testet finns, `accepted_values` på `seniority` i
   `fct_job_ads`, men frågans vektor ligger inte nära det stycket. Gemma svarade `NO_ANSWER`.

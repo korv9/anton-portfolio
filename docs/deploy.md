@@ -141,7 +141,8 @@ change through Terraform, not the dashboard.
    `ml: always` to rerun them (seeds are fixed, so the same inputs give the same results). The first run counts
    every JobTech archive for the AI governance terms and takes a couple of hours.
    Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
-   bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
+   bucket is public, so the warehouse can be downloaded by anyone; what stays local and the open
+findings are in [storage-and-serving.md](storage-and-serving.md).
    `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
    or an ML stage is added without a step here.
 

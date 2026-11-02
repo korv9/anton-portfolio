@@ -1,5 +1,7 @@
 # 2026-10-22: shared warehouse emptied by a worktree removal
 
+Status: resolved. The warehouse was restored from R2 and the missing parts rebuilt.
+
 ## Summary
 
 Removing a finished Git worktree with `git worktree remove --force` deleted the contents of

@@ -11,7 +11,7 @@
  * (worker/jobs.ts): public reads, token-protected writes and CV files.
  */
 import { claude } from './claude.ts'
-import { jobs, type JobsEnv } from './jobs.ts'
+import { jobs, readCapped, type JobsEnv } from './jobs.ts'
 import { take, type Kv } from './quota.ts'
 
 export type Env = JobsEnv & {
@@ -94,8 +94,10 @@ const unavailable = (error: unknown) =>
   )
 
 async function body(request: Request): Promise<Record<string, unknown> | null> {
-  const raw = await request.text()
-  if (raw.length > 64_000) return null
+  // 64,000 characters are at most three bytes each in UTF-8.
+  const bytes = await readCapped(request, 192_000)
+  const raw = bytes ? new TextDecoder().decode(bytes) : ''
+  if (!bytes || raw.length > 64_000) return null
   try {
     const value = JSON.parse(raw)
     return value && typeof value === 'object' ? value : null
