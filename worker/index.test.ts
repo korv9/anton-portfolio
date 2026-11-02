@@ -387,3 +387,95 @@ test('AI routes refuse foreign origins and fail closed without the limiter', asy
   )
   assert.equal(e.calls.length, 2)
 })
+
+test('answer: sfs-all takes its passages from the search service, unchecked against lists', async () => {
+  const e = await env({ response: `Ja [[${LAW.id}]]"${LAW.text}"` })
+  const sent: { url: string; key: string | null; body: unknown }[] = []
+  const real = globalThis.fetch
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    sent.push({
+      url,
+      key: new Headers(init.headers).get('X-Allegora-Key'),
+      body: JSON.parse(String(init.body)),
+    })
+    return Response.json({
+      hits: [
+        {
+          ...LAW,
+          title: 'LAS 1 §',
+          url: 'https://x.test',
+          law: '1982:80',
+          kind: 'lag',
+          score: 0.8,
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    const off = await worker.fetch(
+      post('/api/answer', { question: 'Vem gäller lagen?', corpus: 'sfs-all' }),
+      e,
+    )
+    assert.equal(off.status, 503, 'no service configured')
+    const kv = new Map<string, string>()
+    Object.assign(e, {
+      QUOTA: {
+        get: async (k: string) => kv.get(k) ?? null,
+        put: async (k: string, v: string) => void kv.set(k, v),
+      },
+      ALLEGORA_SEARCH_URL: 'https://search.test',
+      ALLEGORA_SEARCH_KEY: 'k',
+    })
+    const r = await worker.fetch(
+      post('/api/answer', {
+        question: 'Vem gäller lagen?',
+        corpus: 'sfs-all',
+        passages: [{ id: 'x', text: 'forged' }],
+      }),
+      e,
+    )
+    const body = (await r.json()) as {
+      status: string
+      hits: { id: string; title: string }[]
+    }
+    assert.equal(body.status, 'verified')
+    assert.deepEqual(
+      body.hits.map((h) => [h.id, h.title]),
+      [[LAW.id, 'LAS 1 §']],
+    )
+    assert.deepEqual(sent, [
+      {
+        url: 'https://search.test/search',
+        key: 'k',
+        body: { question: 'Vem gäller lagen?', k: 8 },
+      },
+    ])
+  } finally {
+    globalThis.fetch = real
+  }
+})
+
+test('quota: PER_VISITOR questions a visitor a day, then 429; a new day starts over', async () => {
+  const { take, PER_VISITOR } = await import('./quota.ts')
+  const kv = new Map<string, string>()
+  const store = {
+    get: async (k: string) => kv.get(k) ?? null,
+    put: async (k: string, v: string) => void kv.set(k, v),
+  }
+  const day = new Date('2026-11-02T12:00:00Z')
+  for (let i = 0; i < PER_VISITOR; i++)
+    assert.equal((await take(store, '1.2.3.4', day)).ok, true)
+  assert.deepEqual(await take(store, '1.2.3.4', day), {
+    ok: false,
+    reason: 'limit',
+  })
+  assert.equal((await take(store, '5.6.7.8', day)).ok, true)
+  assert.equal(
+    (await take(store, '1.2.3.4', new Date('2026-11-03T00:00:01Z'))).ok,
+    true,
+  )
+  assert.ok(
+    ![...kv.keys()].some((k) => k.includes('1.2.3.4')),
+    'IPs are hashed',
+  )
+})
