@@ -158,7 +158,7 @@ async function main() {
     if (!rows.length) throw new Error(`no passages for ${law.title} (${law.sfs})`)
     for (const q of QUESTIONS) {
       const question = cellQuestion(law, q.sv)
-      const query = project(await embed(question), pca)
+      const query = project(await embed(cellQuestion(law, q.search ?? q.sv)), pca)
       const passages = nearest(query, vectors, pca.scale, rows).map((row) => meta.items[row])
       cells.push({ law, q, question, passages, prompt: answerPrompt(question, passages) })
     }

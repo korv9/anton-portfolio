@@ -29,10 +29,21 @@ export const LAWS: Law[] = [
 ]
 export const QUESTIONS = [
   { id: 'who', sv: 'Vilka gäller lagen för?', en: 'Who does it apply to?' },
-  { id: 'duty', sv: 'Vilka skyldigheter ställer lagen upp?', en: 'What duties does it set?' },
+  {
+    id: 'duty',
+    sv: 'Vilka skyldigheter ställer lagen upp?',
+    en: 'What duties does it set?',
+    // Passages word a duty as "ska" and rarely say "skyldighet", so the question alone misses them.
+    search: 'ska, är skyldig att',
+  },
   { id: 'right', sv: 'Vilka rättigheter ger lagen den enskilde?', en: 'What rights does it give?' },
   { id: 'breach', sv: 'Vad händer om lagen inte följs?', en: 'What happens if it is broken?' },
-  { id: 'except', sv: 'Vilka undantag finns i lagen?', en: 'What exceptions does it have?' },
+  {
+    id: 'except',
+    sv: 'Vilka undantag finns i lagen?',
+    en: 'What exceptions does it have?',
+    search: 'gäller inte, undantas, får avvika från lagen',
+  },
 ]
 
 /** 'sfs-1982-80-11' belongs to '1982:80'; '1982-8' or '1982-800' does not. */
@@ -61,7 +72,8 @@ type Sent = { system: string; user: string; temperature: number; maxTokens: numb
 export function answerPrompt(question: string, passages: Item[]): Sent {
   const context = passages.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')
   return {
-    system: SYSTEM,
+    // A cell asks for a whole law, of which eight passages show only a part.
+    system: `${SYSTEM} If the passages answer the question in part, answer that part.`,
     user: `${context}\n\nQuestion: ${question}`,
     temperature: 0.1,
     maxTokens: THINKING + 2048,
@@ -117,15 +129,17 @@ export function parseOutputs(jsonl: string) {
 }
 
 export type Judged =
-  | { status: 'failed' | 'no_answer' | 'unverified' }
+  | { status: 'failed' }
+  | { status: 'no_answer' | 'unverified'; reply: string }
   | { status: 'verified'; answer: string; quotes: { id: string; quote: string }[] }
 
 /** The verdict /api/answer gives: every quote verbatim in the passage it names, or no answer. */
 export function judge(text: string | null, passages: Item[]): Judged {
   if (text === null) return { status: 'failed' }
   const quotes = checkQuotes(text, passages)
-  if (/^NO_ANSWER\W*$/.test(text) || !quotes.length) return { status: 'no_answer' }
-  if (!quotes.every((q) => q.verbatim)) return { status: 'unverified' }
+  // The reply is kept to tell a refusal from a format error; it is never shown as an answer.
+  if (/^NO_ANSWER\W*$/.test(text) || !quotes.length) return { status: 'no_answer', reply: text }
+  if (!quotes.every((q) => q.verbatim)) return { status: 'unverified', reply: text }
   return {
     status: 'verified',
     answer: canonical(text),
