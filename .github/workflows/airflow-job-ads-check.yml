@@ -6,6 +6,13 @@ name: Check the Airflow job ads flow
 # assistant's store and the current cluster model's reference vectors from the bucket's public address,
 # so it needs no secrets, and writes nothing back: JOB_ADS_PUBLISH stays local, so the files are checked
 # but not uploaded, and nothing is deployed.
+#
+# With publish (manual, from main only: the R2 secrets are in the anton-portfolio environment), Airflow
+# is this flow's scheduler for the run: every ten-minute run uploads its validated job-assistant
+# release to R2, and the ad store goes back to R2 at the end, so the hourly refresh continues from
+# Airflow's cursor. It requires the repository variable JOB_ADS_SCHEDULER=airflow, which makes the
+# hourly refresh stand down, so the store and the release never have two writers. A runner job lasts
+# at most six hours: near real time by polling for a window, not operation around the clock.
 
 on:
   push:
@@ -18,6 +25,10 @@ on:
       minutes:
         description: Minutes Airflow schedules before the restart
         default: '25'
+      publish:
+        description: Upload each run's release and the ad store to R2 (main only; needs JOB_ADS_SCHEDULER=airflow)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -25,14 +36,22 @@ permissions:
 jobs:
   airflow:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 360
+    # An empty name runs the job without an environment, so pushes on branches need no secrets.
+    environment: ${{ inputs.publish && 'anton-portfolio' || '' }}
     env:
       # The r2.dev address: the custom domain's bot protection answers runners with 403.
       PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
       MINUTES: ${{ inputs.minutes || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
+      PUBLISH: ${{ inputs.publish && 'r2' || 'local' }}
     steps:
+      - name: Refuse a second writer
+        if: inputs.publish && vars.JOB_ADS_SCHEDULER != 'airflow'
+        run: |
+          echo "::error::Set the repository variable JOB_ADS_SCHEDULER=airflow first; otherwise the hourly refresh also writes the store and the release."
+          exit 1
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
@@ -43,8 +62,18 @@ jobs:
             curl -fsS --create-dirs -o "warehouse/$key" "${PUBLIC%/}/warehouse/$key"
           done
       - name: Build and start Airflow
+        env:
+          R2_ACCOUNT_ID: ${{ inputs.publish && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ inputs.publish && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ inputs.publish && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ inputs.publish && secrets.R2_BUCKET || '' }}
+          R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
         run: |
-          printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\n' "$(id -u)" "$(openssl rand -hex 32)" > infra/airflow/.env
+          printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\nJOB_ADS_PUBLISH=%s\n' "$(id -u)" "$(openssl rand -hex 32)" "$PUBLISH" > infra/airflow/.env
+          if [ "$PUBLISH" = r2 ]; then
+            printf 'R2_ACCOUNT_ID=%s\nR2_ACCESS_KEY_ID=%s\nR2_SECRET_ACCESS_KEY=%s\nR2_BUCKET=%s\nR2_PUBLIC_BASE=%s\n' \
+              "$R2_ACCOUNT_ID" "$R2_ACCESS_KEY_ID" "$R2_SECRET_ACCESS_KEY" "$R2_BUCKET" "$R2_PUBLIC_BASE" >> infra/airflow/.env
+          fi
           $COMPOSE build
           $COMPOSE up -d
       - name: Unpause the DAG and let Airflow schedule it
@@ -82,6 +111,10 @@ jobs:
           cp warehouse/raw/job_assistant/pipeline.json warehouse/raw/job_assistant/realtime_runs.jsonl "$EVIDENCE/" || true
           $COMPOSE logs --no-color > "$EVIDENCE/compose.log" 2>&1 || true
           python3 infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
+      # Before `down -v`: the hourly refresh restores this store and continues from its cursor.
+      - name: Store the ad store in R2
+        if: always() && inputs.publish
+        run: $COMPOSE exec -T -w /opt/portfolio airflow-scheduler sh -c '"$PORTFOLIO_PYTHON" platform/pipeline.py push job_assistant'
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
