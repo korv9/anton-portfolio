@@ -152,7 +152,14 @@ export const embed = (text: string) =>
   call<{ vector: number[] }>('embed', { text }).then((r) => r.vector)
 
 export type Passage = { id: string; text: string }
-export type Answer =
+/** A passage the Worker's search found (corpus 'sfs-all'), with its law and similarity. */
+export type Found = Passage & {
+  title: string
+  url: string
+  law: string
+  score: number
+}
+export type Answer = (
   | {
       status: 'verified'
       /** The law corpora: the checked answer retold as a moral allegory, when the retelling held. */
@@ -162,6 +169,7 @@ export type Answer =
       model: string
     }
   | { status: 'unverified' | 'no_answer'; passages: Passage[] }
+) & { hits?: Found[] }
 
 export const answer = (question: string, corpus: string, passages: Passage[]) =>
   call<Answer>('answer', { question, corpus, passages })

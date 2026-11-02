@@ -387,3 +387,65 @@ test('AI routes refuse foreign origins and fail closed without the limiter', asy
   )
   assert.equal(e.calls.length, 2)
 })
+
+test('answer: sfs-all takes its passages from the search service, unchecked against lists', async () => {
+  const e = await env({ response: `Ja [[${LAW.id}]]"${LAW.text}"` })
+  const sent: { url: string; key: string | null; body: unknown }[] = []
+  const real = globalThis.fetch
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    sent.push({
+      url,
+      key: new Headers(init.headers).get('X-Allegora-Key'),
+      body: JSON.parse(String(init.body)),
+    })
+    return Response.json({
+      hits: [
+        {
+          ...LAW,
+          title: 'LAS 1 §',
+          url: 'https://x.test',
+          law: '1982:80',
+          kind: 'lag',
+          score: 0.8,
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    const off = await worker.fetch(
+      post('/api/answer', { question: 'Vem gäller lagen?', corpus: 'sfs-all' }),
+      e,
+    )
+    assert.equal(off.status, 503, 'no service configured')
+    Object.assign(e, {
+      ALLEGORA_SEARCH_URL: 'https://search.test',
+      ALLEGORA_SEARCH_KEY: 'k',
+    })
+    const r = await worker.fetch(
+      post('/api/answer', {
+        question: 'Vem gäller lagen?',
+        corpus: 'sfs-all',
+        passages: [{ id: 'x', text: 'forged' }],
+      }),
+      e,
+    )
+    const body = (await r.json()) as {
+      status: string
+      hits: { id: string; title: string }[]
+    }
+    assert.equal(body.status, 'verified')
+    assert.deepEqual(
+      body.hits.map((h) => [h.id, h.title]),
+      [[LAW.id, 'LAS 1 §']],
+    )
+    assert.deepEqual(sent, [
+      {
+        url: 'https://search.test/search',
+        key: 'k',
+        body: { question: 'Vem gäller lagen?', k: 8 },
+      },
+    ])
+  } finally {
+    globalThis.fetch = real
+  }
+})

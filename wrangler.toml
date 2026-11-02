@@ -21,6 +21,11 @@ run_worker_first = ["/api/*"]
 [ai]
 binding = "AI"
 
+# Allegora's search over every Swedish law and ordinance in force (docs/allegora-gcp.md). Not a
+# secret: the service answers only with ALLEGORA_SEARCH_KEY, a Cloudflare secret.
+[vars]
+ALLEGORA_SEARCH_URL = "https://allegora-search-877662270161.europe-west4.run.app"
+
 # Per visitor IP and Cloudflare location: 20 AI requests a minute. The daily neuron allocation
 # stays the hard limit.
 [[ratelimits]]
