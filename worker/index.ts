@@ -319,7 +319,7 @@ async function answer(request: Request, env: Env) {
 
 /**
  * One generation: Claude when the Worker has its key, otherwise Gemma on Workers AI. Claude
- * thinks before it writes, so it gets room beyond the visible answer, and takes no temperature.
+ * takes no temperature.
  */
 async function generate(
   env: Env,
@@ -328,7 +328,7 @@ async function generate(
   { maxTokens, temperature }: { maxTokens: number; temperature: number },
 ) {
   if (env.ANTHROPIC_API_KEY)
-    return claude(env.ANTHROPIC_API_KEY, system, user, maxTokens + 8000)
+    return claude(env.ANTHROPIC_API_KEY, system, user, maxTokens)
   const out = (await env.AI.run(ANSWER_MODEL, {
     messages: [
       { role: 'system', content: system },
