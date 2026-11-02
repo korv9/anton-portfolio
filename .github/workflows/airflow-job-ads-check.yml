@@ -27,7 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      PUBLIC: ${{ vars.R2_PUBLIC_BASE || 'https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/' }}
+      # The r2.dev address: the custom domain's bot protection answers runners with 403.
+      PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
       MINUTES: ${{ inputs.minutes || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
