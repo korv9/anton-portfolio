@@ -1,11 +1,12 @@
 /**
- * Ask the law (#fraga-lagen, docs/workers-ai.md): a question over a selection of Swedish statutes
- * or the EU AI Act. The Worker embeds the question, the browser finds the eight nearest passages
- * and shows them at once, then the Worker answers from those passages and returns the answer only
- * when every quote is verbatim in its passage. Three example questions per corpus carry their
- * vectors and work without the Worker; their checked answers come from the model evaluation.
+ * Ask the law (#fraga-lagen, docs/workers-ai.md): a conversation over a selection of Swedish
+ * statutes or the EU AI Act, answered in fables (Thread.tsx). The Worker embeds the question, the
+ * browser finds the eight nearest passages, then the Worker answers from those passages, keeps the
+ * answer only when every quote is verbatim in its passage, and retells it as a fable. Three example
+ * questions per corpus carry their vectors; without the Worker they fall back to the checked
+ * answers from the model evaluation, which have no fable.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { l } from '../i18n'
 import { setHashParams, type Route } from '../router'
 import { fetchJson } from '../dataSource'
@@ -20,19 +21,12 @@ import {
   type Answer,
   type Corpus,
 } from '../workersAi/corpus'
+import Thread, { type Item, type Turn } from './Thread'
 import type { Law } from './LawData'
 import LawData, { SELECTED } from './LawData'
 import PageHead, { Method } from '../ui/PageHead'
 import './lawqa.css'
 
-type Item = {
-  id: string
-  title: string
-  url: string
-  text: string
-  law?: string
-  fetched?: string
-}
 type Example = {
   question: string
   question_en?: string
@@ -57,11 +51,7 @@ type Eval = Run & {
   /** The run date, once the export writes one. */
   run?: string
 }
-type Hit = { item: Item; score: number }
-
 const TOP = 8
-/** Passages shown before "Show all". */
-const FIRST = 3
 // eval.json carries no run date yet; docs/workers-ai.md dates the run to the night to 15 October.
 const EVAL_RUN = '2026-10-15'
 const MODEL_NAMES: Record<string, string> = {
@@ -69,8 +59,6 @@ const MODEL_NAMES: Record<string, string> = {
 }
 const MAX = 500
 const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
-// As the Worker's parser: a colon or white space may sit between [[id]] and its quote.
-const QUOTE = /\[\[([^\]]+)\]\]\s*:?\s*"([^"]+)"/g
 
 const fileOf = (choice: string) =>
   choice === 'sfs' ? 'sfs' : l('ai-act-en', 'ai-act-sv')
@@ -92,38 +80,6 @@ const recitalOnly = (e: Example) =>
   e.answer?.status === 'verified' &&
   e.answer.quotes.every((q) => q.id.startsWith('rct_'))
 
-/** The answer's text with each [[id]]"quote" as a marked quote that leads to its passage. */
-function Quoted({
-  text,
-  lang,
-  onJump,
-}: {
-  text: string
-  /** The language of the quoted law, when it can differ from the page's. */
-  lang?: string
-  onJump: (id: string) => void
-}) {
-  const parts: ReactNode[] = []
-  let at = 0
-  for (const m of text.matchAll(QUOTE)) {
-    parts.push(text.slice(at, m.index))
-    parts.push(
-      <span className="lq-quote" key={m.index}>
-        <q lang={lang}>{m[2]}</q>{' '}
-        <button type="button" className="btn-text" onClick={() => onJump(m[1])}>
-          {m[1]}
-        </button>{' '}
-        <small>
-          ✓ {l('checked word for word', 'kontrollerat ord för ord')}
-        </small>
-      </span>,
-    )
-    at = m.index + m[0].length
-  }
-  parts.push(text.slice(at))
-  return <p className="lq-answer">{parts}</p>
-}
-
 export default function AskTheLaw({ route }: { route: Route }) {
   const choice = route.params.get('korpus') === 'ai-act' ? 'ai-act' : 'sfs'
   const file = fileOf(choice)
@@ -132,32 +88,19 @@ export default function AskTheLaw({ route }: { route: Route }) {
   const [examples, setExamples] = useState<Example[] | null>(null)
   const [evaluation, setEvaluation] = useState<Eval | null>(null)
   const [question, setQuestion] = useState('')
-  const [hits, setHits] = useState<Hit[] | null>(null)
-  const [reply, setReply] = useState<Answer | 'waiting' | 'example' | null>(
-    null,
-  )
-  const [notice, setNotice] = useState<string | null>(null)
+  const [turns, setTurns] = useState<Turn[]>([])
   const [busy, setBusy] = useState(false)
-  // Until the reader asks, the page shows the first example's checked answer.
-  const [touched, setTouched] = useState(false)
-  const [all, setAll] = useState(false)
-  // The corpus (about 12 MB for Swedish law) loads once the reader turns to the form or the
-  // sources; the opening example's answer needs only examples.json. Without examples it loads now.
+  // The corpus (about 12 MB for Swedish law) loads once the reader turns to the form.
+  // Without examples it loads now.
   const [wanted, setWanted] = useState(false)
   const want = wanted || examples?.length === 0
   const wake = () => setWanted(true)
-  // A quote's passage to focus once the passages are on the page.
-  const [target, setTarget] = useState<string | null>(null)
 
   useEffect(() => {
     setCorpus(null)
     setExamples(null)
     setWanted(false)
-    setTouched(false)
-    setAll(false)
-    setHits(null)
-    setReply(null)
-    setNotice(null)
+    setTurns([])
     fetchJson<{ examples: Example[] }>(`workers-ai/${file}/examples.json`).then(
       (e) => setExamples(e.examples.filter((x) => !recitalOnly(x))),
       () => setExamples([]),
@@ -170,15 +113,18 @@ export default function AskTheLaw({ route }: { route: Route }) {
     fetchJson<Eval>('workers-ai/eval.json').then(setEvaluation, () => {})
   }, [])
 
-  async function run(q: string, example?: Example) {
+  async function run(q: string, shown: string, example?: Example) {
     if (corpus === 'missing') return
     wake()
-    setTouched(true)
-    setAll(false)
     setBusy(true)
-    setNotice(null)
-    setHits(null)
-    setReply(null)
+    setQuestion('')
+    const id = Date.now()
+    const update = (patch: Partial<Turn>) =>
+      setTurns((all) => all.map((t) => (t.id === id ? { ...t, ...patch } : t)))
+    setTurns((all) => [
+      ...all,
+      { id, question: shown, hits: null, reply: 'waiting' },
+    ])
     let loaded: Corpus<Item>
     try {
       loaded = await loadCorpus<Item>(file)
@@ -189,51 +135,31 @@ export default function AskTheLaw({ route }: { route: Route }) {
     }
     try {
       const found = nearest(loaded, example?.vector ?? (await embed(q)), TOP)
-      setHits(found)
-      if (example) return setReply(example.answer ?? 'example')
-      setReply('waiting')
-      setReply(
-        await ask(
+      update({ hits: found })
+      update({
+        reply: await ask(
           q,
           file,
           found.map(({ item }) => ({ id: item.id, text: item.text })),
         ),
-      )
+      })
     } catch (error) {
-      setReply(null)
-      setNotice(
-        fallback(
-          error instanceof Unavailable ? error.reason : 'error',
-          (examples?.length ?? 0) > 0,
-        ),
-      )
+      // An example still answers from the evaluation's checked answer, without a fable.
+      if (example) update({ reply: example.answer ?? 'example' })
+      else
+        update({
+          reply: null,
+          notice: fallback(
+            error instanceof Unavailable ? error.reason : 'error',
+            (examples?.length ?? 0) > 0,
+          ),
+        })
     } finally {
       setBusy(false)
     }
   }
 
   const ready = corpus && corpus !== 'missing' ? corpus : null
-  const opening = touched
-    ? undefined
-    : examples?.find((e) => e.answer?.status === 'verified')
-  const openingHits = useMemo(
-    () => (opening && ready ? nearest(ready, opening.vector, TOP) : null),
-    [opening, ready],
-  )
-  const shownHits = opening ? openingHits : hits
-  const shownReply = opening ? (opening.answer ?? null) : reply
-  /** A quote leads to its passage, which may sit among the folded ones or not be loaded yet. */
-  const jump = (id: string) => {
-    wake()
-    setAll(true)
-    setTarget(id)
-  }
-  useEffect(() => {
-    if (!target || !shownHits) return
-    document.getElementById(`lq-${target}`)?.focus()
-    setTarget(null)
-  }, [target, shownHits])
-
   const meta = ready?.meta ?? null
   const laws = (meta?.laws as Law[] | undefined) ?? []
   const fetched = meta?.fetched as string | undefined
@@ -252,8 +178,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
           <PageHead
             title="Allegora"
             sentence={l(
-              'Ask about Swedish law or the EU AI Act. The answer quotes the law word for word, then retells it as an allegory.',
-              'Fråga om svensk lag eller EU:s AI-förordning. Svaret citerar lagen ordagrant och berättar den sedan som en allegori.',
+              'Ask about Swedish law or the EU AI Act. Allegora answers with a fable, and under each fable is the law it was told from, quoted word for word.',
+              'Fråga om svensk lag eller EU:s AI-förordning. Allegora svarar med en fabel, och under varje fabel står lagen den bygger på, citerad ordagrant.',
             )}
             kpis={[
               {
@@ -322,6 +248,8 @@ export default function AskTheLaw({ route }: { route: Route }) {
             )}
           </p>
 
+          <Thread turns={turns} lang={choice === 'sfs' ? 'sv' : undefined} />
+
           {corpus === 'missing' ? (
             <p className="lq-status">
               {l(
@@ -335,7 +263,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
               onFocus={wake}
               onSubmit={(e) => {
                 e.preventDefault()
-                if (question.trim()) run(question.trim())
+                if (question.trim()) run(question.trim(), question.trim())
               }}
             >
               <label htmlFor="lq-question">
@@ -369,10 +297,7 @@ export default function AskTheLaw({ route }: { route: Route }) {
                       key={e.question}
                       type="button"
                       disabled={busy}
-                      onClick={() => {
-                        setQuestion(asked(e))
-                        run(e.question, e)
-                      }}
+                      onClick={() => run(e.question, asked(e), e)}
                     >
                       {asked(e)}
                     </button>
@@ -396,150 +321,6 @@ export default function AskTheLaw({ route }: { route: Route }) {
               )}
             </form>
           )}
-
-          {notice && (
-            <p className="lq-notice" role="status">
-              {notice}
-            </p>
-          )}
-
-          <div className="lq-body">
-            {(shownHits || shownReply) && (
-              <div className="lq-result">
-                <section aria-labelledby="lq-answer-title" aria-live="polite">
-                  <h2 id="lq-answer-title">{l('Answer', 'Svar')}</h2>
-                  {opening && (
-                    <p className="lq-caption">
-                      {l(
-                        'A ready-made example, checked in advance',
-                        'Ett färdigt exempel, kontrollerat i förväg',
-                      )}
-                      {choice === 'sfs' &&
-                        l(' · answered in Swedish, from the Swedish text', '')}
-                      {': '}
-                      <span className="lq-asked">{asked(opening)}</span>
-                    </p>
-                  )}
-                  {shownReply === 'waiting' ? (
-                    <p className="lq-status" role="status">
-                      {l(
-                        'Writing and checking the answer…',
-                        'Svaret skrivs och kontrolleras…',
-                      )}
-                    </p>
-                  ) : shownReply === 'example' ? (
-                    <p className="lq-status">
-                      {l(
-                        'A checked answer for this example is not published yet; the passages found are below.',
-                        'Ett kontrollerat svar på det här exemplet är inte publicerat än; de hittade paragraferna står nedan.',
-                      )}
-                    </p>
-                  ) : shownReply?.status === 'verified' ? (
-                    <>
-                      {shownReply.allegory && (
-                        <figure className="lq-allegory">
-                          <figcaption>
-                            {l('The allegory', 'Allegorin')}
-                          </figcaption>
-                          {shownReply.allegory
-                            .split(/\n+/)
-                            .filter(Boolean)
-                            .map((line) => (
-                              <p key={line}>{line}</p>
-                            ))}
-                        </figure>
-                      )}
-                      {shownReply.allegory && (
-                        <h3 className="lq-law-title">
-                          {l('What the law says', 'Vad lagen säger')}
-                        </h3>
-                      )}
-                      <Quoted
-                        text={shownReply.answer}
-                        lang={choice === 'sfs' ? 'sv' : undefined}
-                        onJump={jump}
-                      />
-                    </>
-                  ) : shownReply?.status === 'unverified' ? (
-                    <p className="lq-status">
-                      {l(
-                        'The answer could not be verified against the legal text, so only the paragraphs found are shown.',
-                        'Svaret kunde inte verifieras mot lagtexten, så bara de hittade paragraferna visas.',
-                      )}
-                    </p>
-                  ) : shownReply?.status === 'no_answer' ? (
-                    <p className="lq-status">
-                      {l(
-                        'The paragraphs found do not answer the question.',
-                        'De hittade paragraferna besvarar inte frågan.',
-                      )}
-                    </p>
-                  ) : null}
-                </section>
-                {opening && !shownHits && (
-                  <section aria-labelledby="lq-passages-title">
-                    <h2 id="lq-passages-title">{l('Sources', 'Källor')}</h2>
-                    {want ? (
-                      <p className="lq-status" role="status">
-                        {l('Finding the passages…', 'Hämtar passagerna…')}
-                      </p>
-                    ) : (
-                      <button
-                        type="button"
-                        className="btn-text lq-more"
-                        onClick={wake}
-                      >
-                        {l(
-                          `Show the ${opening.passages?.length ?? TOP} passages found`,
-                          `Visa de ${opening.passages?.length ?? TOP} passager som hittades`,
-                        )}
-                      </button>
-                    )}
-                  </section>
-                )}
-                {shownHits && (
-                  <section aria-labelledby="lq-passages-title">
-                    <h2 id="lq-passages-title">{l('Sources', 'Källor')}</h2>
-                    <p className="lq-caption">
-                      {l(
-                        `The ${shownHits.length} nearest passages, found in your browser`,
-                        `De ${shownHits.length} närmaste passagerna, hittade i din webbläsare`,
-                      )}
-                    </p>
-                    <ol className="lq-passages">
-                      {shownHits.map(({ item }, i) => (
-                        <li
-                          key={item.id}
-                          id={`lq-${item.id}`}
-                          lang={choice === 'sfs' ? 'sv' : undefined}
-                          tabIndex={-1}
-                          hidden={!all && i >= FIRST}
-                        >
-                          <p className="lq-title">
-                            <a href={item.url}>{item.title}</a>{' '}
-                            <small translate="no">{item.id}</small>
-                          </p>
-                          <p>{item.text}</p>
-                        </li>
-                      ))}
-                    </ol>
-                    {!all && shownHits.length > FIRST && (
-                      <button
-                        type="button"
-                        className="btn-text lq-more"
-                        onClick={() => setAll(true)}
-                      >
-                        {l(
-                          `Show all ${shownHits.length}`,
-                          `Visa alla ${shownHits.length}`,
-                        )}
-                      </button>
-                    )}
-                  </section>
-                )}
-              </div>
-            )}
-          </div>
 
           <LawData laws={laws} />
           <Method
