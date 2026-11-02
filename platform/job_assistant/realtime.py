@@ -164,7 +164,10 @@ def run(argv: list[str], log: str, cwd: Path = ROOT) -> None:
     out = ROOT / "tmp" / log
     out.parent.mkdir(exist_ok=True)
     with out.open("w", encoding="utf-8") as f:
-        code = subprocess.run(argv, cwd=cwd, stdout=f, stderr=subprocess.STDOUT).returncode
+        # Steps that start `python` themselves (release.py runs export.py) get this interpreter too: in the
+        # Airflow image the first python on PATH is Airflow's, without the portfolio's packages.
+        env = {**os.environ, "PATH": os.pathsep.join([str(Path(sys.executable).parent), os.environ.get("PATH", "")])}
+        code = subprocess.run(argv, cwd=cwd, stdout=f, stderr=subprocess.STDOUT, env=env).returncode
     if code:
         tail = out.read_text(encoding="utf-8", errors="replace").splitlines()[-5:]
         raise RuntimeError(f"{' '.join(argv[1:4])} exited {code}: " + " | ".join(tail))
