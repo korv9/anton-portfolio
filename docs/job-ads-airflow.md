@@ -75,10 +75,28 @@ vote was chosen.
 
 Real runs on 2026-11-02 against the live JobStream, on a Windows 10 laptop (Python 3.12, CPU only),
 `JOB_ADS_PUBLISH=local`. The stages ran in the DAG's order through `tmp/cycle.py`, which samples the
-peak memory of each stage and its children. Airflow itself could not run on this machine: Docker and
-WSL are not installed, and Airflow does not run natively on Windows. Both DAG files were parsed with
-Airflow 3.3.2 (`job_ads_near_realtime`: `*/10 * * * *`, one active run, no catch-up, four tasks with
-three retries, exponential backoff and timeouts).
+peak memory of each stage and its children. Airflow does not run natively on Windows and the laptop
+has no Docker, so the scheduled runs above were made on a GitHub runner.
+
+**Airflow scheduling the flow in Docker.** The workflow `.github/workflows/airflow-job-ads-check.yml`
+(run [41461235380](https://github.com/korv9/anton-portfolio/actions/runs/41461235380), 2026-11-02)
+started `infra/airflow/docker-compose.yml` on a GitHub runner (4 vCPU, 16 GB), unpaused the DAG,
+let it schedule for 25 minutes, restarted the stack and waited for one more run. It restored the
+ad store and the model's reference vectors from the public bucket and published nothing.
+
+| Scheduled run (UTC) | Started | Ended | Tasks | collect | analyse | Changes, delay to validated result |
+|---|---|---|---|---|---|---|
+| 14:20 | 14:26 | 14:38 | 4 of 4 success | 169 events, 68 s | 2,224 texts embedded, 622 s (cold cache) | 142, 17.5 to 425.1 min |
+| 14:30 | 14:38 | 14:39 | 4 of 4 success | 9 events, 8 s | 2 embedded, 9 s | 4, 2.0 to 8.8 min |
+| 14:40 | 14:40 | 14:40 | 4 of 4 success | 4 events, 4 s | nothing new, 1 s | 0 |
+| 14:50 | 14:50 | 14:51 | 4 of 4 success | 8 events, 5 s | 4 embedded, 10 s | 4, 1.7 to 5.4 min |
+| 15:00 (after the restart) | 15:00 | 15:01 | 4 of 4 success | 11 events, 4 s | 3 embedded, 10 s | 8, 1.7 to 10.3 min |
+
+The 14:30 run waited until the 14:20 run had finished (one active run), so the two never overlapped.
+The four runs listed before `docker compose down` were all listed after `up`, with the 15:00 run
+added: the metadata persisted on the `airflow-db` volume. No event was stale. While idle between
+runs the stack used about 1.3 GB: scheduler 793 MB, API server 276 MB, DAG processor 175 MB,
+Postgres 45 MB. `infra/airflow/check_runs.py` checks these properties from the CLI's JSON.
 
 **Catch-up** from the cursor 2026-10-30 16:44 local time: 12 six-hour windows in 11 min 19 s (one
 request a minute), 490 events, 2 empty answers, 121 new, 16 changed, 287 removed, 0 stale. The first
@@ -127,7 +145,8 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    store, or a disk backup, so a lost host does not lose the history.
 4. **Alerts.** Failed tasks are visible only in the Airflow UI. Add a failure callback or an
    external check on `ads.json` `pipeline.last_fetch` (the page already warns after eight hours).
-5. **Memory.** Loading the model in each run needs about 1.7 GB. A 4 GB host is enough. A model kept
+5. **Memory.** The idle stack uses about 1.3 GB and loading the model in a run about 1.7 GB more,
+   so a 4 GB host is enough. A cold embedding cache costs about ten minutes once (2,224 texts). A model kept
    loaded in a long-running worker, or Workers AI embeddings, would cut both the peak and the 18 s.
 6. **The job history warehouse** (`warehouse/jobtech/history.duckdb`) on the host before
    `job_cluster_candidate` can train. It is absent on this laptop, so the weekly DAG is untested.
