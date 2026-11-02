@@ -119,6 +119,35 @@ release `4796a58a6ae2` of the `job-assistant` group in 11.8 s. The 47 changes re
 live page then read: "Last fetch 16:04. Last publication 16:05. Median delay … 16 min". Until
 Airflow is the scheduler, the next hourly GitHub run replaces that release with its own.
 
+**Airflow publishing to R2.** On 2026-11-02 Airflow was the flow's scheduler for a window: the
+workflow ran on `main` with `publish=true` (run
+[41509796639](https://github.com/korv9/anton-portfolio/actions/runs/41509796639)), the repository
+variable `JOB_ADS_SCHEDULER=airflow` kept the hourly refresh out, and the owner stopped the run at
+21:20 UTC. Twelve consecutive ten-minute runs each activated a validated `job-assistant` release in
+R2, read back from `manifests/current.json` and the release's `ads.json`:
+
+| Published (UTC) | Last fetch | Median delay, source to publication | Publications with changes |
+|---|---|---|---|
+| 19:41:27 | 19:30 | none yet | 0 |
+| 19:42:17 | 19:41 | 97.9 min (catch-up after the failed run below) | 1 |
+| 19:50:40 | 19:50 | 97.9 min | 2 |
+| 20:00:43 | 20:00 | 6.8 min | 3 |
+| 20:10:32 | 20:10 | 11.7 min | 4 |
+| 20:20:30, 20:30:31 | 20:20, 20:30 | 11.7 min | 4 |
+| 20:40:41 | 20:40 | 11.4 min | 5 |
+| 20:50:31 to 21:10:36 | each run | 11.4 min | 6 |
+| 21:20:31 | 21:20 | 7.9 min | 7 |
+
+A run with no source change still publishes a release, because the build records a new fetch time.
+The median is over the publications that carried changes. When the run was cancelled the workflow
+paused the DAG, waited for the stage lock and stored the ad store in R2, so the hourly refresh
+continued from Airflow's cursor; `JOB_ADS_SCHEDULER` was then removed.
+
+The first publish run (41488252418) failed: `release.py` starts `export.py` as `python`, which in the
+Airflow image is Airflow's interpreter without `duckdb`, and the store upload ran while a stage still
+held its lock. `realtime.run` now puts its own interpreter first on `PATH` (tested), and the workflow
+pauses the DAG and waits for the lock before the upload.
+
 **Catch-up** from the cursor 2026-10-30 16:44 local time: 12 six-hour windows in 11 min 19 s (one
 request a minute), 490 events, 2 empty answers, 121 new, 16 changed, 287 removed, 0 stale. The first
 analysis embedded 2,210 texts (45 came from the cache) in 88 s, peak 1.8 GB. The build took 28 s.
@@ -160,7 +189,9 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    `infra/airflow/docker-compose.yml` unchanged.
 2. **One scheduler.** Set the repository variable `JOB_ADS_SCHEDULER=airflow`, so the hourly GitHub
    workflow stands down, and only then set `JOB_ADS_PUBLISH=r2` with the R2 secrets in
-   `infra/airflow/.env`.
+   `infra/airflow/.env`. Until a host exists, the check workflow with `publish=true` makes Airflow the
+   scheduler on a runner for up to about five hours (a job lasts at most six); remove the variable
+   afterwards, or the job page stops updating.
 3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
    each run; the Airflow host keeps it on local disk. Schedule `realtime.py push` daily, or keep a
    disk backup, so a lost host does not lose the history.
