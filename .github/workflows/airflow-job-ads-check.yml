@@ -3,8 +3,9 @@ name: Check the Airflow job ads flow
 # Manual, and on a push that changes the stack or the flow. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
 # job_ads_near_realtime every ten minutes for a while, restarts the stack to show that the metadata
 # persists, and keeps the evidence as an artifact (docs/job-ads-airflow.md). It reads the job
-# assistant's raw store and the current cluster model's reference vectors from R2 and writes nothing
-# back: JOB_ADS_PUBLISH stays local, so the files are checked but not uploaded, and nothing is deployed.
+# assistant's store and the current cluster model's reference vectors from the bucket's public address,
+# so it needs no secrets, and writes nothing back: JOB_ADS_PUBLISH stays local, so the files are checked
+# but not uploaded, and nothing is deployed.
 
 on:
   push:
@@ -26,10 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      PUBLIC: ${{ vars.R2_PUBLIC_BASE || 'https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/' }}
       MINUTES: ${{ inputs.minutes || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
@@ -37,12 +35,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Restore the ad store from R2
-        uses: ./.github/actions/data-setup
-        with:
-          pull: job_assistant
-      - name: Restore the current cluster model's reference vectors
-        run: python platform/publish/warehouse_store.py pull --only features --path job_clusters
+      - name: Restore the ad store and the current model's reference vectors
+        run: |
+          run=$(python3 -c "import json; print(json.load(open('ml/jobs/registry.json'))['current'])")
+          for key in raw/job_assistant/ads.json raw/job_assistant/state.json raw/job_assistant/runs.jsonl                      features/job_clusters/reference-$run.npz; do
+            curl -fsS --create-dirs -o "warehouse/$key" "${PUBLIC%/}/warehouse/$key"
+          done
       - name: Build and start Airflow
         run: |
           printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\n' "$(id -u)" "$(openssl rand -hex 32)" > infra/airflow/.env
@@ -61,10 +59,10 @@ jobs:
           $COMPOSE down
           $COMPOSE up -d
           # Wait for one more scheduled run to finish after the restart.
-          n=$(python -c "import json,sys; print(len(json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-before.json")
+          n=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-before.json")
           for i in $(seq 1 90); do
             $COMPOSE exec -T airflow-scheduler airflow dags list-runs job_ads_near_realtime -o json > "$EVIDENCE/runs-after.json" 2>/dev/null || true
-            python - "$EVIDENCE/runs-after.json" "$n" <<'EOF' && break
+            python3 - "$EVIDENCE/runs-after.json" "$n" <<'EOF' && break
           import json, sys
           runs = json.load(open(sys.argv[1]))
           done = [r for r in runs if r["state"] in ("success", "failed")]
@@ -76,13 +74,13 @@ jobs:
         if: always()
         run: |
           mkdir -p "$EVIDENCE"
-          for id in $(python -c "import json,sys; print(' '.join(r['run_id'] for r in json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-after.json"); do
+          for id in $(python3 -c "import json,sys; print(' '.join(r['run_id'] for r in json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-after.json"); do
             name=$(echo "tasks-$id.json" | tr ':+' '__')
             $COMPOSE exec -T airflow-scheduler airflow tasks states-for-dag-run job_ads_near_realtime "$id" -o json > "$EVIDENCE/$name" || true
           done
           cp warehouse/raw/job_assistant/pipeline.json warehouse/raw/job_assistant/realtime_runs.jsonl "$EVIDENCE/" || true
           $COMPOSE logs --no-color > "$EVIDENCE/compose.log" 2>&1 || true
-          python infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
+          python3 infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
