@@ -142,9 +142,10 @@ def analyse(status: dict, http=None) -> dict:
     done = (status.get("analyse") or {}).get("ok") or {}
     if done.get("input") == cursor() and done.get("model") == current_model():
         return {"outcome": "skipped", "input": cursor(), "model": done.get("model")}
-    import clusters
     import rank
-    assigned = clusters.update()
+    # ml/jobs/assign.py as a command: the job assistant never imports ml (ml/experiments/tests/test_separation.py).
+    run([sys.executable, "-m", "ml.jobs.assign", "--store", str(ads.store_dir())], "realtime-assign.log")
+    assigned = json.loads((ROOT / "tmp/realtime-assign.log").read_text(encoding="utf-8").strip().splitlines()[-1])
     profile, why = rank.approved_profile(None)
     result = rank.run(profile, rank.ai.session() if profile else None, why=why)
     note = result["note"]
@@ -155,9 +156,7 @@ def analyse(status: dict, http=None) -> dict:
 
 
 def current_model() -> str:
-    sys.path.insert(0, str(ROOT))
-    from ml.jobs import registry
-    return registry.load()["current"]
+    return json.loads((ROOT / "ml/jobs/registry.json").read_text(encoding="utf-8"))["current"]
 
 
 def run(argv: list[str], log: str, cwd: Path = ROOT) -> None:

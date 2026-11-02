@@ -15,7 +15,7 @@ stage of `platform/job_assistant/realtime.py`:
 | Stage | Reuses | Writes |
 |---|---|---|
 | `collect` | `ads.py` (JobStream, raw store with provenance, id plus hash store) | `ads.json`, `state.json`, `raw/stream-*.json.gz`, `_manifest.jsonl`, `runs.jsonl` |
-| `analyse` | `ml/jobs/embeddings.embed` (cache by text hash), `ml/jobs/registry.py` (current model), `rank.py` (matches, Workers AI cache and budget) | `clusters.json`, `matches.json`, the embedding cache |
+| `analyse` | `ml/jobs/assign.py`, run as a command, with `ml/jobs/embeddings.embed` (cache by text hash), `ml/jobs/registry.py` (current model), `rank.py` (matches, Workers AI cache and budget) | `clusters.json`, `matches.json`, the embedding cache |
 | `build` | dbt `tag:job_assistant`, `export.py`, `export.py --check` | `frontend/public/data/job-assistant/*.json` (ignored by Git) |
 | `publish` | `release.py publish --group job-assistant` with `JOB_ADS_PUBLISH=r2`; otherwise the delivery check only | nothing in Git; no site build |
 

@@ -1,11 +1,13 @@
 """Assign the job assistant's ads to the current job cluster model, embedding only new or changed texts.
 
-    python platform/job_assistant/clusters.py
+    python -m ml.jobs.assign [--store warehouse/raw/job_assistant]
 
-The model is the run named current in ml/jobs/registry.json (promoted by hand, see ml/jobs/registry.py).
-An ad is assigned again only when its content hash or the model changes; its text goes through the
-model's own embedding cache (ml/jobs/embeddings.embed, keyed by text hash), so a text already embedded
-costs nothing. Writes warehouse/raw/job_assistant/clusters.json:
+It reads the shared ad store (ads.json) and imports nothing from the job assistant, which runs it as a
+command (platform/job_assistant/realtime.py, analyse). The model is the run named current in
+ml/jobs/registry.json (promoted by hand, see ml/jobs/registry.py). An ad is assigned again only when its
+content hash or the model changes; its text goes through the model's own embedding cache
+(ml/jobs/embeddings.embed, keyed by text hash), so a text already embedded costs nothing. Writes
+clusters.json next to ads.json, and prints the pass's summary as one JSON line:
 
     model        run id, embedding model and revision
     assignments  per ad id: content hash, text hash, cluster (-1 is noise), the share of the k nearest
@@ -14,25 +16,33 @@ costs nothing. Writes warehouse/raw/job_assistant/clusters.json:
 """
 from __future__ import annotations
 
+import argparse
 import json
-import sys
+import os
 import time
 from pathlib import Path
 
+from ml.jobs import registry
+from ml.jobs.prepare import semantic_text, text_hash
+
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ads import load_ads, store_dir, write_atomic  # noqa: E402
-from ml.jobs import registry  # noqa: E402
-from ml.jobs.prepare import semantic_text, text_hash  # noqa: E402
+STORE = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw")) / "job_assistant"
 
 
-def update(embed=None) -> dict:
+def write_atomic(path: Path, value: object) -> None:
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
+                   encoding="utf-8", newline="\n")
+    os.replace(tmp, path)
+
+
+def update(store: Path = STORE, embed=None) -> dict:
     """Assign what changed since the last pass; returns the pass's counts and embedding use."""
     started = time.monotonic()
     model = registry.current()
-    ads = load_ads(store_dir() / "ads.json")
-    path = store_dir() / "clusters.json"
+    source = store / "ads.json"
+    ads = {r["id"]: r for r in json.loads(source.read_text(encoding="utf-8"))} if source.exists() else {}
+    path = store / "clusters.json"
     old = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
     kept = old.get("assignments", {}) if old.get("model") == model else {}
     todo = {k: a for k, a in ads.items() if not a.get("removed_at")
@@ -76,4 +86,6 @@ def update(embed=None) -> dict:
 
 
 if __name__ == "__main__":
-    print(json.dumps(update(), ensure_ascii=False))
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--store", type=Path, default=STORE)
+    print(json.dumps(update(parser.parse_args().store), ensure_ascii=False))

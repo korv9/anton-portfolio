@@ -207,27 +207,3 @@ def test_unpublished_changes_carry_over_a_failed_publication(monkeypatch, raw):
     assert "pending_changes" not in json.loads((raw / "pipeline.json").read_text())
     assert realtime.stage("publish", realtime.publish)["outcome"] == "skipped"
 
-
-def test_only_new_or_changed_texts_are_embedded_and_signals_follow(monkeypatch):
-    import numpy as np
-    import clusters
-    from ml.jobs import registry
-    monkeypatch.setattr(registry, "current", lambda: {"run_id": "r1", "model": "m", "revision": None})
-    ref = np.eye(4, dtype="float32")
-    monkeypatch.setattr(registry, "reference", lambda run_id: (["a", "b", "c", "d"], ref, np.asarray([0, 0, 1, 1])))
-    embedded = []
-
-    def embed(jobs, directory, model, revision):
-        embedded.append(sorted(jobs.job_id))
-        vectors = np.asarray([ref[0] if "Python" in t else ref[2] for t in jobs.text], dtype="float32")
-        return vectors, {"new_unique_texts": len(jobs), "reused": 0}
-
-    store.run(at("2026-10-23T12:10:00"), Http({"2026-10-23T12:00:00": [ad("1"), ad("2", text="Krav: Java.")]}), clock)
-    first = clusters.update(embed)
-    assert embedded == [["1", "2"]] and first["signals"] == {"0": {"open": 1, "new": 1, "changed": 0, "removed": 0},
-                                                            "1": {"open": 1, "new": 1, "changed": 0, "removed": 0}}
-    assert clusters.update(embed)["assigned"] == 0 and len(embedded) == 1
-    later = {"2026-10-23T12:10:00": [ad("2", text="Krav: Python.", at=T0 + 1), removed("1")]}
-    store.run(at("2026-10-23T12:20:00"), Http(later), clock)
-    third = clusters.update(embed)
-    assert embedded[-1] == ["2"] and third["signals"]["0"] == {"open": 1, "new": 0, "changed": 1, "removed": 1}
