@@ -28,8 +28,8 @@ from urllib.parse import quote
 import numpy as np
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE))
-sys.path.insert(0, str(HERE.parents[1] / "ingest" / "sfs"))
+sys.path.append(str(HERE))
+sys.path.append(str(HERE.parents[1] / "ingest" / "sfs"))
 
 from chunking import body, pack, paragraphs  # noqa: E402
 import vertex  # noqa: E402
