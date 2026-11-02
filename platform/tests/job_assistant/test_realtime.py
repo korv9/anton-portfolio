@@ -207,3 +207,10 @@ def test_unpublished_changes_carry_over_a_failed_publication(monkeypatch, raw):
     assert "pending_changes" not in json.loads((raw / "pipeline.json").read_text())
     assert realtime.stage("publish", realtime.publish)["outcome"] == "skipped"
 
+
+
+def test_steps_start_python_from_this_interpreter(monkeypatch, tmp_path):
+    seen = {}
+    monkeypatch.setattr(realtime.subprocess, "run", lambda argv, **kw: seen.update(kw) or type("R", (), {"returncode": 0})())
+    realtime.run(["python", "-V"], "realtime-path-test.log", cwd=tmp_path)
+    assert seen["env"]["PATH"].split(os.pathsep)[0] == str(Path(sys.executable).parent)
