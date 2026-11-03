@@ -38,15 +38,13 @@ name = "RATE_LIMITER"
 namespace_id = "1001"
 simple = { limit = 20, period = 60 }
 
-# The job assistant's owner records (worker/jobs.ts). Left commented until the workflow
-# setup-job-assistant.yml has created the D1 database and printed its id (not a secret); the id is
-# then committed here and the block uncommented. A deploy with an unknown id would fail. Until
-# then /api/jobs/* answers 503 and the run matches nothing.
-# [[d1_databases]]
-# binding = "JOBS_DB"
-# database_name = "job-assistant"
-# database_id = "<job_assistant_d1_id>"
-# migrations_dir = "worker/migrations"
+# The job assistant's owner records (worker/jobs.ts). The id (not a secret) is the one the workflow
+# setup-job-assistant.yml printed (run 41710481305), which also applied worker/migrations.
+[[d1_databases]]
+binding = "JOBS_DB"
+database_name = "job-assistant"
+database_id = "03c29b31-deff-4fa5-876c-56b1fe70d109"
+migrations_dir = "worker/migrations"
 
 # Branch previews (`npx wrangler preview`, run by Workers Builds for pull requests); empty is enough.
 [previews]
