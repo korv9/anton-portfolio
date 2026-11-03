@@ -9,10 +9,9 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-sys.path.insert(0, str(ROOT / "platform/lib"))
 import ai  # noqa: E402
 import rank  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from cv import PDF, parse, read_text  # noqa: E402
 from cv_profile import approve, correct  # noqa: E402
 from match import match  # noqa: E402

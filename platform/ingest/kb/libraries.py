@@ -15,13 +15,9 @@ arrived) and statistics/<term>.json.
 from __future__ import annotations
 
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
-from rawstore import fetch, session  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
+from portfolio.storage.rawstore import fetch, session  # noqa: E402
 
 SOURCE = "kb"
 API = "https://bibdb.libris.kb.se/api/lib?dump=true&format=json&level=full"

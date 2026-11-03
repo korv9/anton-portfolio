@@ -133,7 +133,7 @@ from JobSearch, one publication day at a time over the last 60 days, with the cl
 until it changes and the stream brings it in; most Platsbanken ads close within that time. JobStream's snapshot is not used: it ignores the
 occupation filter and returns about 40,000 ads. Later runs ask JobStream for every change since
 the stored cursor, in windows of at most six hours, as `ingest_stream.py` does. Each answer is
-stored with its provenance line (`platform/lib/rawstore.py`) under its own source,
+stored with its provenance line (`src/portfolio/storage/rawstore.py`) under its own source,
 `job_assistant`, so its fetch log never mixes with the market subject's. These answers hold
 recruiters' e-mail addresses and phone numbers before redaction, so `warehouse_store.py` never
 pushes `raw/job_assistant/raw/` (`LOCAL_ONLY`); runs resume from the redacted `ads.json`. Earlier
@@ -310,24 +310,23 @@ Zero Trust application and policy for a few routes, and the token works the same
 and for the Actions run. The owner pastes the token once per device; the page keeps it in
 `localStorage` and sends it only to the site's own `/api/jobs/` routes.
 
-## What the owner applies
+## Secrets and one-time setup
 
-Nothing here is applied by the agent. Every secret lives in the GitHub environment
-`anton-portfolio`; nothing is set from a laptop.
+Every secret lives in the GitHub environment `anton-portfolio`; nothing is set from a laptop.
 
 | Secret | Used by | Token permissions |
 | --- | --- | --- |
 | `CLOUDFLARE_ACCOUNT_ID` | `setup-job-assistant.yml`, the hourly run (`rank.py`) | none; it is the account id (a repository variable of the same name also works) |
 | `CLOUDFLARE_API_TOKEN` | `setup-job-assistant.yml`; the hourly run when there is no `CLOUDFLARE_AI_TOKEN` | Account > D1 > Edit, Account > Workers Scripts > Edit and Account > Workers AI > Read and Edit, on this account only |
 | `CLOUDFLARE_AI_TOKEN` (optional) | `rank.py` in the hourly run, through `data-subject.yml`, in place of `CLOUDFLARE_API_TOKEN` | Account > Workers AI > Read and Edit, nothing else |
-| `JOB_ASSIST_TOKEN` | copied into the Worker by `setup-job-assistant.yml`; `sync.py` | none; a long random value the owner chooses and pastes on the review page |
+| `JOB_ASSIST_TOKEN` | copied into the Worker by `setup-job-assistant.yml`; `sync.py` | none; a long random value, also pasted on the review page |
 
-The owner chose one Cloudflare token (2026-10-25), so the hourly run uses `CLOUDFLARE_API_TOKEN`
+With a single Cloudflare token (chosen 2026-10-25), the hourly run uses `CLOUDFLARE_API_TOKEN`
 for Workers AI. That token also has D1 Edit and Workers Scripts Edit, which an unattended scheduled
 run does not need. Adding a Workers-AI-only `CLOUDFLARE_AI_TOKEN` narrows the hourly run to that
 token without any code change.
 
-The R2 secrets the other subjects use are already in the environment. In this order:
+The R2 secrets the other subjects use are in the same environment. Setup, in this order:
 
 1. Add `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` to the environment.
 2. Run the workflow "Set up the job assistant" from `main`. It finds or creates the D1 database
@@ -420,31 +419,6 @@ fills the content area.
 - Under 760 px the list comes first and the opened ad replaces it, with a back button.
 - How it works keeps the method, the runs and the owner tools (token, CV upload, draft editor,
   approval request).
-
-The home page entry described below is not built in this task: the task brief keeps
-`frontend/src/home/` untouched while the owner works there.
-
-## Home page entry (planned)
-
-The owner's decision of 2026-10-23 puts the job assistant high on the home page, right after the
-platform section, as the second flagship: the platform's own output. The entry is built with the
-review UI and stays small:
-
-- one line on what it is: the CV matched hourly with current Data/IT ads, decision support only;
-- the latest three strong or possible matches, each with title, employer, place, class and its
-  first reason, read from `matches.json` and `ads.json` at load, without blocking first paint;
-- when the data was fetched and how many ads were read, from `ads.json`;
-- one link to the full review list and one to this method.
-
-With no approved profile or no match, the entry says so and shows no rows.
-
-## Case study outline
-
-This document becomes the case study once the scheduled week has run: problem (a CV-first search
-instead of a keyword search), architecture (the table above), decisions (rules before a model,
-evidence levels, a token instead of Access, JobSearch for the first read), and the measured
-numbers (ads per day, duplicates, removals, neurons per day, runs that failed, and the precision
-and misses from the owner's labels).
 
 ## Test plan
 

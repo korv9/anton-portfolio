@@ -10,7 +10,7 @@ the previous run, in windows of at most six hours, so nothing between two runs i
 Under warehouse/raw/jobtech/:
 
     stream/raw/<window>.json.gz       each answer as served, with its provenance line
-                                      (lib/rawstore.py)
+                                      (src/portfolio/storage/rawstore.py)
     stream/ads/<window>.parquet       the ads first seen in that window, one row each: id,
                                       publication date and the cells it counts in
     stream/state.json                 the first complete day and the time fetched up to
@@ -44,10 +44,9 @@ from zoneinfo import ZoneInfo
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from ingest_market import ADS_COLUMNS, CONDITIONS_COLUMNS, cells, write  # noqa: E402
 
 STREAM_URL = "https://jobstream.api.jobtechdev.se/stream"

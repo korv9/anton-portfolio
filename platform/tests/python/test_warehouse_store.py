@@ -11,9 +11,8 @@ import pytest
 from botocore.exceptions import ClientError
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "publish"))
 
-import warehouse_store as ws  # noqa: E402
+from portfolio.storage import warehouse_store as ws  # noqa: E402
 
 
 class Bucket:
@@ -305,7 +304,7 @@ def test_complete_history_survives_a_fresh_runner_round_trip(store, tmp_path, mo
     import sys
     sys.path.insert(0, str(ROOT / "ingest/taxes"))
     import taxes_ingest as taxes
-    import rawstore
+    from portfolio.storage import rawstore
 
     s3, _, raw = store
     monkeypatch.setattr(rawstore, "RAW", raw)
@@ -420,7 +419,6 @@ def test_a_torn_ledger_costs_the_protection_not_the_push(store, capsys):
 def test_a_conflict_still_stores_the_other_trees_and_the_warehouse_then_fails(store, tmp_path, monkeypatch):
     """`push --all` (build-warehouse.yml) keeps going past a refused file and exits non-zero at the end."""
     import hashlib
-    import types
     s3, _, raw = store
     monkeypatch.setattr(ws, "CLUSTER_LAB", tmp_path / "cluster_lab")
     key = ws.FEATURES_PREFIX + "concepts/run.json"
@@ -429,7 +427,7 @@ def test_a_conflict_still_stores_the_other_trees_and_the_warehouse_then_fails(st
     s3.objects[key] = (newer, {"sha256": hashlib.sha256(newer).hexdigest()})
     (tmp_path / "features/concepts/run.json").write_text('{"model": "local"}')
     (raw / "scb/b.json").write_text("{}")
-    monkeypatch.setitem(sys.modules, "upload", types.SimpleNamespace(client=lambda: (s3, "b")))
+    monkeypatch.setattr("portfolio.storage.upload.client", lambda: (s3, "b"))
     monkeypatch.setattr(sys, "argv", ["warehouse_store.py", "push"])
     with pytest.raises(SystemExit, match=r"changed in the bucket since.*concepts/run\.json"):
         ws.main()

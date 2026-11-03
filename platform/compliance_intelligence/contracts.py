@@ -8,7 +8,7 @@ from typing import Protocol
 
 import duckdb
 
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 
 @dataclass(frozen=True)

@@ -1,6 +1,6 @@
 # Versionsbunden dataleverans från R2
 
-Hur `platform/publish/release.py` publicerar en leveransgrupp som en version i R2.
+Hur `src/portfolio/publish/release.py` publicerar en leveransgrupp som en version i R2.
 Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser i regel inte dem:
 produktionen läser den incheckade datan under `frontend/public/data`, vars
 `delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte. Undantaget är
@@ -12,15 +12,15 @@ nyheter och DiVA står i [delivery-validation.md](delivery-validation.md).
 
 ## CLI och gruppägarskap
 
-`platform/publish/release.py` publicerar godkända exporter från en uttrycklig
+`src/portfolio/publish/release.py` publicerar godkända exporter från en uttrycklig
 stagingrot. Roten kan vara `frontend/public/data` eller `warehouse/delivery/public`.
 Alla paths i spec och manifest är relativa till dataroten, exempelvis
 `jobs/market.json`, `parliament/news.json` och
 `politics/parliament/issues/1993-94/gh092.json`.
 
 ```sh
-python platform/publish/release.py materialize --root warehouse/delivery/public --spec configs/delivery/jobs.json --catalog frontend/public/data/catalog.json
-python platform/publish/release.py publish --group jobs --root warehouse/delivery/public --spec configs/delivery/jobs.json
+python -m portfolio.publish.release materialize --root warehouse/delivery/public --spec configs/delivery/jobs.json --catalog frontend/public/data/catalog.json
+python -m portfolio.publish.release publish --group jobs --root warehouse/delivery/public --spec configs/delivery/jobs.json
 ```
 
 Exportören skriver sina nya resultat i stagingroten före `publish`. Materialisering
@@ -119,7 +119,7 @@ kontrollkontraktet. Gruppmanifestet har `schema_version`, `group`, `release`,
 och `reconcile`. Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses
 av publishern, inte av browsern.
 
-`dq` och `reconcile` skrivs av `platform/publish/dq_gate.py` efter `prepare` och
+`dq` och `reconcile` skrivs av `src/portfolio/publish/dq_gate.py` efter `prepare` och
 före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_results.json`
 för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
 `pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
@@ -217,7 +217,7 @@ verifierar deras historiska CRLF-normaliserade hash, återställer originalbytes
 och låter nästa publish skapa en ny exakt hash. Detta är endast läskompatibilitet;
 ny publicering normaliserar inga payloads.
 
-`build_catalog.py --root STAGING` stöder annan exportrot.
+`python -m portfolio.publish.catalog --root STAGING` stöder annan exportrot.
 
 Resolvern i `frontend/src/dataSource.ts` har ett liveläge som läser
 `manifests/current.json`, men det är inte inkopplat: den incheckade `delivery.json`
@@ -318,7 +318,7 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
 
 ## Retention
 
-`platform/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
+`src/portfolio/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
 under samma skrivlås. Per grupp i `manifests/current.json` behålls den aktiva
 releasen, varje release som ett annat `manifests/*.json` pekar på (smoke och
 bootstrap) och de två senaste övriga godkända releaserna, ordnade efter när

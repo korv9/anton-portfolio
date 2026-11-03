@@ -68,7 +68,7 @@ export const SQL = {
   list: 'select key, value, updated_at from records where kind = ? order by key',
 }
 
-const reply = (body: unknown, status = 200) =>
+export const reply = (body: unknown, status = 200) =>
   Response.json(body, {
     status,
     headers: {
@@ -141,7 +141,7 @@ export async function readCapped(request: Request, max: number) {
   return bytes
 }
 
-async function readJson(request: Request, max: number) {
+export async function readJson(request: Request, max: number) {
   const bytes = await readCapped(request, max)
   if (!bytes) return null
   const raw = new TextDecoder().decode(bytes)
@@ -172,7 +172,7 @@ const toBase64 = (bytes: Uint8Array) => {
   return btoa(s)
 }
 
-async function hex(bytes: ArrayBuffer) {
+export async function hex(bytes: BufferSource) {
   const d = await crypto.subtle.digest('SHA-256', bytes)
   return [...new Uint8Array(d)]
     .map((b) => b.toString(16).padStart(2, '0'))

@@ -122,7 +122,7 @@ export const DATASETS: Dataset[] = [
 const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 
 /** Points, clusters and method: the one line under a map's title. */
-export function caption(set: Dataset, data: Data) {
+function caption(set: Dataset, data: Data) {
   const n = data.points.length
   return [
     data.total && data.total !== n
@@ -160,7 +160,7 @@ const NOISE = onPage(WARM_TONES[4], 0.35)
  * around their centre measured against the map's size), at most `keep` remain, and every cluster
  * is thinned to `cap` points by even sampling so dense ones stay a texture, not a solid shape.
  */
-export function clearest(points: Xyc[], keep = 16, cap = 700) {
+function clearest(points: Xyc[], keep = 16, cap = 700) {
   const groups = new Map<number, Xyc[]>()
   for (const p of points)
     if (p[2] >= 0) (groups.get(p[2]) ?? groups.set(p[2], []).get(p[2])!).push(p)
@@ -193,7 +193,7 @@ export function clearest(points: Xyc[], keep = 16, cap = 700) {
 }
 
 /** Draws one map; returns how many points landed inside the frame. */
-export function drawMap(canvas: HTMLCanvasElement, data: Data) {
+function drawMap(canvas: HTMLCanvasElement, data: Data) {
   const w = canvas.clientWidth
   const h = canvas.clientHeight
   const dpr = Math.min(window.devicePixelRatio || 1, 2)

@@ -19,10 +19,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
-import rawstore  # noqa: E402
-from common import PUBLIC  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
+from portfolio.core.config import PUBLIC  # noqa: E402
 from heartbeat import last_success  # noqa: E402
 
 KEY = "status/ingestion.json"
@@ -68,7 +67,7 @@ def record(name: str, subject: dict, started: str, error: str | None) -> None:
     LOCAL.write_text(json.dumps(local, indent=1) + "\n", encoding="utf-8")
     if os.environ.get("GITHUB_ACTIONS") != "true" or not all(os.environ.get(k) for k in CREDENTIALS):
         return
-    from upload import client
+    from portfolio.storage.upload import client
     s3, bucket = client()
     try:
         current = s3.get_object(Bucket=bucket, Key=KEY)["Body"].read()

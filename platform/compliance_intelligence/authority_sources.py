@@ -9,7 +9,7 @@ from importlib.metadata import version
 from pathlib import Path
 from urllib.parse import parse_qs, urljoin, urlsplit, urlunsplit
 
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 from compliance_intelligence.registry import organization_number
 
 SOURCES = {

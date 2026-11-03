@@ -4,7 +4,7 @@
 
 Each document in corpus.json is fetched as Gutenberg's plain-text UTF-8 file and stored exactly
 as received under warehouse/raw/symbolic/gutenberg/<id>.txt, with its provenance line in
-warehouse/raw/symbolic/_manifest.jsonl (lib/rawstore.py). A refetch that returns the same bytes
+warehouse/raw/symbolic/_manifest.jsonl (src/portfolio/storage/rawstore.py). A refetch that returns the same bytes
 does not rewrite the file. No cleaning happens here: the text is cleaned in dbt (silver).
 
 The corpus metadata (title, author, tradition) is copied to warehouse/raw/symbolic/corpus.json
@@ -16,9 +16,7 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 SOURCE = "symbolic"

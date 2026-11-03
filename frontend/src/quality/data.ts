@@ -5,7 +5,7 @@ import type { QualityData } from './types'
 
 let pending: Promise<QualityData> | null = null
 
-export function loadQuality(): Promise<QualityData> {
+function loadQuality(): Promise<QualityData> {
   if (!pending)
     pending = Promise.all([
       fetchJson<QualityData['summary']>('quality/summary.json'),

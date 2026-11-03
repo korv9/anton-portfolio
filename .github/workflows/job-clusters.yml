@@ -64,8 +64,8 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: |
-          python platform/publish/warehouse_store.py pull --only features --path experiments
-          python platform/publish/warehouse_store.py pull --only raw --path job_assistant
+          python -m portfolio.storage.warehouse_store pull --only features --path experiments
+          python -m portfolio.storage.warehouse_store pull --only raw --path job_assistant
       - name: Run
         id: run
         timeout-minutes: 50
@@ -88,7 +88,7 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: python platform/publish/warehouse_store.py push --only features --path experiments
+        run: python -m portfolio.storage.warehouse_store push --only features --path experiments
       - name: Keep the logs and the monitor file
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

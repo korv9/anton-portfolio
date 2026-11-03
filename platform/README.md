@@ -30,7 +30,7 @@ in the warehouse.
 | `sources/` | Pinned upstream snapshots that cannot be re-fetched |
 | `packages/` | The Allegoria meaningquality engine, vendored |
 | `seeds/`, `macros/` | dbt seeds (lexicons, crosswalks, hand-checked reference rows) and macros |
-| `nlp/` | Text processing that runs before dbt: lexicons, embeddings, the Workers AI corpora (`workers_ai.py`, `platform_docs_corpus.py`) |
+| `nlp/` | Text processing that runs before dbt: lexicons, embeddings, the Workers AI corpora (`workers_ai.py`) |
 | `quality/` | Data quality and construct validity registries and their evaluation ([docs/quality-and-validity.md](../docs/quality-and-validity.md)) |
 | `architecture/` | The provenance graph of sources, models and published files (`build_graph.py`) and the feed's Trace data (`feed_provenance.py`) |
 | `products/` | Registry and pinned material for DrugComb, the thesis and Homie ([products/README.md](products/README.md)) |

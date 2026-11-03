@@ -13,7 +13,7 @@ that describes orchestration. The definitions themselves are in two files:
 A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `platform/target/<subject>`, passed through an ML stage if it has one, and exported to
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
-release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). Each release's
+release in R2 (`src/portfolio/publish/release.py`, specs in `configs/delivery/`). Each release's
 group manifest records the dbt results of the group's subjects and its file row counts under
 `dq` and `reconcile`; a blocking dbt result or a large row drop stops the upload
 ([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
@@ -152,7 +152,7 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
 - `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
   built, then exports and publishes each group whose subjects all came through. The quality
-  subject ends with the structural gate, after the store. Last, `platform/publish/retention.py`
+  subject ends with the structural gate, after the store. Last, `src/portfolio/publish/retention.py`
   plans the deletion of superseded releases, and deletes them only when the repository
   variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
@@ -190,7 +190,7 @@ dbt source freshness on the fetch logs warns at the same age and never fails a r
 ## What a run refetches
 
 The daily runs restore the stored raw files first and fetch only what can have changed. The
-rules are in `platform/lib/rawstore.py` and in each source's ingest script.
+rules are in `src/portfolio/storage/rawstore.py` and in each source's ingest script.
 
 | Source | Every run | Reused until |
 |---|---|---|
@@ -228,7 +228,7 @@ run recomputes ai_politics, philosophy and concepts once.
 | `run legacy` (`npm run data:build`) | The builders not yet moved into dbt (`build_gold.py`, `build_products.py`, `build_speech_browser.py`); run when their inputs change |
 | `run diva`, `run jobs_analysis` | Hours of harvesting or archive imports; started from the Actions tab |
 | `symbolic:research`, `symbolic:clean`, `symbolic:experiments`, `symbolic:validity`, `symbolic:review` | Research steps that end in a human review of clusters |
-| `politics:parties`, `politics:debates`, `data:parquet`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
+| `politics:parties`, `politics:debates`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
 | `publish-r2.yml` | First activation of a bucket, or a full re-stage |
 
 `platform/ingest/jobtech/run_history_pipeline.py` keeps its own dbt build: it discovers which

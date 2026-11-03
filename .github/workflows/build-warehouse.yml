@@ -2,14 +2,14 @@ name: Build, store and publish the warehouse
 
 # Weekly, and by hand: every subject of platform/pipeline.yml that is not marked manual, from the
 # public sources to the R2 release. The whole DuckDB warehouse is stored in R2 with every raw file it
-# was built from and the ML stages' outputs (platform/publish/warehouse_store.py), and each
+# was built from and the ML stages' outputs (src/portfolio/storage/warehouse_store.py), and each
 # delivery group whose subjects all came through is validated and published. Nothing is
 # committed. A run starts from the raw files already stored, so closed parliamentary sessions and
 # archives that have not changed are not downloaded again.
 #
 # Afterwards the bucket holds warehouse/portfolio.duckdb.gz, warehouse/manifest.json,
 # warehouse/raw/ and warehouse/features/. Fetch them anywhere with:
-#     python platform/publish/warehouse_store.py pull
+#     python -m portfolio.storage.warehouse_store pull
 
 on:
   # Saturday evening: the run may take its whole timeout and must be done before the daily
@@ -100,7 +100,7 @@ jobs:
         env:
           APPLY: ${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}
         run: |
-          plan=$(python platform/publish/retention.py $APPLY)
+          plan=$(python -m portfolio.publish.retention $APPLY)
           { echo '### Release retention'; echo '```json'; echo "$plan"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
   # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.

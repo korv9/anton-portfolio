@@ -1,7 +1,7 @@
 name: Run a heavy compute job
 
 # Model fits and clustering sweeps that need more memory than a laptop has, by hand only. A job
-# pulls its inputs from the warehouse store in R2 (platform/publish/warehouse_store.py), runs, and
+# pulls its inputs from the warehouse store in R2 (src/portfolio/storage/warehouse_store.py), runs, and
 # pushes its outputs back under the same features folder. It publishes nothing to the site.
 #
 #   futures-topics  the SWEDEN E topic pilot (docs/sweden-futures-topics-preregistration.md):
@@ -127,14 +127,14 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: |
-          python platform/publish/warehouse_store.py pull --only "$TREE" --path "$PULL"
+          python -m portfolio.storage.warehouse_store pull --only "$TREE" --path "$PULL"
           if [ "$JOB" = experiments ]; then
             # The domain's sources: the warehouse holds the passages and occurrences; Replik's
             # passages are in the stored Cluster Lab runs and the job ads in the job-assistant store.
-            python platform/publish/warehouse_store.py pull --only db
+            python -m portfolio.storage.warehouse_store pull --only db
             case "${ARGS%% *}" in
-              debates) python platform/publish/warehouse_store.py pull --only cluster_lab ;;
-              jobs) python platform/publish/warehouse_store.py pull --only raw --path job_assistant ;;
+              debates) python -m portfolio.storage.warehouse_store pull --only cluster_lab ;;
+              jobs) python -m portfolio.storage.warehouse_store pull --only raw --path job_assistant ;;
             esac
           fi
       - name: Run
@@ -200,7 +200,7 @@ jobs:
             if [ "$TREE" = raw ]; then echo "Run failed: raw files are not pushed."; exit 0; fi
             folder="$CHECKPOINTS"
           fi
-          python platform/publish/warehouse_store.py push --only "$TREE" --path "$folder"
+          python -m portfolio.storage.warehouse_store push --only "$TREE" --path "$folder"
       # Logs and diagnostics only. The review sheet (tmp/topics-review.csv) quotes sentences and stays out.
       - name: Keep the logs and diagnostics
         if: always()

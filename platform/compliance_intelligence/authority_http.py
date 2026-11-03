@@ -11,7 +11,7 @@ from urllib.parse import urljoin, urlsplit
 import requests
 
 from compliance_intelligence.authority_sources import official_url, source_spec
-from lib.rawstore import USER_AGENT, sha256
+from portfolio.storage.rawstore import USER_AGENT, sha256
 
 LOG = logging.getLogger(__name__)
 RETRYABLE = {429, 500, 502, 503, 504}

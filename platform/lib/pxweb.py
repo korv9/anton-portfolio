@@ -16,8 +16,8 @@ from pathlib import Path
 
 import requests
 
-import rawstore
-from rawstore import fetch
+from portfolio.storage import rawstore
+from portfolio.storage.rawstore import fetch
 
 
 def metadata(http: requests.Session, url: str) -> dict:

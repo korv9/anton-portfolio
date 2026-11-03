@@ -24,8 +24,7 @@ const LEVEL: Record<string, [string, string]> = {
 }
 
 export const markLabel = (m: Mine) => l(...MARK[m])
-export const roleName = (role: string) =>
-  l(...(ROLE_NAMES[role] ?? ROLE_NAMES.other))
+const roleName = (role: string) => l(...(ROLE_NAMES[role] ?? ROLE_NAMES.other))
 /** The fit in words: "Good, data engineering role"; unmatched ads say so. */
 export function fitLabel(match?: Match) {
   if (!match) return l('Not matched', 'Inte matchad')

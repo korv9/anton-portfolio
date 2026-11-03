@@ -4,9 +4,9 @@ import type { Page, Route } from '../router'
 export type Bilingual = { sv: string; en: string }
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
-export type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
+type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
 
-export type ProjectEntry = {
+type ProjectEntry = {
   id: string
   title: Bilingual
   /** A few words under the title in menus: the kind of work. */

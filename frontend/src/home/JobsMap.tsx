@@ -25,7 +25,7 @@ const NOISE = onPage(WARM_TONES[4], 0.3)
  * dropped, not clamped onto the edge, so a sparse noise halo cannot shrink the map. Sparse sets
  * get larger dots. `data-points` counts the points drawn.
  */
-export function PointCanvas({ points }: { points: Xyc[] }) {
+function PointCanvas({ points }: { points: Xyc[] }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [drawn, setDrawn] = useState(0)
   useEffect(() => {

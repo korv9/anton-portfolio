@@ -17,7 +17,7 @@ from compliance_intelligence.authority_sources import SOURCES, extract, observat
 from compliance_intelligence.decision_ingest import Store, company_mentions, copy_permission, ingest  # noqa: E402
 from compliance_intelligence.sources import ingest_local  # noqa: E402
 from compliance_intelligence.cohort import build_cohort, verify_cohort  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 from test_phase1 import REVIEW, alias, number, relation, rows, snapshot, write_local  # noqa: E402
 
 

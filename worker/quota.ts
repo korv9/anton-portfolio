@@ -4,6 +4,8 @@
  * consistent, so a burst can slip a question or two past the count; the rate limiter of 20 a
  * minute bounds that. Counts expire after two days. IPs are stored hashed.
  */
+import { hex } from './jobs.ts'
+
 export const PER_VISITOR = 10
 export const TOTAL = 200
 
@@ -16,16 +18,8 @@ export type Kv = {
   ) => Promise<void>
 }
 
-async function hash(text: string) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(text),
-  )
-  return [...new Uint8Array(digest)]
-    .slice(0, 12)
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+const hash = async (text: string) =>
+  (await hex(new TextEncoder().encode(text))).slice(0, 24)
 
 /** Takes one question from the visitor's and the site's allowance, or says which is spent. */
 export async function take(kv: Kv, ip: string, now = new Date()) {

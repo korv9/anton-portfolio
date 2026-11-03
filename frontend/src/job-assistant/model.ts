@@ -59,7 +59,7 @@ export type Ad = {
   expired: boolean
 }
 /** Where a CV quote comes from (platform/job_assistant); absent in files before it was added. */
-export const SOURCES = [
+const SOURCES = [
   'employment',
   'internship',
   'education',
@@ -67,7 +67,7 @@ export const SOURCES = [
   'skills_list',
   'summary',
 ] as const
-export type Source = (typeof SOURCES)[number]
+type Source = (typeof SOURCES)[number]
 export type Quote = {
   quote: string
   source?: Source

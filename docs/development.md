@@ -7,7 +7,7 @@ read the relevant source. Define the behavior to preserve or change and its chec
 
 | Level | Command | Scope |
 | --- | --- | --- |
-| Quick | `npm run verify:quick` | TypeScript, formatting, frontend and Worker unit tests |
+| Quick | `npm run verify:quick` | TypeScript, formatting, frontend and Worker unit tests, unused files and exports (`knip`) |
 | Full | `npm run verify:full` | Quick checks, one production build, Wrangler deploy dry run, import layers (`lint-imports`), Python suite, dbt compile against an empty warehouse, security browser tests and complete E2E |
 | Delivery | `npm run verify:delivery` | Real data contracts, pipeline registry and politics delivery reconciliation; may use the network |
 
@@ -22,7 +22,7 @@ Every Full step also runs in `ci.yml`, but CI runs more. Delivery covers its pip
 `platform/publish/validate_semantic_layer.py`, the ML tests
 (`python -m pytest ml/tests ml/experiments/tests -q`, a separate CI job that is not required) or
 `security.yml` (npm and pip audits, the Gitleaks history scan). Preflight for Full stops early when
-`lint-imports` or `dbt` is missing from `PATH`. `npm run knip` exists; no level or CI job runs it.
+`lint-imports` or `dbt` is missing from `PATH`. Quick runs `npm run knip`; no CI job runs it.
 There is no lint script.
 
 In a Git worktree, `pip install -e .` may point the `portfolio` package at another checkout. The

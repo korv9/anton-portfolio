@@ -17,7 +17,7 @@ from compliance_intelligence.explorer import REPO, stage
 from compliance_intelligence.legal_review import KINDS, ReviewStore
 from compliance_intelligence.review_cli import run_extraction
 from compliance_intelligence.sources import new_output, now, seal, verify, write_json
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 
 def fenced(value):

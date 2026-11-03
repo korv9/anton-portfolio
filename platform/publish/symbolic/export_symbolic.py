@@ -33,7 +33,7 @@ have run:
                             validity checks, the cleaning audit and the review counts
 
 The files are registered in the delivery catalogue (catalog.json, delivery.json) with the
-same rules as publish/build_catalog.py, touching no other entry: Parquet goes to object storage,
+same rules as src/portfolio/publish/catalog.py, touching no other entry: Parquet goes to object storage,
 so the "Publish to R2" workflow uploads it, and the site reads it from R2 and falls back to its
 own copy. No embedding and no book text beyond each point's short excerpt is delivered.
 """

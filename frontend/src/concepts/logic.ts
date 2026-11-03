@@ -20,7 +20,7 @@ export function conceptFromPath(path: string): string | null {
   return path.slice('#concept-'.length) || null
 }
 
-export type Placed = {
+type Placed = {
   id: string
   family: string
   angle: number

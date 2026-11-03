@@ -8,7 +8,7 @@ from datetime import date, datetime
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 POLICY = json.loads(Path(__file__).with_name("policy.json").read_text(encoding="utf-8"))
 

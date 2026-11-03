@@ -1,17 +1,17 @@
 /**
- * The site's Worker: static assets as before, plus two endpoints on Workers AI (docs/workers-ai.md).
- * POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer answers a question
- * from passages the browser found, after checking that every passage is verbatim published text
- * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
- * passage. Visitor text is never logged or stored. Vector search happens in the browser, except
- * for corpus 'sfs-all', every Swedish law and ordinance in force: there the Worker asks
- * Allegora's search service on Cloud Run (platform/publish/allegora/search_service.py) for the
- * passages, so they need no check. With ANTHROPIC_API_KEY the answers come from Claude
- * (claude.ts) instead of Gemma. /api/jobs/* is the job assistant's owner records
- * (worker/jobs.ts): public reads, token-protected writes and CV files.
+ * The site's Worker: static assets as before, plus two endpoints on Workers AI
+ * (docs/workers-ai.md). POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer
+ * answers a question from passages the browser found, after checking that every passage is
+ * verbatim published law text and that every quote in the answer is verbatim in its passage.
+ * Visitor text is never logged or stored. Vector search happens in the browser, except for corpus
+ * 'sfs-all', every Swedish law and ordinance in force: there the Worker asks Allegora's search
+ * service on Cloud Run (platform/publish/allegora/search_service.py) for the passages, so they
+ * need no check. With ANTHROPIC_API_KEY the answers come from Claude (claude.ts) instead of Gemma.
+ * /api/jobs/* is the job assistant's owner records (worker/jobs.ts): public reads, token-protected
+ * writes and CV files.
  */
 import { claude } from './claude.ts'
-import { jobs, readCapped, type JobsEnv } from './jobs.ts'
+import { hex, jobs, readJson, reply, type JobsEnv } from './jobs.ts'
 import { take, type Kv } from './quota.ts'
 
 export type Env = JobsEnv & {
@@ -38,7 +38,7 @@ export const ANSWER_OPTIONS: Record<string, unknown> = {
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
 export const MAX_PASSAGE = 5000
-const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform', 'sfs-all']
+const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'sfs-all']
 
 // Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
 const SPACE =
@@ -59,28 +59,12 @@ export function fold(text: string) {
     .trim()
 }
 
-async function sha256(text: string) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(text),
-  )
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
+const sha256 = (text: string) => hex(new TextEncoder().encode(text))
 
 /** The same hex digest as platform/legal/parse.py text_hash(). */
 export const textHash = (text: string) => sha256(fold(text))
 
-const json = (body: unknown, status = 200) =>
-  Response.json(body, {
-    status,
-    headers: {
-      'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-    },
-  })
+const json = reply
 
 /** An AI call that failed: the daily neuron allocation is spent, or something else broke. */
 const unavailable = (error: unknown) =>
@@ -93,18 +77,7 @@ const unavailable = (error: unknown) =>
     503,
   )
 
-async function body(request: Request): Promise<Record<string, unknown> | null> {
-  // 64,000 characters are at most three bytes each in UTF-8.
-  const bytes = await readCapped(request, 192_000)
-  const raw = bytes ? new TextDecoder().decode(bytes) : ''
-  if (!bytes || raw.length > 64_000) return null
-  try {
-    const value = JSON.parse(raw)
-    return value && typeof value === 'object' ? value : null
-  } catch {
-    return null
-  }
-}
+const body = (request: Request) => readJson(request, 192_000)
 
 const sentence = (value: unknown) =>
   typeof value === 'string' && value.trim() && value.length <= MAX_TEXT
@@ -212,13 +185,6 @@ export const ALLEGORY_SYSTEM = [
   'Do not cite, quote or name paragraphs, and write no [[ ]] marks.',
 ].join(' ')
 
-/** The platform corpus: the repository's documents, dbt models and data catalogue. */
-export const PLATFORM_SYSTEM = [
-  "You answer questions about how this data platform is built, using only the numbered passages you are given: the repository's documents, dbt model descriptions and data catalogue.",
-  ...RULES,
-  'Example of the format: The model is chosen by an evaluation [[docs/workers-ai.md#modellval]]"Kandidaterna kördes på de 20 evalfrågorna".',
-].join(' ')
-
 // [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
 // quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
 export const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
@@ -291,7 +257,7 @@ async function answer(request: Request, env: Env) {
   try {
     ;({ text, usage, model } = await generate(
       env,
-      corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
+      SYSTEM,
       `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
       { maxTokens: 2048, temperature: 0.1 },
     ))
@@ -306,8 +272,7 @@ async function answer(request: Request, env: Env) {
   if (!quotes.every((q) => q.verbatim))
     return json({ status: 'unverified', passages: found, hits })
   const checked = canonical(text)
-  const allegory =
-    corpus === 'platform' ? null : await retell(env, question, checked)
+  const allegory = await retell(env, question, checked)
   return json({
     status: 'verified',
     ...(allegory && { allegory }),

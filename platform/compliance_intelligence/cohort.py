@@ -9,7 +9,7 @@ from pathlib import Path
 
 import duckdb
 
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 from compliance_intelligence.registry import POLICY, encoded, https_url, reviewed
 from compliance_intelligence.sources import load_snapshot, new_output, now, seal, verify, write_json
 

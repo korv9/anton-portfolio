@@ -1,11 +1,11 @@
 # Datakatalog: portfolio
 
-Historisk ögonblicksbild (senast genererad 2026-10-22). Generatorn stannar sedan dess på
-`FileNotFoundError: politics/parliament/debates/*/*.json` (kontrollerat 2026-11-02), och flera
+Historisk ögonblicksbild (senast genererad 2026-10-22). Generatorn stannade sedan på
+`FileNotFoundError: politics/parliament/debates/*/*.json` och togs bort 2026-11-02, och flera
 filer nedan finns inte längre. Aktuella publicerade filer och kolumner står i
 `frontend/public/data/catalog.json` och i dbt-scheman under `platform/models/`.
 
-Genererad från filerna i `frontend/public/data/` och utvalda källsnapshot under `data/` med `python platform/legacy/generate_data_dictionary.py`.
+Genererad från filerna i `frontend/public/data/` och utvalda källsnapshot under `data/`.
 Kolumnerna nedan är **observerade fältnamn på tabellnivå** (och för den kuraterade voteringsvyn även underlistorna), inte en påstådd databasspecifikation.
 JSON-filer med `schema_version`, `generated_at` och `data` listas som tabellen inuti `data`.
 CSV-exporter som speglar JSON och riksmötespartitioner är inte nya observationer.

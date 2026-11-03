@@ -4,17 +4,14 @@
  *
  * - DataQuestion: the section's question, with a number and a line of context.
  * - FindingHero: a major finding, a number that tells the story on its own and one sentence.
- * - ChartSection: the anatomy of a primary chart: question, a title that states the finding,
- *   a subtitle with definition and period, the chart, a one-line finding and its source.
  * - Interpretation: "What this means", with an optional "What this does not mean".
- * - SourceCaption: source · period · definition, quiet, under a figure.
  * - ExploreSection: filters, tables and secondary views, folded until asked for. Its children
  *   render only when open, so the overview stays light.
  * - MethodSummary: how it was built in one line of lineage, the one quality point that matters
  *   for this project, and links to Data Constellation and Quality & Validity.
  *
- * Three finding levels are visible in the CSS: major (FindingHero), supporting (ChartSection)
- * and diagnostic (`.story-diagnostic`, small, under Method).
+ * Two finding levels are visible in the CSS: major (FindingHero) and diagnostic
+ * (`.story-diagnostic`, small, under Method).
  */
 import { useState, type ReactNode } from 'react'
 import { l } from '../i18n'
@@ -65,47 +62,6 @@ export function FindingHero({
   )
 }
 
-export function ChartSection({
-  question,
-  title,
-  subtitle,
-  finding,
-  source,
-  children,
-  id,
-  level = 3,
-}: {
-  question?: string
-  /** A statement of the finding, not the variable's name. */
-  title: string
-  /** 2 when the chart sits straight under the page's heading. */
-  level?: 2 | 3
-  /** Definition, denominator and period. */
-  subtitle?: ReactNode
-  /** One sentence. */
-  finding?: ReactNode
-  source?: ReactNode
-  children: ReactNode
-  id?: string
-}) {
-  return (
-    <figure className="chart-section" id={id}>
-      <header>
-        {question && <p className="chart-section-question">{question}</p>}
-        {level === 2 ? <h2>{title}</h2> : <h3>{title}</h3>}
-        {subtitle && <p className="chart-section-subtitle">{subtitle}</p>}
-      </header>
-      <div className="chart-section-body">{children}</div>
-      {(finding || source) && (
-        <figcaption>
-          {finding && <p className="chart-section-finding">{finding}</p>}
-          {source && <p className="source-caption">{source}</p>}
-        </figcaption>
-      )}
-    </figure>
-  )
-}
-
 export function Interpretation({
   children,
   notMeaning,
@@ -127,23 +83,6 @@ export function Interpretation({
         </p>
       )}
     </section>
-  )
-}
-
-export function SourceCaption({
-  source,
-  period,
-  definition,
-}: {
-  source: string
-  period?: string
-  definition?: string
-}) {
-  return (
-    <p className="source-caption">
-      {l('Source', 'Källa')}:{' '}
-      {[source, period, definition].filter(Boolean).join(', ')}
-    </p>
   )
 }
 

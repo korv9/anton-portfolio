@@ -204,7 +204,7 @@ def publish(status: dict) -> dict:
     if done.get("generated_at") == built["generated_at"] and done.get("mode") in (mode, "r2"):
         return {"outcome": "skipped", "generated_at": built["generated_at"]}
     if mode == "r2":
-        run([sys.executable, "platform/publish/release.py", "publish", "--group", "job-assistant",
+        run([sys.executable, "-m", "portfolio.publish.release", "publish", "--group", "job-assistant",
              "--root", "frontend/public/data", "--spec", "configs/delivery/job-assistant.json"], "realtime-release.log")
     else:
         run([sys.executable, "platform/job_assistant/export.py", "--check", "frontend/public/data"], "realtime-check.log")
