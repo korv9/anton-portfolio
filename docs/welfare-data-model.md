@@ -37,7 +37,9 @@ platform/models/gold/welfare/fct_*, mart_*           fakta på deklarerad grain,
 
 Varje hämtad fil har en rad i `warehouse/raw/<källa>/_manifest.jsonl`: URL, metod,
 frågekropp, tidpunkt, SHA-256 och storlek. En hämtning som ger identiska bytes skriver inte
-om filen.
+om filen. Bronze läser filerna med glob-mönster, så en fil utan manifestrad läses ändå; ingen
+kontroll stoppar det här. Bara `stg_riksdag_speeches` kräver en hämtrad (testet `not_null` på
+`archive_hash`).
 
 ## Star schema
 

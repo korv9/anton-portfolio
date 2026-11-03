@@ -1,6 +1,6 @@
 # Versionsbunden dataleverans från R2
 
-Hur `platform/publish/release.py` publicerar en leveransgrupp som en version i R2.
+Hur `src/portfolio/publish/release.py` publicerar en leveransgrupp som en version i R2.
 Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser i regel inte dem:
 produktionen läser den incheckade datan under `frontend/public/data`, vars
 `delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte. Undantaget är
@@ -12,15 +12,15 @@ nyheter och DiVA står i [delivery-validation.md](delivery-validation.md).
 
 ## CLI och gruppägarskap
 
-`platform/publish/release.py` publicerar godkända exporter från en uttrycklig
+`src/portfolio/publish/release.py` publicerar godkända exporter från en uttrycklig
 stagingrot. Roten kan vara `frontend/public/data` eller `warehouse/delivery/public`.
 Alla paths i spec och manifest är relativa till dataroten, exempelvis
 `jobs/market.json`, `parliament/news.json` och
 `politics/parliament/issues/1993-94/gh092.json`.
 
 ```sh
-python platform/publish/release.py materialize --root warehouse/delivery/public --spec configs/delivery/jobs.json --catalog frontend/public/data/catalog.json
-python platform/publish/release.py publish --group jobs --root warehouse/delivery/public --spec configs/delivery/jobs.json
+python -m portfolio.publish.release materialize --root warehouse/delivery/public --spec configs/delivery/jobs.json --catalog frontend/public/data/catalog.json
+python -m portfolio.publish.release publish --group jobs --root warehouse/delivery/public --spec configs/delivery/jobs.json
 ```
 
 Exportören skriver sina nya resultat i stagingroten före `publish`. Materialisering
@@ -119,7 +119,7 @@ kontrollkontraktet. Gruppmanifestet har `schema_version`, `group`, `release`,
 och `reconcile`. Varje filpost har `key`, `sha256` och `bytes`. Gruppmanifestet läses
 av publishern, inte av browsern.
 
-`dq` och `reconcile` skrivs av `platform/publish/dq_gate.py` efter `prepare` och
+`dq` och `reconcile` skrivs av `src/portfolio/publish/dq_gate.py` efter `prepare` och
 före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_results.json`
 för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
 `pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
@@ -129,22 +129,24 @@ resultatfil för hela gruppen, till exempel vid `publish-r2.yml`, blir det `not_
 subject publiceringen som `error` med listan `not_run`, om det inte är markerat `manual` i
 `pipeline.yml`.
 Bara det sista dbt-steget i ett subject lämnar en resultatfil. `reconcile.rows`
-har radantal per JSON-array, `rows`/`data`-array och Parquetfil. `checks` jämför
+har radantal per JSON-array, `rows`/`data`/`items`-array och Parquetfil. `checks` jämför
 bara där exportören redan skrivit källtabellens antal bredvid en publicerad path
 (`welfare/datasets.json`); avvikelse stoppar. Annars är status `counts_only`.
 
 `reconcile.rows` jämförs också med den aktiva releasens. En fil med minst 100 rader får tappa
 högst 30 % per release, och en borttagen fil räknas som noll rader. Större tapp stoppar
 publiceringen före uppladdning, om inte `PORTFOLIO_ALLOW_ROW_DROP` namnger filens logiska path
-(kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Filerna i grupperna `jobs`, `news`
-och `job-assistant` är objekt utan `rows` eller `data`, så där räknas inga rader och spärren kan
-inte slå till. De grupperna vilar på sina egna valideringar.
+(kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Nyhetsflödet och Workers AI:s
+passagelistor räknas genom `items`. `jobs/market.json` och filerna i `job-assistant` är objekt
+utan de nycklarna, och punktfilerna i `diva` och `jobs-analysis` byter path varje körning, så där
+kan spärren inte slå till. De vilar på sina egna valideringar.
 
 `pipeline.py run --only publish` kräver samma fullständighet som en vanlig körning: saknas ett
 subject som inte är `manual` hoppas gruppen över och körningen misslyckas. `data-heartbeat.yml`
 jämför gruppens `published_at` i `manifests/current.json` med subjectets `fresh_within`. Samma
 bytes behåller publiceringstiden, så en grupp vars data inte ändrats inom gränsen räknas som
-inaktuell.
+inaktuell. Sajten läser JSON som är incheckad i Git för alla grupper utom `job-assistant`, så en
+färsk release kan se frisk ut medan sidan visar äldre data.
 
 Fälten ingår inte i release-id: samma bytes ger samma release, och ett redan
 uppladdat manifest behåller sina ursprungliga `dq` och `reconcile`.
@@ -215,7 +217,7 @@ verifierar deras historiska CRLF-normaliserade hash, återställer originalbytes
 och låter nästa publish skapa en ny exakt hash. Detta är endast läskompatibilitet;
 ny publicering normaliserar inga payloads.
 
-`build_catalog.py --root STAGING` stöder annan exportrot.
+`python -m portfolio.publish.catalog --root STAGING` stöder annan exportrot.
 
 Resolvern i `frontend/src/dataSource.ts` har ett liveläge som läser
 `manifests/current.json`, men det är inte inkopplat: den incheckade `delivery.json`
@@ -289,8 +291,10 @@ Varje release läses tillbaka och verifieras före den enda aktiveringen.
 
 Obligatoriska grupper är `baseline`, `jobs`, `jobs-analysis`, `news` och
 `public-data`. `diva` tas med först när en verklig export eller katalogpost finns.
-`sweden` saknas i workflowets grupplista (`publish-r2.yml`) och publiceras bara av
-pipelinekörningar.
+`sweden` och `job-assistant` saknas i workflowets grupplista (`publish-r2.yml`) och
+publiceras bara av pipelinekörningar. Aktiveringen slås ihop med manifestets nuvarande grupper,
+så `manifests/current.json` behåller deras pekare; ett nytt manifest som
+`manifests/pipeline-smoke.json` saknar dem.
 Materialisering och verifiering kör fyra oberoende operationer åt gången, och
 köat arbete avbryts vid fel. Materialiseringen jämför binärfilers storlek mot
 de råa bytesen och behåller den historiska hashregeln för äldre katalogposter.
@@ -314,7 +318,7 @@ de råa bytesen och behåller den historiska hashregeln för äldre katalogposte
 
 ## Retention
 
-`platform/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
+`src/portfolio/publish/retention.py` körs varje vecka, sist i `build-warehouse.yml` och
 under samma skrivlås. Per grupp i `manifests/current.json` behålls den aktiva
 releasen, varje release som ett annat `manifests/*.json` pekar på (smoke och
 bootstrap) och de två senaste övriga godkända releaserna, ordnade efter när

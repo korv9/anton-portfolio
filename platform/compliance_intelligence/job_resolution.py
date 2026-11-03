@@ -2,7 +2,7 @@
 from difflib import SequenceMatcher
 
 from compliance_intelligence.registry import interval_covers, name_key, organization_number
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 from compliance_intelligence.registry import encoded
 
 

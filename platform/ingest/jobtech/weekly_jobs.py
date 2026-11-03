@@ -12,7 +12,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 
 from ingest_jobs import API, fetch_search, ingest, jobsearch_session  # noqa: E402
 from compliance_intelligence.sources import new_output, now, seal, store_document, write_json  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 
 IT_FIELD = 'apaJ_2ja_LuF'  # Existing market.json taxonomy: Data/IT.
 LOCAL = ZoneInfo('Europe/Stockholm')

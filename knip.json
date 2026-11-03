@@ -1,6 +1,5 @@
 {
   "entry": [
-    "frontend/src/main.tsx",
     "frontend/tests/**/*.{ts,spec.ts}",
     "frontend/*.config.ts",
     "worker/*.ts",
@@ -11,6 +10,8 @@
     "frontend/src/companies/**",
     "frontend/src/compliance/**",
     "frontend/src/job-intelligence/**",
-    "frontend/src/sweden/atlas/**"
-  ]
+    "frontend/src/sweden/atlas/**",
+    "frontend/src/vite-env.d.ts"
+  ],
+  "ignoreBinaries": ["python"]
 }

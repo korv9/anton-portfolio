@@ -9,10 +9,9 @@ import duckdb
 import pytest
 from botocore.exceptions import ClientError
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
-import release as r
-import build_catalog as catalog
-import dq_gate
+from portfolio.publish import release as r
+from portfolio.publish import catalog
+from portfolio.publish import dq_gate
 
 
 @pytest.fixture(autouse=True)
@@ -284,7 +283,7 @@ def test_catalog_v1_carried_entries_and_include_excludes(exports, monkeypatch):
 
 
 def test_v1_parquet_keeps_exact_size_and_legacy_hash_then_v2_exact_bytes(exports):
-    relative = "parquet/fact_member_vote/session=2024-25/part-0.parquet"
+    relative = "parquet/example/session=2024-25/part-0.parquet"
     path = exports / relative
     path.parent.mkdir(parents=True)
     con = duckdb.connect()
@@ -312,7 +311,7 @@ def test_v1_parquet_keeps_exact_size_and_legacy_hash_then_v2_exact_bytes(exports
 
 
 def test_legacy_delivery_client_trims_credential_whitespace(monkeypatch):
-    import delivery
+    from portfolio.storage import delivery
     import boto3
     monkeypatch.setattr(delivery, "_s3", None)
     monkeypatch.setattr(delivery, "load_env", lambda: None)

@@ -8,7 +8,7 @@ import PageHead, { Method } from '../ui/PageHead'
 import './thesis.css'
 
 /** ER = docs/thesis-evidence-review.md; p. = page of the thesis PDF. */
-export const FACTS = {
+const FACTS = {
   records: 21_633, // ER "Population och urval"; p. 13, 18
   selectedRun: 16_811, // ER "Population och urval": the text_weighted run; p. 26-29
   clusters: 121, // ER "Klustring": HDBSCAN 30/15; p. 29

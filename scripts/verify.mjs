@@ -12,10 +12,10 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const mode = process.argv[2]
-const quick = ['check', 'format:check', 'test:unit']
+const quick = ['check', 'format:check', 'test:unit', 'knip']
 const plans = {
   quick,
-  // Everything here also runs in ci.yml; none of these steps needs a secret.
+  // Everything here but knip also runs in ci.yml; none of these steps needs a secret.
   full: [
     ...quick,
     'build',
@@ -48,7 +48,7 @@ if (preflight.error) throw preflight.error
 if (preflight.status !== 0) process.exit(preflight.status ?? 1)
 
 if (mode === 'full') {
-  const { chromium } = await import('playwright')
+  const { chromium } = await import('@playwright/test')
   const executable =
     process.env.PLAYWRIGHT_CHROMIUM_PATH ?? chromium.executablePath()
   if (!existsSync(executable)) {

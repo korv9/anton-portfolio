@@ -9,7 +9,6 @@ import worker, {
   canonical,
   checkQuotes,
   fold,
-  PLATFORM_SYSTEM,
   textHash,
   type Env,
 } from './index.ts'
@@ -17,10 +16,6 @@ import worker, {
 const LAW = {
   id: 'sfs-1982-80-1',
   text: 'Lagen gäller arbetstagare i allmän och enskild tjänst.',
-}
-const DOC = {
-  id: 'docs/pipeline.md#subjects',
-  text: 'Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13.',
 }
 // The longest passage the Worker accepts; one character more is refused before any AI call.
 const LONG = { id: 'sfs-1962-700-1-1', text: 'a'.repeat(5000) }
@@ -41,9 +36,6 @@ async function env(
     },
     [`/data/workers-ai/sfs/verify/${await shardOf(LONG.id)}.json`]: {
       [LONG.id]: await textHash(LONG.text),
-    },
-    [`/data/workers-ai/platform/verify/${await shardOf(DOC.id)}.json`]: {
-      [DOC.id]: await textHash(DOC.text),
     },
   }
   const calls: unknown[] = []
@@ -221,6 +213,16 @@ test('answer: passages must be published ids with verbatim text', async () => {
   assert.equal(edited.status, 400)
   const unknown = await worker.fetch(ask([{ ...LAW, id: 'sfs-0-0' }]), e)
   assert.equal(unknown.status, 400)
+  const retired = await worker.fetch(
+    post('/api/answer', {
+      question: 'Vem?',
+      corpus: 'platform',
+      passages: [LAW],
+    }),
+    e,
+  )
+  assert.equal(retired.status, 400)
+  assert.equal((await worker.fetch(post('/api/answer', []), e)).status, 400)
   assert.equal(e.calls.length, 0)
   // Folded white space and quote styles still match the published hash.
   const spaced = await worker.fetch(
@@ -277,33 +279,9 @@ test('answer: verified, unverified, no answer and 503', async () => {
   )
   assert.equal(down.status, 503)
   assert.deepEqual(await down.json(), { reason: 'error' })
-})
-
-test('answer: the platform corpus has its own prompt, quote check and 503 on a spent quota', async () => {
-  const asked = (passages = [DOC]) =>
-    post('/api/answer', {
-      question: 'When does the weekly build run?',
-      corpus: 'platform',
-      passages,
-    })
-  const e = await env({
-    response: 'On Saturdays [[docs/pipeline.md#subjects]]"Saturday 21:13".',
-  })
-  const verified = await (await worker.fetch(asked(), e)).json()
-  assert.equal(verified.status, 'verified')
-  const [{ input }] = e.calls as {
-    input: { messages: { content: string }[] }
-  }[]
-  assert.equal(input.messages[0].content, PLATFORM_SYSTEM)
-  // A law passage is not a platform passage.
-  assert.equal((await worker.fetch(asked([LAW]), await env())).status, 400)
   const spent = await worker.fetch(
-    asked(),
-    await env(
-      new Error(
-        '4006: you have used up your daily free allocation of 10,000 neurons',
-      ),
-    ),
+    ask(),
+    await env(new Error('4006: daily free allocation of neurons used up')),
   )
   assert.equal(spent.status, 503)
   assert.deepEqual(await spent.json(), { reason: 'quota' })

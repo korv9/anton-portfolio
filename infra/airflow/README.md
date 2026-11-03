@@ -55,7 +55,8 @@ by rules and cached vectors).
 The hourly GitHub workflow `refresh-job-assistant.yml` writes the same store and release group. Before
 publishing from Airflow with `r2`, set the repository variable `JOB_ADS_SCHEDULER` to `airflow`;
 that workflow then skips its runs. Within one machine, `realtime.py` holds
-`warehouse/raw/job_assistant/pipeline.lock`, so a manual run cannot overlap a scheduled one.
+`warehouse/raw/job_assistant.lock.tmp` (beside the store, and `.tmp` files are never pushed), so a manual run
+cannot overlap a scheduled one; `realtime.py push` uploads the store under the same lock.
 
 ## Run a stage by hand
 

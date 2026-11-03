@@ -1,12 +1,10 @@
 """Check published product data against pinned upstream exports."""
 import csv
-import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 # Line-ending-normalised, so a hash taken on a Windows checkout matches on Linux and in CI.
-from common import sha_of  # noqa: E402
+from portfolio.core.io import sha_of  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 PUBLIC = ROOT / "frontend/public"

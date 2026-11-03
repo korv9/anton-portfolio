@@ -24,7 +24,7 @@ connection is enabled once after the complete R2 bundle is verified.
 2. Cloudflare attempts a branch preview (`npx wrangler preview`, using the
    `[previews]` block in `wrangler.toml`). Check its actual build result before relying
    on a preview. Its origin also needs the bucket's CORS permission.
-3. The owner looks at the preview and merges. No approving review is required: the `main` ruleset
+3. A maintainer looks at the preview and merges. No approving review is required: the `main` ruleset
    (`infra/github/main.tf`) sets zero approvals and enforces the four required checks and
    resolved review threads. Merged, it is live.
 4. Data refreshes validate, upload and activate their own R2 groups. Once the frontend
@@ -133,15 +133,16 @@ change through Terraform, not the dashboard.
    ([r2-delivery-contract.md](r2-delivery-contract.md)).
 8. **The warehouse in R2.** Actions → *Build, store and publish the warehouse* → Run workflow. It
    fetches every public source, builds the DuckDB warehouse with dbt and stores it in the
-   bucket with all its raw files (`platform/publish/warehouse_store.py`):
+   bucket with all its raw files (`src/portfolio/storage/warehouse_store.py`):
    `warehouse/portfolio.duckdb.gz`, `warehouse/manifest.json` (built when, from which commit,
    SHA-256, rows per schema), `warehouse/raw/` and `warehouse/features/` (the ML stages'
    outputs: embeddings, maps, clusters, the concept layer). Later runs start from the stored
    files. Run by hand, the ML stages run only when their output is not stored yet; choose
    `ml: always` to rerun them (seeds are fixed, so the same inputs give the same results). The first run counts
    every JobTech archive for the AI governance terms and takes a couple of hours.
-   Fetch the warehouse anywhere with `python platform/publish/warehouse_store.py pull`. The
-   bucket is public, so the warehouse can be downloaded by anyone; it holds only open data.
+   Fetch the warehouse anywhere with `python -m portfolio.storage.warehouse_store pull`. The
+   bucket is public, so the warehouse can be downloaded by anyone; what stays local and the open
+findings are in [storage-and-serving.md](storage-and-serving.md).
    `platform/tests/architecture/test_pipeline_workflows.py` fails if a dbt subject, a source
    or an ML stage is added without a step here.
 

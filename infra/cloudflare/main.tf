@@ -55,7 +55,7 @@ resource "cloudflare_r2_bucket_cors" "public" {
   }]
 }
 
-# The r2.dev address stays on: delivery.json and build_catalog.py fall back to it. Not
+# The r2.dev address stays on: delivery.json and portfolio.publish.catalog fall back to it. Not
 # importable either; creating it sets the same enabled state.
 resource "cloudflare_r2_managed_domain" "public" {
   account_id  = var.account_id
@@ -67,7 +67,7 @@ resource "cloudflare_r2_managed_domain" "public" {
 # has no import in v5.28, and creating it over the live domain is not known to be safe.
 
 # Bucket lifecycle stays R2's default (abort incomplete multipart uploads after seven days).
-# No expiry rules: releases are removed only by platform/publish/retention.py.
+# No expiry rules: releases are removed only by src/portfolio/publish/retention.py.
 
 import {
   for_each = var.worker_domain_ids

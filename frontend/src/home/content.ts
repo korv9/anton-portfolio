@@ -2,7 +2,7 @@
  * The short About. The current CV lives at public/cv/Anton_Ernstsson_CV_final.pdf. Projects live in
  * projects/projectRegistry.ts; experience and skills in home/orbitContent.ts.
  */
-export type Bilingual = { sv: string; en: string }
+type Bilingual = { sv: string; en: string }
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
 /** About, short: what kind of work, not every tool. Experience and education are shown below it. */

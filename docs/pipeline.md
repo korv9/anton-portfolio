@@ -13,7 +13,7 @@ that describes orchestration. The definitions themselves are in two files:
 A subject is fetched to `warehouse/raw`, built and tested by dbt into
 `platform/target/<subject>`, passed through an ML stage if it has one, and exported to
 `frontend/public/data`. Its delivery group is then checked and published as a versioned
-release in R2 (`platform/publish/release.py`, specs in `configs/delivery/`). Each release's
+release in R2 (`src/portfolio/publish/release.py`, specs in `configs/delivery/`). Each release's
 group manifest records the dbt results of the group's subjects and its file row counts under
 `dq` and `reconcile`; a blocking dbt result or a large row drop stops the upload
 ([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
@@ -68,12 +68,21 @@ Two gates in `src/portfolio/publish/dq_gate.py` run before the upload:
 - Row counts. A file of at least 100 rows in the active release may lose at most 30 % per release,
   and a file that is gone counts as zero. To let an intended drop through, name its logical paths,
   comma-separated, in `PORTFOLIO_ALLOW_ROW_DROP`; the manifest records it under `reconcile.drops`.
-  Only top-level arrays, `rows` or `data` arrays and Parquet files are counted. Every file of the
-  jobs, news and job-assistant groups is an object without those keys, so they count zero rows and
-  this gate cannot fire there; their own validators are the check.
+  Only top-level arrays, `rows`, `data` or `items` arrays and Parquet files are counted, so the
+  news feed and the Workers AI passage lists (`items`) are covered. `jobs/market.json` and the
+  job-assistant files are objects without those keys, and the `diva` and `jobs-analysis` points
+  files change path every run, so the gate cannot fire for them; their own validators are the
+  check.
 
 `pull` and `push` need the R2 credentials too. `push` deletes remote raw files that are gone
-locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden).
+locally only for subjects marked `prune: true` (welfare, parliament, taxes, sweden). Pull and push
+record each stored file's SHA-256 in `warehouse/.<tree>-pulled.json` (git-ignored). When a stored
+file changed in the bucket after this machine last pulled it, push skips a local copy that is
+unchanged since that pull and refuses one that changed: the other files are uploaded and the push
+exits non-zero, naming the conflicting keys. Files never pulled on this machine are uploaded as
+before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
+`src/portfolio/storage/warehouse_store.py` are never pushed (see
+[storage-and-serving.md](storage-and-serving.md)).
 
 ## Subjects
 
@@ -143,7 +152,7 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
 - `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
   built, then exports and publishes each group whose subjects all came through. The quality
-  subject ends with the structural gate, after the store. Last, `platform/publish/retention.py`
+  subject ends with the structural gate, after the store. Last, `src/portfolio/publish/retention.py`
   plans the deletion of superseded releases, and deletes them only when the repository
   variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
 - `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
@@ -172,14 +181,16 @@ subject's last successful ingestion, if it has ingest steps, and the `published_
 active release with its SLA: past either, one issue labelled `data-freshness` opens or is updated,
 and it closes when all are fresh again. A subject that only builds is checked through its release,
 and one that ingests but no longer publishes is caught. A release with unchanged bytes keeps its
-publication time, so a group whose data did not change within the SLA reads as stale. A subject
+publication time, so a group whose data did not change within the SLA reads as stale. The
+heartbeat measures R2 releases, but the site reads the JSON committed in Git for every group
+except `job-assistant`, so a fresh release can read healthy while the page shows older data. A subject
 with `fresh_within: none` is never checked.
 dbt source freshness on the fetch logs warns at the same age and never fails a run.
 
 ## What a run refetches
 
 The daily runs restore the stored raw files first and fetch only what can have changed. The
-rules are in `platform/lib/rawstore.py` and in each source's ingest script.
+rules are in `src/portfolio/storage/rawstore.py` and in each source's ingest script.
 
 | Source | Every run | Reused until |
 |---|---|---|
@@ -217,7 +228,7 @@ run recomputes ai_politics, philosophy and concepts once.
 | `run legacy` (`npm run data:build`) | The builders not yet moved into dbt (`build_gold.py`, `build_products.py`, `build_speech_browser.py`); run when their inputs change |
 | `run diva`, `run jobs_analysis` | Hours of harvesting or archive imports; started from the Actions tab |
 | `symbolic:research`, `symbolic:clean`, `symbolic:experiments`, `symbolic:validity`, `symbolic:review` | Research steps that end in a human review of clusters |
-| `politics:parties`, `politics:debates`, `data:parquet`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
+| `politics:parties`, `politics:debates`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
 | `publish-r2.yml` | First activation of a bucket, or a full re-stage |
 
 `platform/ingest/jobtech/run_history_pipeline.py` keeps its own dbt build: it discovers which

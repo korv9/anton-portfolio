@@ -9,8 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from common import read_json  # noqa: E402
+from portfolio.core.io import read_json  # noqa: E402
 
 LOCAL = ZoneInfo("Europe/Stockholm")
 

@@ -34,6 +34,7 @@ from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
+from portfolio.storage.rawstore import RAW
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -45,7 +46,7 @@ except ImportError:
     from ingest_market import ARCHIVES, first, published_archives, remote_stamp, sha256
 
 REPO = Path(__file__).resolve().parents[3]
-OUT = REPO / "warehouse/raw/jobtech/governance"
+OUT = RAW / "jobtech/governance"  # PORTFOLIO_RAW, as dbt reads it
 TERMS = REPO / "platform/seeds/job_ai_governance/job_ai_governance_terms.csv"
 EXAMPLES = 8
 WINDOW = 90

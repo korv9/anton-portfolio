@@ -18,6 +18,7 @@ others; the exit code is non-zero if any failed.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -37,7 +38,7 @@ ROOT = PLATFORM.parent
 FEATURES = Path(os.environ.get("PORTFOLIO_FEATURES", ROOT / "warehouse/features"))
 PHASES = ("ingest", "dbt", "ml", "export", "publish")
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
-STORE = "python platform/publish/warehouse_store.py"
+STORE = "python -m portfolio.storage.warehouse_store"
 
 
 def registry() -> dict:
@@ -79,10 +80,24 @@ def freshness_argv(spec: dict, target: str) -> list[str]:
 
 
 def missing_files(argv: list[str], cwd: Path) -> list[str]:
-    """Scripts, delivery specs and dbt paths a command names that are not in the checkout."""
+    """Scripts, delivery specs, dbt paths and `-m` modules a command names that do not exist."""
     paths = [a.removeprefix("path:") for a in argv[1:]
              if a.endswith(".py") or a.startswith(("configs/", "path:"))]
-    return [p for p in paths if not (cwd / p).exists()]
+    missing = [p for p in paths if not (cwd / p).exists()]
+    if argv[1:2] == ["-m"] and len(argv) > 2 and not module_exists(argv[2], cwd):
+        missing.append(f"-m {argv[2]}")
+    return missing
+
+
+def module_exists(name: str, cwd: Path) -> bool:
+    """`python -m name` run in cwd finds name there (ml.*) or in the installed packages."""
+    local = cwd / name.replace(".", "/")
+    if local.with_suffix(".py").is_file() or (local / "__main__.py").is_file():
+        return True
+    try:
+        return importlib.util.find_spec(name) is not None
+    except ModuleNotFoundError:
+        return False
 
 
 def built(target: str) -> Path:
@@ -118,6 +133,8 @@ class Runner:
             return
         env = {k: v for k, v in os.environ.items() if k not in hide}
         env["DBT_SEND_ANONYMOUS_USAGE_STATS"] = "false"
+        # Steps write under this checkout even when the portfolio package is installed from another.
+        env.setdefault("PORTFOLIO_ROOT", str(ROOT))
         code = subprocess.run(argv, cwd=cwd, env=env).returncode
         if code and code not in ok_exit:
             raise RuntimeError(f"exit {code}: {shown}")

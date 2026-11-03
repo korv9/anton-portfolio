@@ -26,7 +26,7 @@
 }
 .project-shell
   #main
-  :is(.page-lead, .project-hero, .theme-head, .dk-head, .board-head, .aa-hero) {
+  :is(.page-lead, .project-hero, .theme-head, .dk-head, .aa-hero) {
   padding-block: var(--sp-5);
   margin: 0;
   border: 0;
@@ -67,7 +67,7 @@
 .project-shell #main :is(.dk-grid, .board-grid) {
   gap: var(--dk-gap);
 }
-.project-shell #main :is(.dk-card, .board-card, .theme-figure, .chart-section) {
+.project-shell #main :is(.dk-card, .theme-figure) {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--paper);
@@ -234,7 +234,7 @@
 /* Labs and engineering keep figures open; observatory comparisons use bounded panels. */
 .project-shell:is([data-workspace='labs'], [data-workspace='engineering'])
   #main
-  :is(.dk-card, .board-card, .theme-figure, .chart-section) {
+  :is(.dk-card, .theme-figure) {
   background: transparent;
   border: 0;
   padding-inline: 0;
@@ -253,7 +253,7 @@
   .project-shell #main .dk-grid {
     gap: var(--dk-gap);
   }
-  .project-shell #main :is(.dk-card, .board-card) {
+  .project-shell #main .dk-card {
     grid-column: 1 / -1 !important;
   }
   .engineering-flow {

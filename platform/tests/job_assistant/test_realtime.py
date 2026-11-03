@@ -10,9 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-sys.path.insert(0, str(ROOT / "platform/lib"))
 import ads as store  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 import realtime  # noqa: E402
 
 IT = {"concept_id": store.IT_FIELD}
@@ -141,7 +140,7 @@ def test_lock_refuses_a_second_writer_and_takes_over_a_stale_one(raw, monkeypatc
         with pytest.raises(RuntimeError, match="another run"):
             with realtime.lock():
                 pass
-    stale = raw / "pipeline.lock"
+    stale = raw.with_name("job_assistant.lock.tmp")
     stale.write_text("1 old")
     old = (datetime.now() - timedelta(hours=2)).timestamp()
     os.utime(stale, (old, old))
@@ -214,3 +213,66 @@ def test_steps_start_python_from_this_interpreter(monkeypatch, tmp_path):
     monkeypatch.setattr(realtime.subprocess, "run", lambda argv, **kw: seen.update(kw) or type("R", (), {"returncode": 0})())
     realtime.run(["python", "-V"], "realtime-path-test.log", cwd=tmp_path)
     assert seen["env"]["PATH"].split(os.pathsep)[0] == str(Path(sys.executable).parent)
+
+
+def test_lock_lives_outside_the_store_that_is_pushed(raw):
+    # pipeline.py push job_assistant uploads every file under raw/job_assistant; a held lock must not go with it.
+    with realtime.lock():
+        assert not any(".lock" in p.name for p in raw.rglob("*"))
+        from portfolio.storage import warehouse_store
+        held = raw.with_name("job_assistant.lock.tmp")
+        assert held.exists() and held not in warehouse_store.tree_files(raw.parent)
+
+
+def test_push_holds_the_lock(monkeypatch, raw):
+    seen = []
+    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: seen.append(argv[1:]))
+    monkeypatch.setattr(sys, "argv", ["realtime.py", "push"])
+    with realtime.lock():
+        with pytest.raises(RuntimeError, match="another run"):
+            realtime.main()
+    assert seen == []
+    realtime.main()
+    assert seen == [["platform/pipeline.py", "push", "job_assistant"]]
+
+
+def job_export():
+    """platform/job_assistant/export.py by path: other test folders put modules named export on sys.path."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("job_assistant_export", ROOT / "platform/job_assistant/export.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_page_last_fetch_is_the_newest_run_whichever_flow(raw):
+    export = job_export()
+    # Airflow's last collect, stored with the ad store, then two hourly runs moved the cursor on.
+    (raw / "pipeline.json").write_text(json.dumps({"collect": {"ok": {
+        "finished": "2026-10-23T10:00:00+00:00", "fetched_until": "2026-10-23T12:00:00"}}}))
+    (raw / "runs.jsonl").write_text("\n".join(json.dumps(r) for r in [
+        {"outcome": "ok", "finished": "2026-10-23T10:00:00+00:00"},
+        {"outcome": "ok", "finished": "2026-10-23T13:07:00+00:00"},
+        {"outcome": "failed: x", "finished": "2026-10-23T14:07:00+00:00"}]) + "\n")
+    out = export.pipeline({"fetched_until": "2026-10-23T15:02:00"}, datetime.fromisoformat("2026-10-23T14:10:00+00:00"))
+    assert out["last_fetch"] == {"at": "2026-10-23T13:07:00+00:00", "fetched_until": "2026-10-23T15:02:00"}
+    assert out["flow"] == "hourly"
+
+
+def test_page_latency_counts_only_uploaded_publications(raw):
+    export = job_export()
+    (raw / "realtime_runs.jsonl").write_text("\n".join(json.dumps(
+        {"stage": "publish", "outcome": "ok", "mode": mode, "finished": "2026-10-23T14:00:00+00:00",
+         "latency": {"max_minutes": minutes}}) for mode, minutes in (("local", 5), ("r2", 30))) + "\n")
+    out = export.pipeline({}, datetime.fromisoformat("2026-10-23T14:10:00+00:00"))
+    assert out["latency_minutes"] == {"median": 30, "publications": 1}
+
+
+def test_a_checked_build_is_still_uploaded_when_publication_turns_on(monkeypatch, raw):
+    (raw / "pipeline.json").write_text(json.dumps({"build": {"ok": {"generated_at": "g1", "input": "c"}},
+                                                    "publish": {"ok": {"generated_at": "g1", "mode": "local"}}}))
+    calls = []
+    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: calls.append(argv[1:3]))
+    monkeypatch.setenv("JOB_ADS_PUBLISH", "r2")
+    assert realtime.stage("publish", realtime.publish)["mode"] == "r2"
+    assert calls == [["-m", "portfolio.publish.release"]]

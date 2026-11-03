@@ -7,11 +7,10 @@ import pytest
 import requests
 
 PLATFORM = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PLATFORM / "lib"))
 sys.path.insert(0, str(PLATFORM / "ingest" / "eu_ai_act"))
 
 import ingest_guidance  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 PAGES = [{"id": "stored", "url": "https://digital-strategy.ec.europa.eu/en/a"},
          {"id": "never-stored", "url": "https://digital-strategy.ec.europa.eu/en/b"}]

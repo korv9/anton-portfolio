@@ -4,7 +4,10 @@ A dbt Python model, because the archives are zip files of one JSON document per 
 DuckDB cannot read as tables: the source reads each archive as bytes (read_blob) and this model
 opens it. Fields are kept as Riksdagen wrote them (the party as written; silver
 normalises it); the speech text is turned from HTML into plain paragraphs separated by newlines,
-nothing else. Each row carries the archive it came from and that archive's SHA-256 from the fetch
+nothing else. `rel_dok_id` is the document the debate is about (a committee report such as
+HC01SfU18, empty outside ärendedebatter) and `speech_number` the speech's place in the protocol.
+Riksdagen's export has no speaker title: a minister's role is only the prefix in `speaker`
+("Statsrådet ..."). Each row carries the archive it came from and that archive's SHA-256 from the fetch
 log (platform/ingest/riksdagen/ingest_speeches.py).
 """
 import io
@@ -15,7 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 COLUMNS = ["speech_id", "anforande_id", "session", "speech_date", "protocol_id", "protocol_title",
-           "debate_title", "debate_kind", "speaker", "party_raw", "member_id", "is_reply",
+           "debate_title", "debate_kind", "rel_dok_id", "speech_number", "speaker", "party_raw", "member_id", "is_reply",
            "text", "paragraph_count", "word_count", "source_url", "archive_path", "archive_hash"]
 
 
@@ -48,6 +51,8 @@ def model(dbt, session):
                     "protocol_title": s.get("dok_titel"),
                     "debate_title": s.get("avsnittsrubrik"),
                     "debate_kind": s.get("kammaraktivitet"),
+                    "rel_dok_id": s.get("rel_dok_id") or None,
+                    "speech_number": int(s["anforande_nummer"]),
                     "speaker": s.get("talare"),
                     "party_raw": s.get("parti"),
                     "member_id": s.get("intressent_id"),

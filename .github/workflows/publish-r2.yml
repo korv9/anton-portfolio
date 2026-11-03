@@ -48,10 +48,10 @@ jobs:
         run: |
           : > "$RUNNER_TEMP/release-bundle.tsv"
           for group in baseline jobs jobs-analysis news public-data diva; do
-            existing=$(python platform/publish/release.py current --group "$group" \
+            existing=$(python -m portfolio.publish.release current --group "$group" \
               --manifest-key manifests/current.json | python -c "import json,sys; print(json.load(sys.stdin)['release'] or '')")
             if [ -z "$existing" ] && [ "${SOURCE_MANIFEST_KEY:-manifests/current.json}" != manifests/current.json ]; then
-              existing=$(python platform/publish/release.py current --group "$group" \
+              existing=$(python -m portfolio.publish.release current --group "$group" \
                 --manifest-key "$SOURCE_MANIFEST_KEY" | python -c "import json,sys; print(json.load(sys.stdin)['release'] or '')")
             fi
             if [ -n "$existing" ]; then
@@ -62,10 +62,10 @@ jobs:
               echo "No DiVA export exists; its independent manual workflow can add that group later."
               continue
             fi
-            python platform/publish/release.py materialize --root frontend/public/data \
+            python -m portfolio.publish.release materialize --root frontend/public/data \
               --spec "configs/delivery/$group.json" --catalog frontend/public/data/catalog.json \
               --prefer-active
-            python platform/publish/release.py publish --stage-only --group "$group" \
+            python -m portfolio.publish.release publish --stage-only --group "$group" \
               --root frontend/public/data --spec "configs/delivery/$group.json" \
               --code-sha "$GITHUB_SHA" --manifest-key "${MANIFEST_KEY:-manifests/current.json}" \
               > "$RUNNER_TEMP/release-$group.log"
@@ -78,7 +78,7 @@ jobs:
           while IFS=$'\t' read -r group release; do
             choices+=(--release "$group=$release")
           done < "$RUNNER_TEMP/release-bundle.tsv"
-          python platform/publish/release.py activate "${choices[@]}" \
+          python -m portfolio.publish.release activate "${choices[@]}" \
             --manifest-key "${MANIFEST_KEY:-manifests/current.json}"
       - name: Keep publication receipts
         if: always()

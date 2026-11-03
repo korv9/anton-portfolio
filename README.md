@@ -50,8 +50,9 @@ flowchart LR
   R --> Site
 ```
 
-The site reads committed JSON and the Parquet and shard addresses in `delivery.json`; it does
-not read the R2 releases yet ([storage and serving](docs/storage-and-serving.md)). Heavy text
+The site reads committed JSON and the Parquet and shard addresses in `delivery.json`. Only the
+job assistant's files come from the active R2 release (`live` in `delivery.json`)
+([storage and serving](docs/storage-and-serving.md)). Heavy text
 and ML work runs once in Python and ships as compact files; the browser does vector search and
 cheap metrics only.
 
@@ -79,7 +80,7 @@ cheap metrics only.
 | [`scripts/`](scripts/README.md) | Verification, build checks and workspace tools |
 | [`infra/`](infra/README.md) | Terraform for Cloudflare and GitHub |
 | [`docs/`](docs/README.md) | One document per topic, grouped in the docs index |
-| `warehouse/` | The local DuckDB warehouse and raw files; gitignored, stored in R2 |
+| `warehouse/` | The local DuckDB warehouse and raw files; gitignored, stored in R2 except folders kept local ([storage and serving](docs/storage-and-serving.md)) |
 
 ## Run it
 

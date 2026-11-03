@@ -12,14 +12,11 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import sys
 from datetime import date
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
-from rawstore import fetch, session  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
+from portfolio.storage.rawstore import fetch, session  # noqa: E402
 
 API = "https://api.kolada.se/v3"
 SOURCE = "kolada"

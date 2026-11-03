@@ -23,7 +23,7 @@ h4 {
   letter-spacing: -0.035em;
   font-weight: var(--weight-heading);
 }
-/* One look (docs/site-goals.md): every page title wears the signature's ink, the gradient of
+/* One look (docs/design-system.md): every page title wears the signature's ink, the gradient of
    home.css and hub.css. :where() keeps it weak, so a page's own title rule still wins. */
 :where(#main, main) h1 {
   background: linear-gradient(

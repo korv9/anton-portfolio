@@ -24,7 +24,7 @@ use. The portfolio is non-commercial. Attribution goes with every copy and every
 - Fetch: `python platform/ingest/oldbailey/fetch.py` writes `warehouse/raw/oldbailey/` with the
   zip, its URL, time and SHA-256 in `_manifest.jsonl`, and `ATTRIBUTION.txt`.
 - R2: `warehouse/raw/oldbailey/` in the public bucket, pushed with
-  `platform/publish/warehouse_store.py push --only raw --path oldbailey`. The zip is unchanged and
+  `src/portfolio/storage/warehouse_store.py push --only raw --path oldbailey`. The zip is unchanged and
   sits next to its attribution file.
 - Trial text extracted from the zip stays local in `warehouse/ml/oldbailey/`, which is never
   pushed. Model answers (labels only) are in `warehouse/features/oldbailey/`.

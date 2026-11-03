@@ -115,7 +115,7 @@ def test_refresh_runs_its_subjects_and_publishes_their_group(filename):
     ran = [arg for _, _, argv in cli(filename, "run") for arg in argv if not arg.startswith("-")]
     assert set(subjects) <= set(ran), filename
     assert {SUBJECTS[name]["group"] for name in subjects} == {group}
-    publications = [shlex.split(c) for c in flat(GROUPS[group]["publish"]) if "release.py publish" in c]
+    publications = [shlex.split(c) for c in flat(GROUPS[group]["publish"]) if "portfolio.publish.release publish" in c]
     assert len(publications) == 1
     argv = publications[0]
     assert argv[argv.index("--group") + 1] == group
@@ -124,7 +124,7 @@ def test_refresh_runs_its_subjects_and_publishes_their_group(filename):
 
 
 def test_no_group_or_subject_uses_the_unversioned_uploader():
-    assert "upload.py" not in (ROOT / "platform/pipeline.yml").read_text(encoding="utf-8")
+    assert "portfolio.storage.upload" not in (ROOT / "platform/pipeline.yml").read_text(encoding="utf-8")
 
 
 def test_raw_pushes_wait_for_a_successful_restore():
@@ -173,7 +173,7 @@ def test_public_group_is_exported_checked_and_materialized_before_publication():
     schema, check, validate = (position(publish, name) for name in
                                ("export_schema.py", "validate_politics.py", "validate_public_data.py"))
     materialize, release, status = (position(publish, name) for name in
-                                    ("release.py materialize", "release.py publish", "publish_status.py"))
+                                    ("portfolio.publish.release materialize", "portfolio.publish.release publish", "publish_status.py"))
     assert schema < check < validate < materialize < release < status
     assert "configs/delivery/public-data.json" in publish[materialize]
     for topic in ("welfare", "parliament", "taxes"):
@@ -182,7 +182,7 @@ def test_public_group_is_exported_checked_and_materialized_before_publication():
 
 def test_news_restores_the_active_summary_first_and_tolerates_only_a_missing_summary(tmp_path):
     news = SUBJECTS["news"]["steps"]
-    assert "release.py materialize" in news[0]["ingest"] and "--prefer-active" in news[0]["ingest"]
+    assert "portfolio.publish.release materialize" in news[0]["ingest"] and "--prefer-active" in news[0]["ingest"]
     assert "configs/delivery/news.json" in news[0]["ingest"]
     assert position(news, "news_ingest.py") > 0
     summary = next(step for step in news if "summarize_news.py" in step.get("export", ""))
@@ -243,7 +243,7 @@ def test_the_weekly_run_builds_every_dbt_subject_before_the_warehouse_is_stored(
     build = next(i for i, _, argv in cli(filename, "run") if "--all" in argv and "dbt" in argv[argv.index("--only") + 1])
     store = next(i for i, step, argv in cli(filename, "push") if "--all" in argv and "if" not in step)
     publish = next(i for i, _, argv in cli(filename, "run") if "publish" in argv[argv.index("--only") + 1])
-    retention = next(i for i, s in enumerate(steps(filename)) if "retention.py" in s.get("run", ""))
+    retention = next(i for i, s in enumerate(steps(filename)) if "portfolio.publish.retention" in s.get("run", ""))
     assert build < store < publish < retention
     setup = steps(filename)[0:2][1]["with"]
     assert setup["pull"] == "--all" and setup["ml"] == "true"
@@ -302,3 +302,9 @@ def test_step_secrets_reach_only_their_step():
     assert calls == [("a.py", ()), ("b.py", ("AI_TOKEN",))]
     rank = next(st for st in SUBJECTS["job_assistant"]["steps"] if "rank.py" in st.get("ingest", ""))
     assert rank["secrets"] == ["CLOUDFLARE_API_TOKEN"] and rank["ok_exit"] == [1]
+
+
+def test_dry_run_names_a_module_that_does_not_exist():
+    cli = load_cli()
+    assert cli.missing_files([sys.executable, "-m", "portfolio.publish.release", "--help"], ROOT) == []
+    assert cli.missing_files([sys.executable, "-m", "portfolio.publish.relase"], ROOT) == ["-m portfolio.publish.relase"]

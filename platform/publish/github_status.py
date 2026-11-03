@@ -20,15 +20,10 @@ from __future__ import annotations
 import base64
 import json
 import os
-import sys
 import urllib.request
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-
-from common import PUBLIC  # noqa: E402
+from portfolio.core.config import PUBLIC  # noqa: E402
 
 KEY = "status/github.json"
 LOCAL = PUBLIC / KEY
@@ -87,7 +82,7 @@ def snapshot(now: datetime) -> dict:
 def publish(body: bytes) -> None:
     if os.environ.get("GITHUB_ACTIONS") != "true" or not all(os.environ.get(k) for k in CREDENTIALS):
         return
-    from upload import client
+    from portfolio.storage.upload import client
     s3, bucket = client()
     s3.put_object(Bucket=bucket, Key=KEY, Body=body, ContentType="application/json",
                   CacheControl="no-cache, max-age=0")

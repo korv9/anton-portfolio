@@ -222,9 +222,8 @@ version produces a different sweep directory; use its printed path instead of th
 The exporter writes immutable JSON point shards of 5,000 rows, an aggregate manifest and
 a 1,500-point real-coordinate homepage sample. It verifies run consistency and reconciles
 row counts before export. Each point includes title and skill mentions for interaction,
-never descriptions or embeddings. `#cluster-visuals` loads the point shards; the homepage
-loads only `jobs/cluster-preview.json` and `jobs/preview-detail.json`
-(`frontend/src/home/umapIntroData.ts`).
+never descriptions or embeddings. `#cluster-visuals` loads the point shards; the job map
+(`frontend/src/home/JobsMap.tsx`) and the cluster gallery load only `jobs/preview-detail.json`.
 
 Cluster visuals draws the points coloured by cluster, with a legend of the clusters
 (`frontend/src/clusters/ClusterScatter.tsx`); `frontend/tests/clusters.spec.ts` covers it.

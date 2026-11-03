@@ -4,7 +4,6 @@ from pathlib import Path
 
 PLATFORM = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PLATFORM))
-sys.path.insert(0, str(PLATFORM / "lib"))
 sys.path.insert(0, str(PLATFORM / "ingest" / "eu_ai_act"))
 
 from legal.cellar import eurlex_url, parse_related, related_query  # noqa: E402
@@ -176,6 +175,6 @@ def test_ingest_fetches_the_act_its_versions_and_amending_acts():
 
 
 def test_versioned_raw_paths_keep_every_version():
-    import rawstore
+    from portfolio.storage import rawstore
 
     assert rawstore.version_path("guidance/page.html", "ab" * 32) == "guidance/page@abababababab.html"

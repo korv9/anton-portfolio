@@ -1,6 +1,7 @@
 name: Data subject
 
-# The shared shape of the daily refreshes (refresh-jobs, refresh-news): restore
+# The shared shape of the daily and hourly refreshes (refresh-jobs, refresh-news,
+# refresh-job-assistant): restore
 # the subjects' stored raw files from R2, fetch, build, test and export them with
 # platform/pipeline.py, store the raw files whatever the build did, then check and publish their
 # delivery group. A failed or timed-out run opens (or comments on) an issue; a successful one

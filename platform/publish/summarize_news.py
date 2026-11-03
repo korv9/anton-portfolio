@@ -24,9 +24,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "platform/lib"))
 
-from common import read_json, write_bytes_retrying  # noqa: E402
+from portfolio.core.io import read_json, write_bytes_retrying  # noqa: E402
 from jsonschema import ValidationError, validate  # noqa: E402
 
 NEWS = ROOT / "frontend/public/data/parliament/news.json"

@@ -109,8 +109,7 @@
   #main
   .politik-long
   .report-pair
-  .feature:not(#mandat, #opinionen),
-.project-shell #main .politik-long .report .board-grid .board-card {
+  .feature:not(#mandat, #opinionen) {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: none;
@@ -124,8 +123,7 @@
   .politik-long
   .report-pair
   .feature:not(#mandat, #opinionen)
-  > *,
-.project-shell #main .politik-long .report .board-grid .board-card > * {
+  > * {
   grid-column: 1;
   grid-row: auto;
 }
@@ -135,20 +133,9 @@
   gap: var(--sp-section) var(--sp-7);
   align-items: start;
 }
-.project-shell #main .politik-long .report .board-grid .board-card.wide {
-  grid-column: 1 / -1;
-}
 /* A section of a tab (budget, taxes) names itself quietly and keeps its own filters. */
 .project-shell #main .politik-long .report .board {
   gap: var(--sp-7);
-}
-.project-shell #main .politik-long .report .board-title-2 {
-  margin: 0;
-  font-family: var(--font-meta);
-  font-size: var(--caption);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: none;
 }
 
 /* ---------- Further in: the analyses that take a page of their own ---------- */
@@ -240,17 +227,8 @@
   grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 6.5rem;
   gap: var(--sp-4);
 }
-.project-shell #main .politik-long .report .board-grid .board-card {
-  grid-column: auto;
-}
-.project-shell #main .politik-long .report .board-grid .board-card.wide {
-  grid-column: 1 / -1;
-}
 .politik-long .report .board-grid .dumbbell li {
   grid-template-columns: minmax(6rem, 11rem) minmax(0, 1fr) 9.5rem;
-}
-.project-shell #main .politik-long .report .board-head {
-  align-items: start;
 }
 
 /* ---------- Three tones: black for the question, olive for labels, grey for the rest ---------- */
@@ -281,12 +259,7 @@
   #main
   .politik-long
   .report
-  :is(
-    .feature-head h2,
-    .board-card h2,
-    .theme-chart-title,
-    .report-section > h2
-  ) {
+  :is(.feature-head h2, .theme-chart-title, .report-section > h2) {
   color: var(--ink-2);
   font-size: var(--body-large);
   font-weight: 650;

@@ -6,23 +6,6 @@
 .project-shell #main .politik-long .board {
   gap: var(--sp-section);
 }
-.project-shell #main .politik-long .board-head {
-  display: block;
-  padding-block: var(--sp-6) 0;
-}
-.project-shell #main .politik-long .board-head h1 {
-  max-width: none;
-  margin: 0;
-  font-size: var(--type-page-title);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.045em;
-  line-height: 1;
-  text-transform: uppercase;
-}
-.project-shell #main .politik-long .board-sub {
-  margin: var(--sp-4) 0 0;
-  font-size: var(--body-large);
-}
 
 /* ---------- A large chart: its name and filters at the right, straight above it ---------- */
 .project-shell #main .politik-long .feature {
@@ -138,58 +121,6 @@
 /* ---------- A small chart: words at the left edge, the chart at the right ---------- */
 .project-shell #main .politik-long .board-grid {
   display: block;
-}
-.project-shell #main .politik-long .board-card {
-  display: grid;
-  grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
-  grid-template-rows: auto auto 1fr;
-  column-gap: clamp(3rem, 10vw, 10rem);
-  padding-block: var(--sp-7);
-}
-.project-shell #main .politik-long .board-card > header,
-.project-shell #main .politik-long .board-card > .dash-meta {
-  grid-column: 1;
-}
-.project-shell #main .politik-long .board-card > header {
-  display: block;
-}
-.project-shell #main .politik-long .board-card h2 {
-  font-size: var(--h3);
-  font-weight: var(--weight-heading);
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-}
-.project-shell #main .politik-long .board-card > header a {
-  display: inline-block;
-  margin-top: var(--sp-3);
-  font-size: var(--small);
-}
-.project-shell #main .politik-long .board-card > .dash-meta {
-  max-width: 30rem;
-  margin: var(--sp-4) 0 0;
-  font-size: var(--body);
-  line-height: 1.6;
-}
-.project-shell #main .politik-long .board-card > .board-body {
-  grid-column: 2;
-  grid-row: 1 / span 3;
-  margin: 0;
-}
-.project-shell #main .politik-long .board-card.wide {
-  display: block;
-}
-.project-shell #main .politik-long .board-card.wide > .board-body {
-  margin-top: var(--sp-6);
-}
-
-@media (max-width: 900px) {
-  .project-shell #main .politik-long .board-card {
-    display: block;
-    padding-block: var(--sp-6);
-  }
-  .project-shell #main .politik-long .board-card > .board-body {
-    margin-top: var(--sp-5);
-  }
 }
 
 /* ---------- A chosen party's key figures and its row of parties ---------- */
@@ -377,7 +308,7 @@
   line-height: 1;
   text-transform: uppercase;
 }
-.project-shell #main .politik-long :is(.theme-why, .board-sub) {
+.project-shell #main .politik-long .theme-why {
   max-width: 34rem;
   margin: var(--sp-5) 0 0;
   color: var(--ink);
@@ -424,7 +355,7 @@
 .project-shell #main .politik-long :is(.budget-id, .sources-block) {
   padding: 0;
 }
-.project-shell #main .politik-long :is(.theme-filters, .board-slicers) {
+.project-shell #main .politik-long .theme-filters {
   padding: 0;
 }
 
@@ -612,9 +543,6 @@
   line-height: 1;
   text-transform: uppercase;
 }
-.project-shell #main .politik-long .board-head h1 {
-  max-width: none;
-}
 .project-shell #main .politik-long :is(.story-hero, .story-section) {
   padding-inline: 0;
 }
@@ -693,39 +621,28 @@
 
 /* ---------- One grid for every chapter: the heading at the left, its sentence at the right,
    then each chart as a row with its words at the left edge ---------- */
-.project-shell #main .politik-long :is(.theme-head, .board-head, .story-hero) {
+.project-shell #main .politik-long :is(.theme-head, .story-hero) {
   display: grid;
   grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
   align-items: end;
   gap: var(--sp-5) var(--sp-7);
   padding: 0;
 }
-.project-shell #main .politik-long .board-head > div:first-child {
-  display: contents;
-}
-.project-shell #main .politik-long :is(.theme-why, .board-sub, .story-sub) {
+.project-shell #main .politik-long :is(.theme-why, .story-sub) {
   max-width: 34rem;
   margin: 0;
   color: var(--ink);
   font-size: var(--body-large);
   line-height: 1.5;
 }
-.project-shell #main .politik-long :is(.board-slicers, .story-filters) {
+.project-shell #main .politik-long .story-filters {
   grid-column: 1 / -1;
 }
-.project-shell #main .politik-long .board-slicers {
-  justify-content: flex-start;
-  margin-top: var(--sp-5);
-}
-.project-shell #main .politik-long :is(.board-card, .theme-figure) {
+.project-shell #main .politik-long .theme-figure {
   grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
   column-gap: var(--sp-7);
 }
 /* Key figures: the number in the mono face, its label over it, nothing around it. */
-.project-shell #main .politik-long .board-kpis {
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
-  gap: var(--sp-6);
-}
 .project-shell #main .politik-long .dash-kpi {
   padding: 0;
   border: 0;
@@ -754,13 +671,10 @@
   margin-top: var(--sp-7);
 }
 @media (max-width: 900px) {
-  .project-shell
-    #main
-    .politik-long
-    :is(.theme-head, .board-head, .story-hero) {
+  .project-shell #main .politik-long :is(.theme-head, .story-hero) {
     display: block;
   }
-  .project-shell #main .politik-long :is(.theme-why, .board-sub, .story-sub) {
+  .project-shell #main .politik-long :is(.theme-why, .story-sub) {
     margin-top: var(--sp-4);
   }
 }
@@ -922,10 +836,7 @@
   font-size: var(--body);
 }
 /* Every figure title is the same quiet label; the chapter heading is the only loud one. */
-.project-shell
-  #main
-  .politik-long
-  :is(.feature-head h2, .board-card h2, .theme-chart-title) {
+.project-shell #main .politik-long :is(.feature-head h2, .theme-chart-title) {
   max-width: 22ch;
   font-size: var(--h3);
   font-weight: var(--weight-heading);
@@ -1058,9 +969,6 @@
 }
 .politik-long .stacked li:not(.bare) {
   grid-template-columns: minmax(7rem, 15rem) minmax(0, 1fr) 7.5rem;
-}
-.politik-long .board-card.wide > .dash-meta:last-child {
-  margin-top: var(--sp-6);
 }
 
 /* Optional chapter bands share the neutral secondary surface. */

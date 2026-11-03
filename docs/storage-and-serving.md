@@ -11,16 +11,29 @@ when, is in [pipeline.md](pipeline.md). The rules for a versioned release are in
 | Code, dbt models, seeds, schemas, test fixtures | Git | Commits |
 | The site's JSON, 1,703 files in the catalogue | `frontend/public/data/` in Git, which the site reads; also in R2 releases, which it does not | The exports; a group's publish step |
 | Parquet marts (68 files) and document shards (4,625) | R2 bucket `anton-portfolio` | A group's publish step |
-| Raw source files, ML features, the DuckDB warehouse | R2, under `warehouse/` | `pipeline.py push`, `build-warehouse.yml` |
+| Raw source files, ML features, the DuckDB warehouse | R2 bucket `anton-portfolio`, under `warehouse/`, except the `LOCAL_ONLY` folders | `pipeline.py push`, `build-warehouse.yml` |
 | Secrets | GitHub and Cloudflare secrets | By hand |
 
-The counts are from `catalog.json` on 23 October 2026 (6,396 entries). The bucket is public and holds only
-open data. A folder called `private` in a public bucket is not an access boundary; private
-originals, such as the degree project's source material, are not uploaded.
+The counts are from `catalog.json` on 23 October 2026 (6,396 entries). The bucket is public and is
+meant to hold only open data. A folder called `private` in a public bucket is not an access
+boundary; private originals, such as the degree project's source material, are not uploaded.
+`LOCAL_ONLY` in `src/portfolio/storage/warehouse_store.py` keeps folders on the machine: texts whose
+licence forbids redistribution (`raw/philosophy_moral`, `features/philosophy/moral/run`) and the
+JobStream and JobSearch answers as served (`raw/job_assistant/raw`, `raw/jobtech/stream/raw`),
+which carry recruiters' e-mail addresses and phone numbers.
+
+Open findings, 2026-11-02:
+
+- Answers pushed before that exclusion are still public under `warehouse/raw/job_assistant/raw/`
+  and `warehouse/raw/jobtech/stream/raw/` until the owner deletes them.
+- `warehouse/raw/jobtech/cluster-corpus/` holds JobTech's archive descriptions without contact
+  redaction. They are a copy of JobTech's own public data; keeping them is an owner decision.
+- Terraform creates a private bucket, `anton-portfolio-warehouse` (`infra/cloudflare/main.tf`),
+  empty. Moving `warehouse/` into it is planned, not done.
 
 ## The catalogue
 
-`platform/publish/build_catalog.py` (`npm run data:catalog`) writes two files in
+`src/portfolio/publish/catalog.py` (`npm run data:catalog`) writes two files in
 `frontend/public/data/`:
 
 - `catalog.json`: one entry per delivered file with `path`, `product`, `format`, `bytes`,
@@ -34,6 +47,11 @@ Entries written by catalogue version 2 carry the SHA-256 and size of the exact b
 for files that were moved to R2 under version 1 keep a hash taken after CRLF was normalised
 and are marked `sha256-crlf-normalized`; they are read back with that rule and get an exact
 hash the next time they are published.
+
+Known drift, 2026-11-02: the committed `catalog.json` and `delivery.json` still carry
+`schema_version: 1`, which `portfolio.publish.catalog` would write as 2, and `delivery.json` lists the
+shard prefix `workers-ai/debate/shards/` twice. The committed files predate the generator's
+version 2; a rerun of `npm run data:catalog` has not been checked against them.
 
 ## How the site resolves a path
 
@@ -52,7 +70,7 @@ The production site reads the data committed under `frontend/public/data`. The c
 Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not used, so the
 site reads most groups from these bases, not from the versioned releases the workflows publish
 to R2 ([r2-delivery-contract.md](r2-delivery-contract.md)). The exception is `live`: paths under
-its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `build_catalog.py`) are resolved through its
+its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `portfolio.publish.catalog`) are resolved through its
 `manifest_url`, the active R2 manifest. That group is never committed under `frontend/public/data`,
 so it exists only as a release. Use `VITE_DELIVERY_MODE=local` to read a local export instead.
 
@@ -67,11 +85,11 @@ fixtures. On localhost a missing `delivery.json` is tolerated the same way.
 4. Give it to a delivery group in `configs/delivery/`, or leave it to `baseline`.
 
 A directory whose files are read one document at a time goes in `SHARD_DIRECTORIES` in
-`build_catalog.py`. The site reads that list from `delivery.json`, so nothing in `src/` changes.
+`portfolio.publish.catalog`. The site reads that list from `delivery.json`, so nothing in `src/` changes.
 
 ## Validators and remote files
 
-`platform/lib/delivery.py` reads a delivered path from disk when it is there and from the
+`src/portfolio/storage/delivery.py` reads a delivered path from disk when it is there and from the
 delivery base when it is not, so the checks in `npm run data:check` keep their full coverage:
 
 - `validate_politics.py` verifies every local file byte for byte, asserts that each absent
@@ -100,8 +118,8 @@ needs three local sources to regenerate them (`--parliament`, `--allegoria`,
 `--local-corpus`), and one of those is in no repository. Git history still has the files,
 because the move was an ordinary commit.
 
-`platform/publish/upload.py` is the unversioned uploader from that move. No workflow or
-delivery group uses it; releases go through `platform/publish/release.py`.
+`src/portfolio/storage/upload.py` is the unversioned uploader from that move. No workflow or
+delivery group uses it; releases go through `src/portfolio/publish/release.py`.
 
 ## The bucket's address
 

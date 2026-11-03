@@ -32,13 +32,12 @@ Each step is one pull request. A step that moves an export is proven by the publ
 their sha256 before and after must be identical.
 
 1. **Core.** `pyproject.toml`, `portfolio.core`, the layer contract, `requirements-dev.lock`.
-   Nothing existing moves; `platform/lib/common.py` stays until step 5.
+   Nothing existing moves; `platform/lib/common.py` stayed until step 5.
 2. **Storage and releases (done).** `rawstore`, `delivery`, `upload` and `warehouse_store` are in
    `portfolio.storage`; `release`, `retention` and `dq_gate` in `portfolio.publish`, because a
-   release runs the quality gate, which `storage` may not import. Each old path is a shim
-   that puts the moved module in `sys.modules` under the old name, so `import rawstore`,
-   `from lib.rawstore import …` and test monkeypatches all reach the one module, and
-   `python platform/publish/release.py …` still runs. Every workflow installs the package
+   release runs the quality gate, which `storage` may not import. Each old path was a shim
+   that put the moved module in `sys.modules` under the old name until step 5. Every workflow
+   that runs these modules installs the package
    (`.github/actions/data-setup`); `setuptools` is pinned in `requirements.txt` for that.
 3. **Exports**, one domain at a time, onto `core.io` and `core.db`. Done so far: the catalogue
    (`build_catalog` → `portfolio.publish.catalog`, with `register`, which 18 exporters reached
@@ -65,5 +64,16 @@ their sha256 before and after must be identical.
    debates, which read dbt run results only a dbt run on the pulled warehouse produces.
 4. **Ingest and ML**, including the parts of `ml/` the pipeline imports; dbt's Python models
    import the package instead of adding the working directory to `sys.path`.
-5. **Clean-up.** The shims and every `sys.path.insert` go; `pipeline.yml` calls
-   `python -m portfolio`; ruff and mypy run on `core` and `storage`.
+5. **Clean-up (shims done).** The shims (`rawstore`, `release`, `retention`, `dq_gate`,
+   `upload`, `warehouse_store`, `build_catalog`) are gone, and so are the old contents of `platform/lib/common.py`.
+   Two aliases stay in `platform/lib` for `platform/legacy/build_gold.py` alone: `common.py`
+   (now `core.io` under that name) and `delivery.py`. `gold/semantic-model.json` pins the
+   builder's sha256, so the file cannot change without a gold rebuild; both go with that rebuild.
+   Callers import `portfolio.storage.*`, `portfolio.publish.*` and `portfolio.core.*`;
+   `pipeline.yml`, the workflows and `package.json` run `python -m portfolio.publish.release`,
+   `python -m portfolio.storage.warehouse_store` and so on, with the same arguments. The welfare,
+   parliament, taxes and sfs exports write through `core.io.write_json`, with `newline=False`
+   where `common.write_json` wrote no final newline: their 22 committed files come out byte for
+   byte the same. Still open: the other `sys.path.insert` lines (sibling scripts, and `pxweb`,
+   `parties` and `gold_contract` in `platform/lib`), `pipeline.yml` calling `python -m portfolio`,
+   and ruff and mypy on `core` and `storage`.

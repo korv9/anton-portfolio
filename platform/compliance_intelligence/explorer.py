@@ -21,7 +21,7 @@ from compliance_intelligence.legal_extraction import STATUSES  # noqa: E402
 from compliance_intelligence.legal_review import ReviewStore  # noqa: E402
 from compliance_intelligence.registry import encoded, utc_timestamp  # noqa: E402
 from compliance_intelligence.sources import new_output, now, seal, verify, write_json  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 TARGET = REPO/'frontend/public/data/compliance/release.json'

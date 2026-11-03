@@ -68,7 +68,7 @@ export const SQL = {
   list: 'select key, value, updated_at from records where kind = ? order by key',
 }
 
-const reply = (body: unknown, status = 200) =>
+export const reply = (body: unknown, status = 200) =>
   Response.json(body, {
     status,
     headers: {
@@ -119,14 +119,32 @@ async function list(db: D1, kind: string) {
   return results
 }
 
-/** A declared body above the limit is refused before it is read; the read is checked again. */
-const tooLarge = (request: Request, max: number) =>
-  Number(request.headers.get('Content-Length') ?? 0) > max
+/**
+ * The body's bytes, or null above max bytes: a declared length is refused before it is read, and
+ * a chunked body without one stops being read once it passes the limit.
+ */
+export async function readCapped(request: Request, max: number) {
+  if (Number(request.headers.get('Content-Length') ?? 0) > max) return null
+  const reader = request.body?.getReader()
+  const chunks: Uint8Array[] = []
+  let size = 0
+  for (let r = await reader?.read(); r && !r.done; r = await reader!.read()) {
+    size += r.value.length
+    if (size > max) {
+      await reader!.cancel()
+      return null
+    }
+    chunks.push(r.value)
+  }
+  const bytes = new Uint8Array(size)
+  chunks.reduce((at, c) => (bytes.set(c, at), at + c.length), 0)
+  return bytes
+}
 
-async function readJson(request: Request, max: number) {
-  if (tooLarge(request, max)) return null
-  const raw = await request.text()
-  if (raw.length > max) return null
+export async function readJson(request: Request, max: number) {
+  const bytes = await readCapped(request, max)
+  if (!bytes) return null
+  const raw = new TextDecoder().decode(bytes)
   try {
     const value = JSON.parse(raw)
     return value && typeof value === 'object' && !Array.isArray(value)
@@ -154,7 +172,7 @@ const toBase64 = (bytes: Uint8Array) => {
   return btoa(s)
 }
 
-async function hex(bytes: ArrayBuffer) {
+export async function hex(bytes: BufferSource) {
   const d = await crypto.subtle.digest('SHA-256', bytes)
   return [...new Uint8Array(d)]
     .map((b) => b.toString(16).padStart(2, '0'))
@@ -285,10 +303,8 @@ export async function jobs(request: Request, env: JobsEnv): Promise<Response> {
       .split(';')[0]
       .trim()
     const magic = MEDIA[media]
-    if (!magic || tooLarge(request, MAX_CV))
-      return reply({ error: 'a PDF or DOCX file up to 1.4 MB' }, 400)
-    const bytes = new Uint8Array(await request.arrayBuffer())
-    if (bytes.length > MAX_CV || !magic.every((b, i) => bytes[i] === b))
+    const bytes = magic && (await readCapped(request, MAX_CV))
+    if (!bytes || !magic.every((b, i) => bytes[i] === b))
       return reply({ error: 'a PDF or DOCX file up to 1.4 MB' }, 400)
     const filename = (request.headers.get('X-Filename') ?? 'cv')
       .replace(/[^\w. -]/g, '')

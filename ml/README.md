@@ -12,6 +12,9 @@ module from the repository root.
 | `mlkit/` | Supervised tasks with model cards in `cards/`: `policy_area`, `polarization`, `seniority`, `government_defeat`, `reply` | `python -m ml.mlkit.overnight` | The cards |
 | `jobs/` | Unsupervised clustering of Swedish software and data job ads | `python -m ml.jobs.pipeline`, `sweep`, `feature_experiment` | [job-market clustering](../docs/job-market-clustering.md), [sweep](../docs/job-clustering-sweep.md), [ensemble](../docs/job-clustering-ensemble.md) |
 | `cluster_lab/` | Local, configuration-driven clustering experiments; never promotes results | `python -m ml.cluster_lab.cli` | [its README](cluster_lab/README.md) |
+| `jobs/registry.py`, `jobs/assign.py` | The job cluster model the near real-time flow assigns with (`jobs/registry.json`); promotion and rollback by hand | `python -m ml.jobs.registry show\|evaluate\|promote\|rollback` | [job ads with Airflow](../docs/job-ads-airflow.md) |
+| `experiments/` | Shared clustering experiment core: contract, splits, registry, frozen acceptance in `configs/experiments/` | `python -m ml.experiments.<domain> prepare\|select\|final\|export` | [cluster experiments](../docs/cluster-experiments.md) |
+| `atlas/` | Six corpora in one embedding space, clustered, with links between corpora | `python -m ml.atlas.build embed\|analyse` | [cluster atlas](../docs/cluster-atlas.md) |
 | `research/` | Consensus subject groups in debates and philosophy, county profiles, the debate passages for Workers AI | `python -m ml.research.consensus`, `topics`, `export_workers_ai` | [public clustering](../docs/public-clustering-method.md), [Workers AI](../docs/workers-ai.md) |
 | `feature_study/` | Engineered features against the plain baseline, scored with one validation | `python -m ml.feature_study.job_ads` and siblings | [feature engineering](../docs/ml-feature-engineering.md) |
 | `ai_act/` | Monthly counts of the AI Act's own terms in Riksdag speeches and job ads | `python -m ml.ai_act.diffusion speeches\|ads` | [pre-registration](../docs/ai-act-diffusion-preregistration.md) |
@@ -55,7 +58,8 @@ cd ml
   - `polarization` writes its card and states that the KB-BERT cross-check was not run.
 
 Output lands in `ml/runs/<run_id>/`. Only the cards are committed. Nothing reaches the site
-without a deliberate promotion of a passing run (`mlkit/promote.py`).
+without a deliberate promotion of a passing run (`mlkit/promote.py`), and promotion removes the
+published file of any task whose card records a failed gate.
 
 ## Tests
 

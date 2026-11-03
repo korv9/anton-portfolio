@@ -32,7 +32,8 @@ or removed in a time window, in the archives' shape.
 
    `platform/ingest/jobtech/ingest_stream.py` reads the stream from where the previous run
    stopped, in windows of at most a day, and stores under `warehouse/raw/jobtech/`:
-   - `stream/raw/<window>.json.gz`: each answer as served, with its provenance line;
+   - `stream/raw/<window>.json.gz`: each answer as served, with its provenance line; it holds
+     recruiters' contact details, so it is never pushed to R2 (`LOCAL_ONLY`);
    - `stream/ads/<window>.parquet`: the ads first seen in that window, one row each;
    - `stream/state.json`: the first complete day and the time read up to;
    - `market/ads_stream.parquet`, `market/conditions_stream.parquet`: whole months in the

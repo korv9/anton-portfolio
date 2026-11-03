@@ -3,7 +3,7 @@ import { fetchJson } from './dataSource'
 import { l } from './i18n'
 
 /** A published file: null while loading, 'error' when it cannot be read. */
-export type Loaded<T> = T | 'error' | null
+type Loaded<T> = T | 'error' | null
 
 export function useJson<T>(path: string): Loaded<T> {
   const [data, setData] = useState<Loaded<T>>(null)

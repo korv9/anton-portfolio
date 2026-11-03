@@ -1,12 +1,7 @@
-"""platform/publish/upload.py --only: one prefix is uploaded and offloaded, the rest left alone."""
+"""portfolio.storage.upload --only: one prefix is uploaded and offloaded, the rest left alone."""
 import json
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import upload  # noqa: E402
+from portfolio.storage import upload
 
 
 def test_only_scopes_entries_and_offload_keeps_earlier_records(tmp_path, monkeypatch):

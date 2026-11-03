@@ -2,8 +2,9 @@
 
 Bronze is `warehouse/raw/<source>/`, exactly as fetched. Each source directory carries a
 `_manifest.jsonl` with one line per fetch: URL, method, request body, fetch time, SHA-256
-and size of the payload as received. Nothing in `models/` may read a file that has no line
-here, and a refetch that returns identical bytes does not rewrite the file.
+and size of the payload as received. Models should read only files that have a line here; this is
+a convention, not enforced (bronze reads globs), except where a model tests the manifest hash.
+A refetch that returns identical bytes does not rewrite the file.
 
 Large payloads are stored gzip-compressed (`.gz` suffix); the recorded hash is always of the
 uncompressed bytes the server sent, so it can be checked against a fresh download.

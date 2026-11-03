@@ -30,7 +30,7 @@ export function project(vector: ArrayLike<number>, pca: Pca): Float32Array {
   return out
 }
 
-export type Hit = { index: number; score: number }
+type Hit = { index: number; score: number }
 
 /** Brute-force cosine k nearest neighbours against row-major int8 vectors. */
 export function knn(
@@ -57,7 +57,7 @@ export function knn(
   return hits
 }
 
-export type Neighbour = { score: number; x: number; y: number; cluster: number }
+type Neighbour = { score: number; x: number; y: number; cluster: number }
 
 /**
  * Where a new point lands: the neighbours' 2D positions weighted by closeness (1 / cosine

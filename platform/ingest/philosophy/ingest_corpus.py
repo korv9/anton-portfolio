@@ -4,7 +4,7 @@
 
 Each work in corpus.json (or the corpus file named) is fetched as Gutenberg's plain-text UTF-8 file and stored exactly as
 received under warehouse/raw/philosophy/gutenberg/<id>.txt, with its provenance line in
-warehouse/raw/philosophy/_manifest.jsonl (lib/rawstore.py). Requests are spaced out and retried,
+warehouse/raw/philosophy/_manifest.jsonl (src/portfolio/storage/rawstore.py). Requests are spaced out and retried,
 since Gutenberg resets connections under load. The corpus metadata (author, year, tradition,
 translator) is copied next to the texts. Cleaning happens in dbt (silver).
 """
@@ -15,9 +15,7 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 SOURCE = "philosophy"

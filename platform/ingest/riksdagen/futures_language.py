@@ -43,11 +43,10 @@ import requests
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "platform/ingest/jobtech"))
 sys.path.insert(0, str(REPO / "platform/nlp/text"))
-sys.path.insert(0, str(REPO / "platform/lib"))
 
 from concepts import paragraphs  # noqa: E402
 from ingest_governance_terms import load_terms, window, write_rows  # noqa: E402
-from rawstore import session as http_session  # noqa: E402
+from portfolio.storage.rawstore import session as http_session  # noqa: E402
 
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
 # Session codes have six digits (199394), except 1999/2000, which has eight (19992000).

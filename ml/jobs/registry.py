@@ -80,21 +80,31 @@ def artefact(run_id: str) -> Path:
 
 def reference(run_id: str) -> tuple[list[str], np.ndarray, np.ndarray]:
     """Job ids, unit vectors and cluster labels of the run's ads that have a cached embedding,
-    from the promoted artefact when it exists."""
+    from the promoted artefact when it exists.
+
+    The cache holds one row per text version of an ad. The run's inputs.parquet names the version
+    it was fitted on; a run without it (older or published-only) keeps only ads with one version,
+    since any other choice could pair a label with a vector of a text the run never saw."""
     if artefact(run_id).exists():
         saved = np.load(artefact(run_id))
         return saved["ids"].tolist(), saved["vectors"], saved["labels"]
     import pyarrow.parquet as pq
     config = run_config(run_id)
     labels = assignments(run_id)
-    table = pq.read_table(cache_path(config["model"], config.get("revision")), columns=["job_id", "embedding"]).to_pydict()
-    ids, vectors, ys = {}, [], []
-    for job_id, vector in zip(table["job_id"], table["embedding"]):
-        if job_id in labels and job_id not in ids:
-            ids[job_id] = len(vectors)
-            vectors.append(vector)
-            ys.append(labels[job_id])
-    return list(ids), np.asarray(vectors, dtype="float32"), np.asarray(ys)
+    inputs = CACHE / "runs" / run_id / "inputs.parquet"
+    fitted = (dict(zip(*pq.read_table(inputs, columns=["job_id", "text_hash"]).to_pydict().values()))
+              if inputs.exists() else None)
+    table = pq.read_table(cache_path(config["model"], config.get("revision")),
+                          columns=["job_id", "text_hash", "embedding"]).to_pydict()
+    found: dict[str, dict[str, list]] = {}
+    for job_id, text, vector in zip(table["job_id"], table["text_hash"], table["embedding"]):
+        if job_id in labels and (fitted is None or fitted.get(job_id) == text):
+            found.setdefault(job_id, {}).setdefault(text, vector)
+    kept = {j: next(iter(v.values())) for j, v in found.items() if len(v) == 1}
+    if len(kept) < len(found):
+        print(f"{run_id}: {len(found) - len(kept)} ads have several cached text versions and no record "
+              "of the one this run used; left out of the reference", flush=True)
+    return list(kept), np.asarray(list(kept.values()), dtype="float32"), np.asarray([labels[j] for j in kept])
 
 
 def vote(vectors: np.ndarray, ref: np.ndarray, labels: np.ndarray, k: int = K) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -116,12 +126,16 @@ def evaluate(run_id: str) -> dict:
     if not len(labels):
         return {"run_id": run_id, "passed": False, "reasons": ["no reference ads with a cached embedding"]}
     held = np.asarray([int(hashlib.sha256(i.encode()).hexdigest(), 16) % 10 < 3 for i in ids])
+    if held.all() or not held.any():
+        return {"run_id": run_id, "passed": False, "reasons": ["the hash split left one side empty"]}
     predicted, _, _ = vote(vectors[held], vectors[~held], labels[~held])
     agreement = float((predicted == labels[held]).mean())
     members = {int(c): int((labels == c).sum()) for c in np.unique(labels)}
     reasons = []
     if agreement < MIN_AGREEMENT:
         reasons.append(f"held-out agreement {agreement:.3f} < {MIN_AGREEMENT}")
+    if not any(c >= 0 for c in members):
+        reasons.append("no cluster: every reference ad is noise")
     reasons += [f"cluster {c}: {n} reference ads < {MIN_MEMBERS}" for c, n in members.items() if c >= 0 and n < MIN_MEMBERS]
     return {"run_id": run_id, "passed": not reasons, "reasons": reasons, "k": K,
             "held_out_agreement": round(agreement, 4), "held_out": int(held.sum()),

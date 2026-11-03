@@ -75,15 +75,18 @@ GitHub settings verified and updated on 15 October 2026:
 - `main` requires both CI jobs, Dependency audit and Secret scan from GitHub
   Actions, an up-to-date branch and resolved review conversations. The protections
   also apply to administrators; force pushes and branch deletion are disabled.
-  The Security workflow in this change must run successfully before merging it.
   The `ML tests` job added to `ci.yml` on 2026-11-01 is not a required check.
 - No R2 access or secret key was present in repository secrets. R2 credentials
-  were present in the separate environment. Their bucket permissions still need
-  to be checked in Cloudflare.
+  were present in the separate environment. Their bucket permissions have not
+  been checked in Cloudflare.
 
-Cloudflare Always Use HTTPS still needs verification or activation with a valid
-Cloudflare login. `_headers` sets HSTS for one year; it does not force an HTTP
+Whether Cloudflare's Always Use HTTPS is on has not been verified. `_headers` sets HSTS for one year; it does not force an HTTP
 request to redirect.
+
+Cloudflare JavaScript Detections inject an inline script
+(`/cdn-cgi/challenge-platform/scripts/jsd/main`) into every page. Its hash changes per request,
+so the CSP cannot allow it; the browser blocks it and logs a console error. Turning the feature
+off (Cloudflare dashboard, Security, Bots) removes the error.
 
 After the changes have been published, verify both entry points:
 

@@ -1,15 +1,12 @@
 """The release gate's decisions on dbt run_results.json and row reconciliation."""
 import io
 import json
-import sys
-from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
-import dq_gate as g
+from portfolio.publish import dq_gate as g
 
 
 def results(target, name, *statuses, which="build"):
@@ -103,3 +100,11 @@ def test_a_large_row_drop_blocks_unless_the_file_is_named(target, monkeypatch):
     assert g.gate("jobs", rows, active)[1]["drops"] == {"a.json": {"active": 100, "published": 69, "allowed": True}}
     with pytest.raises(ValueError, match=r"gone\.json \(500 to 0\)"):
         g.gate("jobs", rows, {"gone.json": 500})
+
+
+def test_an_emptied_news_feed_is_a_row_drop(target):
+    """parliament/news.json keeps its rows under `items`: 404 political items cannot become none."""
+    news = {"parliament/news.json": json.dumps({"generated_at": "2026-11-02", "items": []}).encode()}
+    assert g.reconcile(news)["rows"] == {"parliament/news.json": 0}
+    with pytest.raises(ValueError, match=r"news\.json \(404 to 0\)"):
+        g.gate("news", news, {"parliament/news.json": 404})

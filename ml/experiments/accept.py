@@ -43,6 +43,8 @@ def criteria(domain: str, folder: Path = CONFIG) -> tuple[list[dict], str]:
     spec = yaml.safe_load(path.read_text(encoding='utf-8'))
     if not spec.get('frozen_at'):
         raise ValueError(f'{path} has no frozen_at date: criteria must be fixed before the final evaluation')
+    if not spec.get('criteria'):
+        raise ValueError(f'{path} lists no criteria: an empty rule set would pass every candidate')
     return spec['criteria'], file_hash(path)
 
 
@@ -100,8 +102,8 @@ def check(candidate: dict, champion: dict | None, rules: list[dict], rules_sha: 
         mine = value(candidate['metrics'], metric)
         theirs = value(champion['metrics'], metric) if champion else None
         ok, note = None, ''
-        if mine is None:
-            ok, note = False, 'candidate lacks this metric'
+        if mine is None or not np.isfinite(mine):
+            ok, note = False, 'candidate lacks this metric or it is not finite'
         elif 'at_least' in rule:
             ok = mine >= rule['at_least']
         elif 'at_most' in rule:
