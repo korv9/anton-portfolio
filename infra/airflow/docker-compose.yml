@@ -24,6 +24,8 @@ x-airflow: &airflow
     # local: validate the publication files only. r2: upload through release.py (needs R2 secrets in .env).
     JOB_ADS_PUBLISH: ${JOB_ADS_PUBLISH:-local}
     HF_HOME: /opt/portfolio/warehouse/ml/jobs/models
+    # The Worker's own address, as in data-subject.yml: the site's domain answers runners with 403.
+    JOB_ASSIST_API: ${JOB_ASSIST_API:-https://anton-portfolio.anton-ernstson.workers.dev/api/jobs}
   volumes:
     - ../..:/opt/portfolio
   user: "${AIRFLOW_UID:-50000}:0"

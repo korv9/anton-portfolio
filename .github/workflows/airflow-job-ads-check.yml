@@ -91,10 +91,23 @@ jobs:
           $COMPOSE build
           $COMPOSE up -d
       - name: Unpause the DAG and let Airflow schedule it
+        # When publishing, platform/job_assistant/sync.py brings the owner's profile records up to date
+        # every ten minutes, as the hourly refresh does before it matches: a requested approval becomes
+        # the next version, a new CV a new draft. The owner token reaches only that process (exec -e),
+        # never the Airflow tasks, dbt or the exports.
+        env:
+          JOB_ASSIST_TOKEN: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.JOB_ASSIST_TOKEN || '' }}
         run: |
           until $COMPOSE exec -T airflow-scheduler airflow dags list 2>/dev/null | grep -q job_ads_near_realtime; do sleep 10; done
           $COMPOSE exec -T airflow-scheduler airflow dags unpause job_ads_near_realtime
-          sleep $(( MINUTES * 60 ))
+          end=$(( $(date +%s) + MINUTES * 60 ))
+          while [ "$(date +%s)" -lt "$end" ]; do
+            if [ -n "$JOB_ASSIST_TOKEN" ]; then
+              $COMPOSE exec -T -e JOB_ASSIST_TOKEN -w /opt/portfolio airflow-scheduler                 sh -c '"$PORTFOLIO_PYTHON" platform/job_assistant/sync.py' || echo "::warning::Job assistant profile sync failed; matching uses the newest version already stored."
+            fi
+            left=$(( end - $(date +%s) ))
+            if [ "$left" -gt 600 ]; then sleep 600; elif [ "$left" -gt 0 ]; then sleep "$left"; fi
+          done
       - name: Restart the stack; the metadata is on the airflow-db volume
         run: |
           mkdir -p "$EVIDENCE"
