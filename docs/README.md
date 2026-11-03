@@ -106,7 +106,7 @@ Pre-registrations are dated commitments and are never edited after the fact:
 | [development.md](development.md) | Verification levels, logs and the workspace lifecycle |
 | [deploy.md](deploy.md) | Cloudflare hosting, previews, one-time setup, secrets, limits |
 | [security.md](security.md) | Security checks, locks and headers |
-| [idea-lineage.md](idea-lineage.md) | The idea journal and the `ideas:*` commands |
+| [idea-lineage.md](idea-lineage.md) | The idea journal, the `ideas:*` commands, the Stop hook and the generated `DECISIONS.md`, `DATA_DECISIONS.md` and [idea-lineage/](idea-lineage/README.md) |
 | [package.md](package.md) | The platform as an installable Python package |
 | [case-studies/platform.md](case-studies/platform.md) | The platform: problem, decisions, failures, measured size |
 | [incidents/](incidents/) | Postmortems; open findings are listed in the document that owns the topic |

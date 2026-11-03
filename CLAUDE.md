@@ -1,6 +1,10 @@
 # Working in this repository
 
-Read `AGENTS.md`, `CONTINUITY.md` when present, and the relevant README sections.
+Read `AGENTS.md`, then `PROJECTS.md` for the project the task concerns, `CONTINUITY.md`, and
+the relevant README sections. `PROJECTS.md` is Anton's: it states what each project is for and
+where it stands. Change it only when Anton asks for the change in the conversation; if the code
+disagrees with it, report the difference and leave the line. The routine for reading, recording
+and handing over is `.claude/skills/project-memory/SKILL.md`.
 Start source lookup with the existing Graphify graph, about 1,000 tokens. Follow
 `.claude/skills/graph-first/SKILL.md`; if it has no relevant result, use a targeted
 source search. Do not rebuild the graph unless requested.
@@ -35,15 +39,21 @@ without a new change or unresolved failure. Poll remote CI at most once per minu
 
 Load only the skill sections needed for the current change; keep already-read
 instructions in context instead of re-reading them. The catalog is `.claude/skills/README.md`.
-- New UI or changed visual design: `frontend-design-principles`, the project's
-  `docs/design-system.md` and `frontend/src/tokens.css`. Direction is already approved.
-- Visual critique or a requested redesign: `taste-skill`, within the approved direction.
+- New UI or changed visual design: `docs/design-system.md` (rules, precedence, the eyebrow
+  rule) and `frontend/src/tokens.css`. The direction is decided; do not restart design
+  discovery. `frontend-design-principles` and `taste-skill` are not loaded unless Anton asks
+  for a design exploration or a critique by name.
 - UI behavior, controls or accessibility changes: `web-design-guidelines` and its local reference.
+- Connections, reuse or duplication across projects: the "Exploring connections" section of
+  `graph-first`.
 - New or changed chart encodings: `diagram-design`; use existing tokens and one focal accent.
 - Published prose changes: `de-ai-writing`; scan changed copy with its bundled script.
 - A behavior-preserving extraction needs type checks and the existing behavior tests;
   it does not restart visual design discovery. Preserve existing markup and styles.
 
-For substantial product decisions, follow `docs/idea-lineage.md`; store labelled
-findings and decisions, never prompts or transcripts. Update `CONTINUITY.md` only
-for durable changes, with a date and provenance tag, within its stated limits.
+When Anton changes a direction, scope, priority, data rule, model choice or design rule, end
+the answer with labelled lines (`Beslut (Anton): …`, `Fynd: …`, `Öppen fråga: …`); the Stop
+hook records them in the Idea Lineage journal and rebuilds `DECISIONS.md`,
+`DATA_DECISIONS.md` and `docs/idea-lineage/` (`docs/idea-lineage.md`). Never store prompts
+or transcripts. `CONTINUITY.md` holds only the current handover, under about 30 lines;
+replace its lines at a handover, do not append history.

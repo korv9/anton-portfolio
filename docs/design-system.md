@@ -5,6 +5,24 @@ Helvetica Neue display type, the signature gradient on page titles and no rules 
 sections. The interface provides structure; charts, networks
 and source material provide meaning. Nothing follows `prefers-color-scheme`.
 
+## Precedence
+
+When instructions disagree, this order decides: Anton's instruction in the conversation, then a
+decision recorded in the Idea Lineage journal (`DECISIONS.md`), then this document, then the
+tokens in `frontend/src/tokens.css`, then any general design skill. A general skill never
+reopens a decided direction: no new palette, typeface, theme or layout exploration unless Anton
+asks for one by name. If this document and the code disagree, report the difference; do not
+pick one silently.
+
+### Eyebrows
+
+No decorative eyebrow above a heading: no small uppercase, tracked label that only names the
+section, numbers it, or repeats the heading ("SELECTED WORK", "01 · METHOD"). A heading stands
+on its own. This is not a ban on labels that carry information: a form field's label, a chart's
+axis title, the unit and period in a chart caption, a status pill with a real value, a
+breadcrumb that shows where the reader is, and type or status metadata on a project card stay.
+The test is whether removing the line loses a fact; if not, remove it.
+
 ## Tokens and type
 
 `frontend/src/tokens.css` is the only token definition file. `main.tsx` imports it after the

@@ -65,8 +65,8 @@ exist when the event is written.
 ## The journal is append-only
 
 ```
-.idea-lineage/journal/2026-10-07.jsonl          private, git-ignored
-.idea-lineage/public/journal/2026-10-07.jsonl   public, committed
+.idea-lineage/public/journal/2026-10-07.jsonl   public, committed (the default)
+.idea-lineage/journal/2026-10-07.jsonl          private, git-ignored (`--private`)
 ```
 
 One JSON line per event, one file per day. A line is never edited. When a direction changes, a
@@ -74,12 +74,20 @@ new event says so (`supersedes`, `rejects`, `answers`, `evolved_from`), and the 
 earlier event's *effective status* from it: superseded, abandoned, answered or evolved. An append
 writes nothing unless every event in the batch passes validation and has an unused id.
 
-Because this repository is public, private events never enter it: `.idea-lineage/*` is
-git-ignored except `public/`. Set `IDEA_LINEAGE_HOME` to keep the private journal somewhere
-durable, such as a private repository. A cloud session's container is discarded, and the default
-home goes with it.
+Events are public by default since 2026-11-03: the committed journal survives cloud sessions,
+and the views built from it are the files a reader sees. `--private` (or `visibility: private`)
+keeps an event in the git-ignored private journal, for the job assistant and anything about a
+person. Set `IDEA_LINEAGE_HOME` to keep that private journal somewhere durable; in a cloud
+session its container is discarded and the default home goes with it.
 
 ## Capturing events
+
+The Stop hook in `.claude/settings.json` runs `platform/idea_lineage/hook.py` after every
+Claude Code answer. It reads the final assistant message from the transcript, never the user's
+messages, passes it to the extractor in auto mode and rebuilds the committed views when
+something was appended. It prints what it recorded or skipped and never blocks the session.
+The owner's own decisions are marked by the agent restating them with the owner as source:
+`Beslut (Anton): …` gives `source.kind: user`. Where hooks do not run, the same happens by hand.
 
 From a final answer, never a conversation:
 
@@ -130,18 +138,28 @@ npm run ideas:add -- --type idea --project symbolic-atlas --title "Test translat
 npm run ideas:add -- --type finding --project symbolic-atlas --title "…" --results-from experiment-2026-10-07-002 --commit efe3595
 ```
 
-`add.py` suggests earlier events with similar titles but never blocks saving. `--public` writes
-to the public journal.
+`add.py` suggests earlier events with similar titles but never blocks saving. `--private` keeps
+the event out of the committed journal; `--by-owner` records it as the owner's decision.
 
 ## Views (derived, rebuilt whole)
 
-`npm run ideas:build` rebuilds every view from the journal. `ideas:state`, `ideas:diary` and
+`npm run ideas:build` rebuilds every view from the journal. The committed views come first,
+from public events only:
+
+| File | What it holds |
+|---|---|
+| `DECISIONS.md` | Decisions and rejections in force per project with reason, what they replace and the recorded steps: decided → implemented (commit, PR or file reference) → verified (run reference); superseded ones under *Set aside* |
+| `DATA_DECISIONS.md` | The same, kept to events tagged `data`, `data-quality`, `validity` or `lineage` |
+| `docs/idea-lineage/<project>.md` | Current direction, active decisions, hypotheses, experiments, latest findings, open questions, ideas, superseded |
+| `docs/idea-lineage/diary/<date>.md` | One page per day something happened |
+
+The private home holds the full views, private events included: `ideas:state`, `ideas:diary` and
 `ideas:export` rebuild one each. Each Markdown file begins with "Generated from the Idea Lineage
 journal. Do not edit".
 
 | File | What it holds |
 |---|---|
-| `state/<project>.md` | Current direction (the latest of the project's own decisions, a major one first), active decisions, hypotheses, experiments, latest findings, open questions, ideas, and what was superseded or set aside and by which event |
+| `state/<project>.md` | As the docs page, private events included: current direction (the latest of the project's own decisions, a major one first), active decisions, hypotheses, experiments, latest findings, open questions, ideas, and what was superseded or set aside and by which event |
 | `state/portfolio.md` | Portfolio-wide direction, projects with lineage, themes shared by tag across projects, recent major decisions, cross-project connections, open cross-project questions |
 | `context.json` | Per project: active decisions, hypotheses, open questions and recent findings (ids and titles), for an agent to read before substantial work |
 | `diary/<date>.md` | One readable page per day an event happened (`occurred_on`, else recorded) |
@@ -200,11 +218,10 @@ There are no counters, scores or due dates.
 
 ## For agents
 
-Before substantial work on a project, read `.idea-lineage/state/<project>.md` or `context.json`.
-After substantial conceptual work, write the answer's decisions, ideas, findings and open
-questions as labelled lines, then run `npm run ideas:extract` on that final answer. Tiny fixes
-need neither. Nothing runs automatically; extraction is something you do, so it is always
-visible.
+Before substantial work on a project, read `PROJECTS.md` and `docs/idea-lineage/<project>.md`.
+After work that changed a direction, write the decisions, ideas, findings and open questions as
+labelled lines at the end of the answer; the Stop hook records them. Tiny fixes need nothing.
+The routine is `.claude/skills/project-memory/SKILL.md`.
 
 ## Relation to Allegoria
 
@@ -223,4 +240,6 @@ recorded here as an event with `--project allegoria` and a reference.
 - An event cannot change visibility after it is written. To publish a private idea, write a new
   public event; the private one stays where it is.
 - In a cloud session the private journal is lost with the container unless `IDEA_LINEAGE_HOME`
-  points somewhere durable.
+  points somewhere durable; the public journal is committed and survives.
+- The hook records only what the answer marks. A decision the agent did not restate is not
+  recorded; that is the price of never reading the conversation.

@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python platform/idea_lineage/hook.py",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

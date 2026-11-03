@@ -32,7 +32,7 @@ Every token is referred to by **semantic role**, not by its hex value. Type refe
 
 > **This repository:** the semantic roles above are the portfolio's own tokens from
 > `frontend/src/tokens.css` (see `docs/design-system.md`): warm grey page, near-black ink, and the
-> `--info` blue as the one focal accent. Type is Manrope for names and titles and the system
+> `--info` blue as the one focal accent. Type is the system Helvetica stack for names and titles and the system
 > monospace for technical labels. When a diagram ships inside the site, read the CSS variables
 > (`var(--ink)`, `var(--paper)` …) rather than the hex values, so a `.plate` recolours it.
 
@@ -78,18 +78,21 @@ A self-contained palette for the terminal-window primitive (see [primitive-termi
 
 | Role | Family | Size | Weight | Usage |
 |---|---|---|---|---|
-| `title` | Manrope | 1.75rem | 700 | Page H1 |
-| `node-name` | Manrope | 12px | 600 | Human-readable labels |
+| `title` | Helvetica stack | 1.75rem | 700 | Page H1 |
+| `node-name` | Helvetica stack | 12px | 600 | Human-readable labels |
 | `sublabel` | system monospace (`--font-mono`) | 9px | 400 | Port, protocol, URL, field type |
 | `eyebrow` | system monospace (`--font-mono`) | 7–8px | 500, tracked 0.18em, uppercase | Type tags, axis labels |
 | `arrow-label` | system monospace (`--font-mono`) | 8px | 400, tracked 0.06em | Arrow annotations |
-| `callout` | Manrope *italic* | 14px | 400 | Editorial asides only |
+| `callout` | Helvetica stack *italic* | 14px | 400 | Editorial asides only |
 
 ### Font stack
 
-```html
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&family=Noto+Sans+TC:wght@400;500;600&family=Noto+Serif+TC:wght@400&display=swap" rel="stylesheet">
-```
+Diagrams on this site use the portfolio stack from `frontend/src/tokens.css`: the system
+Helvetica stack for all text and the system monospace stack for sublabels, type tags and axis
+labels. No font `<link>`: the site requests no web fonts (`docs/design-system.md`). The
+upstream skill's Google Fonts link (Instrument Serif, Geist, Noto) is not used here; the
+Korean guidance below is kept for a diagram that must render Hangul, where a Noto fallback can
+be added to that one element.
 
 ### Korean labels
 
