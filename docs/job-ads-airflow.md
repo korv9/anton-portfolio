@@ -189,9 +189,12 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    `infra/airflow/docker-compose.yml` unchanged.
 2. **One scheduler.** Set the repository variable `JOB_ADS_SCHEDULER=airflow`, so the hourly GitHub
    workflow stands down, and only then set `JOB_ADS_PUBLISH=r2` with the R2 secrets in
-   `infra/airflow/.env`. Until a host exists, the check workflow with `publish=true` makes Airflow the
-   scheduler on a runner for up to about five hours (a job lasts at most six); remove the variable
-   afterwards, or the job page stops updating.
+   `infra/airflow/.env`. Until a host exists, the check workflow runs Airflow on free runners: it is
+   scheduled every five hours, each window schedules the DAG for 270 minutes and pushes the store,
+   and a concurrency group queues the next window behind it, so two never write at once. Each change
+   of window leaves a gap of about 15 to 25 minutes (image build, restore and a cold embedding of the
+   open ads), longer when GitHub starts the scheduled run late. With the variable removed the
+   scheduled runs skip and the hourly refresh takes over again.
 3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
    each run; the Airflow host keeps it on local disk. Schedule `realtime.py push` daily, or keep a
    disk backup, so a lost host does not lose the history.

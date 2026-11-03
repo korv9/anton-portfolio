@@ -12,9 +12,16 @@ name: Check the Airflow job ads flow
 # release to R2, and the ad store goes back to R2 at the end, so the hourly refresh continues from
 # Airflow's cursor. It requires the repository variable JOB_ADS_SCHEDULER=airflow, which makes the
 # hourly refresh stand down, so the store and the release never have two writers. A runner job lasts
-# at most six hours: near real time by polling for a window, not operation around the clock.
+# at most six hours: near real time by polling for a window.
+#
+# Scheduled every five hours, the windows chain into operation around the clock on free runners until
+# an always-on host exists (docs/job-ads-airflow.md): each scheduled run publishes, and the concurrency
+# group queues the next window until the one before has pushed the store, so two never write at once.
+# Without JOB_ADS_SCHEDULER=airflow a scheduled run is skipped; removing the variable turns the chain off.
 
 on:
+  schedule:
+    - cron: '23 */5 * * *'
   push:
     paths:
       - infra/airflow/**
@@ -33,22 +40,29 @@ on:
 permissions:
   contents: read
 
+# Publishing windows queue one behind another; checks without publishing run on their own.
+concurrency:
+  group: ${{ (inputs.publish || github.event_name == 'schedule') && 'job-ads-airflow-publish' || github.run_id }}
+  cancel-in-progress: false
+
 jobs:
   airflow:
+    if: github.event_name != 'schedule' || vars.JOB_ADS_SCHEDULER == 'airflow'
     runs-on: ubuntu-latest
     timeout-minutes: 360
     # An empty name runs the job without an environment, so pushes on branches need no secrets.
-    environment: ${{ inputs.publish && 'anton-portfolio' || '' }}
+    environment: ${{ (inputs.publish || github.event_name == 'schedule') && 'anton-portfolio' || '' }}
     env:
       # The r2.dev address: the custom domain's bot protection answers runners with 403.
       PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
-      MINUTES: ${{ inputs.minutes || '25' }}
+      # A scheduled window: build, 270 minutes, restart and store push fit within five hours.
+      MINUTES: ${{ inputs.minutes || (github.event_name == 'schedule' && '270') || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
-      PUBLISH: ${{ inputs.publish && 'r2' || 'local' }}
+      PUBLISH: ${{ (inputs.publish || github.event_name == 'schedule') && 'r2' || 'local' }}
     steps:
       - name: Refuse a second writer
-        if: inputs.publish && vars.JOB_ADS_SCHEDULER != 'airflow'
+        if: (inputs.publish || github.event_name == 'schedule') && vars.JOB_ADS_SCHEDULER != 'airflow'
         run: |
           echo "::error::Set the repository variable JOB_ADS_SCHEDULER=airflow first; otherwise the hourly refresh also writes the store and the release."
           exit 1
@@ -63,10 +77,10 @@ jobs:
           done
       - name: Build and start Airflow
         env:
-          R2_ACCOUNT_ID: ${{ inputs.publish && secrets.R2_ACCOUNT_ID || '' }}
-          R2_ACCESS_KEY_ID: ${{ inputs.publish && secrets.R2_ACCESS_KEY_ID || '' }}
-          R2_SECRET_ACCESS_KEY: ${{ inputs.publish && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
-          R2_BUCKET: ${{ inputs.publish && secrets.R2_BUCKET || '' }}
+          R2_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_BUCKET || '' }}
           R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
         run: |
           printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\nJOB_ADS_PUBLISH=%s\n' "$(id -u)" "$(openssl rand -hex 32)" "$PUBLISH" > infra/airflow/.env
@@ -113,7 +127,7 @@ jobs:
           python3 infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
       # Before `down -v`: the hourly refresh restores this store and continues from its cursor.
       - name: Store the ad store in R2
-        if: always() && inputs.publish
+        if: always() && (inputs.publish || github.event_name == 'schedule')
         run: |
           # Pause first, then push under realtime.py's lock, so the store is never pushed while a stage
           # writes it (a stage that starts between two checks of a lock file would race the upload).
