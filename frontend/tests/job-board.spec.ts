@@ -96,6 +96,22 @@ test('without a profile the desk lists every open ad under a calm note, with no 
   await expect(page.locator('#ja-asks')).toHaveCount(0)
 })
 
+test('an approved profile and matches: no setup copy anywhere, and the bar names the profile version', async ({
+  page,
+}) => {
+  await board(page)
+  await expect(page.locator('.ja-updated')).toContainText(
+    'matched against profile v1',
+  )
+  for (const copy of [
+    'Matching against my CV is paused',
+    'Matching starts when the CV profile is approved',
+    'Owner token',
+  ])
+    await expect(page.getByText(copy)).toHaveCount(0)
+  await expect(page.locator('.ja-notes')).toHaveCount(0)
+})
+
 test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({
   page,
 }) => {
