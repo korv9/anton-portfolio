@@ -68,6 +68,23 @@ cheap metrics only.
 | Tests | pytest, dbt tests, Node test runner, Playwright, axe |
 | Infrastructure | GitHub Actions, Terraform for Cloudflare and GitHub |
 
+## How I work
+
+Most of the code is written with AI agents, and four files keep the work readable between
+sessions and for anyone looking in:
+
+- [PROJECTS.md](PROJECTS.md): what each project is, what question it answers, how it is built,
+  where it stands and what comes next. Written in my words; agents change it only when I ask.
+- [DECISIONS.md](DECISIONS.md) and [DATA_DECISIONS.md](DATA_DECISIONS.md): what was decided, why,
+  what it replaced, and whether it was implemented and verified. Generated from an append-only
+  journal of short events ([docs/idea-lineage.md](docs/idea-lineage.md)); a change is a new
+  event that links to the old one, so the history stays.
+- [docs/idea-lineage/](docs/idea-lineage/README.md): the same history per project and per day.
+- [CONTINUITY.md](CONTINUITY.md): where the last session stopped, for the next one.
+
+The design rules in force are in [docs/design-system.md](docs/design-system.md); the agent
+instructions are [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md).
+
 ## Repository map
 
 | Folder | What it holds |

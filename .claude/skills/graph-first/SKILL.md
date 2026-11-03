@@ -33,3 +33,19 @@ directly; source investigation within those tasks still starts with the graph.
 
 The graph is a navigation index. Correctness checks and the other repository
 skills still apply after it identifies the relevant code.
+
+## Exploring connections
+
+When the task is to find reuse, duplication or combinations across projects, data sources or
+methods, the graph is the index and the source is the evidence. Mark every statement:
+
+1. **Observed**: what the graph returned (edge, path, shared artifact), with the query.
+2. **Verified**: the connection confirmed in source, with file and line.
+3. **Hypothesis**: what the connection could mean for the product, stated as a question.
+4. **Experiment**: the smallest check that would show whether it is worth doing.
+
+Give at most three alternatives, each with its evidence, the use it would serve, the strongest
+objection and that smallest experiment. Graph proximity proves navigation, not usefulness,
+semantic likeness or cause. Decisions and intentions are not in the graph: read `PROJECTS.md`
+and `docs/idea-lineage/<project>.md` for those. Write the alternatives as `Idé:` lines so they
+enter the journal as proposed, never as decisions.

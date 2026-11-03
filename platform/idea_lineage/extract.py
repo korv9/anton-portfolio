@@ -48,7 +48,9 @@ LABELS = {
 }
 LABEL_TO_TYPE = {label: kind for kind, labels in LABELS.items() for label in labels}
 _LABEL_RE = "|".join(sorted((re.escape(x) for x in LABEL_TO_TYPE), key=len, reverse=True))
-LINE_RE = re.compile(rf"^\s*(?:[-*•]\s+)?\**({_LABEL_RE})\**\s*[:：]\s*\**\s*(.+)$", re.I)
+# "Beslut (Anton): …" marks an item the owner decided in the conversation; see OWNER.
+LINE_RE = re.compile(rf"^\s*(?:[-*•]\s+)?\**({_LABEL_RE})\**\s*(?:\(([^()]{{1,30}})\))?\s*[:：]\s*\**\s*(.+)$", re.I)
+OWNER = {"anton", "owner", "user", "ägare", "ägaren"}
 HEADING_RE = re.compile(rf"^\s*#{{1,6}}\s+({_LABEL_RE})\s*:?\s*$", re.I)
 BULLET_RE = re.compile(r"^\s*(?:[-*•]|\d+[.)])\s+(.+)$")
 FENCE_RE = re.compile(r"```idea-lineage\s*\n(.*?)```", re.S)
@@ -70,6 +72,10 @@ TAGS = {
     "lineage": ["lineage", "provenance", "härkomst"],
     "portfolio-design": ["homepage", "design system", "start page", "portfolio"],
     "ux": ["visitor", "navigation", "layout", "mobile"],
+    # Decisions about sources, selection, cleaning, keys and publication: DATA_DECISIONS.md.
+    "data": ["dataset", "data source", "datakälla", "licen", "provenance", "deduplic", "missing",
+             "saknade", "retention", "anonymi", "pii", "gdpr", "personuppg", "urval", "selection",
+             "publish", "publicer", "r2", "local_only", "schema", "key", "nyckel"],
 }
 STOP = set("the a an and or of to in on for with is are be this that it as by at from we our "
            "och att det som en ett i på för med är av till den de vi om".split())
@@ -120,8 +126,8 @@ def detect_tags(text: str) -> list[str]:
     return sorted(tag for tag, words in TAGS.items() if any(w in low for w in words))
 
 
-def candidates(text: str) -> list[tuple[str, str]]:
-    """(kind, item text) pairs marked in the answer, in order, before any classification."""
+def candidates(text: str) -> list[tuple[str, str, bool]]:
+    """(kind, item text, by owner) marked in the answer, in order, before any classification."""
     found = []
     section = None
     for line in FENCE_RE.sub("", text).splitlines():
@@ -132,9 +138,10 @@ def candidates(text: str) -> list[tuple[str, str]]:
             section = None
             continue
         if m := LINE_RE.match(line):
-            found.append((LABEL_TO_TYPE[m.group(1).lower()], m.group(2)))
+            found.append((LABEL_TO_TYPE[m.group(1).lower()], m.group(3),
+                          (m.group(2) or "").strip().lower() in OWNER))
         elif section and (m := BULLET_RE.match(line)):
-            found.append((section, m.group(1)))
+            found.append((section, m.group(1), False))
         elif not line.strip():
             continue
         elif section and not line.startswith((" ", "\t")):
@@ -173,7 +180,7 @@ def _relations(item: str, known: set[str]) -> dict[str, list[str]]:
 
 
 def build(text: str, existing: list[dict], day: str, created_at: str,
-          default_projects: list[str] | None = None, visibility: str = "private") -> tuple[list[dict], list[str]]:
+          default_projects: list[str] | None = None, visibility: str = "public") -> tuple[list[dict], list[str]]:
     """(new events, notes on what was skipped). Reads only `text`; keeps only fields."""
     names = store.projects()
     digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
@@ -184,7 +191,7 @@ def build(text: str, existing: list[dict], day: str, created_at: str,
     whole = detect_projects(text, names)
     fallback = default_projects or (whole if len(whole) == 1 else [])
     source = {"kind": "assistant_output", "session_date": day, "output_sha256": digest}
-    raw = [(k, i) for k, i in candidates(text)]
+    raw = list(candidates(text))
     for block in FENCE_RE.findall(text):
         try:
             data = json.loads(block)
@@ -192,10 +199,10 @@ def build(text: str, existing: list[dict], day: str, created_at: str,
             continue
         for d in data if isinstance(data, list) else [data]:
             if isinstance(d, dict) and d.get("type") in ALL_TYPES and d.get("title"):
-                raw.append((d["type"], d))
+                raw.append((d["type"], d, False))
     events, notes = [], []
     recent = [e for e in existing if e["created_at"][:10] >= _days_before(day, 30)]
-    for kind, item in raw:
+    for kind, item, by_owner in raw:
         if isinstance(item, dict):
             fields = {k: v for k, v in item.items() if k in {
                 "title", "summary", "reason", "projects", "tags", "importance", "status",
@@ -222,7 +229,8 @@ def build(text: str, existing: list[dict], day: str, created_at: str,
         event["id"] = store.next_id(event["type"], day, taken)
         taken.add(event["id"])
         known.add(event["id"])
-        event.update(created_at=created_at, visibility=visibility, source=source)
+        event.update(created_at=created_at, visibility=visibility,
+                     source={**source, "kind": "user"} if by_owner else source)
         if dup and dup[1] >= 0.5:
             event["inferred_relations"] = {"related_to": [dup[0]["id"]]}
             notes.append(f"{event['id']} looks related to {dup[0]['id']} (inferred, {dup[1]:.2f})")
@@ -267,7 +275,8 @@ def main(argv: list[str] | None = None) -> int:
                     default=os.environ.get("IDEA_LINEAGE_MODE", "review"))
     ap.add_argument("--apply", action="store_true", help="append in review mode")
     ap.add_argument("--project", action="append", help="project id when the answer names none")
-    ap.add_argument("--public", action="store_true", help="write to the public journal")
+    ap.add_argument("--private", action="store_true",
+                    help="write to the private journal; the default is the committed public one")
     args = ap.parse_args(argv)
     if args.mode == "off":
         return 0
@@ -278,7 +287,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     created = store.now()
     events, notes = build(text, store.read_events(), created[:10], created, args.project,
-                          "public" if args.public else "private")
+                          "private" if args.private else "public")
     for n in notes:
         print(f"note: {n}")
     if not events:

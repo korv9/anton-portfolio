@@ -3,8 +3,9 @@ weekly digest. All of them can be deleted and rebuilt; the journal is the only h
 
     python platform/idea_lineage/views.py [state|diary|digest|export|all]
 
-Writes into the private home (state/, diary/, digests/, context.json) and, for `export`, the
-public events the site may show (frontend/public/data/idea-lineage/events.json).
+Writes the committed views (`root`: DECISIONS.md, DATA_DECISIONS.md, docs/idea-lineage/, see
+public_views.py), the private home (state/, diary/, digests/, context.json) and, for `export`,
+the public events the site may show (frontend/public/data/idea-lineage/events.json).
 """
 from __future__ import annotations
 
@@ -99,7 +100,7 @@ def project_state(pid: str, view: dict[str, dict], label: str) -> str:
                      own[-1] if own else None)
     gone = [e for e in mine if e["effective_status"] in ("superseded", "abandoned", "evolved")]
     lines = [HEADER, f"# {label}", ""]
-    lines += ["## Current direction", direction["summary"] or direction["title"] if direction else
+    lines += ["## Current direction", direction.get("summary") or direction["title"] if direction else
               "No decision recorded yet.", ""]
     lines += _section("Active decisions", decisions, "None recorded.")
     lines += _section("Active hypotheses", [e for e in live if e["type"] == "hypothesis"])
@@ -138,7 +139,7 @@ def portfolio_state(view: dict[str, dict], labels: dict[str, str]) -> str:
     lines = [HEADER, "# Portfolio", ""]
     portfolio_major = [e for e in major if store.PORTFOLIO in (e.get("projects") or [])]
     lines += ["## Current portfolio direction",
-              (portfolio_major[-1]["summary"] or portfolio_major[-1]["title"]) if portfolio_major
+              (portfolio_major[-1].get("summary") or portfolio_major[-1]["title"]) if portfolio_major
               else "No portfolio-wide decision recorded yet.", ""]
     lines += ["## Projects with recorded lineage",
               *([f"- {labels.get(p, p)}: {n} event{'s' * (n != 1)}" for p, n in per_project.most_common()] or ["None yet."]), ""]
@@ -317,10 +318,13 @@ def build_duckdb() -> list[Path]:
 
 
 def main(argv: list[str]) -> int:
+    from public_views import build_docs, build_root
+
     what = argv[0] if argv else "all"
     steps = {"state": [build_state], "diary": [build_diary], "digest": [build_digest],
-             "export": [build_export], "duckdb": [build_duckdb],
-             "all": [build_state, build_diary, build_digest, build_export, build_duckdb]}[what]
+             "export": [build_export], "duckdb": [build_duckdb], "root": [build_root, build_docs],
+             "all": [build_root, build_docs, build_state, build_diary, build_digest, build_export,
+                     build_duckdb]}[what]
     for step in steps:
         paths = step()
         print(f"{step.__name__.removeprefix('build_')}: {len(paths)} files")
