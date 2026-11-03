@@ -15,7 +15,7 @@ from compliance_intelligence.legal_extraction import (  # noqa: E402
 )
 from compliance_intelligence.legal_review import ReviewStore, identity_check, values  # noqa: E402
 from compliance_intelligence.review_cli import evidence_body, run_extraction  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 from compliance_intelligence.sources import seal  # noqa: E402
 from test_phase1 import alias, number, rows, snapshot  # noqa: E402
 from test_phase2 import ROBOTS, Response, html, http_fixture, pdf_bytes  # noqa: E402

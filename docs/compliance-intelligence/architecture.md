@@ -18,7 +18,7 @@ from parser output.
 | Review | Identity decisions, legal interpretation, privacy clearance, publication authorization | Private audit trail tied to exact record/evidence versions. Human decisions cannot be inferred from a successful parser or dbt test. |
 | Gold | Approved, minimized entity/outcome facts and coverage observations | Future dbt subject follows existing bronze/silver/gold conventions, but reads approved projections only into the public warehouse. |
 | Export | Cohort/methodology CSV and JSON; later Parquet analytical facts | Explicit column allowlist, source links, status/as-of dates and release manifest. Exclude raw PDFs, personal details, reviewer IDs, extraction text and private object references. |
-| Delivery | Immutable reviewed release and compatible snapshot pointer | Reuse `platform/publish/release.py` and `configs/delivery/`; publication must be a separate authorized operation after tests/review. Add no live group now. |
+| Delivery | Immutable reviewed release and compatible snapshot pointer | Reuse `src/portfolio/publish/release.py` and `configs/delivery/`; publication must be a separate authorized operation after tests/review. Add no live group now. |
 
 The Phase 0 namespace `compliance_intelligence` describes domain contracts, not a
 fourth production medallion layer. `open_contract_database()` always uses

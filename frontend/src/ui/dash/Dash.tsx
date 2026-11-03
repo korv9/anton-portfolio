@@ -1,19 +1,19 @@
 /**
- * The dashboard card and grid project pages are built from (docs/mockups/SPEC.md): cards in a
+ * The dashboard card and grid that project pages are built from: cards in a
  * 12-column grid, each with an optional slicer. Numbers come from the caller, which reads them
  * from public/data; nothing here knows a value.
  */
 import { useId, type ReactNode } from 'react'
 import './dash.css'
 
-export type Slicer = {
+type Slicer = {
   label: string
   value: string
   options: { value: string; label: string }[]
   onChange: (value: string) => void
 }
 
-export function SlicerSelect({ slicer }: { slicer: Slicer }) {
+function SlicerSelect({ slicer }: { slicer: Slicer }) {
   // The label names the select alone; wrapped, its name would include the chosen option.
   const id = useId()
   return (

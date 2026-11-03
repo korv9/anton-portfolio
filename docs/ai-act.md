@@ -31,7 +31,7 @@ fetched, since EUR-Lex answers automated requests with a browser challenge. No s
 
 ## Ingestion and versioning
 
-`platform/ingest/eu_ai_act/` writes to `warehouse/raw/eu_ai_act/` through `lib/rawstore.py`, so
+`platform/ingest/eu_ai_act/` writes to `warehouse/raw/eu_ai_act/` through `src/portfolio/storage/rawstore.py`, so
 every file has a provenance line in `_manifest.jsonl`: URL, request headers (format, language),
 fetch time, SHA-256 and size.
 

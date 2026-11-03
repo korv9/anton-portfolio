@@ -124,7 +124,7 @@ const METHOD_PARTS: [keyof Method, string, string][] = [
 ]
 
 /** The nine method sections, each a native disclosure so they open independently. */
-export function MethodDrawer({ method }: { method: Method }) {
+function MethodDrawer({ method }: { method: Method }) {
   return (
     <section className="sw-method" aria-labelledby="sw-method-title">
       <h2 id="sw-method-title">
@@ -150,7 +150,7 @@ export type Reading = {
   limits: ReactNode
 }
 
-export function Interpretations({ readings }: { readings: Reading[] }) {
+function Interpretations({ readings }: { readings: Reading[] }) {
   const verdict = {
     supports: l('The evidence supports this', 'Evidensen stöder detta'),
     challenges: l('The evidence challenges this', 'Evidensen talar emot detta'),

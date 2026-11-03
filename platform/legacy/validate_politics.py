@@ -16,8 +16,11 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import delivery
-from common import POLITICS as DATA, PUBLIC, raw_sha, read_json
+from portfolio.storage import delivery
+from portfolio.core.config import PUBLIC
+from portfolio.core.io import raw_sha, read_json
+
+DATA = PUBLIC / "politics"
 
 
 def read(path):

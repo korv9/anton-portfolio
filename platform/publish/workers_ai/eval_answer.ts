@@ -8,8 +8,7 @@
  *     examples --model <chosen> --ids sfs:0,sfs:1,ai-act-sv:12,ai-act-en:12,...
  *
  * In --ids, <corpus>:<n> is the n-th eval question (from 0); for ai-act-en its question_en is asked.
- * --questions picks another question file (eval_questions_platform.yaml for Ask the platform) and
- * --agent the name in the ledger (default law-eval).
+ * --questions picks another question file and --agent the name in the ledger (default law-eval).
  *
  * The question is embedded and answered by worker/index.ts itself (its fetch handler, system
  * prompt and quote check), with env.AI.run sent to the Workers AI REST endpoint and env.ASSETS

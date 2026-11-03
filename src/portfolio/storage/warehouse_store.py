@@ -18,11 +18,11 @@ In the bucket, under warehouse/:
     cluster_lab/...       the Cluster Lab runs the site's demos depend on (CLUSTER_LAB_RUNS), not
                           the lab's caches or test runs
 
-    python platform/publish/warehouse_store.py push            # warehouse and raw files
-    python platform/publish/warehouse_store.py push --only db  # or --only raw, features, cluster_lab
-    python platform/publish/warehouse_store.py pull            # fetch both back
-    python platform/publish/warehouse_store.py status          # what the bucket holds
-    python platform/publish/warehouse_store.py pull --only raw --path jobtech/stream
+    python -m portfolio.storage.warehouse_store push            # warehouse and raw files
+    python -m portfolio.storage.warehouse_store push --only db  # or --only raw, features, cluster_lab
+    python -m portfolio.storage.warehouse_store pull            # fetch both back
+    python -m portfolio.storage.warehouse_store status          # what the bucket holds
+    python -m portfolio.storage.warehouse_store pull --only raw --path jobtech/stream
                                                                # one folder (daily refreshes)
 
 The bucket is the site's public one, so everything stored here can be downloaded by anyone
@@ -373,7 +373,7 @@ def main() -> int:
         parser.error("--prune needs push --only raw/features/cluster_lab with explicit --path folders")
     subs = args.path or [""]
 
-    from upload import client
+    from portfolio.storage.upload import client
 
     s3, bucket = client()
     if args.action == "status":

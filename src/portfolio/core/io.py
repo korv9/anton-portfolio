@@ -1,7 +1,7 @@
 """Reading, writing and hashing files the way every export and validator expects.
 
-The site's JSON is compact and, for the exports, ends in a newline; platform/lib/common.py
-wrote it without one. Both forms stay available so moving a script here changes no bytes.
+The site's JSON is compact and, for most exports, ends in a newline; the welfare, parliament,
+taxes and sfs exports write it without one (newline=False), as they always have.
 """
 import hashlib
 import json

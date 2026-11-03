@@ -38,10 +38,10 @@ flowchart LR
 
 | Stage | Where | What it does |
 |---|---|---|
-| Ingestion | `platform/ingest/`, `platform/lib/rawstore.py` | One package per source. Each raw file is written with a manifest line: URL, fetch time, SHA-256. |
+| Ingestion | `platform/ingest/`, `src/portfolio/storage/rawstore.py` | One package per source. Each raw file is written with a manifest line: URL, fetch time, SHA-256. |
 | Transformation | `platform/models/` | dbt on DuckDB. Bronze types the raw records, silver conforms them, gold holds the shared dimensions (`models/gold/shared/`) and the marts the site reads. |
 | Checks | `platform/models/**/schema.yml`, `configs/delivery/schemas/`, `python platform/pipeline.py check` | dbt tests and enforced model contracts, JSON Schemas for delivered files, and Python validators that reconcile delivered totals against the warehouse. |
-| Delivery | `frontend/public/data/`, `platform/publish/release.py` | JSON for first paint is committed and ships with the site. Parquet marts and document shards live in R2; the browser reads them from the addresses in `delivery.json`. Each publish step also uploads a versioned release, reads every file back to compare bytes, and activates it last. The site does not read those releases yet ([storage and serving](../storage-and-serving.md)). |
+| Delivery | `frontend/public/data/`, `src/portfolio/publish/release.py` | JSON for first paint is committed and ships with the site. Parquet marts and document shards live in R2; the browser reads them from the addresses in `delivery.json`. Each publish step also uploads a versioned release, reads every file back to compare bytes, and activates it last. The site does not read those releases yet ([storage and serving](../storage-and-serving.md)). |
 | Serving | `worker/index.ts` | A Cloudflare Worker serves the static assets, two Workers AI endpoints and the job assistant's owner records (`/api/jobs/*`), which answer 503 until the D1 database is bound in `wrangler.toml`. |
 | Orchestration | `platform/pipeline.yml`, `platform/pipeline.py` | Lists every subject with its stages and schedule, and runs them the same way locally and in GitHub Actions. |
 

@@ -76,8 +76,8 @@ export type Trends = {
     jump?: Jump | null
   } | null
 }
-export type Cells = { rows: [string, string, number, number, number][] }
-export type Examples = { rows: string[][] }
+type Cells = { rows: [string, string, number, number, number][] }
+type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/futures/'
 // DiVA years whose rise in the future share gets a scope note while the per-word counts

@@ -22,8 +22,8 @@ from compliance_intelligence.registry import encoded, organization_number
 from compliance_intelligence.sources import (ScbClient, load_snapshot, new_output, now,
     private_path, seal, verify, write_json)
 from weekly_jobs import collect
-from lib.common import load_env
-from lib.rawstore import sha256
+from portfolio.core.config import load_env
+from portfolio.storage.rawstore import sha256
 from publish.job_content import active, instant, package, detail
 
 ROOT = Path(__file__).resolve().parents[2]

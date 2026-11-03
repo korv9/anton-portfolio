@@ -18,14 +18,11 @@ Skatteverket (open data rowstore), under warehouse/raw/skatteverket/:
 from __future__ import annotations
 
 import json
-import sys
 import urllib.parse
 from datetime import date
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 OECD = "https://sdmx.oecd.org/public/rest/data/OECD.CTP.TPS"
 REVENUE = (f"{OECD},DSD_REV_COMP_OECD@DF_RSOECD,2.0/.TAX_REV.S13.._T.PT_B1GQ+XDC.A"

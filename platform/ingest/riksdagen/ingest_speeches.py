@@ -5,7 +5,7 @@
 Riksdagen publishes one archive per riksmöte (`anforande-201617.json.zip`, one JSON file per
 speech). The list of archives is read from Riksdagen's open-data page and each archive is
 stored as served under warehouse/raw/riksdagen/speeches/, with its provenance line in
-warehouse/raw/riksdagen/_manifest.jsonl (lib/rawstore.py). A refetch that returns the same
+warehouse/raw/riksdagen/_manifest.jsonl (src/portfolio/storage/rawstore.py). A refetch that returns the same
 bytes rewrites nothing. Nothing is parsed here: bronze reads the archives
 (models/bronze/ai_politics/stg_riksdag_speeches.py).
 
@@ -17,11 +17,8 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
 # Session codes have six digits (201617), except 1999/2000, which has eight (19992000).

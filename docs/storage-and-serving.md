@@ -33,7 +33,7 @@ Open findings, 2026-11-02:
 
 ## The catalogue
 
-`platform/publish/build_catalog.py` (`npm run data:catalog`) writes two files in
+`src/portfolio/publish/catalog.py` (`npm run data:catalog`) writes two files in
 `frontend/public/data/`:
 
 - `catalog.json`: one entry per delivered file with `path`, `product`, `format`, `bytes`,
@@ -49,7 +49,7 @@ and are marked `sha256-crlf-normalized`; they are read back with that rule and g
 hash the next time they are published.
 
 Known drift, 2026-11-02: the committed `catalog.json` and `delivery.json` still carry
-`schema_version: 1`, which `build_catalog.py` would write as 2, and `delivery.json` lists the
+`schema_version: 1`, which `portfolio.publish.catalog` would write as 2, and `delivery.json` lists the
 shard prefix `workers-ai/debate/shards/` twice. The committed files predate the generator's
 version 2; a rerun of `npm run data:catalog` has not been checked against them.
 
@@ -70,7 +70,7 @@ The production site reads the data committed under `frontend/public/data`. The c
 Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not used, so the
 site reads most groups from these bases, not from the versioned releases the workflows publish
 to R2 ([r2-delivery-contract.md](r2-delivery-contract.md)). The exception is `live`: paths under
-its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `build_catalog.py`) are resolved through its
+its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `portfolio.publish.catalog`) are resolved through its
 `manifest_url`, the active R2 manifest. That group is never committed under `frontend/public/data`,
 so it exists only as a release. Use `VITE_DELIVERY_MODE=local` to read a local export instead.
 
@@ -85,11 +85,11 @@ fixtures. On localhost a missing `delivery.json` is tolerated the same way.
 4. Give it to a delivery group in `configs/delivery/`, or leave it to `baseline`.
 
 A directory whose files are read one document at a time goes in `SHARD_DIRECTORIES` in
-`build_catalog.py`. The site reads that list from `delivery.json`, so nothing in `src/` changes.
+`portfolio.publish.catalog`. The site reads that list from `delivery.json`, so nothing in `src/` changes.
 
 ## Validators and remote files
 
-`platform/lib/delivery.py` reads a delivered path from disk when it is there and from the
+`src/portfolio/storage/delivery.py` reads a delivered path from disk when it is there and from the
 delivery base when it is not, so the checks in `npm run data:check` keep their full coverage:
 
 - `validate_politics.py` verifies every local file byte for byte, asserts that each absent
@@ -118,8 +118,8 @@ needs three local sources to regenerate them (`--parliament`, `--allegoria`,
 `--local-corpus`), and one of those is in no repository. Git history still has the files,
 because the move was an ordinary commit.
 
-`platform/publish/upload.py` is the unversioned uploader from that move. No workflow or
-delivery group uses it; releases go through `platform/publish/release.py`.
+`src/portfolio/storage/upload.py` is the unversioned uploader from that move. No workflow or
+delivery group uses it; releases go through `src/portfolio/publish/release.py`.
 
 ## The bucket's address
 

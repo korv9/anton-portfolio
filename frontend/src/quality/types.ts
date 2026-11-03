@@ -9,7 +9,7 @@ export type ValidityStatus =
   | 'invalidated'
   | 'not_evaluated'
 
-export type Dimension = {
+type Dimension = {
   id: string
   label_en: string
   label_sv: string
@@ -20,14 +20,14 @@ export type Dimension = {
   note?: string
 }
 
-export type QualityProduct = {
+type QualityProduct = {
   product_id: string
   project_id: string
   label_en: string
   label_sv: string
 }
 
-export type ProductDimension = {
+type ProductDimension = {
   product_id: string
   dimension: string
   check_count: number

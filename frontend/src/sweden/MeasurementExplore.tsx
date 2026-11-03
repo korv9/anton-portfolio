@@ -69,7 +69,7 @@ export type Summary = {
   }
 }
 export type Coverage = { rows: [string, number, Geo, number][] }
-export type Items = { rows: (string | number | null)[][] }
+type Items = { rows: (string | number | null)[][] }
 
 export const BASE = 'sweden/measurement/'
 export const GEO_LEVELS: Geo[] = [

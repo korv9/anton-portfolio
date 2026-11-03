@@ -11,7 +11,7 @@ from compliance_intelligence.public_documents import collect, document_url, sear
 from compliance_intelligence.legal_review import ReviewStore
 from compliance_intelligence.legal_extraction import document_pages, extract_candidate
 from compliance_intelligence.cohort import verify_cohort
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 from test_phase4 import ready, pdf
 from test_phase1 import number
 from test_phase2 import Response, Session

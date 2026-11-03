@@ -8,9 +8,9 @@ import { MarkerShape, spreadLabels } from './marks'
  * Categorical series colours: the --series tokens (tokens.css), in fixed order and never
  * cycled; a sixth series is not drawn.
  */
-export const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
+const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
 
-export type SeriesPoint = {
+type SeriesPoint = {
   /** Period start, ISO date; the x position. */
   date: string
   /** Period label shown in the tooltip ('2024-03', '2021-2024', 'ESS11 (2023-2024)'). */
@@ -20,7 +20,7 @@ export type SeriesPoint = {
   high?: number | null
   breakBefore?: boolean
 }
-export type Series = {
+type Series = {
   key: string
   name: string
   points: SeriesPoint[]

@@ -17,7 +17,7 @@ from weekly_jobs import IT_FIELD, collect
 from publish.job_companies import project, publish, validate
 from publish.job_companies import percentage
 from test_phase1 import alias, number, relation, snapshot, rows, write_local
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 
 def test_exact_wrong_similar_and_unresolved_names():

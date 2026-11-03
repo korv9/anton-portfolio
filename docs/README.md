@@ -2,7 +2,7 @@
 
 One document per topic. Each one describes the system as it is. Finished plans, audits and
 run logs are removed once their content is in the document that owns the topic; Git history
-keeps them. Documents are in English or Swedish, whichever they were written in (marked sv).
+keeps them. Task lists, inventories and plans for unbuilt work are not kept here. Documents are in English or Swedish, whichever they were written in (marked sv).
 
 The repository overview is in the [root README](../README.md). Folder guides:
 [platform](../platform/README.md), [ml](../ml/README.md), [frontend](../frontend/README.md),
@@ -22,7 +22,7 @@ The repository overview is in the [root README](../README.md). Folder guides:
 |---|---|
 | [pipeline.md](pipeline.md) | `platform/pipeline.py`, the subject registry, schedules, workflows, secrets |
 | [gold-semantic-model.md](gold-semantic-model.md) | The politics gold layer: tables, grains, keys, joins and measures |
-| [data-dictionary.md](data-dictionary.md) | Historical: delivered tables and columns as of 2026-10-22; its generator, `platform/legacy/generate_data_dictionary.py`, no longer runs (sv) |
+| [data-dictionary.md](data-dictionary.md) | Historical: delivered tables and columns as of 2026-10-22; its generator has been removed (sv) |
 | [quality-and-validity.md](quality-and-validity.md) | Data quality checks and construct validity analyses, kept apart |
 | [data-constellation.md](data-constellation.md) | The provenance graph built by `platform/architecture/` and the feed's Trace data |
 | [parliament-data-model.md](parliament-data-model.md) | Elections, governments, roll calls, bills and studies |
@@ -63,11 +63,8 @@ The repository overview is in the [root README](../README.md). Folder guides:
 | [ai-governance-timeline.md](ai-governance-timeline.md) | The Act, the Riksdag and job ads on one time axis |
 | [workers-ai.md](workers-ai.md) | Ask the law and the sentence placer on Workers AI; the corpus and eval of the removed Ask the platform (sv) |
 | [site-structure.md](site-structure.md) | Pages, navigation, routing and retired addresses |
-| [design-system.md](design-system.md) | The live visual direction, tokens and chart forms |
+| [design-system.md](design-system.md) | The live visual direction, tokens, chart forms and the site-wide checks |
 | [data-storytelling.md](data-storytelling.md) | The order a page presents question, answer, visual and method |
-| [site-goals.md](site-goals.md) | The site's finish line, as checkable goals |
-| [product-inventory.md](product-inventory.md) | Historical: product reviews and task tables of 2026-10-25; paths as of that date |
-| [mockups/SPEC.md](mockups/SPEC.md) | The remaining dashboard mockups (sv) |
 
 DrugComb and the Homie API are documented beside their pinned sources in
 [platform/products/](../platform/products/README.md).
@@ -109,10 +106,8 @@ Pre-registrations are dated commitments and are never edited after the fact:
 | [development.md](development.md) | Verification levels, logs and the workspace lifecycle |
 | [deploy.md](deploy.md) | Cloudflare hosting, previews, one-time setup, secrets, limits |
 | [security.md](security.md) | Security checks, locks and headers |
-| [roadmap.md](roadmap.md) | The work queue of the build loop; statuses checked on 2026-10-23 |
 | [idea-lineage.md](idea-lineage.md) | The idea journal and the `ideas:*` commands |
 | [package.md](package.md) | The platform as an installable Python package |
-| [code-inventory.md](code-inventory.md) | Historical: used and unused code on 2026-10-23; not kept current |
 | [case-studies/platform.md](case-studies/platform.md) | The platform: problem, decisions, failures, measured size |
 | [incidents/](incidents/) | Postmortems; open findings are listed in the document that owns the topic |
 

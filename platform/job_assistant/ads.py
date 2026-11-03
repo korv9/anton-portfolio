@@ -6,7 +6,7 @@ The first run reads every current Data/IT ad from JobSearch, one publication day
 last 60 days (JobStream's snapshot ignores the occupation filter). An ad published earlier and still
 open is missed until it changes, when the stream brings it in; later runs ask the stream for
 every change since the stored cursor, in windows of at most six hours. Each answer is kept as
-served, with its provenance line (lib/rawstore.py), under warehouse/raw/job_assistant/. The store:
+served, with its provenance line (src/portfolio/storage/rawstore.py), under warehouse/raw/job_assistant/. The store:
 
     ads.json     a JSON array, one row per JobTech ad id: headline, employer, place, full public text, source
                  links, dates, content hash, removed time, duplicate group and change history
@@ -38,9 +38,8 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ingest/jobtech"))
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from ingest_jobs import API as SEARCH_URL, fetch_search  # noqa: E402
 from publish.job_content import public_text, public_url, redact  # noqa: E402
 

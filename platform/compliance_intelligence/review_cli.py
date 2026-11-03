@@ -16,8 +16,8 @@ from pypdf.errors import PyPdfError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from lib.common import load_env  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.core.config import load_env  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 from compliance_intelligence.authority_http import AuthorityHttp, AccessFailure  # noqa: E402
 from compliance_intelligence.legal_extraction import (  # noqa: E402
     LLM_INSTRUCTIONS, SCHEMA, document_pages, extract_candidate,

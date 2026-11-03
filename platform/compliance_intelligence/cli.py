@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from lib.common import load_env  # noqa: E402
+from portfolio.core.config import load_env  # noqa: E402
 from compliance_intelligence.cohort import build_cohort, verify_cohort  # noqa: E402
 from compliance_intelligence.registry import explore, resolve  # noqa: E402
 from compliance_intelligence.sources import ScbClient, ingest_local, load_snapshot, now  # noqa: E402

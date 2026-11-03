@@ -184,7 +184,7 @@ const PARTS = SECTIONS.map((s) => ({
   // A stable sort, so the posts after the lead keep their interleaved order.
   posts: interleave(grouped.get(s.key) ?? []).sort((a, b) => lead(a) - lead(b)),
 })).filter((s) => s.posts.length)
-export const FEED = PARTS.flatMap((s) => s.posts)
+const FEED = PARTS.flatMap((s) => s.posts)
 
 /** Grid reflow animated by the View Transitions API where the browser has it. */
 function morph(change: () => void) {

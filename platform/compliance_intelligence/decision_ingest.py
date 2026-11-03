@@ -15,7 +15,7 @@ from pypdf.errors import PyPdfError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from lib.common import load_env  # noqa: E402
+from portfolio.core.config import load_env  # noqa: E402
 from compliance_intelligence.authority_http import AccessFailure, AuthorityHttp  # noqa: E402
 from compliance_intelligence.authority_sources import (  # noqa: E402
     EXTRACTION_VERSION, SOURCES, ExtractionFailure, extract, official_url, source_spec,
@@ -23,7 +23,7 @@ from compliance_intelligence.authority_sources import (  # noqa: E402
 from compliance_intelligence.cohort import verify_cohort  # noqa: E402
 from compliance_intelligence.registry import encoded, relative_file, resolve, reviewed  # noqa: E402
 from compliance_intelligence.sources import load_snapshot, now, private_path, write_json  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 
 LOG = logging.getLogger(__name__)
 

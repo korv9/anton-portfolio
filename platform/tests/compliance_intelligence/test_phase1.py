@@ -20,7 +20,7 @@ from compliance_intelligence.registry import (  # noqa: E402
 from compliance_intelligence.sources import (  # noqa: E402
     ROOT, ScbClient, ingest_local, load_snapshot, private_path, verify,
 )
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 
 STAMP = "2026-10-16T12:00:00+00:00"
 REVIEW = {"reviewer_id": "synthetic-test-reviewer", "reviewed_at": STAMP}

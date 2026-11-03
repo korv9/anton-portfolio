@@ -1,15 +1,12 @@
 """The release gate's decisions on dbt run_results.json and row reconciliation."""
 import io
 import json
-import sys
-from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
-import dq_gate as g
+from portfolio.publish import dq_gate as g
 
 
 def results(target, name, *statuses, which="build"):

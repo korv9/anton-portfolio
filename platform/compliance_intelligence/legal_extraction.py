@@ -12,7 +12,7 @@ from pypdf import PdfReader
 
 from compliance_intelligence.authority_sources import DATE, Page, observations, parsed_date
 from compliance_intelligence.registry import encoded, name_key, organization_number
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 VERSION = "legal-evidence-v1:" + sha256(Path(__file__).read_bytes() + version("pypdf").encode())[:20]
 STATUSES = ["investigation", "alleged", "decided", "appealed", "final", "modified", "annulled", "unknown"]

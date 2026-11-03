@@ -1,13 +1,14 @@
 # SWEDEN atlas
 
-The atlas is a second way into SWEDEN: one dark 3D space per study, with the question and
+The atlas is offline. Nothing links to it, and every `#sweden-atlas*` address leads to
+`#sweden` (`PREFIX_REDIRECTS` in `frontend/src/router.ts`); the code stays, and
+`frontend/tests/sweden-atlas.spec.ts` checks that the addresses redirect. It was built as a second way into SWEDEN: one dark 3D space per study, with the question and
 two short texts on the left. The first says what the data reveals; the second names the
-Data–Reality Gap, meaning what the data cannot show. The routes are `#sweden-atlas` (start)
-and `#sweden-atlas-a` to `-e` plus `#sweden-atlas-x` (Connections). You can also open the
-atlas from the SWEDEN menu. The product pages under `#sweden-*` are unchanged.
+Data–Reality Gap, meaning what the data cannot show. Its routes were `#sweden-atlas` (start)
+and `#sweden-atlas-a` to `-e` plus `#sweden-atlas-x` (Connections). The product pages under `#sweden-*` are unchanged.
 
-Code lives in `frontend/src/sweden/atlas/`. The atlas is lazy-loaded (`SwedenPage.tsx`);
-three.js loads only on SWEDEN routes.
+Code lives in `frontend/src/sweden/atlas/`. Nothing outside that folder imports it, so
+no route loads the atlas code.
 
 ## How a page is built
 

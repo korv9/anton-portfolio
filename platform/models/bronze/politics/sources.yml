@@ -40,7 +40,7 @@ sources:
             read_json('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/debates/budgets/coverage.json')
       - name: budget_language
         description: >-
-          The budget-language audit (platform/legacy/build_report_audits.py): lexical matches per
+          The budget-language audit (committed snapshot, generator removed): lexical matches per
           corpus, method, session, party and expenditure area, and their coverage.
         meta:
           external_location: >-
@@ -63,7 +63,7 @@ sources:
           external_location: >-
             read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/politics/parliament/budgets/outturn-areas.json')
       - name: rfc_drift
-        description: The RFC drift report (platform/legacy/build_report_audits.py); one profile per RFC version.
+        description: The RFC drift report (committed snapshot, generator removed); one profile per RFC version.
         meta:
           external_location: >-
             read_json_objects('{{ env_var('PORTFOLIO_DELIVERY', '../frontend/public/data') }}/reports/rfc-drift.json')

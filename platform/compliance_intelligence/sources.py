@@ -13,7 +13,7 @@ from pathlib import Path
 
 import requests
 
-from lib.rawstore import session, sha256
+from portfolio.storage.rawstore import session, sha256
 from compliance_intelligence.registry import (
     POLICY, encoded, https_url, normalize_snapshot, organization_number, relative_file, reviewed, utc_timestamp,
 )

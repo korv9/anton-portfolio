@@ -1,5 +1,5 @@
 /**
- * The site-wide checks in docs/site-goals.md: opens every product route on a desktop and a phone
+ * The site-wide checks in docs/design-system.md (Validation): opens every product route on a desktop and a phone
  * and reports, per route, whether it is charcoal, free of "not done" wording, free of console
  * errors and failed requests, and free of sideways scroll. Run against a running site:
  *   npm run goals                       (http://127.0.0.1:5173)
@@ -34,7 +34,7 @@ const ROUTES = [
   '#lag-ankomst',
   '#sweden-valfard',
 ]
-// Wording that tells a visitor the work is not finished (docs/site-goals.md, "No 'not done' signals").
+// Wording that tells a visitor the work is not finished (docs/design-system.md, Validation).
 const NOT_DONE = [
   /not reviewed/i,
   /\b0 reviewed\b/i,

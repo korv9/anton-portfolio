@@ -5,8 +5,7 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from ingest import FIELDS
-from issue_ingest import import_file, issue_kind
+from issue_ingest import FIELDS, import_file, issue_kind
 
 
 class IssueIngestTests(unittest.TestCase):

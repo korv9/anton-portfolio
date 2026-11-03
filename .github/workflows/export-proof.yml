@@ -60,7 +60,7 @@ jobs:
           pull: ${{ inputs.subjects }}
       - name: Fetch the stored warehouse and keep a clean copy
         run: |
-          python platform/publish/warehouse_store.py pull --only db
+          python -m portfolio.storage.warehouse_store pull --only db
           cp "$PORTFOLIO_DB" "$RUNNER_TEMP/clean.duckdb"
       # Unquoted $SUBJECTS on purpose: one argument per subject.
       - name: Before

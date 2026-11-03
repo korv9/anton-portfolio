@@ -8,9 +8,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-sys.path.insert(0, str(ROOT / "platform/lib"))
 import ads as store  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 IT = {"concept_id": store.IT_FIELD}
 

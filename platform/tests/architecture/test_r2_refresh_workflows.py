@@ -88,18 +88,18 @@ python() {
   printf '%s\t' "$@" >> "$EVENT_LOG"; printf '\n' >> "$EVENT_LOG"
   case "$*" in
     *summarize_news.py*) return "$SUMMARY_EXIT" ;;
-    *release.py\ current*)
+    *portfolio.publish.release\ current*)
       if [ "$CURRENT_EXIT" != 0 ]; then return "$CURRENT_EXIT"; fi
       if [ -n "$EXISTING_SOURCE_GROUP" ] && [[ " $* " == *" --group $EXISTING_SOURCE_GROUP "* ]] && [[ " $* " == *" --manifest-key manifests/pipeline-smoke.json "* ]]; then
         printf '{"release":"%064d"}\n' 2
       elif [ -n "$EXISTING_GROUP" ] && [[ " $* " == *" --group $EXISTING_GROUP "* ]]; then
         printf '{"release":"%064d"}\n' 1
       else printf '{"release":null}\n'; fi ;;
-    *release.py*publish*)
+    *portfolio.publish.release*publish*)
       if [ -n "$FAIL_GROUP" ] && [[ " $* " == *" --group $FAIL_GROUP "* ]]; then return 1; fi
       if [ "$BROKEN_RECEIPT" = 1 ]; then printf 'invalid receipt\n'; return 0; fi
       printf '{"release":"%064d"}\n' 0 ;;
-    *release.py*materialize*) if [ "$FAIL_MATERIALIZE" = 1 ]; then return 1; fi ;;
+    *portfolio.publish.release*materialize*) if [ "$FAIL_MATERIALIZE" = 1 ]; then return 1; fi ;;
     *validate*) return "$CHECK_EXIT" ;;
   esac
 }
@@ -157,7 +157,7 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
 
 
 def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
-    (step,) = [s for s in steps("build-warehouse.yml") if "retention.py" in s.get("run", "")]
+    (step,) = [s for s in steps("build-warehouse.yml") if "portfolio.publish.retention" in s.get("run", "")]
     assert "--apply" not in step["run"]
     assert step["env"] == {"APPLY": "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"}
     for apply in ("", "--apply"):
@@ -165,19 +165,19 @@ def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
         result, calls, _ = run_script(tmp_path / f"run{apply}", step["run"], APPLY=apply,
                                       GITHUB_STEP_SUMMARY=str(summary))
         assert result.returncode == 0, result.stderr
-        ((*_, last),) = [call for call in calls if "platform/publish/retention.py" in call]
+        ((*_, last),) = [call for call in calls if "portfolio.publish.retention" in call]
         assert (last == "--apply") == bool(apply)
         assert "### Release retention" in summary.read_text()
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
     filename = "publish-r2.yml"
-    staged = commands(filename, "platform/publish/release.py", "publish")
-    activated = commands(filename, "platform/publish/release.py", "activate")
+    staged = commands(filename, "portfolio.publish.release", "publish")
+    activated = commands(filename, "portfolio.publish.release", "activate")
     assert staged and len(activated) == 1, "bootstrap must stage groups then activate one snapshot"
     assert all("--stage-only" in argv and "--code-sha" in argv for _, _, argv in staged)
     # Execute publication control flow, including dynamic loops and optional DiVA selection.
-    scripts = [step["run"] for step in steps(filename) if "release.py" in step.get("run", "")]
+    scripts = [step["run"] for step in steps(filename) if "portfolio.publish.release" in step.get("run", "")]
     result, calls, _ = run_script(tmp_path, "\n".join(scripts))
     assert result.returncode == 0, result.stderr
     pubs = [call for call in calls if "publish" in call]
@@ -223,8 +223,7 @@ def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
 
 
 def test_publication_specs_have_disjoint_real_file_owners():
-    sys.path.insert(0, str(ROOT / "platform/publish"))
-    import release
+    from portfolio.publish import release
     public = ROOT / "frontend/public/data"
     owners = {}
     for group in ("baseline", "jobs", "jobs-analysis", "news", "public-data", "diva", "sweden"):
@@ -242,8 +241,8 @@ def test_publication_specs_have_disjoint_real_file_owners():
 def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failure(tmp_path, monkeypatch, capsys):
     sys.path.insert(0, str(ROOT / "platform/tests/python"))
     from test_release import S3, spec, write
-    import dq_gate
-    import release
+    from portfolio.publish import dq_gate
+    from portfolio.publish import release
 
     # A local dbt build in platform/target must not count as part of this fixture's release.
     monkeypatch.setattr(dq_gate, "TARGET", tmp_path / "dbt-target")
@@ -288,7 +287,7 @@ def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failu
 def test_configured_diva_contract_rejects_phantom_cluster_links_before_upload(tmp_path, monkeypatch):
     sys.path.insert(0, str(ROOT / "platform/tests/python"))
     from test_release import S3, write
-    import release
+    from portfolio.publish import release
 
     write(tmp_path, "diva/clusters.json", b'{"clusters":[{"id":0}],"points":[{"x":0,"y":0,"c":99}]}')
     spec = json.loads((ROOT / "configs/delivery/diva.json").read_text())
@@ -303,8 +302,7 @@ def test_configured_diva_contract_rejects_phantom_cluster_links_before_upload(tm
 def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch, breakage):
     """The tracked exports pass; an emptied, malformed or absent gated file stops prepare."""
     import jsonschema
-    sys.path.insert(0, str(ROOT / "platform/publish"))
-    import release
+    from portfolio.publish import release
 
     shutil.copytree(ROOT / "frontend/public/data/sweden", tmp_path / "sweden")
     shutil.copytree(ROOT / "frontend/public/data/clusters", tmp_path / "clusters")
