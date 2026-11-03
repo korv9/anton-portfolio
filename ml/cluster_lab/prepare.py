@@ -69,8 +69,7 @@ def jobs(spec,config,checkpoint=lambda:None):
         import json
         import hashlib
         import gzip
-        sys.path.insert(0,str(ROOT/'platform/lib'))
-        import rawstore
+        from portfolio.storage import rawstore
         folder=output/'active-snapshot'
         folder.mkdir(parents=True,exist_ok=True)
         state_path=folder/'state.json'

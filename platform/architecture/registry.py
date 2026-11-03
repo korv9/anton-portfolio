@@ -222,8 +222,6 @@ PUBLISHERS = [
     ]},
     {"path": "platform/publish/export_party_profiles.py", "domain": "politics",
      "outputs": [{"pattern": "politics/parties/**"}]},
-    {"path": "platform/publish/build_parquet.py", "domain": "politics",
-     "outputs": [{"pattern": "parquet/fact_member_vote/**", "inputs": ["ingest:riksdagen"]}]},
     # The politics deliveries that predate the warehouse are still built from raw Riksdagen data.
     {"path": "platform/legacy/build_gold.py", "domain": "politics", "legacy": True, "outputs": [
         {"pattern": "gold/tables/**", "inputs": ["ingest:riksdagen"]},
@@ -262,14 +260,14 @@ PRODUCTS = [
 SHARED = [
     {"id": "quality", "label": "Quality & validity", "path": "platform/quality/evaluate.py",
      "description": "Registered data-quality checks (ISO/IEC 25012-inspired) and analytical validity diagnostics for every product, in one result schema."},
-    {"id": "rawstore", "label": "rawstore", "path": "platform/lib/rawstore.py",
+    {"id": "rawstore", "label": "rawstore", "path": "src/portfolio/storage/rawstore.py",
      "description": "Immutable raw landing: every fetch stored with URL, time and SHA-256 under warehouse/raw."},
     {"id": "warehouse", "label": "dbt + DuckDB", "path": "platform/dbt_project.yml",
      "description": "One DuckDB warehouse; dbt builds bronze views, silver and gold tables, with tests."},
     {"id": "legal", "label": "EU legal parser", "path": "platform/legal/parse.py",
      "description": "Parses EU acts (Official Journal or consolidated XHTML) into articles, recitals and annexes and compares versions; written for any EU act."},
-    {"id": "catalog", "label": "Delivery catalogue", "path": "platform/publish/build_catalog.py",
+    {"id": "catalog", "label": "Delivery catalogue", "path": "src/portfolio/publish/catalog.py",
      "description": "catalog.json and delivery.json: every published file with its hash, format and where it is served from."},
-    {"id": "r2", "label": "Cloudflare R2", "path": "platform/publish/upload.py",
+    {"id": "r2", "label": "Cloudflare R2", "path": "src/portfolio/storage/upload.py",
      "description": "Object storage for Parquet and document shards; the site reads them through the delivery manifest."},
 ]

@@ -1,6 +1,5 @@
 /* The storytelling hierarchy (ui/Story.tsx). Type, space and thin rules do the separating;
-   no boxes. Three finding levels: major (.finding-hero), supporting (.chart-section),
-   diagnostic (.story-diagnostic). */
+   no boxes. Two finding levels: major (.finding-hero) and diagnostic (.story-diagnostic). */
 
 .data-question {
   margin: 0 0 var(--sp-4);
@@ -61,36 +60,6 @@
   .finding-hero {
     grid-template-columns: 1fr;
   }
-}
-
-/* Supporting finding: one primary chart with its anatomy. */
-.chart-section {
-  margin: var(--sp-4) 0 var(--sp-5);
-}
-.chart-section > header {
-  margin-bottom: var(--sp-3);
-}
-.chart-section-question {
-  margin: 0 0 var(--sp-1);
-  color: var(--muted);
-  font-size: var(--small);
-}
-.chart-section > header h2,
-.chart-section > header h3 {
-  margin: 0;
-  font-size: var(--h3);
-  line-height: 1.2;
-  max-width: 36ch;
-}
-.chart-section-subtitle {
-  margin: var(--sp-1) 0 0;
-  color: var(--muted);
-  font-size: var(--small);
-}
-.chart-section-finding {
-  margin: var(--sp-3) 0 0;
-  font-weight: var(--weight-ui);
-  max-width: var(--measure);
 }
 
 .source-caption {

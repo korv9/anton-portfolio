@@ -13,7 +13,7 @@ from compliance_intelligence.decision_ingest import Store
 from compliance_intelligence.legal_extraction import citation, operative, validate_proposal
 from compliance_intelligence.registry import encoded, interval_covers, name_key, resolve, utc_timestamp
 from compliance_intelligence.sources import new_output, now, seal, verify, write_json
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 KINDS = ("identity", "legal", "privacy", "publication")
 REQUIRED = ("authority", "case_number", "legal_entity", "case_type", "legal_basis", "decision_date",

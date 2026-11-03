@@ -40,8 +40,7 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from common import ROOT, load_env  # noqa: E402
+from portfolio.core.config import ROOT, load_env  # noqa: E402
 
 MODEL = "@cf/baai/bge-m3"
 TOKENIZER = "BAAI/bge-m3"

@@ -24,7 +24,7 @@ from compliance_intelligence.legal_extraction import VERSION as LEGAL_VERSION, d
 from compliance_intelligence.legal_review import ReviewStore, values
 from compliance_intelligence.registry import name_key, relative_file
 from compliance_intelligence.sources import load_snapshot, now, private_path, write_json
-from lib.rawstore import sha256
+from portfolio.storage.rawstore import sha256
 
 LOG = logging.getLogger(__name__)
 KKV_HOSTS = {'www.konkurrensverket.se', 'information.konkurrensverket.se', 'prod.konkurrensverket.se'}

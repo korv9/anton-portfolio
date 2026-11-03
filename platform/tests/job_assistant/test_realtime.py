@@ -10,9 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "platform/job_assistant"))
-sys.path.insert(0, str(ROOT / "platform/lib"))
 import ads as store  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 import realtime  # noqa: E402
 
 IT = {"concept_id": store.IT_FIELD}
@@ -273,7 +272,7 @@ def test_a_checked_build_is_still_uploaded_when_publication_turns_on(monkeypatch
     (raw / "pipeline.json").write_text(json.dumps({"build": {"ok": {"generated_at": "g1", "input": "c"}},
                                                     "publish": {"ok": {"generated_at": "g1", "mode": "local"}}}))
     calls = []
-    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: calls.append(argv[1]))
+    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: calls.append(argv[1:3]))
     monkeypatch.setenv("JOB_ADS_PUBLISH", "r2")
     assert realtime.stage("publish", realtime.publish)["mode"] == "r2"
-    assert calls == ["platform/publish/release.py"]
+    assert calls == [["-m", "portfolio.publish.release"]]

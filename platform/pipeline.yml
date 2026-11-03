@@ -35,7 +35,7 @@
 # A group is published once, after every subject in it has succeeded.
 
 definitions:
-  data_catalog: &data_catalog python platform/publish/build_catalog.py
+  data_catalog: &data_catalog python -m portfolio.publish.catalog
   data_check: &data_check
     - python platform/legacy/validate_gold.py
     - python platform/legacy/validate_budget_context.py
@@ -53,40 +53,40 @@ groups:
       - *data_catalog
       - *data_check
       - python platform/publish/validate_public_data.py
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group public-data --root frontend/public/data --spec configs/delivery/public-data.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group public-data --root frontend/public/data --spec configs/delivery/public-data.json --code-sha {sha}
       - python platform/publish/publish_status.py
   jobs:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group jobs --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
-      - python platform/publish/release.py publish --group jobs --root frontend/public/data --spec configs/delivery/jobs.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group jobs --root frontend/public/data --spec configs/delivery/jobs.json --code-sha {sha}
   news:
     publish:
-      - python platform/publish/release.py publish --group news --root frontend/public/data --spec configs/delivery/news.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group news --root frontend/public/data --spec configs/delivery/news.json --code-sha {sha}
   jobs-analysis:
     publish:
       - *data_catalog
       - *data_check
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
   diva:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
-      - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
   job-assistant:
     publish:
       - python platform/job_assistant/export.py --check frontend/public/data
-      - python platform/publish/release.py publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
   # SWEDEN publishes on its own, so a failed SWEDEN source never holds back the baseline.
   sweden:
     publish:
-      - python platform/publish/release.py publish --group sweden --root frontend/public/data --spec configs/delivery/sweden.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group sweden --root frontend/public/data --spec configs/delivery/sweden.json --code-sha {sha}
   baseline:
     publish:
       - *data_catalog
       - *data_check
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/baseline.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group baseline --root frontend/public/data --spec configs/delivery/baseline.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/baseline.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group baseline --root frontend/public/data --spec configs/delivery/baseline.json --code-sha {sha}
 
 subjects:
   welfare:
@@ -158,7 +158,7 @@ subjects:
     sources: [news]
     steps:
       # The last approved summary first, so a failed summary step keeps it.
-      - ingest: python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
+      - ingest: python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
         when_env: R2_BUCKET
       - ingest: python platform/ingest/news/news_ingest.py --sync --months 3
       - ingest: python platform/ingest/news/people_ingest.py

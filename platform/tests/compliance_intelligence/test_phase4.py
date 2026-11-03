@@ -20,7 +20,7 @@ from compliance_intelligence.cohort import build_cohort, verify_cohort  # noqa: 
 from compliance_intelligence.legal_extraction import document_pages, extract_candidate  # noqa: E402
 from compliance_intelligence.legal_review import ReviewStore  # noqa: E402
 from compliance_intelligence.sources import ingest_local, load_snapshot, seal  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 from test_phase1 import number, rows, write_local, relation  # noqa: E402
 from test_phase3 import approve, claim, request, ROSTER  # noqa: E402
 

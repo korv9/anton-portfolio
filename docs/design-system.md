@@ -1,7 +1,8 @@
 # Portfolio design system v2
 
-One theme on every page: ivory on charcoal, with `body` at `rgb(36, 36, 34)`
-([site-goals.md](site-goals.md), "One look"). The interface provides structure; charts, networks
+One theme on every page ("One look"): ivory on charcoal, with `body` at `rgb(36, 36, 34)`,
+Helvetica Neue display type, the signature gradient on page titles and no rules between
+sections. The interface provides structure; charts, networks
 and source material provide meaning. Nothing follows `prefers-color-scheme`.
 
 ## Tokens and type
@@ -165,6 +166,20 @@ navigation through every workspace type, Helvetica, page and header colors, the 
 screens and the boundary around a dark plate. Existing accessibility tests run axe on the main
 pages, check overflow at three widths, keyboard focus and reduced motion. The broader
 Playwright suite checks the retained interactions and analytical contracts.
+
+`npm run goals [-- URL]` (`scripts/goals.mjs`) opens every product route on a desktop and a phone
+against a running site and exits 1 while any route fails. Per route it checks:
+
+- One look: the charcoal `body`.
+- No "not done" wording: no visible `not reviewed`, `0 reviewed`, `no reviewed`,
+  `not published yet`, `not yet explained`, `could not be read`, `counted so far`, `Loading…`
+  after load, or `Cluster N` / `Group N` as a name. Honest limits stay, stated as method or
+  scope.
+- Clean loads: no console errors and no failed requests (any 4xx or 5xx).
+- No sideways scroll.
+
+On the live site Cloudflare's JavaScript Detections inject an inline script that the CSP blocks,
+which logs one console error per page ([security.md](security.md)).
 
 ## Chart form by question
 

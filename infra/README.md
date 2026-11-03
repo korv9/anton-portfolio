@@ -13,7 +13,8 @@ requests that touch `infra/`. Applying is a manual run of that workflow from `ma
 
 ## Bootstrap, once
 
-The owner does these steps by hand, in this order.
+An administrator of the Cloudflare account and the GitHub repository does these steps by hand,
+in this order.
 
 1. **State bucket.** Create it once, outside Terraform:
 

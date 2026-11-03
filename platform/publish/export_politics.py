@@ -25,8 +25,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 import duckdb  # noqa: E402
 
 import gold_contract  # noqa: E402
-from common import GOLD, ROOT  # noqa: E402
+from portfolio.core.config import PUBLIC, ROOT  # noqa: E402
 
+GOLD = PUBLIC / "gold"
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 # The dbt build's manifest: the metric and relationship definitions in semantic-model.json.
 MANIFEST = Path(os.environ.get("DBT_MANIFEST", ROOT / "platform/target/politics/manifest.json"))

@@ -12,10 +12,10 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const mode = process.argv[2]
-const quick = ['check', 'format:check', 'test:unit']
+const quick = ['check', 'format:check', 'test:unit', 'knip']
 const plans = {
   quick,
-  // Everything here also runs in ci.yml; none of these steps needs a secret.
+  // Everything here but knip also runs in ci.yml; none of these steps needs a secret.
   full: [
     ...quick,
     'build',

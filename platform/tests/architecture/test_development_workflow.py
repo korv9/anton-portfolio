@@ -45,7 +45,7 @@ def test_quick_checks_never_start_browser_build_or_live_delivery():
         run = subprocess.run(['node', 'scripts/verify.mjs', mode, '--plan'],
                              cwd=ROOT, capture_output=True, text=True, check=True)
         return json.loads(run.stdout)
-    assert plan('quick') == ['check', 'format:check', 'test:unit']
+    assert plan('quick') == ['check', 'format:check', 'test:unit', 'knip']
     full = plan('full')
     assert full.count('build') == 1
     assert {'python-tests', 'test:e2e', 'test:security:built'} <= set(full)

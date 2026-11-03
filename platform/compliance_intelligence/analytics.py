@@ -20,7 +20,7 @@ from compliance_intelligence.legal_review import ReviewStore  # noqa: E402
 from compliance_intelligence.registry import POLICY, encoded, validate_identity_evidence  # noqa: E402
 from compliance_intelligence.review_cli import evidence_body  # noqa: E402
 from compliance_intelligence.sources import load_snapshot, new_output, now, seal, verify, write_json  # noqa: E402
-from lib.rawstore import sha256  # noqa: E402
+from portfolio.storage.rawstore import sha256  # noqa: E402
 
 TABLES = ('fact_compliance_cases', 'fact_compliance_decisions', 'fact_compliance_amounts',
           'mart_compliance_company_summary', 'mart_compliance_rankings', 'mart_compliance_source_coverage')

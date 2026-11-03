@@ -23,15 +23,14 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import duckdb  # noqa: E402
 
-from common import PUBLIC, ROOT, write_json  # noqa: E402
+from portfolio.core.config import PUBLIC, ROOT
+from portfolio.core.io import write_json  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
@@ -109,7 +108,7 @@ def main() -> None:
             from gold.fct_tax_revenue where country_code = 'SWE'
             order by year, tax_code"""),
         "source": "OECD Revenue Statistics, general government",
-    })
+    }, newline=False)
     write_json(OUT / "countries.json", {
         "types": [t for t in types if t["tax_code"] in MAIN_TYPES],
         "countries": countries,
@@ -120,7 +119,7 @@ def main() -> None:
             where tax_code in {MAIN_TYPES} and pct_gdp is not null
             order by country_code, year, tax_code"""),
         "source": "OECD Revenue Statistics, general government",
-    })
+    }, newline=False)
 
     latest = connection.execute("select max(year) from gold.fct_tax_wedge").fetchone()[0]
     write_json(OUT / "wedge.json", {
@@ -143,7 +142,7 @@ def main() -> None:
               and household_type in ('S_C0', 'C_C2') and tax_wedge_pct is not null
             order by all"""),
         "source": "OECD Taxing Wages",
-    })
+    }, newline=False)
 
     rate_year = connection.execute("select max(year) from gold.fct_municipal_tax_rate").fetchone()[0]
     municipalities = defaultdict(lambda: {"parishes": []})
@@ -159,7 +158,7 @@ def main() -> None:
         "year": rate_year,
         "municipalities": sorted(municipalities.values(), key=lambda m: m["name"]),
         "source": "Skatteverket, skattesatser per kommun och församling",
-    })
+    }, newline=False)
 
     decisions = records(connection, """
         select decision_key as key, in_force, in_force_year as year, component, direction,
@@ -217,7 +216,7 @@ def main() -> None:
                    "are from the first substantive roll call of that report; for a budget "
                    "framework report (FiU1) that vote settles the whole budget, taxes "
                    "included."),
-    })
+    }, newline=False)
 
     household = defaultdict(lambda: {"groups": []})
     hut_year = None
@@ -243,7 +242,7 @@ def main() -> None:
                    "clear rate are counted: rent, health care, insurance, interest and fees "
                    "carry no VAT or a mix, so the estimate is a floor."),
         "source": "SCB, Hushållens utgifter (HUT) 2021, tabell HUThush",
-    })
+    }, newline=False)
 
     withholding_fixture()
     print(f"taxes: {len(decisions)} decisions, {len(types)} tax types, {len(countries)} countries, wedge {latest}, "

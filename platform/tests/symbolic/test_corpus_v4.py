@@ -65,9 +65,8 @@ def test_book_pairs_group_by_what_the_books_share():
 
 
 def test_only_a_new_atlas_version_replaces_atlas_parquet_in_the_catalogue(tmp_path, monkeypatch):
-    sys.path.insert(0, str(ROOT / "platform" / "publish"))
     sys.path.insert(0, str(ROOT / "platform" / "publish" / "symbolic"))
-    import build_catalog as bc
+    from portfolio.publish import catalog as bc
     import export_symbolic
 
     public = tmp_path / "data"

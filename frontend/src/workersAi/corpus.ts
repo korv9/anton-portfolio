@@ -23,7 +23,7 @@ const loaded = new Map<string, Promise<Corpus<unknown>>>()
 
 /**
  * A large export lists its items and vectors as parts, in order, each its own file. A passage
- * can have a `path` too (Ask the platform's source file), so a part is told apart by its count.
+ * can have a `path` too, so a part is told apart by its count.
  */
 type Part = { path: string; start: number; count: number }
 const isParts = (list: unknown): list is Part[] =>
@@ -81,7 +81,7 @@ export function nearest<Item>(c: Corpus<Item>, vector: number[], k: number) {
  * Why the Worker gave no answer: the day's AI quota, a failed call, too many requests, no Worker,
  * or Allegora's daily allowance spent by the visitor ('limit') or by the whole site ('site').
  */
-export type Reason = 'quota' | 'error' | 'busy' | 'offline' | 'limit' | 'site'
+type Reason = 'quota' | 'error' | 'busy' | 'offline' | 'limit' | 'site'
 export class Unavailable extends Error {
   reason: Reason
   constructor(reason: Reason) {

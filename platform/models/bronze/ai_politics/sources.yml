@@ -19,7 +19,7 @@ sources:
           freshness:
             warn_after: {count: 8, period: day}
             error_after: {count: 16, period: day}
-        description: The Riksdagen fetch log (lib/rawstore.py) with URL, time and SHA-256 per file.
+        description: The Riksdagen fetch log (src/portfolio/storage/rawstore.py) with URL, time and SHA-256 per file.
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/_manifest.jsonl',

@@ -18,10 +18,10 @@ Cloudflare's own REST API, and is not used here.
 S3_API_ENDPOINT is optional. Set it to override the endpoint derived from the account id.
 
 Usage:
-    python platform/publish/upload.py --dry-run      # what would transfer
-    python platform/publish/upload.py                # upload changed shards
-    python platform/publish/upload.py --verify-only  # confirm every shard is present and correct
-    python platform/publish/upload.py --only workers-ai/sfs/  # one prefix only, also with --offload
+    python -m portfolio.storage.upload --dry-run      # what would transfer
+    python -m portfolio.storage.upload                # upload changed shards
+    python -m portfolio.storage.upload --verify-only  # confirm every shard is present and correct
+    python -m portfolio.storage.upload --only workers-ai/sfs/  # one prefix only, also with --offload
 """
 import argparse
 import json

@@ -2,7 +2,7 @@
  * SWEDEN research platform. Every rule is scoped to .sweden, so the homepage (.home-shell) and
  * the other projects never see these tokens. Charcoal only: ivory and greys, no hues. Type: Archivo Expanded for the name,
  * IBM Plex Mono for navigation, labels and numbers, the site's Helvetica Neue for questions and
- * headings (docs/site-goals.md, "One look"), * all self-hosted under the OFL (public/fonts/sweden). The page is flat: one
+ * headings (docs/design-system.md, "One look"), * all self-hosted under the OFL (public/fonts/sweden). The page is flat: one
  * scrolling page, a short section per product (template.tsx).
  */
 @font-face {

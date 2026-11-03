@@ -6,30 +6,17 @@ import csv
 import json
 import re
 import sqlite3
-import time
 import urllib.parse
-import urllib.request
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 
 import duckdb
 import pandas as pd
+from vote_ingest import fetch as download
 
 API = "https://data.riksdagen.se/dokumentlista/"
 PARTIES = {"S", "M", "V", "MP", "C", "L", "FP", "KD", "KDS", "SD", "NYD"}
-
-
-def download(url: str) -> bytes:
-    for attempt in range(4):
-        try:
-            request = urllib.request.Request(url, headers={"User-Agent": "partiledardebatt-analys/1.0"})
-            with urllib.request.urlopen(request, timeout=120) as response:
-                return response.read()
-        except (OSError, TimeoutError):
-            if attempt == 3:
-                raise
-            time.sleep(2**attempt)
 
 
 class TableParser(HTMLParser):

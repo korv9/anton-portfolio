@@ -3,7 +3,7 @@
  * box and every label is HTML, so text stays readable at any width. Each party's chart has the
  * same scale, size and ink: no party is coloured or ranked above another.
  */
-export type SparkPoint = {
+type SparkPoint = {
   period: string
   value: number
   low?: number

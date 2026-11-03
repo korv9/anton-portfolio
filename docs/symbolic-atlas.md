@@ -491,7 +491,7 @@ and, from the experiments and the review:
 The export reruns the ranking first, so the published review status always matches
 `reviewed_clusters.json`. No embedding and no text beyond each point's excerpt is delivered.
 It registers the files in `catalog.json` and `delivery.json` with the same rules as
-`build_catalog.py`, touching no other entry. Parquet is delivered from R2.
+`portfolio.publish.catalog`, touching no other entry. Parquet is delivered from R2.
 
 ## Frontend
 

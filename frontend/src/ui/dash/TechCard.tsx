@@ -35,7 +35,7 @@ const loadSchema = () =>
     throw e
   }))
 
-export type Step = { title: string; detail: string }
+type Step = { title: string; detail: string }
 
 const number = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 

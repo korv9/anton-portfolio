@@ -16,7 +16,7 @@ export type DebateTopics = {
   bge_m3: { topics: { cluster: number; jaccard: number; rho_yearly: number }[] }
   shares: { rows: ShareRow[] }
 }
-export type Share = {
+type Share = {
   period: string
   value: number
   low: number
@@ -33,7 +33,7 @@ const share = (r: ShareRow): Share => ({
 })
 
 /** The topic ids with no model-made name: they get neutral labels, never a number. */
-export const unnamed = (d: DebateTopics) =>
+const unnamed = (d: DebateTopics) =>
   d.clusters.filter((c) => !c.name[0]).map((c) => c.id)
 
 /** A topic's [en, sv] name; an unnamed group is described, not numbered. */
@@ -83,25 +83,6 @@ export function partialYears(series: Share[]) {
   return new Set(
     series.filter((s) => s.passages < 0.6 * median).map((s) => s.period),
   )
-}
-
-/** R1: the topic's peak year, its range in the years before, and the last full year. */
-export function peak(series: Share[]) {
-  const partial = partialYears(series)
-  const full = series.filter((s) => !partial.has(s.period))
-  if (full.length < 3) return null
-  const top = full.reduce((a, b) => (b.value > a.value ? b : a))
-  const before = full.filter((s) => s.period < top.period)
-  if (!before.length) return null
-  const values = before.map((s) => s.value)
-  return {
-    top,
-    from: before[0].period,
-    to: before.at(-1)!.period,
-    min: Math.min(...values),
-    max: Math.max(...values),
-    last: full.at(-1)!,
-  }
 }
 
 /** One party's topic profile in a decade: the five largest topics and its most distinctive one. */
