@@ -32,6 +32,7 @@ import './job-assistant.css'
 import './job-assistant-desk.css'
 import './job-assistant-motion.css'
 import './job-assistant-sections.css'
+import { scrollToElement } from '../ui/scrollTo'
 
 const PAGE = 50
 const narrow = () => matchMedia('(max-width: 760px)').matches
@@ -121,7 +122,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   // An opened ad on a phone: its back button is where the reader lands, below the site header.
   useEffect(() => {
     if (!adId || !narrow()) return
-    document.querySelector('.ja-detail')?.scrollIntoView({ block: 'start' })
+    scrollToElement(document.querySelector('.ja-detail'))
     document
       .querySelector<HTMLElement>('.ja-back')
       ?.focus({ preventScroll: true })

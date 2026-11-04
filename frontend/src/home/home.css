@@ -157,7 +157,8 @@
 .home-job-text,
 .home-about-text,
 .home-contact a,
-.home-contact .cv-trigger:not(.language-toggle) {
+.home-contact .cv-trigger:not(.language-toggle),
+.home-byline .home-links :is(a, .cv-trigger) {
   background: linear-gradient(
     to bottom right,
     #ebe6da 0%,
@@ -168,7 +169,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-.home-contact :is(a, .cv-trigger) {
+:is(.home-contact, .home-byline) :is(a, .cv-trigger) {
   text-decoration-color: #c6c1b6;
 }
 .home-contact .home-links .language-toggle {
@@ -276,7 +277,8 @@
 @media (prefers-reduced-motion: reduce) {
   .home-signature,
   .home-name,
-  .home-role {
+  .home-role,
+  .home-byline .home-links {
     animation: none;
   }
 }
@@ -397,12 +399,17 @@
 .home-contact a {
   color: var(--ink);
 }
-.home-contact .home-links {
+/* The same links on the first screen, under the role line. */
+.home-byline .home-links {
+  justify-content: center;
+  animation: home-rise 0.6s var(--ease) 2s both;
+}
+:is(.home-contact, .home-byline) .home-links {
   align-items: center;
   margin: 0;
   font-size: 15px;
 }
-.home-contact .home-links :is(a, button) {
+:is(.home-contact, .home-byline) .home-links :is(a, button) {
   display: inline-flex;
   min-width: 0;
   align-items: center;

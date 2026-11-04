@@ -6,14 +6,36 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   PROJECT_GROUPS,
+  PROJECT_WORKSPACE,
   PROJECTS,
   projectForRoute,
 } from '../../src/projects/projectRegistry.ts'
 
-test('each retained project belongs to one menu group', () => {
+test('each listed project belongs to one menu group; homie and platform are unlisted', () => {
   const grouped = PROJECT_GROUPS.flatMap((group) => group.ids)
   assert.equal(new Set(grouped).size, grouped.length)
-  assert.deepEqual(new Set(grouped), new Set(PROJECTS.map((p) => p.id)))
+  assert.deepEqual(
+    new Set([...grouped, 'homie', 'platform']),
+    new Set(PROJECTS.map((p) => p.id)),
+  )
+})
+
+test('regrouping the menu keeps each page theme', () => {
+  assert.deepEqual(
+    Object.fromEntries(PROJECTS.map((p) => [p.id, PROJECT_WORKSPACE[p.id]])),
+    {
+      'ai-act-clock': 'labs',
+      replik: 'labs',
+      'symbolic-atlas': 'labs',
+      thesis: 'engineering',
+      'philosophy-atlas': 'labs',
+      'concept-constellation': 'labs',
+      'ask-the-law': 'labs',
+      drugcomb: 'labs',
+      platform: 'engineering',
+      homie: 'engineering',
+    },
+  )
 })
 
 test('ids and site addresses are unique', () => {
@@ -39,7 +61,7 @@ test('every flagship has the same grammar filled in', () => {
 test('the withdrawn observatories are not listed', () => {
   assert.deepEqual(
     PROJECT_GROUPS.map((group) => group.label),
-    ['Labs', 'Engineering'],
+    ['Research on public data', 'Engineering', 'Experiments'],
   )
   for (const id of [
     'politics',

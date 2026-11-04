@@ -1,18 +1,42 @@
 /**
- * The short About. The current CV lives at public/cv/Anton_Ernstsson_CV_final.pdf. Projects live in
+ * The short About and the selected work. The current CV lives at public/cv/Anton_Ernstsson_CV_final.pdf. Projects live in
  * projects/projectRegistry.ts; experience and skills in home/orbitContent.ts.
  */
 type Bilingual = { sv: string; en: string }
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
-/** About, short: what kind of work, not every tool. Experience and education are shown below it. */
+/** About, one paragraph: what kind of work and what I am looking for. */
 export const ABOUT: Bilingual[] = [
   t(
-    'Välkommen! Jag heter Anton Ernstsson och älskar att utforska data på kreativa sätt. Sidan är min portfolio och en översikt över min erfarenhet för rekryterare. Under ytan körs en dataplattform där jag testar projekt, tankar och idéer innan jag visar dem här.',
-    'Welcome! I’m Anton Ernstsson, and I love exploring data in creative ways. This site is my portfolio and an overview of my experience for recruiters. Underneath it runs a data platform where I try out projects, thoughts and ideas before I show them here.',
+    'Jag heter Anton Ernstsson och är junior mjukvaruutvecklare inom data och AI. Jag bygger dataplattformar och analyserna ovanpå dem: pipelines i Databricks och dbt, klustring och NLP i Python, och React-sidorna som visar resultaten. Den här sajten körs på en egen plattform, byggd på svensk och europeisk öppen data. Jag söker en roll inom mjukvaruutveckling, data eller AI.',
+    "I'm Anton Ernstsson, a junior software developer in data and AI. I build data platforms and the analyses on top of them: pipelines in Databricks and dbt, clustering and NLP in Python, and the React pages that show the results. This site runs on a platform of my own, built from Swedish and EU public data. I'm looking for a role in software development, data or AI.",
   ),
-  t(
-    'Jag dras särskilt till samhällsfrågor, men trivs med att bygga datalösningar oavsett område och har erfarenhet av att leverera i produktion. Jag söker roller inom mjukvaruutveckling, data och AI.',
-    'I’m especially drawn to social questions, but I enjoy building data solutions in any field and have experience delivering in production. I’m looking for roles in software development, data and AI.',
-  ),
+]
+
+/** Selected work on the start page: a title, one line and the page it opens. */
+export const SELECTED: { title: string; href: string; line: Bilingual }[] = [
+  {
+    title: 'Replik',
+    href: '#replik',
+    line: t(
+      '33 år av riksdagsdebatter och voteringar, lästa av en maskin.',
+      '33 years of Riksdag debates and roll calls, read by machine.',
+    ),
+  },
+  {
+    title: 'SWEDEN',
+    href: '#sweden',
+    line: t(
+      'Sex frågor om Sverige, besvarade med öppna data.',
+      'Six questions about Sweden, answered with public data.',
+    ),
+  },
+  {
+    title: 'IT Incident Clustering',
+    href: '#thesis',
+    line: t(
+      '21 633 supportärenden klustrade för att hitta felen som återkommer.',
+      '21,633 support tickets clustered to find the faults that keep coming back.',
+    ),
+  },
 ]

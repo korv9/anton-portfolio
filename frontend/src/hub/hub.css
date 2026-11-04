@@ -1,11 +1,12 @@
-/* Overview (hub/ProjectsHub.tsx): the shared page head, then how and why in two short lines. */
+/* Overview (hub/ProjectsHub.tsx): the shared page head with a lede, the platform case study in
+   project sections (prose at a 65-character measure), the flow diagram and the index. */
 .hub-overview {
   padding-bottom: var(--sp-section);
 }
 .hub-why {
   display: grid;
   gap: var(--sp-5);
-  max-width: var(--measure);
+  max-width: 65ch;
   margin: 0;
 }
 .hub-why dt {
@@ -22,11 +23,11 @@
   font-size: var(--body-large);
   line-height: 1.55;
 }
-/* The write-ups and, on phones, the projects the index holds in its drawer. */
+/* The projects index (ProjectIndex.tsx), on every viewport. */
 .hub-links {
   margin-top: var(--sp-6);
 }
-.hub-links h2 {
+.hub-links h3 {
   margin: 0 0 var(--sp-2);
   color: var(--muted);
   font-family: var(--font-meta);
@@ -47,8 +48,87 @@
   color: var(--ink);
   text-underline-offset: 0.2em;
 }
-@media (min-width: 1024px) {
-  .hub-index {
-    display: none;
-  }
+.hub-index p {
+  margin: 0 0 var(--sp-3);
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+  line-height: 1.5;
+}
+.hub-index .hub-links:first-child {
+  margin-top: 0;
+}
+
+/* Sections as on the project pages (thesis.css): space instead of rules, titles in the
+   signature's gradient; a hash link lands below the sticky header. */
+.hub-overview .project-section {
+  border-top: 0;
+  scroll-margin-top: var(--header-h, 4.5rem);
+}
+#main .hub-overview .project-section > h2 {
+  background: linear-gradient(
+    to bottom right,
+    var(--color-accent-focal) 0%,
+    var(--color-ink-secondary) 55%,
+    var(--muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hub-overview .project-section > :is(p, ul) {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+/* A status word after a project in the index, muted like a caption. */
+.hub-status {
+  color: var(--muted);
+  font: var(--caption) var(--font-meta);
+}
+
+/* The flow diagram (PlatformFlow.tsx): one vertical layout that reads at 390 pixels. */
+.hub-figure {
+  margin: 0 0 var(--sp-6);
+}
+.hub-figure h3 {
+  margin: 0 0 var(--sp-4);
+  color: var(--muted);
+  font-size: var(--type-chart-title);
+  font-weight: var(--weight-ui);
+}
+.hub-flow {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  height: auto;
+}
+.hub-flow rect {
+  fill: var(--color-surface);
+  stroke: var(--line-strong);
+}
+.hub-flow text {
+  fill: var(--ink);
+  font-size: var(--small);
+}
+.hub-flow .hub-flow-sub {
+  fill: var(--muted);
+  font-size: var(--caption);
+}
+.hub-flow-arrow {
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+.hub-flow-head {
+  fill: var(--muted);
+}
+.hub-flow-focal rect {
+  stroke: var(--focal);
+  stroke-width: 2;
+}
+.hub-flow-focal text {
+  font-weight: var(--weight-heading);
+}
+/* The stage names stay whole; only the description column wraps. */
+.hub-overview .dk-table td:first-child {
+  overflow-wrap: normal;
 }

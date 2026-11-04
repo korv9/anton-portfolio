@@ -18,32 +18,39 @@ Connections page, and its design is described in [sweden-design.md](sweden-desig
 | `#sweden-framtid` | E The Lost Futures | Findings (Riksdag speeches 1993/94–2025/26; DiVA not yet counted) |
 | `#sweden-samband` | Connections | Three relationships computed, two joins rejected |
 
-On `#projekt` a featured SWEDEN card stands above the other projects. The Wellbeing
-Observatory's old addresses (`#sweden-health`, `#sweden-counties` and the others) and
-`#wellbeing*` redirect to `#what-does-it-even-mean`.
+The Wellbeing Observatory's old addresses (`#sweden-health`, `#sweden-counties` and the
+others) and `#wellbeing*` redirect to `#what-does-it-even-mean`.
 
 ## Projects and navigation
 
-The homepage holds the identity, profile, experience, the project list, a cluster preview and
-the chart feed. The shared header (`frontend/src/site/SiteHeader.tsx`) links to About and
-GitHub. The project index `#projekt` groups the projects (`PROJECT_GROUPS` in
-`projectRegistry.ts`):
+The homepage holds the identity with links to the projects, CV, GitHub and LinkedIn, then
+About, Selected work, experience and education, and a link to the projects beside the job-ads
+map. The shared header (`frontend/src/site/SiteHeader.tsx`) links to About and GitHub.
 
-| Group       | Projects                                                             |
-| ----------- | -------------------------------------------------------------------- |
-| Labs        | Symbol Lab, Philosophy Lab, Concept Lab, Ask the law, Drug Synergy Lab |
-| Engineering | IT Incident Clustering, Homie API, DiVA Thesis Lakehouse             |
+The rail on every project page (`GROUPS` in `frontend/src/site/ProjectRail.tsx`) has Overview
+on top and three groups. `PROJECT_GROUPS` in `projectRegistry.ts` holds the same groups by
+project id:
 
-Each project has an entry page. Labs and engineering projects are continuous reports with
-section addresses. Readers for one speech, debate, article or concept are separate views.
-Previous and next links follow the group order. Cluster Visuals (`#cluster-visuals`) and the
-chart feed `#what-does-it-even-mean` sit outside the groups.
+| Group                   | Projects                                                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Research on public data | Replik, SWEDEN, When does a law arrive?                                                                                     |
+| Engineering             | IT Incident Clustering, Arbetsförmedla                                                                                      |
+| Experiments             | Allegora, Philosophy Lab, Symbol Lab, Concept Lab, Drug Synergy Lab, Cluster Visuals, What does it even mean? (chart feed) |
+
+Homie API is not listed, but `#homie` still opens its page. Overview (`#projects`, also
+`#projekt`) tells the platform case study as prose with a flow diagram and ends with the project
+index: every project on one line, with "experimental" after each experiment. The "Written up"
+links to the case study and the two postmortems were removed on 2026-11-04.
+
+Each project has an entry page. Projects are continuous reports with section addresses.
+Readers for one speech, debate, article or concept are separate views. Previous and next links
+follow the group order.
 
 Two pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
 answers questions over Swedish statutes or the EU AI Act; `?korpus=ai-act` picks the AI Act.
 Ask the platform's page was removed on 2026-11-01, and `#ask-platform` now leads to `#projects`.
-On `#cluster-visuals`, the card `#cv-place` places a reader's sentence on the party-leader debate
-map.
+The demo that places a reader's sentence on the party-leader debate map is on `#replik`;
+`#cv-place` leads there.
 
 ## Where it is defined
 
@@ -83,8 +90,8 @@ readable.
 
 ## Visual workspace ownership
 
-The project groups also determine `data-workspace` on the app shell (`App.tsx`): `labs` or
-`engineering`, `sweden` for the SWEDEN pages and the chart feed, and `tool` for everything else.
+`PROJECT_WORKSPACE` in `projectRegistry.ts`, not the rail groups, sets `data-workspace` on the
+app shell (`App.tsx`): `labs` or `engineering`, `sweden` for the SWEDEN pages and the chart feed, and `tool` for everything else.
 `ReportShell`, `Stage`, `ProjectHero`, `Feature` and the dashboard kit provide the patterns
 documented in [design-system.md](design-system.md). This classification changes presentation
 only. The homepage keeps its own token scope and composition; shared project styling is scoped

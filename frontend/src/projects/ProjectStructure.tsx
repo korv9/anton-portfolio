@@ -1,7 +1,8 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { l } from '../i18n'
 import { isLongRead, type Route } from '../router'
 import { PROJECTS, projectForRoute } from './projectRegistry'
+import { scrollToElement } from '../ui/scrollTo'
 import './projectStructure.css'
 
 export function ProjectDepth({
@@ -48,7 +49,12 @@ export default function ProjectStructure({
   children: ReactNode
 }) {
   const project = projectForRoute(route)
+  // Another section of the page the reader is on glides; a page opened on a section jumps.
+  const last = useRef<{ path: string; hash: string } | null>(null)
   useEffect(() => {
+    const glide =
+      last.current?.path === route.path && last.current.hash !== route.hash
+    last.current = { path: route.path, hash: route.hash }
     const section = route.params.get('section')
     // A long read lands on its own chapters (PoliticsProduct).
     if (!project || isLongRead(route.path)) return
@@ -59,10 +65,7 @@ export default function ProjectStructure({
         : section
           ? `${project.id}-${section}`
           : route.path.slice(1)
-    const land = () =>
-      document
-        .getElementById(id)
-        ?.scrollIntoView({ block: 'start', behavior: 'instant' })
+    const land = () => scrollToElement(document.getElementById(id), { glide })
     const frame = requestAnimationFrame(land)
     const observer = new MutationObserver(land)
     const resize = new ResizeObserver(land)

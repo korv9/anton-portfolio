@@ -35,6 +35,12 @@
   font-size: var(--body-large);
   line-height: 1.6;
 }
+/* Optional paragraphs under the sentence, at the prose measure of the project pages. */
+.page-head-lede {
+  max-width: 65ch;
+  margin: var(--sp-4) 0 0;
+  line-height: 1.6;
+}
 .page-head-kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

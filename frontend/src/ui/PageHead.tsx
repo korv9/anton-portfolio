@@ -10,16 +10,24 @@ export type Kpi = { value: ReactNode; label: string }
 export default function PageHead({
   title,
   sentence,
+  lede = [],
   kpis = [],
 }: {
   title: string
   sentence: string
+  /** Paragraphs under the sentence, above the KPIs. */
+  lede?: string[]
   kpis?: Kpi[]
 }) {
   return (
     <header className="page-head">
       <h1 className="page-head-title">{title}</h1>
       <p className="page-head-sentence">{sentence}</p>
+      {lede.map((p) => (
+        <p key={p} className="page-head-lede">
+          {p}
+        </p>
+      ))}
       {kpis.length > 0 && (
         <dl className="page-head-kpis">
           {kpis.map((k) => (

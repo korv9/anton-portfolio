@@ -16,7 +16,7 @@ test(
       sent.push(route.request().postDataJSON())
       return route.fulfill({ json: { vector: vectorNear(1) } })
     })
-    await page.goto('/#cluster-visuals')
+    await page.goto('/#replik')
     const card = page.locator('#cv-place')
     await expect(card.locator('canvas')).toBeVisible()
     // The vectors wait for the reader.
@@ -83,7 +83,7 @@ test('a question is answered with a fable, the checked law folded under it', asy
     })
   })
   await page.goto('/#fraga-lagen')
-  // Only the name and the conversation: no lead sentence, figures or method.
+  // The name, the registry's summary and the conversation: no lead sentence or figures.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('ALLEGORA')
   await expect(
     page.locator('.page-head-sentence, .page-head-kpis'),
@@ -158,7 +158,7 @@ test(
     await page.route('**/api/*', (route) =>
       route.fulfill({ status: 503, json: { reason: 'quota' } }),
     )
-    await page.goto('/#cluster-visuals')
+    await page.goto('/#replik')
     const card = page.locator('#cv-place')
     await card
       .getByRole('button', { name: 'Fixture example near the first group.' })

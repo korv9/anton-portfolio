@@ -1,48 +1,12 @@
 /**
- * The degree project (#thesis): IT incident clustering at Fora AB. Aggregates only: no ticket
- * text, cluster ids or internal codes. Every figure is in FACTS below with its source.
+ * The degree project (#thesis): IT incident clustering at Avtalat. Aggregates only: no ticket
+ * text, cluster ids or internal codes. Every figure is in FACTS (thesisFacts.ts) with its source.
  */
-import { currentLocale, l } from '../i18n'
+import { l } from '../i18n'
 import { ProjectSection } from '../ui/Project'
 import PageHead, { Method } from '../ui/PageHead'
+import { FACTS, findings, locale, methodNotes, num, pct } from './thesisFacts'
 import './thesis.css'
-
-/** ER = docs/thesis-evidence-review.md; p. = page of the thesis PDF. */
-const FACTS = {
-  records: 21_633, // ER "Population och urval"; p. 13, 18
-  selectedRun: 16_811, // ER "Population och urval": the text_weighted run; p. 26-29
-  clusters: 121, // ER "Klustring": HDBSCAN 30/15; p. 29
-  unlinked: 72, // ER "Problemkopplingar"; p. 30, 32
-  unlinkedTickets: 5_605, // ER "Problemkopplingar"
-  highlighted: { groups: 12, tickets: 650 }, // ER "Problemkopplingar"; p. 33, 36
-  /** Tickets of the selected run by outcome; sums to 16,811. p. 44 (figure legend). */
-  split: { linked: 613, clustered: 11_539, noise: 4_659 },
-  noisePct: 27.7, // ER "Jämförelse och utvärdering"; p. 29, 38, 42
-  silhouette: { hdbscan: 0.706, kmeans: 0.534, kmeansClusters: 73 }, // ER "Jämförelse och utvärdering"
-  /** ISO/IEC 25012, ER "Utökning av ISO-resultat" (p. 19-25). Percent of the 21,633 records. */
-  iso: {
-    analysis: 4.2, // completeness, p. 19-20
-    solutionFilled: 82.2, // completeness, p. 19
-    solutionManual: 3.8, // completeness, p. 19
-    categories: 15, // accuracy, p. 21-22
-    subCategories: 50, // accuracy, p. 21-22
-    statusValid: 100, // consistency, system-enforced, p. 23
-    unique: 92.8, // uniqueness, p. 23-24
-    unique2021: 82.8, // uniqueness, p. 24
-    linked: 5.1, // traceability, p. 24-25
-    linked2026: 15.7, // traceability, p. 24-25
-  },
-  /** Fill rate per year, p. 20; ER "Utökning av ISO-resultat" confirms 99.9 % (2026) and the
-      analysis field's 11.7 % (2025) and 13.3 % (2026). 2026 is a partial year. */
-  years: [2020, 2021, 2022, 2023, 2024, 2025, 2026],
-  category: [4.6, 2.3, 17.2, 52.3, 79.8, 80.4, 99.9],
-  analysisByYear: [0, 0, 0, 0, 2.0, 11.7, 13.3],
-} as const
-
-const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
-const num = (n: number) => n.toLocaleString(locale())
-const pct = (n: number) =>
-  l(`${n.toLocaleString('en-GB')}%`, `${n.toLocaleString('sv-SE')} %`)
 
 function ClusterGrid() {
   const { clusters, unlinked, unlinkedTickets, selectedRun, split } = FACTS
@@ -333,6 +297,19 @@ export function ThesisPage() {
       >
         <Maturity />
       </ProjectSection>
+      <ProjectSection
+        id="thesis-findings"
+        title={l(
+          'Two things I found on the way',
+          'Två saker jag hittade på vägen',
+        )}
+      >
+        {findings().map((f) => (
+          <p key={f.lead}>
+            <strong>{f.lead}</strong> {f.text}
+          </p>
+        ))}
+      </ProjectSection>
       <Method
         summary={l(
           'How it is made · sources · method',
@@ -342,8 +319,8 @@ export function ThesisPage() {
         <div id="thesis-workflow">
           <p>
             {l(
-              'Recurring IT problems can hide in thousands of tickets handled one at a time. For my degree project at Fora AB, I tested whether clustering could connect them, on real data with gaps in the documentation and personal data to protect.',
-              'Återkommande IT-fel kan gömma sig i tusentals ärenden som hanteras ett i taget. I mitt examensarbete hos Fora AB prövade jag om klustring kunde koppla ihop dem, på riktig data med luckor i dokumentationen och personuppgifter att skydda.',
+              'Recurring IT problems can hide in thousands of tickets handled one at a time. For my degree project at Avtalat, I tested whether clustering could connect them, on real data with gaps in the documentation and personal data to protect.',
+              'Återkommande IT-fel kan gömma sig i tusentals ärenden som hanteras ett i taget. I mitt examensarbete hos Avtalat prövade jag om klustring kunde koppla ihop dem, på riktig data med luckor i dokumentationen och personuppgifter att skydda.',
             )}
           </p>
           <p>
@@ -364,6 +341,9 @@ export function ThesisPage() {
               `Silhuett i UMAP-rymden: HDBSCAN ${silhouette.hdbscan.toLocaleString(locale())}, K-means (${silhouette.kmeansClusters} kluster) ${silhouette.kmeans.toLocaleString(locale())}. Inte jämförbart rakt av: HDBSCAN mäts bara på de ärenden det klustrar.`,
             )}
           </p>
+          {methodNotes().map((text) => (
+            <p key={text}>{text}</p>
+          ))}
           <p>
             {l(
               `${FACTS.clusters} clusters of related incidents. ${FACTS.unlinked} had no link to a problem record: candidates for review rather than confirmed root causes. The thesis highlighted ${highlighted.groups} groups with ${num(highlighted.tickets)} tickets.`,
@@ -380,12 +360,6 @@ export function ThesisPage() {
             {l(
               `Required fields went from almost empty to ${pct(FACTS.category[6])} filled. The voluntary root-cause field reached ${pct(FACTS.analysisByYear[5])} in 2025 and ${pct(FACTS.analysisByYear[6])} in 2026.`,
               `Obligatoriska fält gick från nästan tomma till ${pct(FACTS.category[6])} ifyllda. Det frivilliga rotorsaksfältet nådde ${pct(FACTS.analysisByYear[5])} år 2025 och ${pct(FACTS.analysisByYear[6])} år 2026.`,
-            )}
-          </p>
-          <p>
-            {l(
-              'Masking placeholders could pull unrelated tickets with the same subject template into one cluster.',
-              'Maskeringens platshållare kunde dra ihop orelaterade ärenden med samma ämnesmall i ett kluster.',
             )}
           </p>
           <p>

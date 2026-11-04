@@ -25,11 +25,11 @@ test('every project in the index opens its page, which ends with its own content
   }
 })
 
-test('Homie in the index opens its repository', async ({ page }) => {
+test('Homie is not in the index, but its page still opens', async ({
+  page,
+}) => {
   await page.goto('/#projects')
-  await expect(
-    page.locator(
-      'nav.project-rail a[href="https://github.com/korv9/homie-api"]',
-    ),
-  ).toHaveCount(1)
+  await expect(page.locator('nav.project-rail a[href*="homie"]')).toHaveCount(0)
+  await page.goto('/#homie')
+  await expect(page.locator('main h1').first()).toBeVisible()
 })

@@ -1,35 +1,27 @@
 /**
- * Overview (#projects): the platform behind the projects in a few words, how it is built and
- * why, with four numbers read from its own published files. The index on the left lists the
- * projects. Older hub addresses (#projects-jobs, #platform-health, #tech-er) land here.
+ * Overview (#projects): the platform case study as prose (words in overviewContent.ts), with
+ * four numbers read from its own published files, the flow diagram and the project index.
+ * Older hub addresses (#projects-jobs, #platform-health, #tech-er) land here.
  */
 import { l } from '../i18n'
 import PageHead from '../ui/PageHead'
 import type { Quality, Summary } from './overviewTypes'
 import { ok, useJson as useFile } from '../useJson'
-import { GROUPS } from '../site/ProjectRail'
+import { ProjectSection } from '../ui/Project'
+import ProjectIndex from './ProjectIndex'
+import PlatformFlow from './PlatformFlow'
+import {
+  BUILT,
+  DECISIONS,
+  LEDE,
+  NEEDS,
+  PROJECTS_TITLE,
+  WORK,
+  WRONG,
+  type Bilingual,
+} from './overviewContent'
+import '../ui/dash/dash.css'
 import './hub.css'
-
-const docs = (path: string) =>
-  `https://github.com/korv9/anton-portfolio/blob/main/docs/${path}`
-/** The platform written up on GitHub: the case study and the two postmortems. */
-const WRITE_UPS = [
-  {
-    href: docs('case-studies/platform.md'),
-    en: 'Case study: the data platform',
-    sv: 'Fallstudie: dataplattformen',
-  },
-  {
-    href: docs('incidents/2026-10-22-warehouse-wipe.md'),
-    en: 'Postmortem: shared warehouse emptied by a worktree removal',
-    sv: 'Postmortem: delat lager tömt när en worktree togs bort',
-  },
-  {
-    href: docs('incidents/2026-10-22-third-party-text-in-r2.md'),
-    en: 'Postmortem: third-party text pushed to the public R2 bucket',
-    sv: 'Postmortem: tredjepartstext i den publika R2-hinken',
-  },
-]
 
 export default function ProjectsHub() {
   const summary = useFile<Summary>('schema/summary.json')
@@ -60,6 +52,7 @@ export default function ProjectsHub() {
           : '–',
     },
   ]
+  const tr = (b: Bilingual) => l(b.en, b.sv)
   return (
     <article className="hub-overview" id="projects">
       <PageHead
@@ -68,63 +61,71 @@ export default function ProjectsHub() {
           'One data platform of my own runs every project here.',
           'En egen dataplattform driver alla projekt här.',
         )}
+        lede={LEDE.map(tr)}
         kpis={kpis}
       />
-      <dl className="hub-why">
-        <div>
-          <dt>{l('How', 'Hur')}</dt>
-          <dd>
-            {l(
-              'Python fetches public data from Swedish agencies and the EU on a schedule. dbt on DuckDB cleans it in three layers, tests stop a bad run, and each project reads its own published files.',
-              'Python hämtar öppna data från svenska myndigheter och EU enligt schema. dbt på DuckDB rensar dem i tre lager, tester stoppar en dålig körning, och varje projekt läser sina egna publicerade filer.',
-            )}
-          </dd>
-        </div>
-        <div>
-          <dt>{l('Why', 'Varför')}</dt>
-          <dd>
-            {l(
-              'To read as many public sources as I could in one place, and see what they say together.',
-              'För att läsa in så många öppna källor som möjligt på ett ställe och se vad de säger tillsammans.',
-            )}
-          </dd>
-        </div>
-      </dl>
-      <section className="hub-links" aria-labelledby="hub-write-ups">
-        <h2 id="hub-write-ups">{l('Written up', 'Nedskrivet')}</h2>
+      <ProjectSection id="projects-needs" title={tr(NEEDS.title)}>
+        <p>{tr(NEEDS.intro)}</p>
         <ul>
-          {WRITE_UPS.map((doc) => (
-            <li key={doc.href}>
-              <a href={doc.href} target="_blank" rel="noreferrer">
-                {l(doc.en, doc.sv)} ↗
-              </a>
-            </li>
+          {NEEDS.items.map((item) => (
+            <li key={item.en}>{tr(item)}</li>
           ))}
         </ul>
-      </section>
-      {/* On phones the index is a closed drawer, so the projects are listed here as well. */}
-      <nav className="hub-index" aria-label={l('Projects', 'Projekt')}>
-        {GROUPS.map((group) => (
-          <section key={group.en} className="hub-links">
-            <h2>{l(group.en, group.sv)}</h2>
-            <ul>
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    {...(item.external
-                      ? { target: '_blank', rel: 'noreferrer' }
-                      : {})}
-                  >
-                    {l(item.en, item.sv)}
-                    {item.external && ' ↗'}
-                  </a>
-                </li>
+      </ProjectSection>
+      <ProjectSection id="projects-built" title={tr(BUILT.title)}>
+        <figure className="hub-figure">
+          <h3 id="projects-flow-title">{tr(BUILT.flowTitle)}</h3>
+          <PlatformFlow titleId="projects-flow-title" />
+        </figure>
+        <div className="dk-table-wrap">
+          <table className="dk-table">
+            <thead>
+              <tr>
+                {BUILT.head.map((h) => (
+                  <th key={h.en} scope="col">
+                    {tr(h)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {BUILT.rows.map(([stage, text]) => (
+                <tr key={stage.en}>
+                  <td>{tr(stage)}</td>
+                  <td>{tr(text)}</td>
+                </tr>
               ))}
-            </ul>
-          </section>
+            </tbody>
+          </table>
+        </div>
+      </ProjectSection>
+      <ProjectSection id="projects-decisions" title={tr(DECISIONS.title)}>
+        <dl className="hub-why">
+          {DECISIONS.items.map((d) => (
+            <div key={d.term.en}>
+              <dt>{tr(d.term)}</dt>
+              <dd>{tr(d.text)}</dd>
+            </div>
+          ))}
+        </dl>
+      </ProjectSection>
+      <ProjectSection id="projects-wrong" title={tr(WRONG.title)}>
+        {WRONG.paragraphs.map((p) => (
+          <p key={p.en}>{tr(p)}</p>
         ))}
-      </nav>
+      </ProjectSection>
+      <ProjectSection id="projects-work" title={tr(WORK.title)}>
+        <p>
+          {tr(WORK.text)}{' '}
+          <a href={WORK.repo} target="_blank" rel="noreferrer">
+            {WORK.repoLabel}
+          </a>
+          .
+        </p>
+      </ProjectSection>
+      <ProjectSection id="projects-index" title={tr(PROJECTS_TITLE)}>
+        <ProjectIndex />
+      </ProjectSection>
     </article>
   )
 }

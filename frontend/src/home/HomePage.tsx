@@ -1,13 +1,14 @@
 /**
- * The start page, about Anton for a recruiter: the signature, name and role on the first screen,
- * then About with the contact links, experience above education, and the way on to the projects
- * (#projects) beside the job-ads map.
+ * The start page, about Anton for a recruiter: the signature, name, role and links on the first
+ * screen, then About with the contact links, selected work, experience above education, and the
+ * way on to the projects (#projects) beside the job-ads map.
  */
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { profile } from '../content'
-import { ABOUT } from './content'
+import { ABOUT, SELECTED } from './content'
 import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
+import { scrollToElement } from '../ui/scrollTo'
 import {
   ADDITIONAL,
   ADDITIONAL_EDUCATION,
@@ -26,6 +27,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The sections a global address points at; the header's links scroll to them. */
 const SECTIONS = ['#kontakt', '#om-mig', '#erfarenhet', '#utbildning']
+const GITHUB = 'https://github.com/korv9'
 
 function Identity() {
   return (
@@ -40,7 +42,30 @@ function Identity() {
           <h1 id="home-name" className="home-name">
             Anton Ernstsson
           </h1>
-          <p className="home-role">Data &amp; AI Engineering</p>
+          <p className="home-role">
+            {l(
+              'Junior Software Developer · Data & AI',
+              'Junior mjukvaruutvecklare · Data & AI',
+            )}
+          </p>
+          <nav
+            className="home-links"
+            aria-label={l(
+              'Projects, CV and profiles',
+              'Projekt, CV och profiler',
+            )}
+          >
+            <a href="#projects">{l('Projects', 'Projekt')}</a>
+            {profile.cv && <CvButton />}
+            <a href={GITHUB} target="_blank" rel="noreferrer">
+              GitHub
+            </a>
+            {profile.linkedin && (
+              <a href={profile.linkedin} target="_blank" rel="noreferrer">
+                LinkedIn
+              </a>
+            )}
+          </nav>
         </div>
       </div>
     </section>
@@ -65,7 +90,7 @@ function Contact() {
             LinkedIn
           </a>
         )}
-        <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+        <a href={GITHUB} target="_blank" rel="noreferrer">
           GitHub
         </a>
         {profile.cv && <CvButton />}
@@ -95,6 +120,17 @@ function Profile() {
           </p>
         ))}
         <Contact />
+      </div>
+      <div className="home-column home-selected">
+        <h2 className="home-title">{l('Selected work', 'Utvalda projekt')}</h2>
+        {SELECTED.map((work) => (
+          <div key={work.href} className="home-job">
+            <h3 className="home-job-org">
+              <a href={work.href}>{work.title}</a>
+            </h3>
+            <p className="home-job-text">{b(work.line)}</p>
+          </div>
+        ))}
       </div>
       <div className="home-column home-experience" id="erfarenhet">
         <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
@@ -177,13 +213,15 @@ function Profile() {
 }
 
 export default function HomePage({ path }: { path: string }) {
-  // A section address (from the header, the footer or a shared link) scrolls to its section.
+  // A section address (from the header, the footer or a shared link) scrolls to its section:
+  // a glide within the page, a jump when the page opens on it.
+  const last = useRef<string | null>(null)
   useEffect(() => {
+    const glide = last.current !== null && last.current !== path
+    last.current = path
     if (!SECTIONS.includes(path)) return
     const frame = requestAnimationFrame(() =>
-      document
-        .getElementById(path.slice(1))
-        ?.scrollIntoView({ block: 'start' }),
+      scrollToElement(document.getElementById(path.slice(1)), { glide }),
     )
     return () => cancelAnimationFrame(frame)
   }, [path])

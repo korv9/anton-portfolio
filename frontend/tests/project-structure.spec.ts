@@ -18,6 +18,7 @@ test(
       'Clusters',
       'Data quality, ISO/IEC 25012',
       'Fields filled per year',
+      'Two things I found on the way',
     ])
     await expect(page.locator('.thesis-dot')).toHaveCount(121)
     await expect(page.locator('.thesis-dot.is-open')).toHaveCount(72)

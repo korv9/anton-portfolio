@@ -105,6 +105,8 @@ const REDIRECTS: Record<string, string> = {
   '#raw-data': MEANING,
   // When does a law arrive? (the AI Act diffusion clock) under its English name.
   '#ai-act-clock': '#lag-ankomst',
+  // The sentence demo left Cluster Visuals; it lives on Replik.
+  '#cv-place': '#replik',
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
