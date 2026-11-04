@@ -1,5 +1,5 @@
 /**
- * The degree project (#thesis): NLP clustering of IT incidents at Fora AB, summarised from the
+ * The degree project (#thesis): NLP clustering of IT incidents, summarised from the
  * thesis. Aggregates only: no ticket text, cluster ids, internal system names or people.
  * Text: thesisContent.ts and thesisResults.ts; figures: FACTS in thesisFacts.ts.
  */

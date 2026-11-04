@@ -8,7 +8,6 @@ import { currentLocale, l } from '../i18n'
 
 export const FACTS = {
   /** The case, p. 6. */
-  members: 1.5, // million people whose pensions and insurance Fora AB manages, p. 6
   incidentsPerMonth: 350, // p. 6
   /** Data, p. 13, 18, 26, 29. */
   period: { from: '2020-04-01', to: '2026-04-14' }, // the data-quality measurement, p. 13, 18

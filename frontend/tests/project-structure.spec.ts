@@ -27,8 +27,7 @@ test(
       'Limitations',
       'Future work',
     ])
-    await expect(page.locator('.thesis-page')).toContainText('Fora AB')
-    await expect(page.locator('.thesis-page')).not.toContainText('Avtalat')
+    await expect(page.locator('.thesis-page')).not.toContainText('Fora')
     await expect(page.locator('.thesis-dot')).toHaveCount(121)
     await expect(page.locator('.thesis-dot.is-open')).toHaveCount(72)
     await expect(page.locator('.thesis-split-legend')).toContainText('27.7%')

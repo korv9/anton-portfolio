@@ -60,15 +60,15 @@ export const conclusions = () => [
     'Fält som systemet styr blev snabbt bättre när organisationen ändrade gränssnittet. Fält som beror på en persons eget initiativ, som rotorsaksanalysen, låg kvar på en låg nivå. Problem av det första slaget kan lösas i systemet, utan mer arbete för supportpersonalen.',
   ),
   l(
-    `For Fora AB the study delivered a validated pipeline and a list of ${F.unlinked} candidate clusters for its problem management. Beyond the case it made two contributions: a measured link between ISO/IEC 25012 dimensions and how well NLP performs afterwards, and an interaction between anonymisation and sentence embeddings not described before, which matters for any NLP project that replaces personal data with placeholders.`,
-    `För Fora AB gav studien ett validerat analysflöde och en lista med ${F.unlinked} kandidatkluster för problemhanteringen. Utöver fallet gav den två bidrag: en uppmätt koppling mellan dimensionerna i ISO/IEC 25012 och hur väl NLP presterar efteråt, och en tidigare obeskriven interaktion mellan anonymisering och meningsinbäddningar, som berör alla NLP-projekt som ersätter personuppgifter med platshållare.`,
+    `For the company the study delivered a validated pipeline and a list of ${F.unlinked} candidate clusters for its problem management. Beyond the case it made two contributions: a measured link between ISO/IEC 25012 dimensions and how well NLP performs afterwards, and an interaction between anonymisation and sentence embeddings not described before, which matters for any NLP project that replaces personal data with placeholders.`,
+    `För företaget gav studien ett validerat analysflöde och en lista med ${F.unlinked} kandidatkluster för problemhanteringen. Utöver fallet gav den två bidrag: en uppmätt koppling mellan dimensionerna i ISO/IEC 25012 och hur väl NLP presterar efteråt, och en tidigare obeskriven interaktion mellan anonymisering och meningsinbäddningar, som berör alla NLP-projekt som ersätter personuppgifter med platshållare.`,
   ),
 ]
 
 export const limitations = () => [
   l(
-    'It is one case. The glossary, the filters and the parameters are tuned to Fora AB’s data and would need tuning again elsewhere. What carries over is the method and the link between data quality and NLP results.',
-    'Det är ett enda fall. Ordlistan, filtren och parametrarna är anpassade till Fora AB:s data och skulle behöva anpassas igen på andra ställen. Det som går att föra vidare är metoden och kopplingen mellan datakvalitet och NLP-resultat.',
+    'It is one case. The glossary, the filters and the parameters are tuned to this company’s data and would need tuning again elsewhere. What carries over is the method and the link between data quality and NLP results.',
+    'Det är ett enda fall. Ordlistan, filtren och parametrarna är anpassade till företagets data och skulle behöva anpassas igen på andra ställen. Det som går att föra vidare är metoden och kopplingen mellan datakvalitet och NLP-resultat.',
   ),
   l(
     `The silhouette comparison is uneven: HDBSCAN is scored only on the ${pct(F.clusteredPct)} of tickets it puts in a cluster, K-means on all of them. The links to problem records are sparse and recent, near zero in ${F.linkLowYears[0]}–${F.linkLowYears[1]}, so the validation mostly reflects newer tickets.`,

@@ -13,8 +13,8 @@ export const summary = () => [
     'När något går sönder löser IT-supporten oftast felet ett ärende i taget, så att användaren snabbt kan jobba igen. Ett fel som återkommer kan då lösas om och om igen utan att någon letar efter orsaken.',
   ),
   l(
-    'In my degree project I tested whether NLP clustering could find such faults in real incident data from Fora AB, faults the organisation had not registered as problems. I also measured how the quality of the documentation limits what the method can find.',
-    'I mitt examensarbete prövade jag om NLP-baserad klustring kunde hitta sådana fel i riktig incidentdata från Fora AB, fel som organisationen inte hade registrerat som problem. Jag mätte också hur dokumentationens kvalitet begränsar vad metoden kan hitta.',
+    'In my degree project I tested whether NLP clustering could find such faults in real incident data from a company’s IT support, faults the organisation had not registered as problems. I also measured how the quality of the documentation limits what the method can find.',
+    'I mitt examensarbete prövade jag om NLP-baserad klustring kunde hitta sådana fel i riktig incidentdata från ett företags IT-support, fel som organisationen inte hade registrerat som problem. Jag mätte också hur dokumentationens kvalitet begränsar vad metoden kan hitta.',
   ),
   l(
     `The method grouped ${num(F.selectedRun)} tickets into ${F.clusters} clusters. ${F.unlinked} of them, with ${num(F.unlinkedTickets)} tickets, had no link to a registered problem. Two findings stood out. The field for the root-cause analysis was empty in most tickets, but where it was filled in the model understood the fault much better. And removing personal data created false patterns.`,
@@ -36,8 +36,8 @@ export const problem = () => [
     'I praktiken eskaleras incidenter sällan till problem på ett systematiskt sätt. Varje ärende som stängs utan koppling till ett känt mönster är en missad chans att hitta rotorsaken, och med hundratals ärenden i månaden kan ingen se mönstren för hand.',
   ),
   l(
-    `Fora AB manages occupational pensions and insurance for just over ${num(F.members)} million people. Its IT support handles on average ${F.incidentsPerMonth} incidents a month in Freshservice. I did the study during my internship there, on a data pipeline that was already in place.`,
-    `Fora AB förvaltar kollektivavtalad pension och försäkring för drygt ${num(F.members)} miljoner människor. IT-supporten hanterar i genomsnitt ${F.incidentsPerMonth} incidenter i månaden i Freshservice. Jag gjorde studien under min LIA-praktik där, på en datapipeline som redan fanns.`,
+    `The company’s IT support handles on average ${F.incidentsPerMonth} incidents a month in Freshservice. I did the study during my internship, on a data pipeline that was already in place.`,
+    `Företagets IT-support hanterar i genomsnitt ${F.incidentsPerMonth} incidenter i månaden i Freshservice. Jag gjorde studien under min LIA-praktik, på en datapipeline som redan fanns.`,
   ),
 ]
 
@@ -72,8 +72,8 @@ export const caseData = () => [
     `Efter filtreringen återstod ${num(F.anonymised)} unika incidenter. Personuppgifter togs bort ur alla innan någon text nådde modellen, i två steg: fasta mönster för identifierare som personnummer, e-postadresser och telefonnummer, sedan en språkmodell som känner igen namn. Körningen tog ${F.anonymiseMinutes} minuter. Den slutliga klustringen använde ${num(F.selectedRun)} av ärendena.`,
   ),
   l(
-    'Everything ran in Fora AB’s own Azure Databricks environment. No data was sent to an outside model service, as GDPR and Fora AB’s policy require. Results are reported per cluster, so no single ticket or person is pointed out.',
-    'Allt kördes i Fora AB:s egen Azure Databricks-miljö. Ingen data skickades till en extern modelltjänst, vilket GDPR och Fora AB:s policy kräver. Resultaten redovisas per kluster, så inget enskilt ärende och ingen person pekas ut.',
+    'Everything ran in the company’s own Azure Databricks environment. No data was sent to an outside model service, as GDPR and the company’s policy require. Results are reported per cluster, so no single ticket or person is pointed out.',
+    'Allt kördes i företagets egen Azure Databricks-miljö. Ingen data skickades till en extern modelltjänst, vilket GDPR och företagets policy kräver. Resultaten redovisas per kluster, så inget enskilt ärende och ingen person pekas ut.',
   ),
 ]
 
@@ -117,8 +117,8 @@ export const method = (): Lead[] => [
 
 export const years = () =>
   l(
-    `Fields the system requires filled up as Fora AB formalised its classification. A structured field for business area went from ${pct(F.businessArea.y2024)} in ${F.years[4]} to ${pct(F.businessArea.y2026)} in ${F.years[6]} after a change in the Freshservice interface. The voluntary root-cause field stayed at ${pct(F.analysisByYear[5])} in ${F.years[5]} and ${pct(F.analysisByYear[6])} in ${F.years[6]}. Among high-priority incidents, the share with a root-cause analysis went from ${pct(F.rcaHighPriority.y2023)} in ${F.years[3]} to ${pct(F.rcaHighPriority.y2026)} in ${F.years[6]}.`,
-    `Fält som systemet kräver fylldes i takt med att Fora AB formaliserade sin klassificering. Ett strukturerat fält för verksamhetsområde gick från ${pct(F.businessArea.y2024)} år ${F.years[4]} till ${pct(F.businessArea.y2026)} år ${F.years[6]} efter en ändring i Freshservices gränssnitt. Det frivilliga rotorsaksfältet låg kvar på ${pct(F.analysisByYear[5])} år ${F.years[5]} och ${pct(F.analysisByYear[6])} år ${F.years[6]}. Bland högprioriterade incidenter gick andelen med rotorsaksanalys från ${pct(F.rcaHighPriority.y2023)} år ${F.years[3]} till ${pct(F.rcaHighPriority.y2026)} år ${F.years[6]}.`,
+    `Fields the system requires filled up as the company formalised its classification. A structured field for business area went from ${pct(F.businessArea.y2024)} in ${F.years[4]} to ${pct(F.businessArea.y2026)} in ${F.years[6]} after a change in the Freshservice interface. The voluntary root-cause field stayed at ${pct(F.analysisByYear[5])} in ${F.years[5]} and ${pct(F.analysisByYear[6])} in ${F.years[6]}. Among high-priority incidents, the share with a root-cause analysis went from ${pct(F.rcaHighPriority.y2023)} in ${F.years[3]} to ${pct(F.rcaHighPriority.y2026)} in ${F.years[6]}.`,
+    `Fält som systemet kräver fylldes i takt med att företaget formaliserade sin klassificering. Ett strukturerat fält för verksamhetsområde gick från ${pct(F.businessArea.y2024)} år ${F.years[4]} till ${pct(F.businessArea.y2026)} år ${F.years[6]} efter en ändring i Freshservices gränssnitt. Det frivilliga rotorsaksfältet låg kvar på ${pct(F.analysisByYear[5])} år ${F.years[5]} och ${pct(F.analysisByYear[6])} år ${F.years[6]}. Bland högprioriterade incidenter gick andelen med rotorsaksanalys från ${pct(F.rcaHighPriority.y2023)} år ${F.years[3]} till ${pct(F.rcaHighPriority.y2026)} år ${F.years[6]}.`,
   )
 
 export const clusterText = () => {

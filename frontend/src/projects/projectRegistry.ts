@@ -150,7 +150,7 @@ export const PROJECTS: ProjectEntry[] = [
   {
     id: 'thesis',
     title: t('ITSM Clustering', 'ITSM Clustering'),
-    descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
+    descriptor: t('NLP, fallstudie hos Avtalat', 'NLP, case study at Avtalat'),
     summary: t(
       'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
       'I grouped similar IT support tickets to help the IT team investigate recurring faults.',
