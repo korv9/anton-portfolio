@@ -28,18 +28,20 @@ About, Selected work, experience and education, and a link to the projects besid
 map. The shared header (`frontend/src/site/SiteHeader.tsx`) links to About and GitHub.
 
 The rail on every project page (`GROUPS` in `frontend/src/site/ProjectRail.tsx`) has Overview
-on top and three groups. `PROJECT_GROUPS` in `projectRegistry.ts` holds the same groups by
+on top and two groups. `PROJECT_GROUPS` in `projectRegistry.ts` holds the same groups by
 project id:
 
-| Group                   | Projects                                                                                                                    |
-| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Research on public data | Replik, SWEDEN, When does a law arrive?                                                                                     |
-| Engineering             | IT Incident Clustering, Arbetsförmedla                                                                                      |
-| Experiments             | Allegora, Philosophy Lab, Symbol Lab, Concept Lab, Drug Synergy Lab, Cluster Visuals, What does it even mean? (chart feed) |
+| Group             | Projects                                                                                                                              |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Selected projects | Arbetsförmedla, Allegora, ITSM Clustering, Replik                                                                                     |
+| Labs              | Drug Synergy Lab, SWEDEN Lab, Philosophy Lab, Symbol Lab, Concept Lab, Cluster Visuals, When does a law arrive?, What does it even mean? |
+
+The rail shows Labs as one entry that leads to `#labs`, a page listing every lab on one line; the
+labs themselves appear under it only while one of them is open.
 
 Homie API is not listed, but `#homie` still opens its page. Overview (`#projects`, also
 `#projekt`) tells the platform case study as prose with a flow diagram and ends with the project
-index: every project on one line, with "experimental" after each experiment. The "Written up"
+index: every project on one line, with "experimental" after each lab that is still an experiment. The "Written up"
 links to the case study and the two postmortems were removed on 2026-11-04.
 
 Each project has an entry page. Projects are continuous reports with section addresses.

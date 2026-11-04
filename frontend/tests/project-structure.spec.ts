@@ -5,31 +5,44 @@ test(
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#thesis')
-    await expect(page.locator('.thesis-page h1')).toHaveText(
-      'IT Incident Clustering',
-    )
+    await expect(page.locator('.thesis-page h1')).toHaveText('ITSM Clustering')
     await expect(page.locator('.page-head-kpis dd')).toHaveText([
       '21,633',
       '121',
-      '0.706',
-      '27.7%',
+      '72',
+      '4.2%',
     ])
     await expect(page.locator('.thesis-page .project-section h2')).toHaveText([
-      'Clusters',
+      'Summary',
+      'The problem',
+      'Purpose and questions',
+      'Case and data',
+      'Method',
       'Data quality, ISO/IEC 25012',
       'Fields filled per year',
-      'Two things I found on the way',
+      'Clusters with and without a problem record',
+      'Three findings',
+      'Priority and fragmentation',
+      'Conclusions',
+      'Limitations',
+      'Future work',
     ])
+    await expect(page.locator('.thesis-page')).toContainText('Fora AB')
+    await expect(page.locator('.thesis-page')).not.toContainText('Avtalat')
     await expect(page.locator('.thesis-dot')).toHaveCount(121)
     await expect(page.locator('.thesis-dot.is-open')).toHaveCount(72)
     await expect(page.locator('.thesis-split-legend')).toContainText('27.7%')
-    // The narrative sits in the closed method, with the thesis's figures.
+    await expect(page.locator('#thesis-findings')).toContainText(
+      'Anonymisation created false patterns.',
+    )
+    await expect(page.locator('#thesis-conclusions')).toContainText(
+      'organisational, not algorithmic',
+    )
+    // The technical notes sit in the closed method.
     const method = page.locator('.page-method')
     await expect(method.locator('#thesis-workflow')).toBeHidden()
     await method.locator('summary').click()
-    await expect(method).toContainText('ISO/IEC 25012')
-    await expect(method).toContainText('72 had no link')
-    await expect(method).toContainText('3.8% written by hand')
+    await expect(method).toContainText('paraphrase-multilingual-mpnet-base-v2')
     await expect(
       page.locator(
         'main a[href*="/private/"], main a[href*="Examensarbete.pdf"]',
@@ -43,11 +56,12 @@ test.describe('degree project in Swedish', () => {
   test('renders the Swedish copy', async ({ page }) => {
     await page.goto('/#thesis')
     await expect(page.locator('.page-head-sentence')).toContainText(
-      'Klustring av 16 811 IT-ärenden',
+      'Mitt examensarbete',
     )
-    await expect(page.locator('.page-method')).toContainText(
-      'inte bekräftade rotorsaker',
+    await expect(page.locator('#thesis-quality')).toContainText(
+      'inte bevisade rotorsaker',
     )
+    await expect(page.locator('.thesis-funnel')).toContainText('16 811')
   })
 })
 

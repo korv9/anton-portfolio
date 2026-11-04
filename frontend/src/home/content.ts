@@ -24,7 +24,7 @@ export const SELECTED: { title: string; href: string; line: Bilingual }[] = [
     ),
   },
   {
-    title: 'SWEDEN',
+    title: 'SWEDEN Lab',
     href: '#sweden',
     line: t(
       'Sex frågor om Sverige, besvarade med öppna data.',
@@ -32,11 +32,11 @@ export const SELECTED: { title: string; href: string; line: Bilingual }[] = [
     ),
   },
   {
-    title: 'IT Incident Clustering',
+    title: 'ITSM Clustering',
     href: '#thesis',
     line: t(
-      '21 633 supportärenden klustrade för att hitta felen som återkommer.',
-      '21,633 support tickets clustered to find the faults that keep coming back.',
+      '16 811 supportärenden klustrade för att hitta felen som återkommer.',
+      '16,811 support tickets clustered to find the faults that keep coming back.',
     ),
   },
 ]

@@ -124,8 +124,8 @@ export const THESIS = {
     {
       heading: t('Metod', 'Method'),
       text: t(
-        'Fann att platshållare från anonymiseringen kan skapa falska kluster, och att en ordlista med 70 interna systemnamn höjde överensstämmelsen med befintliga problemärenden med 16 enheter utan att modellen ändrades.',
-        'Found that anonymisation placeholders can create false clusters, and that a 70-term glossary of internal system names raised agreement with existing problem records by 16 points without changing the model.',
+        'Fann att platshållare från anonymiseringen kan skapa falska kluster, och att en ordlista med 70 interna systemnamn höjde andelen problemkopplade ärenden i det bästa klustret med 16 procentenheter utan att modellen ändrades.',
+        'Found that anonymisation placeholders can create false clusters, and that a 70-term glossary of internal system names raised the share of problem-linked tickets in the best cluster by 16 percentage points without changing the model.',
       ),
     },
   ],

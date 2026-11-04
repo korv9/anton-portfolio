@@ -61,7 +61,7 @@ test('every flagship has the same grammar filled in', () => {
 test('the withdrawn observatories are not listed', () => {
   assert.deepEqual(
     PROJECT_GROUPS.map((group) => group.label),
-    ['Research on public data', 'Engineering', 'Experiments'],
+    ['Selected projects', 'Labs'],
   )
   for (const id of [
     'politics',

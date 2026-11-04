@@ -14,6 +14,7 @@ import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
+const LabsPage = lazy(() => import('./hub/LabsPage'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
@@ -129,6 +130,7 @@ export default function App() {
               >
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsHub />}
+                {page === 'labs' && <LabsPage />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}

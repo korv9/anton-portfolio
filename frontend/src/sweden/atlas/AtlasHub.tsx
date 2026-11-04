@@ -178,7 +178,7 @@ export default function AtlasHub() {
   return (
     <AtlasPage
       current="#sweden-atlas"
-      kicker="SWEDEN · Research atlas"
+      kicker="SWEDEN Lab · Research atlas"
       question="What can data reveal about Swedish society, and what remains invisible?"
       line="Five studies of how Sweden is measured, categorised and modelled."
       revealed="Patterns, changes and differences that public data can show, each study with its own question."

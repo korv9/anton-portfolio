@@ -38,6 +38,10 @@
 .rail-group {
   margin-top: 38px;
 }
+/* The labs, shown under Labs while one of them is open. */
+.rail-sub {
+  padding-left: var(--sp-3);
+}
 .rail-link {
   position: relative;
   display: block;

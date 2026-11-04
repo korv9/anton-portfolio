@@ -5,51 +5,24 @@ import Signature from '../home/Signature'
 import LanguageToggle from './LanguageToggle'
 import './project-rail.css'
 
-/** A rail entry; `descriptor` is the index line for entries without a registry descriptor. */
+/**
+ * A rail entry; `descriptor` is the index line for entries without a registry descriptor, and
+ * `experimental` adds the status word in the index.
+ */
 type Item = {
   href: string
   en: string
   sv: string
   descriptor?: [string, string]
+  experimental?: boolean
 }
 
 /** The index on every project page: Overview, then each project by group. */
-export const GROUPS: {
-  en: string
-  sv: string
-  experimental?: boolean
-  items: Item[]
-}[] = [
+export const GROUPS: { en: string; sv: string; items: Item[] }[] = [
   {
-    en: 'Research on public data',
-    sv: 'Forskning på öppna data',
+    en: 'Selected projects',
+    sv: 'Utvalda projekt',
     items: [
-      { href: '#replik', en: 'Replik', sv: 'Replik' },
-      {
-        href: '#sweden',
-        en: 'SWEDEN',
-        sv: 'SWEDEN',
-        descriptor: [
-          'Six questions about Sweden, answered with public data.',
-          'Sex frågor om Sverige, besvarade med öppna data.',
-        ],
-      },
-      {
-        href: '#lag-ankomst',
-        en: 'When does a law arrive?',
-        sv: 'När kommer en lag fram?',
-      },
-    ],
-  },
-  {
-    en: 'Engineering',
-    sv: 'Engineering',
-    items: [
-      {
-        href: '#thesis',
-        en: 'IT Incident Clustering',
-        sv: 'IT Incident Clustering',
-      },
       {
         href: '#jobs',
         en: 'Arbetsförmedla',
@@ -59,18 +32,43 @@ export const GROUPS: {
           'Alla öppna Data/IT-annonser, matchade mot mitt CV.',
         ],
       },
+      { href: '#fraga-lagen', en: 'Allegora', sv: 'Allegora' },
+      { href: '#thesis', en: 'ITSM Clustering', sv: 'ITSM Clustering' },
+      { href: '#replik', en: 'Replik', sv: 'Replik' },
     ],
   },
   {
-    en: 'Experiments',
-    sv: 'Experiment',
-    experimental: true,
+    en: 'Labs',
+    sv: 'Labb',
     items: [
-      { href: '#fraga-lagen', en: 'Allegora', sv: 'Allegora' },
-      { href: '#philosophy-atlas', en: 'Philosophy Lab', sv: 'Philosophy Lab' },
-      { href: '#symbolic-atlas', en: 'Symbol Lab', sv: 'Symbol Lab' },
-      { href: '#concepts-profiles', en: 'Concept Lab', sv: 'Concept Lab' },
       { href: '#drugcomb', en: 'Drug Synergy Lab', sv: 'Drug Synergy Lab' },
+      {
+        href: '#sweden',
+        en: 'SWEDEN Lab',
+        sv: 'SWEDEN Lab',
+        descriptor: [
+          'Six questions about Sweden, answered with public data.',
+          'Sex frågor om Sverige, besvarade med öppna data.',
+        ],
+      },
+      {
+        href: '#philosophy-atlas',
+        en: 'Philosophy Lab',
+        sv: 'Philosophy Lab',
+        experimental: true,
+      },
+      {
+        href: '#symbolic-atlas',
+        en: 'Symbol Lab',
+        sv: 'Symbol Lab',
+        experimental: true,
+      },
+      {
+        href: '#concepts-profiles',
+        en: 'Concept Lab',
+        sv: 'Concept Lab',
+        experimental: true,
+      },
       {
         href: '#cluster-visuals',
         en: 'Cluster Visuals',
@@ -79,6 +77,12 @@ export const GROUPS: {
           'The clearest clusterings on the site.',
           'Sajtens tydligaste klustringar.',
         ],
+        experimental: true,
+      },
+      {
+        href: '#lag-ankomst',
+        en: 'When does a law arrive?',
+        sv: 'När kommer en lag fram?',
       },
       {
         href: MEANING,
@@ -88,15 +92,20 @@ export const GROUPS: {
           'Every chart the platform produces, in one feed.',
           'Alla diagram plattformen producerar, i ett flöde.',
         ],
+        experimental: true,
       },
     ],
   },
 ]
 
+/** The labs page; the rail shows the labs under it only while one of them is open. */
+const LABS = '#labs'
+
 /** The index entry a route belongs to; a report's tabs and a hub's sections light their page. */
 function activeHref(route: Route) {
   const { page } = route
   if (page === 'projects') return '#projects'
+  if (page === 'labs') return LABS
   const byPage: Partial<Record<Route['page'], string>> = {
     meaning: MEANING,
     jobs: '#jobs',
@@ -180,11 +189,23 @@ export default function ProjectRail({ route }: { route: Route }) {
         aria-label={l('Projects', 'Projekt')}
       >
         {link({ href: '#projects', en: 'Overview', sv: 'Översikt' }, true)}
-        {GROUPS.map((group) => (
-          <div key={group.en} className="rail-group">
-            {group.items.map((item) => link(item))}
-          </div>
-        ))}
+        {GROUPS.map((group) =>
+          group.en === 'Labs' ? (
+            <div key={group.en} className="rail-group">
+              {link({ href: LABS, en: 'Labs', sv: 'Labb' })}
+              {(active === LABS ||
+                group.items.some((item) => item.href === active)) && (
+                <div className="rail-sub">
+                  {group.items.map((item) => link(item))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div key={group.en} className="rail-group">
+              {group.items.map((item) => link(item))}
+            </div>
+          ),
+        )}
       </nav>
     </>
   )

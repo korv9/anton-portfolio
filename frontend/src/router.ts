@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 export type Page =
   | 'home'
   | 'projects'
+  | 'labs'
   | 'sweden'
   | 'drugcomb'
   | 'thesis'
@@ -205,6 +206,7 @@ function pageOf(path: string): Page {
   // #tech-er).
   if (path === '#projects' || /^#(projects|platform|tech)-/.test(path))
     return 'projects'
+  if (path === '#labs') return 'labs'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'

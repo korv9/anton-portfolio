@@ -138,7 +138,7 @@ export default function SwedenPage({ route }: { route: Route }) {
   return (
     <article className="sweden sw-one">
       <PageHead
-        title="SWEDEN"
+        title="SWEDEN Lab"
         sentence={l(
           'Six questions about Sweden, answered with public data.',
           'Sex frågor om Sverige, besvarade med öppna data.',

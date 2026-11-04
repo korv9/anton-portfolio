@@ -149,8 +149,8 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'thesis',
-    title: t('IT Incident Clustering', 'IT Incident Clustering'),
-    descriptor: t('NLP, fallstudie hos Avtalat', 'NLP, case study at Avtalat'),
+    title: t('ITSM Clustering', 'ITSM Clustering'),
+    descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
     summary: t(
       'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
       'I grouped similar IT support tickets to help the IT team investigate recurring faults.',
@@ -160,12 +160,12 @@ export const PROJECTS: ProjectEntry[] = [
       'How can the IT team find recurring faults among thousands of individual support tickets?',
     ),
     built: t(
-      'Datakvalitetsanalys av 21 633 incidentposter och ett NLP-flöde i Azure Databricks. Den rensade korpusen hade 19 847 unika incidenter; den valda klustringen använde 16 811.',
-      'Data quality analysis of 21,633 incident records and an NLP pipeline in Azure Databricks. The cleaned corpus had 19,847 unique incidents; the selected clustering run used 16,811.',
+      'Datakvalitetsmätning av 21 633 incidentärenden och ett NLP-flöde i Azure Databricks. Efter filtrering anonymiserades 19 847 unika incidenter; den slutliga klustringen använde 16 811.',
+      'Data quality measurement of 21,633 incident tickets and an NLP pipeline in Azure Databricks. After filtering, 19,847 unique incidents were anonymised; the final clustering run used 16,811.',
     ),
     result: t(
-      '121 grupper av liknande ärenden, varav 72 saknade problemkoppling: kandidater att granska, inte bevisade rotorsaker. Två metodfynd: platshållare från anonymiseringen kan skapa falska kluster, och en ordlista med 70 interna systemnamn höjde överensstämmelsen med IT-teamets egna problemärenden med 16 enheter utan att modellen ändrades.',
-      "121 groups of similar tickets, 72 with no existing problem link: candidates for review, not proven root causes. Two findings on method: anonymisation placeholders can create false clusters, and a 70-term glossary of internal system names raised agreement with the IT team's own problem records by 16 points without changing the model.",
+      '121 grupper av liknande ärenden, varav 72 saknade problemkoppling: kandidater att granska, inte bevisade rotorsaker. Två metodfynd: platshållare från anonymiseringen kan skapa falska kluster, och en ordlista med 70 interna systemnamn höjde andelen problemkopplade ärenden i det bästa klustret med 16 procentenheter utan att modellen ändrades.',
+      '121 groups of similar tickets, 72 with no existing problem link: candidates for review, not proven root causes. Two findings on method: anonymisation placeholders can create false clusters, and a 70-term glossary of internal system names raised the share of problem-linked tickets in the best cluster by 16 percentage points without changing the model.',
     ),
     tech: [
       'Python',
@@ -391,16 +391,18 @@ export const PROJECTS: ProjectEntry[] = [
 
 /** The rail's groups by project id (site/ProjectRail.tsx); homie and platform are not listed. */
 export const PROJECT_GROUPS = [
-  { label: 'Research on public data', ids: ['replik', 'ai-act-clock'] },
-  { label: 'Engineering', ids: ['thesis'] },
   {
-    label: 'Experiments',
+    label: 'Selected projects',
+    ids: ['ask-the-law', 'thesis', 'replik'],
+  },
+  {
+    label: 'Labs',
     ids: [
-      'ask-the-law',
+      'drugcomb',
       'philosophy-atlas',
       'symbolic-atlas',
       'concept-constellation',
-      'drugcomb',
+      'ai-act-clock',
     ],
   },
 ]
