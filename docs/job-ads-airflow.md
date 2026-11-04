@@ -189,12 +189,16 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    `infra/airflow/docker-compose.yml` unchanged.
 2. **One scheduler.** Set the repository variable `JOB_ADS_SCHEDULER=airflow`, so the hourly GitHub
    workflow stands down, and only then set `JOB_ADS_PUBLISH=r2` with the R2 secrets in
-   `infra/airflow/.env`. Until a host exists, the check workflow runs Airflow on free runners: it is
-   scheduled every five hours, each window schedules the DAG for 270 minutes and pushes the store,
-   and a concurrency group queues the next window behind it, so two never write at once. Each change
-   of window leaves a gap of about 15 to 25 minutes (image build, restore and a cold embedding of the
-   open ads), longer when GitHub starts the scheduled run late. With the variable removed the
-   scheduled runs skip and the hourly refresh takes over again.
+   `infra/airflow/.env`. Until a host exists, the check workflow runs Airflow on free runners, in windows
+   queued one behind another. Each publishing window starts the next at its own start
+   (`workflow_dispatch`), the concurrency group holds it until the window before has pushed the
+   store, and a cron schedule every five hours stays as a backup, since GitHub started only two of
+   its slots between 00:23 and 13:23 UTC on 2026-11-04. A window schedules the DAG for 230 minutes;
+   a 270-minute window was stopped after four hours by a runner shutdown (run 41748877006), which
+   cost its store upload, not data: the next window reads again from the last stored cursor. Each
+   change of window leaves a gap of about 15 to 25 minutes (image build, restore and a cold
+   embedding of the open ads). With the variable removed no new window is queued and the hourly
+   refresh takes over again.
 3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
    each run; the Airflow host keeps it on local disk. Schedule `realtime.py push` daily, or keep a
    disk backup, so a lost host does not lose the history.
