@@ -58,6 +58,9 @@ def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
                           "keep": True, "error": True}
         if not profile:
             return None, {"reason": "no approved profile", "status": code, "keep": False, "error": False}
+        # Without the owner token the Worker drops the owner's correction notes and the file name
+        # (worker/jobs.ts, publicProfile); matching needs neither, so the schema check sees none.
+        profile = {"corrections": [], **profile}
     if profile.get("status") != "approved" or problems(profile):
         raise SystemExit("the profile is not an approved, valid schema v1 profile")
     return profile, {"reason": "approved", "status": 200, "keep": False, "error": False}
