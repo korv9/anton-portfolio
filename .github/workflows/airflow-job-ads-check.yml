@@ -14,10 +14,11 @@ name: Check the Airflow job ads flow
 # hourly refresh stand down, so the store and the release never have two writers. A runner job lasts
 # at most six hours: near real time by polling for a window.
 #
-# Scheduled every five hours, the windows chain into operation around the clock on free runners until
-# an always-on host exists (docs/job-ads-airflow.md): each scheduled run publishes, and the concurrency
-# group queues the next window until the one before has pushed the store, so two never write at once.
-# Without JOB_ADS_SCHEDULER=airflow a scheduled run is skipped; removing the variable turns the chain off.
+# Windows chain into operation around the clock on free runners until an always-on host exists
+# (docs/job-ads-airflow.md): each publishing window queues the next, a five-hour schedule is the
+# backup, and the concurrency group holds the next window until the one before has pushed the store,
+# so two never write at once. Without JOB_ADS_SCHEDULER=airflow nothing is queued and a scheduled run
+# is skipped; removing the variable turns the chain off.
 
 on:
   schedule:
@@ -39,6 +40,8 @@ on:
 
 permissions:
   contents: read
+  # A publishing window queues the next one (workflow_dispatch), see "Queue the next window".
+  actions: write
 
 # Publishing windows queue one behind another; checks without publishing run on their own.
 concurrency:
@@ -55,8 +58,9 @@ jobs:
     env:
       # The r2.dev address: the custom domain's bot protection answers runners with 403.
       PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
-      # A scheduled window: build, 270 minutes, restart and store push fit within five hours.
-      MINUTES: ${{ inputs.minutes || (github.event_name == 'schedule' && '270') || '25' }}
+      # A window: build, 230 minutes, restart and store push. A 270-minute window was stopped after
+      # four hours by a runner shutdown (run 41748877006), so windows stay shorter.
+      MINUTES: ${{ inputs.minutes || (github.event_name == 'schedule' && '230') || '25' }}
       COMPOSE: docker compose -f infra/airflow/docker-compose.yml
       EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
       PUBLISH: ${{ (inputs.publish || github.event_name == 'schedule') && 'r2' || 'local' }}
@@ -69,6 +73,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # GitHub starts scheduled runs late or not at all (on 2026-11-04 two of the slots between 00:23
+      # and 13:23 UTC never ran), so each publishing window queues the next at its start. The
+      # concurrency group holds it until this one has pushed the store, even if this one fails or is
+      # cancelled; the cron schedule stays as a backup. Removing JOB_ADS_SCHEDULER ends the chain.
+      - name: Queue the next window
+        if: (inputs.publish || github.event_name == 'schedule') && vars.JOB_ADS_SCHEDULER == 'airflow' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run airflow-job-ads-check.yml --repo "$GITHUB_REPOSITORY" --ref main -f publish=true -f minutes=230
       - name: Restore the ad store and the current model's reference vectors
         run: |
           run=$(python3 -c "import json; print(json.load(open('ml/jobs/registry.json'))['current'])")
