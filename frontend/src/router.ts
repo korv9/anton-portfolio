@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 export type Page =
   | 'home'
   | 'projects'
+  | 'labs'
   | 'sweden'
   | 'drugcomb'
   | 'thesis'
@@ -105,6 +106,8 @@ const REDIRECTS: Record<string, string> = {
   '#raw-data': MEANING,
   // When does a law arrive? (the AI Act diffusion clock) under its English name.
   '#ai-act-clock': '#lag-ankomst',
+  // The sentence demo left Cluster Visuals; it lives on Replik.
+  '#cv-place': '#replik',
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
@@ -203,6 +206,7 @@ function pageOf(path: string): Page {
   // #tech-er).
   if (path === '#projects' || /^#(projects|platform|tech)-/.test(path))
     return 'projects'
+  if (path === '#labs') return 'labs'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'

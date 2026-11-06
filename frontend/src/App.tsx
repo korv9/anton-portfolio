@@ -8,12 +8,13 @@ import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
-import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
+import { PROJECT_WORKSPACE, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
+const LabsPage = lazy(() => import('./hub/LabsPage'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
@@ -77,7 +78,9 @@ export default function App() {
     if (route.page === 'projects' && route.path !== '#projects') return
     // A tab of a report opens where the reader stands, like a tab.
     if (sameReport(from, route.path)) return
-    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+    requestAnimationFrame(() =>
+      window.scrollTo({ top: 0, behavior: 'instant' }),
+    )
   }, [route.path, route.page])
 
   const { page, path } = route
@@ -85,9 +88,7 @@ export default function App() {
   const workspace =
     page === 'sweden'
       ? 'sweden'
-      : (PROJECT_GROUPS.find((group) =>
-          group.ids.includes(project?.id ?? ''),
-        )?.label.toLowerCase() ?? 'tool')
+      : (PROJECT_WORKSPACE[project?.id ?? ''] ?? 'tool')
   return (
     <CvViewerProvider>
       <div
@@ -129,6 +130,7 @@ export default function App() {
               >
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsHub />}
+                {page === 'labs' && <LabsPage />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}

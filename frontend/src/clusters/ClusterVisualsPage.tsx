@@ -1,6 +1,6 @@
 /**
- * Cluster visuals: the sentence demo on the party-leader debate map, then every clustering
- * dataset as a large map (ClusterGallery), with the method notes folded away at the bottom.
+ * Cluster visuals: every clustering dataset as a large map (ClusterGallery), with the method
+ * notes folded away at the bottom. The sentence demo lives on Replik (#cv-place redirects there).
  * MAPS and ProjectMaps keep the interactive maps for the project reports and the UMAP gallery.
  */
 import { useEffect, useRef, useState } from 'react'
@@ -14,7 +14,6 @@ import {
 import ClusterScatter, { type ClusterPoint, unnamed } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
-import SentencePlacer from './SentencePlacer'
 import ClusterGallery, { DATASETS } from './ClusterGallery'
 import PageHead from '../ui/PageHead'
 import { useRoute } from '../router'
@@ -519,8 +518,6 @@ export default function ClusterVisualsPage() {
 }
 
 function Gallery() {
-  const maps = MAPS()
-  const debates = maps.find((spec) => spec.id === 'research-debates')!
   const [run, setRun] = useState<DebateRun | 'error' | null>(null)
   useEffect(() => {
     fetchJson<DebateRun>('cluster-research/debate-topics.json').then(
@@ -562,7 +559,6 @@ function Gallery() {
               ]),
         ]}
       />
-      <SentencePlacer spec={debates} />
       <ClusterGallery />
       <Atlas />
       <Experiments all={false} />

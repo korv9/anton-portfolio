@@ -14,6 +14,11 @@
 .thesis-page .project-section {
   border-top: 0;
 }
+/* Running prose keeps the reading measure. */
+.thesis-page .project-section > p,
+.thesis-page .project-section > ol {
+  max-width: var(--measure);
+}
 .thesis-figure {
   margin: var(--sp-5) 0 var(--sp-6);
 }
@@ -72,9 +77,6 @@
 }
 .thesis-split > span {
   min-width: 3px;
-}
-.thesis-split-linked {
-  --swatch: var(--stone);
 }
 .thesis-split-clustered {
   --swatch: var(--ink);

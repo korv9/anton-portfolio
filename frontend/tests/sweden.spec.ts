@@ -53,7 +53,7 @@ test('one page holds the six research products and Connections', async ({
     await expect(page.locator(`.sw-jump a[href="${href}"]`)).toHaveCount(1)
   // The shared head: the name, one sentence and the KPIs read from the coverage files.
   await expect(page.locator('.sw-header')).toHaveCount(0)
-  await expect(page.locator('.page-head-title')).toHaveText('SWEDEN')
+  await expect(page.locator('.page-head-title')).toHaveText('SWEDEN Lab')
   await expect(page.locator('.page-head-kpis > div')).toHaveCount(4)
 })
 

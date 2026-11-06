@@ -1,11 +1,12 @@
-/* Overview (hub/ProjectsHub.tsx): the shared page head, then how and why in two short lines. */
+/* Overview (hub/ProjectsHub.tsx): the shared page head with a lede, the platform case study in
+   project sections (prose at a 65-character measure), the flow diagram and the index. */
 .hub-overview {
   padding-bottom: var(--sp-section);
 }
 .hub-why {
   display: grid;
   gap: var(--sp-5);
-  max-width: var(--measure);
+  max-width: 65ch;
   margin: 0;
 }
 .hub-why dt {
@@ -19,14 +20,14 @@
 .hub-why dd {
   margin: 0;
   color: var(--color-ink-secondary);
-  font-size: var(--body-large);
+  font-size: var(--body);
   line-height: 1.55;
 }
-/* The write-ups and, on phones, the projects the index holds in its drawer. */
+/* The projects index (ProjectIndex.tsx), on every viewport. */
 .hub-links {
   margin-top: var(--sp-6);
 }
-.hub-links h2 {
+.hub-links h3 {
   margin: 0 0 var(--sp-2);
   color: var(--muted);
   font-family: var(--font-meta);
@@ -47,8 +48,450 @@
   color: var(--ink);
   text-underline-offset: 0.2em;
 }
-@media (min-width: 1024px) {
-  .hub-index {
-    display: none;
+.hub-index p {
+  margin: 0 0 var(--sp-3);
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+  line-height: 1.5;
+}
+.hub-index .hub-links:first-child {
+  margin-top: 0;
+}
+
+/* Sections as on the project pages (thesis.css): space instead of rules, titles in the
+   signature's gradient; a hash link lands below the sticky header. */
+.hub-overview .project-section {
+  border-top: 0;
+  scroll-margin-top: var(--header-h, 4.5rem);
+}
+#main .hub-overview .project-section > h2 {
+  background: linear-gradient(
+    to bottom right,
+    var(--color-accent-focal) 0%,
+    var(--color-ink-secondary) 55%,
+    var(--muted) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hub-overview .project-section > :is(p, ul) {
+  max-width: 65ch;
+  line-height: 1.6;
+}
+
+/* A status word after a project in the index, muted like a caption. */
+.hub-status {
+  color: var(--muted);
+  font: var(--caption) var(--font-meta);
+}
+
+/* The path, step by step (PipelineFlow.tsx): a spine on the left that fills as rows come into
+   view, the count, then what happens and a few real node names. One column at 390 pixels. */
+.hub-figure {
+  margin: 0 0 var(--sp-6);
+}
+.hub-figure h3 {
+  margin: 0 0 var(--sp-5);
+  color: var(--muted);
+  font-size: var(--type-chart-title);
+  font-weight: var(--weight-ui);
+}
+.hub-path {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-path-step {
+  --lit: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: 3rem 10rem minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: 0 0 var(--sp-6);
+}
+/* The spine: a faint track, and a lit fill that grows down once the row is in view. */
+.hub-path-step::before,
+.hub-path-step::after {
+  content: '';
+  position: absolute;
+  top: 1.6rem;
+  bottom: 0;
+  left: 0.55rem;
+  width: 1px;
+  background: var(--line);
+}
+.hub-path-step::after {
+  background: var(--ink);
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 700ms var(--ease) 250ms;
+}
+.hub-path-step:last-child::before,
+.hub-path-step:last-child::after {
+  display: none;
+}
+.hub-path-index {
+  position: relative;
+  z-index: 1;
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.35rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--page);
+  color: transparent;
+  font-size: 0;
+  transition:
+    background 300ms var(--ease),
+    border-color 300ms var(--ease),
+    box-shadow 600ms var(--ease);
+}
+.hub-path-count,
+.hub-path-body {
+  opacity: 0.25;
+  translate: 0 12px;
+  transition:
+    opacity 500ms var(--ease),
+    translate 500ms var(--ease);
+}
+.hub-path-body {
+  transition-delay: 120ms;
+}
+.hub-path-count strong {
+  display: block;
+  color: var(--ink);
+  font-size: var(--type-metric);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.hub-path-count span {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hub-path-body h4 {
+  margin: 0.3rem 0 var(--sp-2);
+  color: var(--ink);
+  font-size: var(--h3);
+  font-weight: 650;
+}
+.hub-path-body > p {
+  max-width: 60ch;
+  margin: 0;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.hub-path-step.is-in::after {
+  transform: scaleY(1);
+}
+.hub-path-step.is-in .hub-path-index {
+  border-color: var(--ink);
+  background: var(--ink);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.hub-path-step.is-in :is(.hub-path-count, .hub-path-body) {
+  opacity: 1;
+  translate: 0 0;
+}
+/* The gate: the accent rule, and one mark per quality check that drops in by turn. */
+.hub-path-step.is-focal .hub-path-body {
+  padding: var(--sp-4);
+  border: 2px solid var(--focal);
+  background: var(--paper-strong);
+}
+.hub-path-checks {
+  margin-top: var(--sp-4);
+}
+.hub-path-checks p {
+  margin: 0 0 var(--sp-2);
+  color: var(--color-ink-secondary);
+  font-size: var(--small);
+}
+.hub-path-checks ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hub-path-checks li {
+  width: 12px;
+  height: 12px;
+  border: 1px solid var(--focal);
+  opacity: 0;
+  scale: 0.4;
+  transition:
+    opacity 200ms var(--ease) calc(var(--i) * 25ms + 400ms),
+    scale 300ms var(--ease) calc(var(--i) * 25ms + 400ms);
+}
+.hub-path-checks li.is-pass {
+  background: var(--focal);
+}
+.hub-path-checks li.is-not_applicable {
+  border-style: dashed;
+  border-color: var(--muted);
+}
+.is-in .hub-path-checks li {
+  opacity: 1;
+  scale: 1;
+}
+@media (max-width: 760px) {
+  .hub-path-step {
+    grid-template-columns: 2rem minmax(0, 1fr);
   }
+  .hub-path-body {
+    grid-column: 2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hub-path-step::after {
+    transform: scaleY(1);
+  }
+  .hub-path-index {
+    border-color: var(--ink);
+    background: var(--ink);
+  }
+  .hub-path-count,
+  .hub-path-body,
+  .hub-path-checks li {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+/* The stage names stay whole; only the description column wraps. */
+.hub-overview .dk-table td:first-child {
+  overflow-wrap: normal;
+}
+/* The top of the Overview: the title and intro on the left, held in view while the path beside
+   it scrolls past. One column, intro first, below 1000 pixels. */
+.hub-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  grid-template-areas: 'intro path';
+  gap: var(--sp-7);
+  align-items: start;
+}
+.hub-top-intro {
+  grid-area: intro;
+  display: grid;
+  gap: var(--sp-6);
+}
+.hub-top-title {
+  margin: 0 0 var(--sp-4);
+  color: var(--ink);
+  font-size: var(--h3);
+  font-weight: 650;
+}
+.hub-stack {
+  display: grid;
+  gap: var(--sp-3);
+  margin: 0;
+}
+.hub-stack div {
+  display: grid;
+  grid-template-columns: 10rem minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+.hub-stack dt {
+  color: var(--muted);
+  font-family: var(--font-meta);
+  font-size: var(--caption);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.hub-stack dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.hub-top-path {
+  grid-area: path;
+  margin-top: var(--sp-6);
+}
+.hub-top-path .hub-path-step {
+  grid-template-columns: 2rem 7rem minmax(0, 1fr);
+  gap: var(--sp-3);
+}
+@media (max-width: 1000px) {
+  .hub-top {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'intro' 'path';
+    gap: 0;
+  }
+}
+@media (max-width: 760px) {
+  .hub-top-path .hub-path-step {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+}
+/* A step's name opens the full list of its nodes, with rows and what each one is. */
+.hub-path-toggle {
+  display: inline-flex;
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.hub-path-toggle span {
+  color: var(--muted);
+  font-weight: 400;
+}
+.hub-path-toggle:hover span,
+.hub-path-toggle:focus-visible span {
+  color: var(--ink);
+}
+.hub-path-all {
+  display: grid;
+  gap: var(--sp-3);
+  max-height: 32rem;
+  margin: var(--sp-3) 0 0;
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) 0;
+  overflow-y: auto;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+.hub-path-all li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--sp-3);
+  align-items: baseline;
+}
+.hub-path-all code {
+  color: var(--ink);
+  font-size: var(--caption);
+}
+.hub-path-all span {
+  color: var(--muted);
+  font-size: var(--caption);
+}
+.hub-path-all p {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  color: var(--ink-2);
+  font-size: var(--small);
+  line-height: 1.45;
+}
+/* A dbt model in the list opens its published example rows. */
+.hub-path-node {
+  padding: 0;
+  border: 0;
+  border-bottom: 1px dotted var(--line-strong);
+  background: none;
+  cursor: pointer;
+}
+.hub-path-node:hover code,
+.hub-path-node[aria-expanded='true'] code {
+  color: var(--focal);
+}
+.hub-sample {
+  flex-basis: 100%;
+  max-height: 16rem;
+  margin-top: var(--sp-2);
+  overflow: auto;
+}
+.hub-sample .dk-table {
+  font-size: var(--caption);
+  white-space: nowrap;
+}
+.hub-sample caption {
+  padding-bottom: var(--sp-1);
+  color: var(--muted);
+  text-align: left;
+}
+.hub-sample-note {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: var(--small);
+}
+/* The data model (ErDiagram.tsx): area buttons, then the diagram in a scrolling box. */
+.hub-er-section {
+  margin-top: var(--sp-section);
+}
+.hub-er {
+  margin: 0;
+}
+.hub-er-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-4);
+}
+.hub-er-tabs button {
+  min-height: 44px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--small);
+  cursor: pointer;
+}
+.hub-er-tabs button span {
+  margin-left: var(--sp-1);
+  color: var(--subtle);
+}
+.hub-er-tabs button[aria-pressed='true'] {
+  border-color: var(--focal);
+  color: var(--ink);
+}
+.hub-er-scroll {
+  max-height: 80vh;
+  overflow: auto;
+  border-top: 1px solid var(--line);
+  padding-top: var(--sp-4);
+}
+.hub-er svg {
+  display: block;
+  max-width: none;
+  height: auto;
+}
+.hub-er-table rect {
+  fill: var(--paper-strong);
+  stroke: var(--line-strong);
+}
+.hub-er-table.is-faint {
+  opacity: 0.45;
+}
+.hub-er-table.is-lit rect {
+  stroke: var(--focal);
+  stroke-width: 2;
+}
+.hub-er-name {
+  fill: var(--ink);
+  font-size: 13px;
+  font-weight: 650;
+}
+.hub-er-rows,
+.hub-er-col {
+  fill: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.hub-er-rel path {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.2;
+}
+.hub-er-rel.is-tested path:first-child {
+  stroke-dasharray: 4 4;
+}
+.hub-er-rel.is-lit path {
+  stroke: var(--focal);
+  stroke-width: 2;
+}
+.hub-er figcaption {
+  max-width: 65ch;
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: var(--small);
 }

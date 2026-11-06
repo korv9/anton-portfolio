@@ -63,6 +63,7 @@ import type {
   SymbolProfile,
 } from './atlasTypes'
 import './symbolic.css'
+import { scrollToElement } from '../ui/scrollTo'
 
 type View = 'baseline' | 'cross-book' | 'reviewed'
 const VIEWS: { key: View; name: [string, string]; hint: [string, string] }[] = [
@@ -600,7 +601,7 @@ export default function SymbolicAtlasPage({ route }: { route: Route }) {
                   onOpen={(id) => {
                     setPicked(null)
                     setFilters({ view: 'cross-book', cluster: String(id) })
-                    document.getElementById('atlasen')?.scrollIntoView()
+                    scrollToElement(document.getElementById('atlasen'))
                   }}
                 />
               )}

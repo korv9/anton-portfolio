@@ -1,13 +1,14 @@
 /**
- * The start page, about Anton for a recruiter: the signature, name and role on the first screen,
- * then About with the contact links, experience above education, and the way on to the projects
- * (#projects) beside the job-ads map.
+ * The start page, about Anton for a recruiter: the signature, name, role and links on the first
+ * screen, then About with the contact links, selected work, experience above education, and the
+ * way on to the projects (#projects) beside the job-ads map.
  */
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { profile } from '../content'
-import { ABOUT } from './content'
+import { ABOUT, PLATFORM } from './content'
 import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
+import { scrollToElement } from '../ui/scrollTo'
 import {
   ADDITIONAL,
   ADDITIONAL_EDUCATION,
@@ -26,6 +27,7 @@ const b = (text: Bilingual) => l(text.en, text.sv)
 
 /** The sections a global address points at; the header's links scroll to them. */
 const SECTIONS = ['#kontakt', '#om-mig', '#erfarenhet', '#utbildning']
+const GITHUB = 'https://github.com/korv9'
 
 function Identity() {
   return (
@@ -40,7 +42,12 @@ function Identity() {
           <h1 id="home-name" className="home-name">
             Anton Ernstsson
           </h1>
-          <p className="home-role">Data &amp; AI Engineering</p>
+          <p className="home-role">
+            {l(
+              'Junior Software Developer · Data & AI',
+              'Junior mjukvaruutvecklare · Data & AI',
+            )}
+          </p>
         </div>
       </div>
     </section>
@@ -65,7 +72,7 @@ function Contact() {
             LinkedIn
           </a>
         )}
-        <a href="https://github.com/korv9" target="_blank" rel="noreferrer">
+        <a href={GITHUB} target="_blank" rel="noreferrer">
           GitHub
         </a>
         {profile.cv && <CvButton />}
@@ -130,60 +137,75 @@ function Profile() {
           <p className="home-job-role">{b(ADDITIONAL.text)}</p>
         </div>
       </div>
-      <div className="home-column home-education" id="utbildning">
-        <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
-        {EDUCATION.map((e) => (
-          <div key={e.school} className="home-job">
-            <div className="home-job-head">
-              <h3 className="home-job-org">
-                {b(e.title)} | {e.school}
-              </h3>
-              <p className="home-job-period">{e.period}</p>
-            </div>
-            <p className="home-job-text">{b(e.note)}</p>
-          </div>
-        ))}
-        <div className="home-job">
-          <div className="home-job-head">
-            <h3 className="home-job-org">
-              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
-            </h3>
-            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
-          </div>
-          <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
+      <div className="home-side">
+        <div className="home-column home-platform">
+          <h2 className="home-title">{b(PLATFORM.title)}</h2>
+          {PLATFORM.paragraphs.map((text) => (
+            <p key={text.en} className="home-about-text">
+              {b(text)}
+            </p>
+          ))}
+          <p className="home-platform-link">
+            <a href="#projects">{b(PLATFORM.link)} →</a>
+          </p>
         </div>
-        {thesis && (
+        <div className="home-column home-education" id="utbildning">
+          <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
+          {EDUCATION.map((e) => (
+            <div key={e.school} className="home-job">
+              <div className="home-job-head">
+                <h3 className="home-job-org">
+                  {b(e.title)} | {e.school}
+                </h3>
+                <p className="home-job-period">{e.period}</p>
+              </div>
+              <p className="home-job-text">{b(e.note)}</p>
+            </div>
+          ))}
           <div className="home-job">
             <div className="home-job-head">
-              <h3 className="home-job-org">{b(THESIS.title)}</h3>
+              <h3 className="home-job-org">
+                {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
+              </h3>
+              <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
             </div>
-            <p className="home-job-role">{b(THESIS.kind)}</p>
-            <div className="home-job-parts">
-              {THESIS.parts.map((part) => (
-                <div key={part.heading.en}>
-                  <h4 className="home-job-part">{b(part.heading)}</h4>
-                  <p className="home-job-text">{b(part.text)}</p>
-                </div>
-              ))}
-            </div>
-            <p className="home-job-role">
-              {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
-            </p>
+            <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
           </div>
-        )}
+          {thesis && (
+            <div className="home-job">
+              <div className="home-job-head">
+                <h3 className="home-job-org">{b(THESIS.title)}</h3>
+              </div>
+              <p className="home-job-role">{b(THESIS.kind)}</p>
+              <div className="home-job-parts">
+                {THESIS.parts.map((part) => (
+                  <div key={part.heading.en}>
+                    <h4 className="home-job-part">{b(part.heading)}</h4>
+                    <p className="home-job-text">{b(part.text)}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="home-job-role">
+                {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )
 }
 
 export default function HomePage({ path }: { path: string }) {
-  // A section address (from the header, the footer or a shared link) scrolls to its section.
+  // A section address (from the header, the footer or a shared link) scrolls to its section:
+  // a glide within the page, a jump when the page opens on it.
+  const last = useRef<string | null>(null)
   useEffect(() => {
+    const glide = last.current !== null && last.current !== path
+    last.current = path
     if (!SECTIONS.includes(path)) return
     const frame = requestAnimationFrame(() =>
-      document
-        .getElementById(path.slice(1))
-        ?.scrollIntoView({ block: 'start' }),
+      scrollToElement(document.getElementById(path.slice(1)), { glide }),
     )
     return () => cancelAnimationFrame(frame)
   }, [path])

@@ -98,7 +98,7 @@ export const THESIS = {
     'Degree project: Finding recurring IT problems with NLP',
   ),
   kind: t('Fallstudie, vår 2026', 'Case study, spring 2026'),
-  /** The thesis in three pieces, each under a short heading as in Experience. */
+  /** The thesis in four pieces, each under a short heading as in Experience. */
   parts: [
     {
       heading: t('Frågeställning', 'Question'),
@@ -119,6 +119,13 @@ export const THESIS = {
       text: t(
         'Bedömde datakvaliteten med fem dimensioner ur ISO/IEC 25012. Fann att saknad rotorsaksdokumentation och få kopplingar mellan incidenter och problem begränsade analysen, vilket visade varför bättre dokumentation behövs för användbar AI.',
         'Assessed data quality using five ISO/IEC 25012 dimensions. Missing root-cause documentation and few links between incidents and problems limited the analysis. Useful AI here needs better documentation.',
+      ),
+    },
+    {
+      heading: t('Metod', 'Method'),
+      text: t(
+        'Fann att platshållare från anonymiseringen kan skapa falska kluster, och att en ordlista med 70 interna systemnamn höjde andelen problemkopplade ärenden i det bästa klustret med 16 procentenheter utan att modellen ändrades.',
+        'Found that anonymisation placeholders can create false clusters, and that a 70-term glossary of internal system names raised the share of problem-linked tickets in the best cluster by 16 percentage points without changing the model.',
       ),
     },
   ],
