@@ -34,7 +34,7 @@ test(
   },
 )
 
-test('education follows experience in one column', async ({
+test('education sits under Platform and projects, beside experience', async ({
   page,
   isMobile,
 }) => {
@@ -46,32 +46,33 @@ test('education follows experience in one column', async ({
     page
       .locator(selector)
       .evaluate((el) => el.getBoundingClientRect().toJSON() as DOMRect)
-  // Both titles in one frame: the page may still be scrolling smoothly to #erfarenhet, and two
-  // separate reads would compare positions from two scroll offsets.
-  const [experience, education] = await page.evaluate(() =>
-    ['.home-experience .home-title', '.home-education .home-title'].map(
+  // All in one frame: the page may still be scrolling smoothly to #erfarenhet, and separate reads
+  // would compare positions from different scroll offsets.
+  const [experience, platform, education] = await page.evaluate(() =>
+    ['.home-experience', '.home-platform', '.home-education'].map(
       (s) =>
         document.querySelector(s)!.getBoundingClientRect().toJSON() as DOMRect,
     ),
   )
-  expect(Math.abs(experience.left - education.left)).toBeLessThan(0.5)
-  expect(education.top).toBeGreaterThan(experience.bottom)
+  expect(Math.abs(platform.left - education.left)).toBeLessThan(0.5)
+  expect(education.top).toBeGreaterThan(platform.bottom)
+  expect(education.left).toBeGreaterThan(experience.right)
   const column = await box('.home-experience')
   expect(column.width).toBeLessThanOrEqual(641)
   await expect(page.locator('main canvas')).toHaveCount(1) // Only the job-ads map below.
 })
 
 test(
-  'the start page is about Anton: the name, then About with contact, the profile and one way on',
+  'the start page is about Anton: the name, then About alone with contact, then the profile',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/')
     await expect(page).toHaveTitle('ANTON ERNSTSSON DATA & AI')
-    // No header, and only the name and the role on the first screen.
+    // No header; only the signature, the name and the role on the first screen.
     await expect(page.locator('.site-header')).toHaveCount(0)
     await expect(page.locator('#start h1')).toHaveText('Anton Ernstsson')
     await expect(page.locator('#start .home-role')).toHaveText(
-      'Data & AI Engineering',
+      'Junior Software Developer · Data & AI',
     )
     await expect(page.locator('#start a, #start button')).toHaveCount(0)
     const contact = page.locator('#kontakt')
@@ -92,12 +93,12 @@ test(
     await expect(page.locator('#om-mig #kontakt')).toHaveCount(1)
     expect(await top('om-mig')).toBeLessThan(await top('erfarenhet'))
     expect(await top('om-mig')).toBeLessThan(await top('utbildning'))
-    // No project content: the links inside the page lead on to the projects hub.
+    // No selected-work list: the platform column and the other links lead on to the projects hub.
     expect(
       await page
         .locator('main a[href^="#"]')
         .evaluateAll((as) => as.map((a) => a.getAttribute('href'))),
-    ).toEqual(['#projects'])
+    ).toEqual(['#projects', '#projects'])
     await expect(
       page.locator('.work-card, .home-feed, .mean-post'),
     ).toHaveCount(0)
@@ -178,20 +179,25 @@ test('home remains usable when the decorative debate map is unavailable', async 
     'false',
   )
   await expect(page.locator('.home-backdrop-toggle')).toHaveCount(0)
+  // No controls for the map, and no links on the first screen.
   await expect(page.locator('#start nav')).toHaveCount(0)
 })
 
-test('Projects opens the Overview: how and why the platform is built, and its numbers', async ({
+test('Projects opens the Overview: the intro, decisions, tools, the path and the data model', async ({
   page,
 }) => {
   await page.goto('/#projekt')
   await expect(page).toHaveURL(/#projects$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Overview')
-  await expect(page.locator('.page-head-kpis > div')).toHaveCount(4)
-  await expect(page.locator('.page-head-kpis dd').first()).toHaveText(/M$/)
-  await expect(page.locator('.hub-why dt')).toHaveText(['How', 'Why'])
-  // No project list: the index is the way into the projects.
-  await expect(page.locator('.hub-item')).toHaveCount(0)
+  await expect(page.locator('.hub-why dt')).toHaveText([
+    'DuckDB with dbt.',
+    'Three layers.',
+    'Contracts before publishing.',
+    'R2 for delivery.',
+  ])
+  await expect(page.locator('.hub-stack dt').first()).toHaveText('Data')
+  await expect(page.locator('.hub-path-step')).toHaveCount(10)
+  await expect(page.locator('.hub-er svg')).toBeVisible()
   // The platform page is gone; its old addresses land on the Overview.
   for (const old of ['#platform', '#projects-platform', '#ask-platform']) {
     await page.goto('/' + old)

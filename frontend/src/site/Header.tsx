@@ -13,8 +13,9 @@ const TECHNICAL: Partial<Record<Route['page'], Bilingual>> = {
     sv: 'What does it even mean?',
   },
   projects: { en: 'Projects', sv: 'Projekt' },
+  labs: { en: 'Labs', sv: 'Labb' },
   jobs: { en: 'Arbetsförmedla', sv: 'Arbetsförmedla' },
-  sweden: { en: 'SWEDEN', sv: 'SWEDEN' },
+  sweden: { en: 'SWEDEN Lab', sv: 'SWEDEN Lab' },
 }
 
 /** The page's own name for the document title, or null on the homepage. */

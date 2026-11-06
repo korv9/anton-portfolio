@@ -12,8 +12,8 @@ test(
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Cluster visuals',
     )
-    // The sentence demo leads; the old per-project sections are gone from this page.
-    await expect(page.locator('#cv-place')).toBeVisible()
+    // The sentence demo lives on Replik; the old per-project sections are gone from this page.
+    await expect(page.locator('#cv-place')).toHaveCount(0)
     await expect(page.locator('.cv .cv-section')).toHaveCount(0)
     const tiles = page.locator('.cv-tile')
     await expect(tiles).toHaveCount(7)
@@ -99,7 +99,8 @@ test(
         `${data.clusters} clusters`,
       )
     }
-    // The hero map keeps its named debate subjects.
+    // The sentence demo on Replik keeps its named debate subjects.
+    await page.goto('/#replik')
     const place = page.locator('#cv-place')
     await place.scrollIntoViewIfNeeded()
     await expect(place.locator('canvas')).toBeVisible()

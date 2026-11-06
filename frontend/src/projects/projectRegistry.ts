@@ -149,8 +149,8 @@ export const PROJECTS: ProjectEntry[] = [
   },
   {
     id: 'thesis',
-    title: t('IT Incident Clustering', 'IT Incident Clustering'),
-    descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
+    title: t('ITSM Clustering', 'ITSM Clustering'),
+    descriptor: t('NLP, fallstudie hos Avtalat', 'NLP, case study at Avtalat'),
     summary: t(
       'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
       'I grouped similar IT support tickets to help the IT team investigate recurring faults.',
@@ -160,12 +160,12 @@ export const PROJECTS: ProjectEntry[] = [
       'How can the IT team find recurring faults among thousands of individual support tickets?',
     ),
     built: t(
-      'Datakvalitetsanalys av 21 633 incidentposter och ett NLP-flöde i Azure Databricks. Den rensade korpusen hade 19 847 unika incidenter; den valda klustringen använde 16 811.',
-      'Data quality analysis of 21,633 incident records and an NLP pipeline in Azure Databricks. The cleaned corpus had 19,847 unique incidents; the selected clustering run used 16,811.',
+      'Datakvalitetsmätning av 21 633 incidentärenden och ett NLP-flöde i Azure Databricks. Efter filtrering anonymiserades 19 847 unika incidenter; den slutliga klustringen använde 16 811.',
+      'Data quality measurement of 21,633 incident tickets and an NLP pipeline in Azure Databricks. After filtering, 19,847 unique incidents were anonymised; the final clustering run used 16,811.',
     ),
     result: t(
-      '121 grupper av liknande ärenden, varav 72 saknade befintlig problemkoppling. De är granskningskandidater, inte bevisade rotorsaker. Källärendena är privata.',
-      '121 groups of similar tickets, of which 72 lacked an existing problem link. They are review candidates, not proven root causes. Source tickets are private.',
+      '121 grupper av liknande ärenden, varav 72 saknade problemkoppling: kandidater att granska, inte bevisade rotorsaker. Två metodfynd: platshållare från anonymiseringen kan skapa falska kluster, och en ordlista med 70 interna systemnamn höjde andelen problemkopplade ärenden i det bästa klustret med 16 procentenheter utan att modellen ändrades.',
+      '121 groups of similar tickets, 72 with no existing problem link: candidates for review, not proven root causes. Two findings on method: anonymisation placeholders can create false clusters, and a 70-term glossary of internal system names raised the share of problem-linked tickets in the best cluster by 16 percentage points without changing the model.',
     ),
     tech: [
       'Python',
@@ -389,21 +389,40 @@ export const PROJECTS: ProjectEntry[] = [
   },
 ]
 
+/** The rail's groups by project id (site/ProjectRail.tsx); homie and platform are not listed. */
 export const PROJECT_GROUPS = [
+  {
+    label: 'Selected projects',
+    ids: ['ask-the-law', 'thesis', 'replik'],
+  },
   {
     label: 'Labs',
     ids: [
-      'symbolic-atlas',
-      'philosophy-atlas',
-      'concept-constellation',
-      'ask-the-law',
       'drugcomb',
-      'replik',
+      'philosophy-atlas',
+      'symbolic-atlas',
+      'concept-constellation',
       'ai-act-clock',
     ],
   },
-  { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },
 ]
+
+/**
+ * The page theme (`data-workspace`, site/editorial.css) of each project, kept apart from the
+ * menu groups so regrouping the rail does not restyle a page. Pages not listed are 'tool'.
+ */
+export const PROJECT_WORKSPACE: Record<string, 'labs' | 'engineering'> = {
+  'symbolic-atlas': 'labs',
+  'philosophy-atlas': 'labs',
+  'concept-constellation': 'labs',
+  'ask-the-law': 'labs',
+  drugcomb: 'labs',
+  replik: 'labs',
+  'ai-act-clock': 'labs',
+  thesis: 'engineering',
+  homie: 'engineering',
+  platform: 'engineering',
+}
 
 /** The project a route belongs to, if any. */
 export function projectForRoute(

@@ -12,6 +12,8 @@ import { l } from '../i18n'
 import type { Route } from '../router'
 import { fetchJson } from '../dataSource'
 import { ReportFrame } from '../report/ReportShell'
+import { PROJECTS } from '../projects/projectRegistry'
+import { Method } from '../ui/PageHead'
 import {
   answer as ask,
   embed,
@@ -35,6 +37,7 @@ type Example = {
 }
 
 const TOP = 8
+const entry = PROJECTS.find((p) => p.id === 'ask-the-law')!
 const MAX = 500
 
 const fileOf = (choice: string) =>
@@ -140,6 +143,18 @@ export default function AskTheLaw({ route }: { route: Route }) {
         <section className="report-tab" aria-label="Allegora">
           <header className="page-head">
             <h1 className="page-head-title">ALLEGORA</h1>
+            <p className="page-head-lede">
+              {l(entry.summary.en, entry.summary.sv)}
+            </p>
+            <p className="page-head-lede">
+              {l(entry.built.en, entry.built.sv)}
+            </p>
+            <p className="page-head-lede">
+              {l(
+                'If the check fails, the answer is withheld and only the paragraphs found are shown.',
+                'Om kontrollen inte går igenom visas inget svar, bara de paragrafer som hittades.',
+              )}
+            </p>
           </header>
 
           <Thread turns={turns} lang={choice === 'sfs' ? 'sv' : undefined} />
@@ -211,6 +226,18 @@ export default function AskTheLaw({ route }: { route: Route }) {
               </p>
             </form>
           )}
+          <Method
+            summary={l(
+              'How it is made · sources · method',
+              'Så är det gjort · källor · metod',
+            )}
+          >
+            <p>{l(entry.question.en, entry.question.sv)}</p>
+            <p>{l(entry.result.en, entry.result.sv)}</p>
+            <footer>
+              <p>{entry.tech.join(' · ')}</p>
+            </footer>
+          </Method>
         </section>
       </div>
     </ReportFrame>

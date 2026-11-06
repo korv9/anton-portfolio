@@ -15,8 +15,8 @@ export default function MeaningPage() {
       </h1>
       <p className="mean-lede">
         {l(
-          'I started building this platform with the idea that I would ingest as many data sources as possible. I was naive to think this would automatically produce actionable insights. Then I realised that the presentation of the data, with all its graphs and diagrams, is just as important.',
-          'Jag började bygga den här plattformen med idén att läsa in så många datakällor som möjligt. Jag var naiv som trodde att det automatiskt skulle ge insikter att agera på. Sedan insåg jag att presentationen av datan, med alla dess grafer och diagram, är lika viktig.',
+          'Every chart the platform produces, in one feed: politics, Sweden, job ads, the AI Act, Swedish law, symbols, philosophy, concepts and the platform itself. Each card names its source.',
+          'Alla diagram plattformen producerar, i ett flöde: politik, Sverige, platsannonser, AI-förordningen, svensk lag, symboler, filosofi, begrepp och plattformen själv. Varje kort anger sin källa.',
         )}
       </p>
       <Feed />
