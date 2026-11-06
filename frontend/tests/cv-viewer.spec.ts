@@ -115,20 +115,18 @@ test(
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#om-mig')
-    await expect(page.locator('.home-about-text')).toHaveCount(1)
-    await expect(page.locator('.home-about-text')).toContainText(
-      'a junior software developer in data and AI',
+    const about = page.locator('#om-mig .home-about-text')
+    await expect(about).toHaveCount(3)
+    await expect(about.first()).toContainText(
+      'a junior developer with internship experience as a data engineer',
     )
     // The old contact paragraph is gone; the email and links follow the About paragraphs.
     await expect(page.locator('.home-contact-intro')).toHaveCount(0)
     expect(
-      await page
-        .locator('.home-about-text')
-        .last()
-        .evaluate((el) => el.nextElementSibling?.className),
+      await about.last().evaluate((el) => el.nextElementSibling?.className),
     ).toBe('home-contact')
-    await expect(page.locator('.home-about-text')).toContainText(
-      'a role in software development, data or AI',
+    await expect(about.last()).toContainText(
+      'roles in data, AI and software engineering',
     )
   },
 )

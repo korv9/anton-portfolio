@@ -365,11 +365,12 @@ def test_catalog_routes_release_only_groups_through_the_manifest(exports, monkey
     delivery = json.loads((exports / "delivery.json").read_text())
     assert "manifest_url" not in delivery
     assert delivery["live"] == {"manifest_url": catalog.OBJECT_STORAGE + "manifests/current.json",
-                                "prefixes": ["job-assistant/"]}
-    # The group's own spec owns exactly the paths the site routes to R2.
-    spec_file = Path(__file__).resolve().parents[3] / "configs/delivery/job-assistant.json"
-    owned = json.loads(spec_file.read_text())["files"]
+                                "prefixes": ["job-assistant/", "schema/"]}
+    # Each live prefix is owned by a group spec, so the active manifest has its files.
+    specs = Path(__file__).resolve().parents[3] / "configs/delivery"
+    owned = json.loads((specs / "job-assistant.json").read_text())["files"]
     assert all(path.startswith(tuple(delivery["live"]["prefixes"])) for path in owned)
+    assert "schema/*" in json.loads((specs / "public-data.json").read_text())["include"]
 
 
 def test_prefer_active_preserves_newer_summary_after_optional_failure(exports):

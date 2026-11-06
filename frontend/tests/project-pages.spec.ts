@@ -7,10 +7,10 @@ test('every project in the index opens its page, which ends with its own content
   page,
 }) => {
   test.setTimeout(120_000)
-  await page.goto('/#projects')
+  await page.goto('/#labs')
   await expect(page.locator('nav.hub-index a').first()).toBeVisible()
   const links = await page
-    // The rail folds the labs under Labs; Overview's index lists every project.
+    // The rail lists the selected projects; the Labs page's index lists every lab.
     .locator('nav.project-rail a[href^="#"], nav.hub-index a[href^="#"]')
     .evaluateAll((as) => [
       ...new Set(as.map((a) => a.getAttribute('href')!.split('?')[0])),

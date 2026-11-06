@@ -63,10 +63,11 @@ SHARD_DIRECTORIES = (
     "workers-ai/sfs/meta.json",
 )
 
-# Delivery groups that exist only as R2 releases and are never committed under public/data.
-# The site resolves these prefixes through the active R2 manifest and everything else through
-# BASES, until the whole site reads the manifest (manifest_url).
-LIVE_PREFIXES = ("job-assistant/",)
+# Prefixes the site resolves through the active R2 manifest; everything else goes through
+# BASES, until the whole site reads the manifest (manifest_url). job-assistant/ exists only as
+# an R2 release. schema/ is published whole by public-data (configs/delivery/public-data.json),
+# so its example rows follow each release instead of the copies committed under public/data.
+LIVE_PREFIXES = ("job-assistant/", "schema/")
 
 SESSION_PATTERN = re.compile(r"/(?:session=)?(\d{4}-\d{2,4})/")
 

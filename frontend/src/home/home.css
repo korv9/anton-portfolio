@@ -155,10 +155,7 @@
 .home-job-org-small,
 .home-job-part,
 .home-job-text,
-.home-about-text,
-.home-contact a,
-.home-contact .cv-trigger:not(.language-toggle),
-.home-byline .home-links :is(a, .cv-trigger) {
+.home-about-text {
   background: linear-gradient(
     to bottom right,
     #ebe6da 0%,
@@ -169,8 +166,11 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-:is(.home-contact, .home-byline) :is(a, .cv-trigger) {
-  text-decoration-color: #c6c1b6;
+/* The contact links in plain white, so they stand out from the toned text around them. */
+.home-contact :is(a, .cv-trigger:not(.language-toggle)) {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+  text-decoration-color: rgba(255, 255, 255, 0.6);
 }
 .home-contact .home-links .language-toggle {
   color: var(--muted);
@@ -277,8 +277,7 @@
 @media (prefers-reduced-motion: reduce) {
   .home-signature,
   .home-name,
-  .home-role,
-  .home-byline .home-links {
+  .home-role {
     animation: none;
   }
 }
@@ -289,12 +288,29 @@
   grid-template-columns: minmax(0, 600px) minmax(0, 1fr);
   gap: var(--sp-7) clamp(var(--sp-6), 6vw, 120px);
 }
-.home-about {
-  grid-column: 1 / -1;
+/* About on the left with the contact box under it, experience below; at the right edge Platform
+   and projects with education below, beside both. */
+.home-profile .home-about {
+  grid-column: 1;
+  grid-row: 1;
   width: min(100%, 760px);
 }
-.home-experience,
-.home-education {
+.home-profile .home-experience {
+  grid-row: 2;
+}
+.home-side {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  justify-self: end;
+  display: grid;
+  align-content: start;
+  gap: var(--sp-7);
+  width: min(100%, 560px);
+}
+.home-platform-link {
+  margin: var(--sp-4) 0 0;
+}
+.home-experience {
   grid-column: 1;
 }
 .home-profile .home-title {
@@ -396,15 +412,7 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
-.home-contact a {
-  color: var(--ink);
-}
-/* The same links on the first screen, under the role line. */
-.home-byline .home-links {
-  justify-content: center;
-  animation: home-rise 0.6s var(--ease) 2s both;
-}
-:is(.home-contact, .home-byline) .home-links {
+.home-contact .home-links {
   align-items: center;
   margin: 0;
   font-size: 15px;
@@ -539,6 +547,23 @@
   .home-profile,
   .home-jobs {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .home-side {
+    grid-column: 1;
+    justify-self: stretch;
+    width: auto;
+  }
+  /* One column: About, then Platform and projects with education, then experience. */
+  .home-profile .home-about,
+  .home-profile .home-experience,
+  .home-side {
+    grid-row: auto;
+  }
+  .home-side {
+    order: 1;
+  }
+  .home-profile .home-experience {
+    order: 2;
   }
   .home-name {
     font-size: 30px;

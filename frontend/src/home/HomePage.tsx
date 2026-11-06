@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef } from 'react'
 import { profile } from '../content'
-import { ABOUT, SELECTED } from './content'
+import { ABOUT, PLATFORM } from './content'
 import { l, currentLocale } from '../i18n'
 import { CvButton } from '../site/CvViewer'
 import { scrollToElement } from '../ui/scrollTo'
@@ -48,24 +48,6 @@ function Identity() {
               'Junior mjukvaruutvecklare · Data & AI',
             )}
           </p>
-          <nav
-            className="home-links"
-            aria-label={l(
-              'Projects, CV and profiles',
-              'Projekt, CV och profiler',
-            )}
-          >
-            <a href="#projects">{l('Projects', 'Projekt')}</a>
-            {profile.cv && <CvButton />}
-            <a href={GITHUB} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
-            {profile.linkedin && (
-              <a href={profile.linkedin} target="_blank" rel="noreferrer">
-                LinkedIn
-              </a>
-            )}
-          </nav>
         </div>
       </div>
     </section>
@@ -121,17 +103,6 @@ function Profile() {
         ))}
         <Contact />
       </div>
-      <div className="home-column home-selected">
-        <h2 className="home-title">{l('Selected work', 'Utvalda projekt')}</h2>
-        {SELECTED.map((work) => (
-          <div key={work.href} className="home-job">
-            <h3 className="home-job-org">
-              <a href={work.href}>{work.title}</a>
-            </h3>
-            <p className="home-job-text">{b(work.line)}</p>
-          </div>
-        ))}
-      </div>
       <div className="home-column home-experience" id="erfarenhet">
         <h2 className="home-title">{l('Experience', 'Erfarenhet')}</h2>
         <ol className="home-jobs">
@@ -166,47 +137,60 @@ function Profile() {
           <p className="home-job-role">{b(ADDITIONAL.text)}</p>
         </div>
       </div>
-      <div className="home-column home-education" id="utbildning">
-        <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
-        {EDUCATION.map((e) => (
-          <div key={e.school} className="home-job">
-            <div className="home-job-head">
-              <h3 className="home-job-org">
-                {b(e.title)} | {e.school}
-              </h3>
-              <p className="home-job-period">{e.period}</p>
-            </div>
-            <p className="home-job-text">{b(e.note)}</p>
-          </div>
-        ))}
-        <div className="home-job">
-          <div className="home-job-head">
-            <h3 className="home-job-org">
-              {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
-            </h3>
-            <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
-          </div>
-          <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
+      <div className="home-side">
+        <div className="home-column home-platform">
+          <h2 className="home-title">{b(PLATFORM.title)}</h2>
+          {PLATFORM.paragraphs.map((text) => (
+            <p key={text.en} className="home-about-text">
+              {b(text)}
+            </p>
+          ))}
+          <p className="home-platform-link">
+            <a href="#projects">{b(PLATFORM.link)} →</a>
+          </p>
         </div>
-        {thesis && (
+        <div className="home-column home-education" id="utbildning">
+          <h2 className="home-title">{l('Education', 'Utbildning')}</h2>
+          {EDUCATION.map((e) => (
+            <div key={e.school} className="home-job">
+              <div className="home-job-head">
+                <h3 className="home-job-org">
+                  {b(e.title)} | {e.school}
+                </h3>
+                <p className="home-job-period">{e.period}</p>
+              </div>
+              <p className="home-job-text">{b(e.note)}</p>
+            </div>
+          ))}
           <div className="home-job">
             <div className="home-job-head">
-              <h3 className="home-job-org">{b(THESIS.title)}</h3>
+              <h3 className="home-job-org">
+                {b(ADDITIONAL_EDUCATION.title)} | {ADDITIONAL_EDUCATION.school}
+              </h3>
+              <p className="home-job-period">{ADDITIONAL_EDUCATION.period}</p>
             </div>
-            <p className="home-job-role">{b(THESIS.kind)}</p>
-            <div className="home-job-parts">
-              {THESIS.parts.map((part) => (
-                <div key={part.heading.en}>
-                  <h4 className="home-job-part">{b(part.heading)}</h4>
-                  <p className="home-job-text">{b(part.text)}</p>
-                </div>
-              ))}
-            </div>
-            <p className="home-job-role">
-              {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
-            </p>
+            <p className="home-job-text">{b(ADDITIONAL_EDUCATION.text)}</p>
           </div>
-        )}
+          {thesis && (
+            <div className="home-job">
+              <div className="home-job-head">
+                <h3 className="home-job-org">{b(THESIS.title)}</h3>
+              </div>
+              <p className="home-job-role">{b(THESIS.kind)}</p>
+              <div className="home-job-parts">
+                {THESIS.parts.map((part) => (
+                  <div key={part.heading.en}>
+                    <h4 className="home-job-part">{b(part.heading)}</h4>
+                    <p className="home-job-text">{b(part.text)}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="home-job-role">
+                {l('Tech', 'Teknik')}: {THESIS.tech.join(', ')}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   )
