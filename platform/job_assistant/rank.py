@@ -109,7 +109,9 @@ def run(profile: dict | None, http=None, now: datetime | None = None, why: dict 
     explained = sum(1 for r in rows.values() if (r.get("explanation") or {}).get("at", "")[:10] == today)
     note["explained"] = 0
     for row in ranked:
-        if row["class"] not in LISTED or row.get("explanation"):
+        made = row.get("explanation") or {}
+        # A verified explanation stands; an unverified one is tried again on a later day, within the cap.
+        if row["class"] not in LISTED or made.get("status") == "verified" or made.get("at", "")[:10] == today:
             continue
         try:
             result = ai.explain(row, ads[row["id"]], http, explained, now)
