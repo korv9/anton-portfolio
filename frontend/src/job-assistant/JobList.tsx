@@ -1,4 +1,5 @@
-/** The left column: one compact line per ad (title, employer, place, mark, days left), in pages. */
+/** The left column under its heading, "Ads" and the count: one compact line per ad (title,
+ * employer, place, mark, days left), in pages. */
 import type { CSSProperties, RefObject } from 'react'
 import { l } from '../i18n'
 import type { Row } from './model'
@@ -22,6 +23,9 @@ type Props = {
 export default function JobList(p: Props) {
   return (
     <div className="ja-list-pane">
+      <h2 className="ja-list-head" id="ja-list-head">
+        {l('Ads', 'Annonser')} <span className="ja-count">{p.total}</span>
+      </h2>
       <p className="visually-hidden" aria-live="polite" aria-atomic="true">
         {p.total === 1
           ? l('1 job', '1 jobb')
@@ -30,7 +34,12 @@ export default function JobList(p: Props) {
       {p.total === 0 ? (
         <p className="ja-empty">{p.empty}</p>
       ) : (
-        <ol className="ja-items" ref={p.listRef} key={p.listKey}>
+        <ol
+          className="ja-items"
+          ref={p.listRef}
+          key={p.listKey}
+          aria-labelledby="ja-list-head"
+        >
           {p.rows.map((r, i) => (
             <li key={r.ad.id} style={{ '--i': i } as CSSProperties}>
               <Item

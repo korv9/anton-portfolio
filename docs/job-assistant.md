@@ -393,27 +393,28 @@ describe this search, not matching in general.
 the site shell like every project page: the site header and the project index stay, and the tool
 fills the content area.
 
-- A bar holds the title, the search (title, employer, occupation, named skills) and the time of
-  the last sync. A calm notice under it says when the data is more than eight hours old, a file
+- One row holds the title, a compact search (title, employer, occupation, named skills) and the
+  time of the last sync; there is no lead sentence, so the list and the ad start high. A calm notice under it says when the data is more than eight hours old, a file
   failed to load, the last matches were kept, or nothing is matched yet.
 - List buttons with counts: Good fit (strong and possible), Saved, Applied, Closed, All, and How
   it works. A Filters disclosure holds place, role and seniority, each with counts. Sorting is by
   fit, then the nearest deadline. The list, search, filters and the open ad are in the address.
-- The list column shows title, employer and place, the mark, and the days left (highlighted under
+- The list column, headed "Ads" with its count, shows title, employer and place, the mark, and the days left (highlighted under
   seven). The open ad shows its title and employer, quick facts (apply by, employment,
   published, fit in words), the marks and a link to apply at the employer (https only).
 - "What the ad asks for" groups the named skills as Required and Nice to have; skills the ad does
   not grade form one group with a line saying so. Education and conditions are one plain line.
   The page does not compare the ad with the CV.
-- The ad's lead is shown, and a native disclosure, "Read the whole ad", opens the full text in
-  place. The text comes from `texts.json`, else from `texts-remaining.json`, fetched once and only
-  when an ad is opened.
+- An opened ad shows its whole text at once, lead first, before what the ad asks for; on a phone
+  the facts and actions follow the text. The text comes from `texts.json`, else
+  from `texts-remaining.json`, fetched once and only when an ad is opened; the ad shown first on
+  a wide screen, before any is opened, offers "Read the whole ad" instead.
 - The only personal marks are Saved, Applied and Closed. They are kept in `localStorage` per ad
   (`job-assistant-status:<id>`), so they work for any visitor and survive sessions. With the owner
   token and a working D1, the D1 review rows are read on load and win, and each change is written
   back (saved as `interesting`, applied as `applied`, closed as `closed`, cleared as `new`).
-- Motion uses one ease-out curve on opacity, transform and the disclosure's height: the opened ad
-  settles in, the whole ad expands, marks and counts ease, a changed list fades in with a short
+- Motion uses one ease-out curve on opacity and transform: the opened ad settles in, marks and
+  counts ease, a changed list fades in with a short
   stagger, and on phones the ad slides in. Nothing moves on first paint, and
   `prefers-reduced-motion` turns it all off. There are no keyboard shortcuts.
 - Under 760 px the list comes first and the opened ad replaces it, with a back button.

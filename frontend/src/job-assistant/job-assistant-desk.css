@@ -20,6 +20,21 @@
   border-right: 1px solid var(--line);
 }
 
+.ja-list-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  margin: 0;
+  padding: var(--sp-3) var(--sp-4) var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line);
+  background: var(--color-canvas);
+  font-size: var(--small);
+  font-weight: var(--weight-heading);
+}
+.ja-list-head .ja-count {
+  color: var(--color-ink-secondary);
+  font-weight: normal;
+}
 .ja-items {
   margin: 0;
   padding: 0;
@@ -83,7 +98,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-content: start;
-  padding: var(--sp-5) 0 var(--sp-5) clamp(var(--sp-4), 3vw, var(--sp-6));
+  padding: var(--sp-4) 0 var(--sp-5) clamp(var(--sp-4), 3vw, var(--sp-6));
 }
 #main .ja .ja-detail h2 {
   margin: 0;
@@ -143,36 +158,25 @@
   white-space: pre-line;
   overflow-wrap: anywhere;
 }
-.ja-whole {
-  margin-top: var(--sp-3);
-}
-.ja-whole summary {
-  list-style: none;
-}
-.ja-whole summary::-webkit-details-marker {
-  display: none;
-}
-.ja-whole[open] summary svg {
-  transform: rotate(180deg);
-}
-.ja-whole .ja-rest {
-  margin-top: var(--sp-3);
+.ja-rest {
+  margin-top: var(--sp-4);
 }
 
 .ja-detail-main {
   display: contents;
 }
-.ja-detail-main > section:has(#ja-asks) {
+/* The ad's own text first after the facts: reading it is what the desk is for. */
+.ja-detail-main > section:has(#ja-ad) {
   order: 2;
 }
-.ja-detail-main > section:has(#ja-ad) {
+.ja-detail-main > section:has(#ja-asks) {
   order: 3;
 }
 .ja-facts {
   order: 1;
-  margin-top: var(--sp-5);
+  margin-top: var(--sp-4);
   align-self: start;
-  padding: var(--sp-5);
+  padding: var(--sp-4);
   background: var(--color-surface);
 }
 /* --muted is too faint on the surface for small labels; the secondary ink keeps AA contrast. */
@@ -193,7 +197,7 @@
 .ja-actions {
   display: grid;
   gap: var(--sp-2);
-  margin-top: var(--sp-5);
+  margin-top: var(--sp-4);
 }
 .ja-kept {
   margin-bottom: var(--sp-2);
@@ -260,6 +264,10 @@
   }
   .ja-back {
     display: inline-flex;
+  }
+  /* On a phone the ad's text comes straight after the title; the facts and actions follow it. */
+  .ja-facts {
+    order: 4;
   }
   .ja:has(.ja-desk[data-open='true']) .ja-lists {
     display: none;
