@@ -88,6 +88,13 @@ jobs:
           for key in raw/job_assistant/ads.json raw/job_assistant/state.json raw/job_assistant/runs.jsonl                      features/job_clusters/reference-$run.npz; do
             curl -fsS --create-dirs -o "warehouse/$key" "${PUBLIC%/}/warehouse/$key"
           done
+          # What the last window pushed with the store: the embedding cache (only new or changed texts
+          # are embedded), the neuron ledger (the daily cap counts every window of the day), the stage
+          # state with its matches, and the run log the page's latency median reads. Pushed together
+          # under realtime.py's lock, so they agree; one missing (a first window) starts empty.
+          for name in vectors.sqlite ledger.jsonl pipeline.json matches.json realtime_runs.jsonl; do
+            curl -fsS -o "warehouse/raw/job_assistant/$name" "${PUBLIC%/}/warehouse/raw/job_assistant/$name" || echo "::notice::no $name in R2 yet; starting without it"
+          done
       - name: Build and start Airflow
         env:
           R2_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCOUNT_ID || '' }}
