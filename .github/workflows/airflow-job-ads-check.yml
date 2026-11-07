@@ -95,11 +95,16 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
           R2_BUCKET: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_BUCKET || '' }}
           R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+          # Workers AI for the embeddings and explanations, as the hourly refresh has them
+          # (docs/job-assistant.md, Secrets); without them every ad is matched without similarity.
+          CLOUDFLARE_API_TOKEN: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
         run: |
           printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\nJOB_ADS_PUBLISH=%s\n' "$(id -u)" "$(openssl rand -hex 32)" "$PUBLISH" > infra/airflow/.env
           if [ "$PUBLISH" = r2 ]; then
             printf 'R2_ACCOUNT_ID=%s\nR2_ACCESS_KEY_ID=%s\nR2_SECRET_ACCESS_KEY=%s\nR2_BUCKET=%s\nR2_PUBLIC_BASE=%s\n' \
               "$R2_ACCOUNT_ID" "$R2_ACCESS_KEY_ID" "$R2_SECRET_ACCESS_KEY" "$R2_BUCKET" "$R2_PUBLIC_BASE" >> infra/airflow/.env
+            printf 'CLOUDFLARE_API_TOKEN=%s\nCLOUDFLARE_ACCOUNT_ID=%s\n' "$CLOUDFLARE_API_TOKEN" "$CLOUDFLARE_ACCOUNT_ID" >> infra/airflow/.env
           fi
           $COMPOSE build
           $COMPOSE up -d
