@@ -14,6 +14,12 @@ test('search, a filter, an opened ad with its tags and the whole ad, and the bac
   await expect(tab(page, 'Good fit')).toContainText('18')
   await expect(tab(page, 'All')).toContainText('30')
   await expect(page.locator('kbd')).toHaveCount(0)
+  // The list says what it is; no lead sentence sits above the controls.
+  await expect(
+    page.getByRole('heading', { level: 2, name: 'Ads 18' }),
+  ).toBeVisible()
+  await expect(page.getByRole('list', { name: /^Ads/ })).toBeVisible()
+  await expect(page.locator('.page-head-sentence')).toHaveCount(0)
 
   await page.getByRole('searchbox', { name: 'Search jobs' }).fill('dbt')
   await expect(page).toHaveURL(/q=dbt/)
@@ -33,12 +39,13 @@ test('search, a filter, an opened ad with its tags and the whole ad, and the bac
   const asks = page.locator('section:has(#ja-asks)')
   await expect(asks).toContainText('Required')
   await expect(asks).toContainText('Nice to have')
+  // One click on the ad shows the whole text, with nothing more to open.
   await expect(page.locator('.ja-lead')).toHaveText('Vi söker en dataingenjör.')
-  await expect(page.locator('.ja-rest')).toBeHidden()
-  await page.getByText('Read the whole ad').click()
+  await expect(page.locator('.ja-rest')).toBeVisible()
   await expect(page.locator('.ja-rest')).toContainText(
     'Meriterande med Kubernetes.',
   )
+  await expect(page.getByText('Read the whole ad')).toHaveCount(0)
   await expect(
     page.getByRole('link', { name: /Apply at the employer/ }),
   ).toHaveAttribute('href', /^https:\/\/arbetsformedlingen\.se\//)
@@ -110,6 +117,17 @@ test('an approved profile and matches: no setup copy anywhere, and the bar names
   ])
     await expect(page.getByText(copy)).toHaveCount(0)
   await expect(page.locator('.ja-notes')).toHaveCount(0)
+})
+
+test('How it works counts what the CV lacks over the good, possible and stretch matches', async ({
+  page,
+}) => {
+  await board(page, '#jobs?tab=about')
+  // The fixture's odd ads lack Kubernetes as their only gap; 12 of them are not outside, 9 good or possible.
+  const row = page.locator('table.ja-gaps tbody tr')
+  await expect(row).toHaveCount(1)
+  await expect(row.locator('th')).toHaveText('Kubernetes')
+  await expect(row.locator('td')).toHaveText(['12', '9', '12'])
 })
 
 test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({

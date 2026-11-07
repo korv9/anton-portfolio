@@ -1,7 +1,7 @@
 /**
  * #jobs, the desk: every open Data/IT ad from JobTech with its fit against the approved CV
- * profile (docs/job-assistant.md). A top bar (title, search, last update), list tabs with counts
- * and compact filters, the list on the left and the open ad on the right; under 760 px the ad
+ * profile (docs/job-assistant.md). One top row (title, a compact search, last update), list tabs
+ * with counts and compact filters, the list ("Ads") on the left and the open ad on the right; under 760 px the ad
  * replaces the list with a back button. The search, filters, list, tab and open ad live in the
  * address, so a link shares the view and the back button closes an ad. Marks (saved, applied,
  * closed) are kept on this device, and in the owner store with the owner token.
@@ -153,23 +153,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
 
   return (
     <div className="ja ds-container" data-moved={moved || undefined}>
-      <PageHead
-        title="Arbetsförmedla"
-        sentence={
-          data?.matches.profile
-            ? l(
-                'Every open Data/IT job ad, compared with my CV.',
-                'Varje öppen Data/IT-annons, jämförd med mitt CV.',
-              )
-            : l('Every open Data/IT job ad.', 'Varje öppen Data/IT-annons.')
-        }
-      />
-      <Bar
-        data={data}
-        q={query.q}
-        onSearch={(q) => setQuery({ ...query, q })}
-        day={day}
-      />
+      <div className="ja-top">
+        <PageHead title="Arbetsförmedla" />
+        <Bar
+          data={data}
+          q={query.q}
+          onSearch={(q) => setQuery({ ...query, q })}
+          day={day}
+        />
+      </div>
       {data && <Notes data={data} now={now} />}
       {owner && records.problem && (
         <p className="ja-notes" role="status">
