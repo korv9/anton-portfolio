@@ -15,7 +15,7 @@ same way: raw files with provenance, dbt layers with tests, versioned delivery t
 
 | Layer | What | Where |
 | --- | --- | --- |
-| Source | JobTech JobSearch (first run) and JobStream (every hour), CC0; the owner's CV | `platform/job_assistant/ads.py`, `cv.py` |
+| Source | JobTech JobSearch (first run) and JobStream (every ten minutes by Airflow, or hourly), CC0; the owner's CV | `platform/job_assistant/ads.py`, `cv.py` |
 | Raw | Every answer as served with its provenance line (kept on the machine that fetched it); the ad store, match store and run log | `warehouse/raw/job_assistant/` |
 | Matching | Rules, bge-m3 vectors and checked explanations, run before dbt | `rank.py`, `match.py`, `ai.py` |
 | Bronze | Typed views of the stores: ads, ad events, matches, profile, runs | `platform/models/bronze/job_assistant/` |
@@ -35,8 +35,10 @@ runs every few hours in practice (see Monitoring). The export runs only when eve
 2. The owner reads the draft, corrects it and adds wishes (places, remote work, prioritised
    roles, interests, and optionally the seniority level: `junior`, the default, or `any`). `cv_profile.py` checks each correction, and approval freezes the draft as
    the next numbered version.
-3. On an hourly schedule a GitHub Actions run reads JobTech's JobStream for the Data/IT occupation field
-   and stores new, changed and removed ads.
+3. Every ten minutes Airflow reads JobTech's JobStream for the Data/IT occupation field and stores
+   new, changed and removed ads: near real time by polling, in windows on GitHub runners until an
+   always-on host exists ([job-ads-airflow.md](job-ads-airflow.md)). With the repository variable
+   `JOB_ADS_SCHEDULER` unset, an hourly GitHub Actions run does the same.
 4. Each new or changed ad is compared with the latest approved profile on tasks, technique,
    seniority and wishes.
 5. Ads in the two upper match classes go to the review list. The owner reads the full ad there
