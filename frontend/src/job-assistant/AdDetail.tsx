@@ -69,6 +69,13 @@ export default function AdDetail({
           {place && ` · ${place}`}
         </p>
 
+        <AdText
+          id={ad.id}
+          published={published}
+          opened={opened}
+          source={source}
+        />
+
         {skills.length > 0 && (
           <section aria-labelledby="ja-asks">
             <h3 id="ja-asks">
@@ -111,13 +118,6 @@ export default function AdDetail({
             )}
           </section>
         )}
-
-        <AdText
-          id={ad.id}
-          published={published}
-          opened={opened}
-          source={source}
-        />
       </div>
 
       <aside className="ja-facts" aria-label={l('Quick facts', 'Snabbfakta')}>
