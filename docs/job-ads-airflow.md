@@ -166,6 +166,15 @@ and counted the daily cap of 1,500 neurons from zero, and the page's latency med
 window. The restore step now also fetches `vectors.sqlite`, `ledger.jsonl`, `pipeline.json`,
 `matches.json` and `realtime_runs.jsonl`, which the last window pushed together under the lock.
 
+The last window on the old restore, 15:56–19:51 UTC
+([42370000095](https://github.com/korv9/anton-portfolio/actions/runs/42370000095)), confirmed the
+cost: its first analyse took 799.7 s and 1,107.3 neurons to embed all 2,432 ads again, and the
+page's latency median started over. The first window on the new restore, from 19:52 UTC
+([42391845674](https://github.com/korv9/anton-portfolio/actions/runs/42391845674)), embedded
+nothing at its start: the releases at 19:50 and 20:10 UTC both read `neurons_before` 1,108.23 and
+`embeddings_missing` 0, and the published latency median stayed at 6.3 min over 5 publications
+with changes. Between the window changes, single new ads were embedded for 0.16 to 0.68 neurons each run.
+
 The first publish run (41488252418) failed: `release.py` starts `export.py` as `python`, which in the
 Airflow image is Airflow's interpreter without `duckdb`, and the store upload ran while a stage still
 held its lock. `realtime.run` now puts its own interpreter first on `PATH` (tested), and the workflow
