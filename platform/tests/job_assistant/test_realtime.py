@@ -268,6 +268,24 @@ def test_page_latency_counts_only_uploaded_publications(raw):
     assert out["latency_minutes"] == {"median": 30, "publications": 1}
 
 
+def test_page_last_day_counts_runs_failures_changes_time_and_neurons(raw):
+    export = job_export()
+    at = "2026-10-23T14:00:00+00:00"
+    entries = [
+        {"stage": "collect", "outcome": "ok", "seconds": 4, "new": 2, "changed": 1, "removed": 0},
+        {"stage": "analyse", "outcome": "ok", "seconds": 2, "workers_ai_neurons": 0.5},
+        {"stage": "build", "outcome": "ok", "seconds": 12},
+        {"stage": "publish", "outcome": "ok", "seconds": 13},
+        {"stage": "collect", "outcome": "ok", "seconds": 5, "new": 0, "changed": 0, "removed": 1},
+        {"stage": "analyse", "outcome": "failed: RuntimeError: x", "seconds": 1},
+        {"stage": "collect", "outcome": "ok", "seconds": 1, "finished": "2026-10-21T10:00:00+00:00", "new": 9},
+    ]
+    (raw / "realtime_runs.jsonl").write_text("".join(json.dumps({"finished": at, **e}) + "\n" for e in entries))
+    out = export.pipeline({}, datetime.fromisoformat("2026-10-23T14:10:00+00:00"))
+    assert out["last_day"] == {"runs": 1, "failed": 1, "changes": 4, "run_seconds_median": 31.0,
+                               "workers_ai_neurons": 0.5}
+
+
 def test_a_checked_build_is_still_uploaded_when_publication_turns_on(monkeypatch, raw):
     (raw / "pipeline.json").write_text(json.dumps({"build": {"ok": {"generated_at": "g1", "input": "c"}},
                                                     "publish": {"ok": {"generated_at": "g1", "mode": "local"}}}))

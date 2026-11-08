@@ -122,6 +122,14 @@ export type Delivered = {
       flow: 'realtime' | 'hourly'
       last_fetch: { at: string; fetched_until: string | null } | null
       latency_minutes: { median: number | null; publications: number }
+      /** Absent in files written before it. */
+      last_day?: {
+        runs: number
+        failed: number
+        changes: number
+        run_seconds_median: number | null
+        workers_ai_neurons: number
+      }
     }
     counts: { current: number; removed: number; duplicates: number }
     runs: { day: string; runs: number; runs_ok: number; runs_failed: number }[]
