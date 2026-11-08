@@ -236,6 +236,17 @@ def test_push_holds_the_lock(monkeypatch, raw):
     assert seen == [["platform/pipeline.py", "push", "job_assistant"]]
 
 
+def test_push_carries_the_cluster_embedding_cache(monkeypatch, raw, tmp_path):
+    root = tmp_path / "repo"
+    (root / "warehouse/ml/jobs").mkdir(parents=True)
+    (root / "warehouse/ml/jobs/embeddings-abc.parquet").write_bytes(b"vectors")
+    monkeypatch.setattr(realtime, "ROOT", root)
+    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: None)
+    monkeypatch.setattr(sys, "argv", ["realtime.py", "push"])
+    realtime.main()
+    assert (raw / "embeddings-abc.parquet").read_bytes() == b"vectors"
+
+
 def job_export():
     """platform/job_assistant/export.py by path: other test folders put modules named export on sys.path."""
     import importlib.util

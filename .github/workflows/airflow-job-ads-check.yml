@@ -95,6 +95,17 @@ jobs:
           for name in vectors.sqlite ledger.jsonl pipeline.json matches.json realtime_runs.jsonl; do
             curl -fsS -o "warehouse/raw/job_assistant/$name" "${PUBLIC%/}/warehouse/raw/job_assistant/$name" || echo "::notice::no $name in R2 yet; starting without it"
           done
+          # The cluster model's CPU embedding cache, keyed as ml/jobs/registry.cache_path keys it; under
+          # another key (a promoted model) nothing is found and the first analyse embeds cold.
+          cache=$(python3 - <<'PY'
+          import hashlib, json, re
+          r = json.load(open("ml/jobs/registry.json"))
+          e = next(h for h in reversed(r["history"]) if h.get("run_id") == r["current"] and h.get("model"))
+          rep = re.search(r"^REPRESENTATION = '([^']+)'", open("ml/jobs/embeddings.py").read(), re.M).group(1)
+          print("embeddings-" + hashlib.sha256(f"{e['model']}@{e.get('revision') or 'default'}:{rep}".encode()).hexdigest()[:16] + ".parquet")
+          PY
+          )
+          curl -fsS --create-dirs -o "warehouse/ml/jobs/$cache" "${PUBLIC%/}/warehouse/raw/job_assistant/$cache" || echo "::notice::no $cache in R2 yet; the first analyse embeds cold"
       - name: Build and start Airflow
         env:
           R2_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCOUNT_ID || '' }}
