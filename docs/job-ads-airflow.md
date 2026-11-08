@@ -175,6 +175,20 @@ nothing at its start: the releases at 19:50 and 20:10 UTC both read `neurons_bef
 `embeddings_missing` 0, and the published latency median stayed at 6.3 min over 5 publications
 with changes. Between the window changes, single new ads were embedded for 0.16 to 0.68 neurons each run.
 
+**Two consecutive windows with publication and latency, 2026-11-07**, from each window's
+`realtime_runs.jsonl`:
+
+| Window (run) | DAG runs | Events, new/removed | Median stage time: collect, analyse, build, publish | Workers AI | Delay to publication |
+|---|---|---|---|---|---|
+| 15:56–19:50 UTC ([42370000095](https://github.com/korv9/anton-portfolio/actions/runs/42370000095)) | 24 of 24, every stage ok | 34, 4/3, 0 stale | 4.2, 1.2, 12.1, 13.4 s | 1,108.23 neurons (the re-embedding above) | 5 publications with changes, 4.4 to 10.5 min, median 6.3 |
+| 19:56–23:50 UTC ([42391845674](https://github.com/korv9/anton-portfolio/actions/runs/42391845674)) | 25 of 25, every stage ok | 64, 2/20, 0 stale | 4.2, 1.2, 11.9, 13.7 s | 0.74 neurons | 4 publications with changes, 4.5 to 5.5 min, and one removal JobStream served 2,191.6 min after its `removed_date` |
+
+The release at 23:50:21 UTC read `latency_minutes` median 5.5 over 9 publications, the two windows
+together. The first analyse of each window spent 606 to 631 s embedding about 2,435 texts with the
+cluster model on CPU: its cache (`warehouse/ml/jobs`) is not in R2, so on runners each window
+starts it cold; on an always-on host it stays on disk. The idle stack at the end used scheduler
+1.05 GiB, API server 278 MiB, DAG processor 175 MiB and Postgres 42 MiB.
+
 The first publish run (41488252418) failed: `release.py` starts `export.py` as `python`, which in the
 Airflow image is Airflow's interpreter without `duckdb`, and the store upload ran while a stage still
 held its lock. `realtime.run` now puts its own interpreter first on `PATH` (tested), and the workflow

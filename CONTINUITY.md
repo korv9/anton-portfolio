@@ -10,7 +10,9 @@ The version before 2026-11-03 is in Git history if an old receipt is needed.
 - 2026-11-07 [CODE] Job assistant live: profile v1, engine `job-match-v4`, Airflow windows of
   230 min queued on `main` (`JOB_ADS_SCHEDULER=airflow`), Workers AI secrets passed (#253).
 - 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the
-  window change, latency median kept (6.3 min over 5 publications).
+  window change, latency median kept (5.5 min over 9 publications on 2026-11-07 23:50 UTC).
+- 2026-11-08 [CODE] #257 merged: explanations that quote the rules' labels pass the quote check;
+  unverified ones are retried a later day. Next: confirm verified explanations in a release.
 - 2026-11-04 [TOOL] PR #248 (`korv9/bucket-hygiene`) open: records the owner's deletion of the
   raw job answers from the public bucket on 2026-11-04.
 
