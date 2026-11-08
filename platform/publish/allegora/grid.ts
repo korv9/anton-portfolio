@@ -10,7 +10,7 @@ import {
   SYSTEM,
   canonical,
   checkQuotes,
-} from '../../../worker/index.ts'
+} from '../../../worker/quotes.ts'
 
 export type Item = { id: string; title: string; url: string; text: string }
 export type Law = { sfs: string; title: string }

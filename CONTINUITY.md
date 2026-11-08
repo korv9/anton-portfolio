@@ -7,10 +7,10 @@ The version before 2026-11-03 is in Git history if an old receipt is needed.
 
 ## Now
 
-- 2026-11-04 [CODE] Branch `korv9/site-cleanup`, uncommitted, awaiting PR: rail in three groups
-  (Homie API off it), Overview as case-study prose with the project index, `#cv-place` → `#replik`,
-  Allegora method text, start page role line and Selected work, smooth in-page scrolling; docs
-  and `PROJECTS.md` updated on Anton's request.
+- 2026-11-07 [CODE] Branch `korv9/allegora-stream`, uncommitted, awaiting Anton's review: Allegora
+  streams `/api/ask` (draft, check, fable after), paragraph search with at most four laws, a
+  threshold before Claude, follow-ups, sources panel. Numbers in `docs/allegora-gcp.md`. The
+  search service's new image is not deployed (`deploy.sh build` and `serve` need Anton's yes).
 - 2026-11-04 [TOOL] PR #248 (`korv9/bucket-hygiene`) open: records the owner's deletion of the
   raw job answers from the public bucket on 2026-11-04.
 

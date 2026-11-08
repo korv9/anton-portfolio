@@ -1,11 +1,12 @@
 /**
  * Allegora (#fraga-lagen, docs/allegora-gcp.md): the name, then a conversation about Swedish law
- * answered in fables (Thread.tsx). The Worker finds the eight passages nearest the question among
- * every law and ordinance in force (corpus 'sfs-all', searched on Google Cloud), answers from
- * them, keeps the answer only when every quote is verbatim in its passage, and retells it as a
- * fable. Without the Worker the example questions fall back to the checked answers from the model
- * evaluation, which have no fable. ?korpus=ai-act asks the EU AI Act instead, searched in the
- * browser as before.
+ * (Thread.tsx). The Worker finds the eight paragraphs nearest the question among every law and
+ * ordinance in force (POST /api/ask, searched on Google Cloud) and streams the answer as a draft;
+ * the answer is kept only when every quote is verbatim in its paragraph, and a fable told from it
+ * follows. A follow-up sends the thread's last two checked turns. On a wide screen the sources
+ * stand in a panel beside the conversation. Without the Worker the example questions fall back to
+ * the checked answers from the model evaluation, which have no fable. ?korpus=ai-act asks the EU
+ * AI Act instead, searched in the browser and answered whole.
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
@@ -24,6 +25,8 @@ import {
   type Answer,
   type Corpus,
 } from '../workersAi/corpus'
+import { SourcePanel, useWide } from './Sources'
+import { streamTurn, type Said } from './stream'
 import Thread, { type Item, type Turn } from './Thread'
 import '../ui/page-head.css'
 import './lawqa.css'
@@ -62,6 +65,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
   const [question, setQuestion] = useState('')
   const [turns, setTurns] = useState<Turn[]>([])
   const [busy, setBusy] = useState(false)
+  const wide = useWide()
+  // The turn the panel shows and the passage a quote named; the latest turn until one is picked.
+  const [shown, setShown] = useState<{
+    turn: number
+    passage: string | null
+  } | null>(null)
   // The AI Act's corpus loads in the browser once the reader turns to the form, or now when it
   // has no examples. Swedish law is searched by the Worker and loads nothing.
   const [wanted, setWanted] = useState(false)
@@ -73,16 +82,22 @@ export default function AskTheLaw({ route }: { route: Route }) {
     setExamples(null)
     setWanted(false)
     setTurns([])
+    setShown(null)
     fetchJson<{ examples: Example[] }>(`workers-ai/${file}/examples.json`).then(
       (e) => setExamples(e.examples.filter((x) => !recitalOnly(x))),
       () => setExamples([]),
     )
   }, [file])
+  // Swedish law's search service sleeps when no one asks; waking it now hides its start while
+  // the reader writes a question.
+  useEffect(() => {
+    if (choice === 'sfs') fetch('/api/warm', { method: 'POST' }).catch(() => {})
+  }, [choice])
   useEffect(() => {
     if (want) loadCorpus<Item>(file).then(setCorpus, () => setCorpus('missing'))
   }, [file, want])
 
-  async function run(q: string, shown: string, example?: Example) {
+  async function run(q: string, label: string, example?: Example) {
     if (corpus === 'missing') return
     wake()
     setBusy(true)
@@ -90,18 +105,23 @@ export default function AskTheLaw({ route }: { route: Route }) {
     const id = Date.now()
     const update = (patch: Partial<Turn>) =>
       setTurns((all) => all.map((t) => (t.id === id ? { ...t, ...patch } : t)))
+    const streamed = choice === 'sfs'
+    // The thread's last checked turns, so a follow-up is read in its context.
+    const history: Said[] = turns
+      .flatMap((t) =>
+        t.reply && typeof t.reply === 'object' && t.reply.status === 'verified'
+          ? [{ question: t.question, answer: t.reply.answer }]
+          : [],
+      )
+      .slice(-2)
     setTurns((all) => [
       ...all,
-      { id, question: shown, hits: null, reply: 'waiting' },
+      { id, question: label, hits: null, reply: 'waiting', streamed },
     ])
+    setShown(null)
     try {
-      if (choice === 'sfs') {
-        const reply = await ask(q, 'sfs-all', [])
-        const hits = (reply.hits ?? []).map(({ score, law, ...item }) => ({
-          item: { ...item, law },
-          score,
-        }))
-        update({ hits, reply })
+      if (streamed) {
+        await streamTurn(q, history, update)
         return
       }
       let loaded: Corpus<Item>
@@ -123,10 +143,12 @@ export default function AskTheLaw({ route }: { route: Route }) {
       })
     } catch (error) {
       // An example still answers from the evaluation's checked answer, without a fable.
-      if (example) update({ reply: example.answer ?? 'example' })
+      if (example)
+        update({ reply: example.answer ?? 'example', draft: undefined })
       else
         update({
           reply: null,
+          draft: undefined,
           notice: fallback(
             error instanceof Unavailable ? error.reason : 'error',
             (examples?.length ?? 0) > 0,
@@ -136,6 +158,11 @@ export default function AskTheLaw({ route }: { route: Route }) {
       setBusy(false)
     }
   }
+
+  const lang = choice === 'sfs' ? 'sv' : undefined
+  // On a wide screen a streamed turn's sources stand beside the conversation.
+  const latest = turns.find((t) => t.id === shown?.turn) ?? turns.at(-1)
+  const panel = wide && latest?.streamed ? latest : undefined
 
   return (
     <ReportFrame>
@@ -151,81 +178,102 @@ export default function AskTheLaw({ route }: { route: Route }) {
             </p>
             <p className="page-head-lede">
               {l(
-                'If the check fails, the answer is withheld and only the paragraphs found are shown.',
-                'Om kontrollen inte går igenom visas inget svar, bara de paragrafer som hittades.',
+                'The answer appears as a draft while it is written. If the check fails, the draft is removed and only the paragraphs found are shown.',
+                'Svaret syns som utkast medan det skrivs. Går kontrollen inte igenom tas utkastet bort, och bara de paragrafer som hittades visas.',
               )}
             </p>
           </header>
 
-          <Thread turns={turns} lang={choice === 'sfs' ? 'sv' : undefined} />
-
-          {corpus === 'missing' ? (
-            <p className="lq-status">
-              {l(
-                'This corpus is not published yet.',
-                'Den här korpusen är inte publicerad än.',
-              )}
-            </p>
-          ) : (
-            <form
-              className="lq-form"
-              onFocus={wake}
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (question.trim()) run(question.trim(), question.trim())
-              }}
-            >
-              <label htmlFor="lq-question">
-                {l('Your question', 'Din fråga')}
-              </label>
-              <textarea
-                name="question"
-                autoComplete="off"
-                id="lq-question"
-                rows={2}
-                maxLength={MAX}
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
+          <div className={panel ? 'lq-workspace' : undefined}>
+            <div className="lq-main">
+              <Thread
+                turns={turns}
+                lang={lang}
+                wide={wide}
+                onShow={(turn, passage) =>
+                  setShown({ turn, passage: passage ?? null })
+                }
               />
-              <div className="lq-actions">
-                <span className="lq-count">
-                  {question.length} / {MAX}
-                </span>
-                <button type="submit" className="btn" disabled={busy}>
-                  {busy ? l('Searching…', 'Söker…') : l('Ask', 'Fråga')}
-                </button>
-              </div>
-              {examples && examples.length > 0 && (
-                <div
-                  className="lq-examples"
-                  role="group"
-                  aria-label={l('Example questions', 'Exempelfrågor')}
-                >
-                  {examples.map((e) => (
-                    <button
-                      key={e.question}
-                      type="button"
-                      disabled={busy}
-                      onClick={() => run(e.question, asked(e), e)}
-                    >
-                      {asked(e)}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {want && corpus === null && (
-                <p className="lq-status lq-loading" role="status">
-                  {l('Reading the AI Act…', 'Läser in AI-förordningen…')}
+
+              {corpus === 'missing' ? (
+                <p className="lq-status">
+                  {l(
+                    'This corpus is not published yet.',
+                    'Den här korpusen är inte publicerad än.',
+                  )}
                 </p>
+              ) : (
+                <form
+                  className="lq-form"
+                  onFocus={wake}
+                  onSubmit={(e) => {
+                    e.preventDefault()
+                    if (question.trim()) run(question.trim(), question.trim())
+                  }}
+                >
+                  <label htmlFor="lq-question">
+                    {l('Your question', 'Din fråga')}
+                  </label>
+                  <textarea
+                    name="question"
+                    autoComplete="off"
+                    id="lq-question"
+                    rows={2}
+                    maxLength={MAX}
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                  />
+                  <div className="lq-actions">
+                    <span className="lq-count">
+                      {question.length} / {MAX}
+                    </span>
+                    <button type="submit" className="btn" disabled={busy}>
+                      {busy ? l('Searching…', 'Söker…') : l('Ask', 'Fråga')}
+                    </button>
+                  </div>
+                  {examples && examples.length > 0 && (
+                    <div
+                      className="lq-examples"
+                      role="group"
+                      aria-label={l('Example questions', 'Exempelfrågor')}
+                    >
+                      {examples.map((e) => (
+                        <button
+                          key={e.question}
+                          type="button"
+                          disabled={busy}
+                          onClick={() => run(e.question, asked(e), e)}
+                        >
+                          {asked(e)}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {want && corpus === null && (
+                    <p className="lq-status lq-loading" role="status">
+                      {l('Reading the AI Act…', 'Läser in AI-förordningen…')}
+                    </p>
+                  )}
+                  <p className="lq-notices">
+                    {l(
+                      'Not legal advice · not the official text · questions are not logged',
+                      'Inte juridisk rådgivning · inte den officiella texten · frågor loggas inte',
+                    )}
+                  </p>
+                </form>
               )}
-              <p className="lq-notices">
-                {l(
-                  'Not legal advice · not the official text · questions are not logged',
-                  'Inte juridisk rådgivning · inte den officiella texten · frågor loggas inte',
-                )}
-              </p>
-            </form>
-          )}
+            </div>
+            {panel && (
+              <SourcePanel
+                key={panel.id}
+                turn={panel.id}
+                question={panel.question}
+                hits={panel.hits}
+                lang={lang}
+                target={shown?.turn === panel.id ? shown.passage : null}
+              />
+            )}
+          </div>
           <Method
             summary={l(
               'How it is made · sources · method',

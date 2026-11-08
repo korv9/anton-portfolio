@@ -1,13 +1,15 @@
 """Allegora's search over every Swedish law and ordinance in force, as a Cloud Run service.
 
     POST /search  {"question": "...", "k": 8}  with header X-Allegora-Key
-      -> {"index": {...index.json}, "hits": [{id, title, url, text, law, kind, score}]}
+      -> {"index": {...index.json}, "hits": [{id, title, url, text, law, kind, score, stycken}]}
     GET  /health  -> {"n": <passages>}
 
 Loads what sfs_index.py wrote (INDEX, a mounted Cloud Storage folder) once at start, embeds the
 question with Vertex AI as RETRIEVAL_QUERY, and ranks every passage by cosine similarity, which is
-exact: about 200,000 x 256 multiply-adds per question. Only the Worker holds the key
-(ALLEGORA_KEY, from Secret Manager), so no one else can spend the project's Vertex quota.
+exact: about 105,000 x 256 multiply-adds per question. A hit is a whole paragraph, at most one per
+paragraph and from at most four laws (retrieval.py); score is the cosine of its best passage.
+Only the Worker holds the key (ALLEGORA_KEY, from Secret Manager), so no one else can spend the
+project's Vertex quota.
 """
 from __future__ import annotations
 
@@ -21,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import retrieval  # noqa: E402
 import vertex  # noqa: E402
 
 INDEX = Path(os.environ.get("INDEX", "/data/index"))
@@ -28,19 +31,18 @@ KEY = os.environ.get("ALLEGORA_KEY", "")
 MAX_QUESTION, MAX_K = 500, 8
 
 
-def load(folder: Path) -> tuple[dict, list[dict], np.ndarray]:
+def load(folder: Path) -> tuple[dict, retrieval.Lines, np.ndarray]:
     meta = json.loads((folder / "index.json").read_text(encoding="utf-8"))
-    with (folder / "passages.jsonl").open(encoding="utf-8") as handle:
-        passages = [json.loads(line) for line in handle]
+    passages = retrieval.Lines((folder / "passages.jsonl").read_bytes())
     vectors = np.frombuffer((folder / "vectors.f16").read_bytes(), dtype=np.float16)
     vectors = vectors.reshape(len(passages), meta["dims"]).astype(np.float32)
     return meta, passages, vectors
 
 
-def top(vectors: np.ndarray, query: np.ndarray, k: int) -> list[tuple[int, float]]:
+def top(vectors: np.ndarray, paragraphs: retrieval.Paragraphs, query: np.ndarray,
+        k: int) -> list[dict]:
     scores = vectors @ (query / np.linalg.norm(query))
-    best = np.argpartition(-scores, k)[:k]
-    return [(int(i), float(scores[i])) for i in best[np.argsort(-scores[best])]]
+    return [paragraphs.whole(p, scores, s) for p, s in retrieval.rank(scores, paragraphs, k)]
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -74,11 +76,11 @@ class Handler(BaseHTTPRequestHandler):
         except RuntimeError as error:
             print(error, file=sys.stderr)
             return self.reply(503, {"error": "embedding"})
-        hits = [PASSAGES[i] | {"score": round(score, 4)} for i, score in top(VECTORS, query, k)]
-        self.reply(200, {"index": META, "hits": hits})
+        self.reply(200, {"index": META, "hits": top(VECTORS, PARAGRAPHS, query, k)})
 
 
 if __name__ == "__main__":
     META, PASSAGES, VECTORS = load(INDEX)
+    PARAGRAPHS = retrieval.Paragraphs(PASSAGES)
     print(f"loaded {len(PASSAGES)} passages from {INDEX}", flush=True)
     ThreadingHTTPServer(("", int(os.environ.get("PORT", "8080"))), Handler).serve_forever()

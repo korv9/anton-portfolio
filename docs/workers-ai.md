@@ -27,7 +27,9 @@ webbläsaren, mot komprimerade vektorer som byggts offline.
 
 ## Workern
 
-`worker/index.ts` svarar på två adresser, båda med POST:
+`worker/index.ts` svarar på tre adresser, alla med POST. Den tredje, `/api/ask`, är Allegoras
+strömmade svar över hela SFS och beskrivs i [allegora-gcp.md](allegora-gcp.md); den använder
+Claude och inte Workers AI.
 
 - `/api/embed` tar en text på högst 500 tecken och returnerar dess vektor från `@cf/baai/bge-m3`.
 - `/api/answer` tar frågan, korpusen (`sfs`, `ai-act-sv` eller `ai-act-en`) och högst
@@ -180,8 +182,9 @@ exempel och ber läsaren fråga med egna ord.
 
 Utöver de 40 lagarna i `configs/workers_ai/sfs_selection.yaml` finns hela SFS som dataprodukt,
 utan inbäddningar och utan anrop till Workers AI. Allegora söker i alla lagar och förordningar som
-gäller med ett index på Google Cloud ([allegora-gcp.md](allegora-gcp.md)); AI-förordningen
-söks fortfarande i webbläsaren.
+gäller med ett index på Google Cloud ([allegora-gcp.md](allegora-gcp.md)). Den svenska sidan
+frågar `/api/ask`, och sökningen, svaret och fabeln görs där. AI-förordningen söks fortfarande i
+webbläsaren och besvaras av `/api/answer`.
 
 `python platform/ingest/sfs/ingest.py --all` läser Riksdagens dokumentlista med `doktyp=sfs`
 till `raw/sfs/catalogue.json`. API:t lämnar högst 50 sidor om 200 träffar per fråga, så listan
