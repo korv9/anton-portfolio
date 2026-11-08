@@ -213,6 +213,7 @@ export default function Sections({
 function Freshness({ ads }: { ads: Delivered['ads'] }) {
   const fetch = ads.pipeline?.last_fetch
   const median = ads.pipeline?.latency_minutes.median
+  const runs = ads.pipeline?.last_day
   const day = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Stockholm',
   }).format(new Date())
@@ -231,6 +232,13 @@ function Freshness({ ads }: { ads: Delivered['ads'] }) {
           l(
             `Median delay from an ad's change at the source to publication, last day: ${Math.round(median)} min (near real time by polling every ten minutes).`,
             `Mediantid från att en annons ändras hos källan till publicering, senaste dygnet: ${Math.round(median)} min (nära realtid genom polling var tionde minut).`,
+          )}
+      {runs &&
+        runs.runs + runs.failed > 0 &&
+        ' ' +
+          l(
+            `Last day: ${runs.runs} runs, ${runs.failed} failed stages, ${runs.changes} changes${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s a run` : ''}, ${Math.round(runs.workers_ai_neurons)} Workers AI neurons.`,
+            `Senaste dygnet: ${runs.runs} körningar, ${runs.failed} misslyckade steg, ${runs.changes} ändringar${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s per körning` : ''}, ${Math.round(runs.workers_ai_neurons)} neurons i Workers AI.`,
           )}
     </p>
   )

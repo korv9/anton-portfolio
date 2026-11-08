@@ -130,6 +130,37 @@ test('How it works counts what the CV lacks over the good, possible and stretch 
   await expect(row.locator('td')).toHaveText(['12', '9', '12'])
 })
 
+test('How it works shows the last fetch, the delay and the last day of runs', async ({
+  page,
+}) => {
+  const base = jobAssistantFixture()
+  const pipeline = {
+    flow: 'realtime',
+    last_fetch: {
+      at: base.ads.generated_at,
+      fetched_until: base.ads.fetched_until,
+    },
+    latency_minutes: { median: 5.5, publications: 9 },
+    last_day: {
+      runs: 49,
+      failed: 0,
+      changes: 29,
+      run_seconds_median: 31.8,
+      workers_ai_neurons: 1108.97,
+    },
+  }
+  await board(page, '#jobs?tab=about', {
+    ...base,
+    ads: { ...base.ads, pipeline },
+  })
+  const line = page.locator('.ja-freshness')
+  await expect(line).toContainText('Median delay')
+  await expect(line).toContainText(': 6 min')
+  await expect(line).toContainText(
+    'Last day: 49 runs, 0 failed stages, 29 changes, 32 s a run, 1109 Workers AI neurons.',
+  )
+})
+
 test('an ad without a published text loads it from the remaining texts, once and only when opened', async ({
   page,
 }) => {
