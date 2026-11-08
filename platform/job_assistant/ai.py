@@ -120,6 +120,19 @@ def fold(text: str) -> str:
     return " ".join(text.replace("“", '"').replace("”", '"').split()).casefold()
 
 
+def unquote_labels(answer: str, sources: list[str], facts: str) -> str:
+    """Drop the quote marks around the rules' own labels ("applied ai", "place given"), which the model
+    quotes from the facts it was given; they are not words from the ad or the CV. Each sentence must
+    still quote the ad or the CV to pass verified()."""
+    answer = answer.replace("“", '"').replace("”", '"')
+    pool, known = [fold(s) for s in sources], fold(facts)
+
+    def label(m: re.Match) -> str:
+        q = fold(m.group(1))
+        return m.group(1) if q in known and not any(q in s for s in pool) else m.group(0)
+    return re.sub(r'"([^"]{3,})"', label, answer)
+
+
 def verified(answer: str, sources: list[str]) -> list[str] | None:
     """The answer's quotes when every sentence has one and every one is found in a source; else None."""
     answer = answer.replace("“", '"').replace("”", '"')
@@ -170,6 +183,7 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
                              model=EXPLAIN_MODEL, tokens_out=tokens_out)
     sources = [ad.get("description") or "", ad.get("headline") or ""] + [
         q["quote"] for j in match["skills"] for q in j["cv_quotes"]]
+    text = unquote_labels(text, sources, prompt)
     quotes = verified(text, sources)
     # Every made explanation counts toward EXPLAIN_PER_DAY, checked or not.
     at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")

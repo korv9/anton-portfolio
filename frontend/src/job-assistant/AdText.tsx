@@ -1,7 +1,8 @@
 /**
- * The ad itself: the lead (first paragraph) and the rest in a native disclosure, "Read the whole
- * ad". The text is texts.json's, else texts-remaining.json's, which is fetched only when the
- * reader opens the ad or the disclosure (useAdText). Line breaks and bullets are kept as written.
+ * The ad itself, the whole text as soon as it is there: the lead (first paragraph) and the rest.
+ * The text is texts.json's, else texts-remaining.json's, which is fetched only when the reader
+ * opens the ad, or asks for it with "Read the whole ad" on the ad shown first (useAdText).
+ * Line breaks and bullets are kept as written.
  */
 import { useState } from 'react'
 import { l } from '../i18n'
@@ -31,6 +32,7 @@ export default function AdText({ id, published, opened, source }: Props) {
     <section aria-labelledby="ja-ad">
       <h3 id="ja-ad">{l('The ad', 'Annonsen')}</h3>
       {lead && <p className="ja-lead">{lead}</p>}
+      {rest && <p className="ja-rest">{rest}</p>}
       {loading && (
         <p className="ja-muted" role="status">
           {l('Loading the ad…', 'Laddar annonsen…')}
@@ -45,24 +47,14 @@ export default function AdText({ id, published, opened, source }: Props) {
           {fallback}
         </p>
       )}
-      {(rest || (!text && !loading && !failed)) && (
-        <details
-          className="ja-whole"
-          onToggle={(e) => e.currentTarget.open && setAsked(true)}
+      {!text && !loading && !failed && (
+        <button
+          type="button"
+          className="btn-quiet"
+          onClick={() => setAsked(true)}
         >
-          <summary className="btn-quiet">
-            {l('Read the whole ad', 'Läs hela annonsen')}
-            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-              <path
-                d="M6 9l6 6 6-6"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-            </svg>
-          </summary>
-          {rest && <p className="ja-rest">{rest}</p>}
-        </details>
+          {l('Read the whole ad', 'Läs hela annonsen')}
+        </button>
       )}
     </section>
   )

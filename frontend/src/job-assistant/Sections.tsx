@@ -1,10 +1,11 @@
 /**
  * The How it works tab: the method, what the ads ask for against the CV (only when there is
- * demand to show), the scheduled runs and the owner's tools (only with the token or ?owner).
+ * demand to show), what the CV lacks (only when a match has a gap), the scheduled runs and the owner's tools (only with the token or ?owner).
  */
 import { l } from '../i18n'
 import Owner from './Owner'
 import type { Delivered, Records } from './data'
+import { skillGaps } from './gaps'
 import { clock, cvLevelLabel } from './labels'
 
 type Props = {
@@ -28,6 +29,7 @@ export default function Sections({
   onRecords,
 }: Props) {
   const top = data.demand.skills.slice(0, 15)
+  const gaps = skillGaps(data.matches.matches)
 
   return (
     <div className="ja-sections">
@@ -120,6 +122,46 @@ export default function Sections({
         </section>
       )}
 
+      {gaps.length > 0 && (
+        <section aria-labelledby="ja-gaps">
+          <h2 id="ja-gaps">{l('What the CV lacks', 'Vad cv:t saknar')}</h2>
+          <div className="ja-table-wrap">
+            <table className="ja-table ja-gaps">
+              <caption className="ja-muted">
+                {l(
+                  'Skills the good, possible and stretch matches name that the CV shows neither in work nor in education or a project. First the skills that are the only gap in an ad.',
+                  'Kompetenser som de bra, möjliga och utmanande matchningarna nämner och som cv:t varken visar i arbete eller i utbildning eller projekt. Först de kompetenser som är det enda som saknas i en annons.',
+                )}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">{l('Skill', 'Kompetens')}</th>
+                  <th scope="col" className="num">
+                    {l('Ads lacking it', 'Annonser där den saknas')}
+                  </th>
+                  <th scope="col" className="num">
+                    {l('Good or possible', 'Bra eller möjliga')}
+                  </th>
+                  <th scope="col" className="num">
+                    {l('The only gap', 'Enda som saknas')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {gaps.map((g) => (
+                  <tr key={g.skill}>
+                    <th scope="row">{g.skill}</th>
+                    <td className="num">{g.ads}</td>
+                    <td className="num">{g.listed}</td>
+                    <td className="num">{g.only}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       <section aria-labelledby="ja-ops">
         <h2 id="ja-ops">
           {l(
@@ -171,6 +213,7 @@ export default function Sections({
 function Freshness({ ads }: { ads: Delivered['ads'] }) {
   const fetch = ads.pipeline?.last_fetch
   const median = ads.pipeline?.latency_minutes.median
+  const runs = ads.pipeline?.last_day
   const day = new Intl.DateTimeFormat('sv-SE', {
     timeZone: 'Europe/Stockholm',
   }).format(new Date())
@@ -189,6 +232,13 @@ function Freshness({ ads }: { ads: Delivered['ads'] }) {
           l(
             `Median delay from an ad's change at the source to publication, last day: ${Math.round(median)} min (near real time by polling every ten minutes).`,
             `Mediantid från att en annons ändras hos källan till publicering, senaste dygnet: ${Math.round(median)} min (nära realtid genom polling var tionde minut).`,
+          )}
+      {runs &&
+        runs.runs + runs.failed > 0 &&
+        ' ' +
+          l(
+            `Last day: ${runs.runs} runs, ${runs.failed} failed stages, ${runs.changes} changes${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s a run` : ''}, ${Math.round(runs.workers_ai_neurons)} Workers AI neurons.`,
+            `Senaste dygnet: ${runs.runs} körningar, ${runs.failed} misslyckade steg, ${runs.changes} ändringar${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s per körning` : ''}, ${Math.round(runs.workers_ai_neurons)} neurons i Workers AI.`,
           )}
     </p>
   )

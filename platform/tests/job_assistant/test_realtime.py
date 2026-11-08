@@ -236,6 +236,17 @@ def test_push_holds_the_lock(monkeypatch, raw):
     assert seen == [["platform/pipeline.py", "push", "job_assistant"]]
 
 
+def test_push_carries_the_cluster_embedding_cache(monkeypatch, raw, tmp_path):
+    root = tmp_path / "repo"
+    (root / "warehouse/ml/jobs").mkdir(parents=True)
+    (root / "warehouse/ml/jobs/embeddings-abc.parquet").write_bytes(b"vectors")
+    monkeypatch.setattr(realtime, "ROOT", root)
+    monkeypatch.setattr(realtime, "run", lambda argv, log, cwd=None: None)
+    monkeypatch.setattr(sys, "argv", ["realtime.py", "push"])
+    realtime.main()
+    assert (raw / "embeddings-abc.parquet").read_bytes() == b"vectors"
+
+
 def job_export():
     """platform/job_assistant/export.py by path: other test folders put modules named export on sys.path."""
     import importlib.util
@@ -266,6 +277,24 @@ def test_page_latency_counts_only_uploaded_publications(raw):
          "latency": {"max_minutes": minutes}}) for mode, minutes in (("local", 5), ("r2", 30))) + "\n")
     out = export.pipeline({}, datetime.fromisoformat("2026-10-23T14:10:00+00:00"))
     assert out["latency_minutes"] == {"median": 30, "publications": 1}
+
+
+def test_page_last_day_counts_runs_failures_changes_time_and_neurons(raw):
+    export = job_export()
+    at = "2026-10-23T14:00:00+00:00"
+    entries = [
+        {"stage": "collect", "outcome": "ok", "seconds": 4, "new": 2, "changed": 1, "removed": 0},
+        {"stage": "analyse", "outcome": "ok", "seconds": 2, "workers_ai_neurons": 0.5},
+        {"stage": "build", "outcome": "ok", "seconds": 12},
+        {"stage": "publish", "outcome": "ok", "seconds": 13},
+        {"stage": "collect", "outcome": "ok", "seconds": 5, "new": 0, "changed": 0, "removed": 1},
+        {"stage": "analyse", "outcome": "failed: RuntimeError: x", "seconds": 1},
+        {"stage": "collect", "outcome": "ok", "seconds": 1, "finished": "2026-10-21T10:00:00+00:00", "new": 9},
+    ]
+    (raw / "realtime_runs.jsonl").write_text("".join(json.dumps({"finished": at, **e}) + "\n" for e in entries))
+    out = export.pipeline({}, datetime.fromisoformat("2026-10-23T14:10:00+00:00"))
+    assert out["last_day"] == {"runs": 1, "failed": 1, "changes": 4, "run_seconds_median": 31.0,
+                               "workers_ai_neurons": 0.5}
 
 
 def test_a_checked_build_is_still_uploaded_when_publication_turns_on(monkeypatch, raw):

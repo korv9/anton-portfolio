@@ -7,22 +7,28 @@ The version before 2026-11-03 is in Git history if an old receipt is needed.
 
 ## Now
 
-- 2026-11-07 [CODE] Branch `korv9/allegora-stream`, uncommitted, awaiting Anton's review: Allegora
-  streams `/api/ask` (draft, check, fable after), paragraph search with at most four laws, a
-  threshold before Claude, follow-ups, sources panel. Numbers in `docs/allegora-gcp.md`. The
-  search service's new image is not deployed (`deploy.sh build` and `serve` need Anton's yes).
+- 2026-11-08 [CODE] PR #261 (`korv9/allegora-stream`) open: Allegora streams `/api/ask` (draft,
+  check, fable after), paragraph search with at most four laws, threshold before Claude,
+  follow-ups, sources panel, `/api/warm`. Search revision `allegora-search-00006-jsr` is live;
+  the Worker deploys on merge. Then measure in production (`docs/allegora-gcp.md`).
+- 2026-11-07 [CODE] Job assistant live: profile v1, engine `job-match-v4`, Airflow windows of
+  230 min queued on `main` (`JOB_ADS_SCHEDULER=airflow`), Workers AI secrets passed (#253).
+- 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the
+  window change, latency median kept (5.5 min over 9 publications on 2026-11-07 23:50 UTC).
+- 2026-11-08 [CODE] #257 merged: explanations that quote the rules' labels pass the quote check;
+  unverified ones are retried a later day. Next: confirm verified explanations in a release.
 - 2026-11-04 [TOOL] PR #248 (`korv9/bucket-hygiene`) open: records the owner's deletion of the
   raw job answers from the public bucket on 2026-11-04.
 
 ## Uncommitted elsewhere
 
-- 2026-11-04 [TOOL] None: `korv9/backend-trim`, `backend-cleanup`, `experiments-cv-separation` merged.
+- 2026-11-07 [TOOL] None known; check `git worktree list`.
 
-## Blocked
+## Open
 
-- 2026-10-27 [USER-PENDING] Job assistant live owner functions: Cloudflare token needs
-  Account > D1 > Edit (setup run 40580520662 failed on it), then setup workflow, D1 id in
-  `wrangler.toml`, secret `JOB_ASSIST_TOKEN`, CV upload and approval.
+- 2026-11-07 [USER-PENDING] Always-on Airflow host needs an approved budget
+  (`docs/job-ads-airflow.md`, Proposed host and cost).
+- 2026-11-07 [TOOL] Workers Builds previews fail: build token lacks preview permission.
 
 ## Start here
 

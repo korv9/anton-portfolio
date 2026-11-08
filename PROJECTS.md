@@ -27,11 +27,10 @@ First written 2026-11-03 from the registry, the old `CONTINUITY.md` and `docs/`,
 ### jobs · Job assistant and job-ad analyses
 Job ads from JobTech, fetched continuously and matched against the owner's CV, with status buttons, a wishes editor and an owner-only draft. The same ad corpus (about 4.9 million ads 2020–2026) feeds the labour-market analyses in `ai-act-clock` and the SWEDEN track. The question: can a public job feed be turned into a personal, honest shortlist without hiding the misses? Built as a Python pipeline (collect, analyse, build, publish), a cluster model register with promote and rollback, and a page that shows when the ads were last fetched and published.
 
-- Status: second flagship, refreshed hourly by GitHub Actions with an 8 h SLA; engine `job-match-v4`. Airflow polling every ten minutes is proven on a runner but not the production scheduler. Listed under Selected projects in the rail (2026-11-04).
+- Status: second flagship, live with CV profile v1 and engine `job-match-v4`. Airflow polls JobStream every ten minutes in windows queued on GitHub runners (`JOB_ADS_SCHEDULER=airflow`); Workers AI embeddings since 2026-11-07. Listed under Selected projects in the rail (2026-11-04).
 - Code and data: `platform/job_assistant/`, `infra/airflow/`, `ml/jobs/registry.json` (cluster model efd2e318dc1621b2), `docs/job-assistant.md`, `docs/job-ads-airflow.md`.
-- Blocked: live owner functions (D1 token permission, setup workflow, secret, CV upload). Raw objects with recruiter contact details in the public bucket await deletion.
-- Next: an always-on Airflow host before switching `JOB_ADS_SCHEDULER=airflow`; host budget not approved.
-- Verified: 2026-11-03, from CONTINUITY.
+- Next: an always-on Airflow host; host budget not approved.
+- Verified: 2026-11-07, Airflow windows 42314432512 and 42346147449.
 
 ## Labs
 

@@ -14,7 +14,8 @@ export default function PageHead({
   kpis = [],
 }: {
   title: string
-  sentence: string
+  /** Optional: a working tool such as #jobs goes straight from the name to its controls. */
+  sentence?: string
   /** Paragraphs under the sentence, above the KPIs. */
   lede?: string[]
   kpis?: Kpi[]
@@ -22,7 +23,7 @@ export default function PageHead({
   return (
     <header className="page-head">
       <h1 className="page-head-title">{title}</h1>
-      <p className="page-head-sentence">{sentence}</p>
+      {sentence && <p className="page-head-sentence">{sentence}</p>}
       {lede.map((p) => (
         <p key={p} className="page-head-lede">
           {p}

@@ -1,7 +1,7 @@
 """Matching: class rules, quotes on both sides, education apart, and the AI budget as a soft limit."""
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import numpy as np
@@ -161,6 +161,12 @@ def test_unverified_explanation_is_not_kept(store, profile, monkeypatch):
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
     result = rank.run(profile, Http(answer='Strong fit: "ten years of Kubernetes".'), NOW)
     assert by_id(result)["1"]["explanation"]["status"] == "unverified"
+    same_day = Http()
+    rank.run(profile, same_day, NOW)
+    assert ai.EXPLAIN_MODEL.rsplit("/", 1)[-1] not in same_day.posts, "not retried the same day"
+    next_day = Http()
+    result = rank.run(profile, next_day, NOW + timedelta(days=1))
+    assert by_id(result)["1"]["explanation"]["status"] == "verified", "an unverified one is tried again a later day"
 
 
 def test_budget_and_quota_degrade_to_rules(store, profile, monkeypatch):
@@ -251,3 +257,13 @@ def test_no_profile_means_no_matches(store):
     result = rank.run(None, None, NOW)
     assert result["matches"] == [] and result["note"]["skipped"]["reason"] == "no approved profile"
 
+
+
+def test_quoted_rule_labels_are_unquoted_not_trusted():
+    facts = '{"role": "applied ai", "reasons": ["place given"]}'
+    text = ai.unquote_labels('You fit "applied ai": the ad asks for "Python". The "place given" matches.', ["Python"], facts)
+    assert text == 'You fit applied ai: the ad asks for "Python". The place given matches.'
+    assert ai.verified(text, ["Python"]) is None, "a sentence left with only a label has no checked quote"
+    assert ai.verified(text.split(" The ")[0], ["Python"]) == ["Python"]
+    # A label the ad also contains stays a quote.
+    assert ai.unquote_labels('"applied ai"', ["Applied AI team"], facts) == '"applied ai"'

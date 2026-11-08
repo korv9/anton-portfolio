@@ -53,13 +53,31 @@ def pipeline(state: dict, now: datetime) -> dict:
     fetch = last and {"at": last["finished"], "fetched_until": state.get("fetched_until")}
     since = (now - timedelta(days=1)).isoformat()
     log = folder / "realtime_runs.jsonl"
-    latencies = sorted(e["latency"]["max_minutes"] for e in map(json.loads, log.read_text(encoding="utf-8").splitlines() if log.exists() else [])
-                       if e["stage"] == "publish" and e["outcome"] == "ok" and e.get("mode") == "r2"
-                       and e.get("latency") and e["finished"] >= since)
+    day = [e for e in map(json.loads, log.read_text(encoding="utf-8").splitlines() if log.exists() else [])
+           if e["finished"] >= since]
+    latencies = sorted(e["latency"]["max_minutes"] for e in day
+                       if e["stage"] == "publish" and e["outcome"] == "ok" and e.get("mode") == "r2" and e.get("latency"))
     realtime = bool(collect) and collect.get("fetched_until") == state.get("fetched_until")
     return {"flow": "realtime" if realtime else "hourly", "last_fetch": fetch,
             "latency_minutes": {"median": latencies[len(latencies) // 2] if latencies else None,
-                                "publications": len(latencies)}}
+                                "publications": len(latencies)},
+            "last_day": last_day(day)}
+
+
+def last_day(entries: list[dict]) -> dict:
+    """The last day's stage runs from realtime_runs.jsonl: cycles that reached publish, failed stages,
+    changes collected, the median seconds of a cycle (collect to publish) and Workers AI neurons."""
+    cycles, seconds = [], 0.0
+    for e in entries:
+        seconds = (0.0 if e["stage"] == "collect" else seconds) + e.get("seconds", 0)
+        if e["stage"] == "publish" and e["outcome"] == "ok":
+            cycles.append(seconds)
+    cycles.sort()
+    return {"runs": len(cycles), "failed": sum(1 for e in entries if e["outcome"].startswith("failed")),
+            "changes": sum(e.get("new", 0) + e.get("changed", 0) + e.get("removed", 0)
+                           for e in entries if e["stage"] == "collect" and e["outcome"] == "ok"),
+            "run_seconds_median": round(cycles[len(cycles) // 2], 1) if cycles else None,
+            "workers_ai_neurons": round(sum(e.get("workers_ai_neurons") or 0 for e in entries), 2)}
 
 
 def build(db, state: dict, now: datetime) -> dict:

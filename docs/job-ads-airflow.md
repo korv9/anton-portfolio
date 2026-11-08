@@ -143,6 +143,52 @@ The median is over the publications that carried changes. When the run was cance
 paused the DAG, waited for the stage lock and stored the ad store in R2, so the hourly refresh
 continued from Airflow's cursor; `JOB_ADS_SCHEDULER` was then removed.
 
+**Two consecutive windows with the CV profile, 2026-11-07.** With `JOB_ADS_SCHEDULER=airflow` the
+windows queue one another on `main`. Read from each window's evidence artifact
+(`realtime_runs.jsonl`, `check.txt`, `docker-stats.txt`):
+
+| Window (run) | Code | DAG runs | Events, new/changed/removed | Workers AI | Changes, delay to publication |
+|---|---|---|---|---|---|
+| 03:57–07:50 UTC ([42314432512](https://github.com/korv9/anton-portfolio/actions/runs/42314432512)) | ce1ee97b | 25 of 25, every stage ok | 13, 3/0/0, 0 stale | none: the window ran without the Workers AI secrets | 3 in two publications, 5.5 to 7.5 min |
+| 07:56–11:50 UTC ([42346147449](https://github.com/korv9/anton-portfolio/actions/runs/42346147449)) | e2842629 | 24 of 24, every stage ok | 20, 0/0/0, 0 stale | 1,104.68 neurons: 32 bge-m3 calls (1,027.48) embedded all 2,431 matched ads, 8 explanation calls (77.2) | none: no source change on a Saturday morning |
+
+Every run matched against profile v1 with engine `job-match-v4`; the window's last release,
+published 11:50:39 UTC, listed 1 strong, 7 possible and 103 stretch matches of 2,431, with `embeddings_missing` 0 and
+no explanation shown. Median stage times in the second window: collect 5.1 s, analyse 1.6 s,
+build 15.2 s, publish 12.4 s. Its first analyse took 948.9 s, the cold Workers AI embedding, so
+the first release of that window came at 08:13 UTC, 23 minutes after the last of the window
+before. The idle stack at the end used scheduler 1.05 GiB, API server 277 MiB, DAG processor
+174 MiB and Postgres 42 MiB.
+
+Both windows started from an empty run log and neuron ledger: the restore step fetched only the
+ad store, its cursor and the hourly run log. So each window would have embedded every ad again
+and counted the daily cap of 1,500 neurons from zero, and the page's latency median covered one
+window. The restore step now also fetches `vectors.sqlite`, `ledger.jsonl`, `pipeline.json`,
+`matches.json` and `realtime_runs.jsonl`, which the last window pushed together under the lock.
+
+The last window on the old restore, 15:56–19:51 UTC
+([42370000095](https://github.com/korv9/anton-portfolio/actions/runs/42370000095)), confirmed the
+cost: its first analyse took 799.7 s and 1,107.3 neurons to embed all 2,432 ads again, and the
+page's latency median started over. The first window on the new restore, from 19:52 UTC
+([42391845674](https://github.com/korv9/anton-portfolio/actions/runs/42391845674)), embedded
+nothing at its start: the releases at 19:50 and 20:10 UTC both read `neurons_before` 1,108.23 and
+`embeddings_missing` 0, and the published latency median stayed at 6.3 min over 5 publications
+with changes. Between the window changes, single new ads were embedded for 0.16 to 0.68 neurons each run.
+
+**Two consecutive windows with publication and latency, 2026-11-07**, from each window's
+`realtime_runs.jsonl`:
+
+| Window (run) | DAG runs | Events, new/removed | Median stage time: collect, analyse, build, publish | Workers AI | Delay to publication |
+|---|---|---|---|---|---|
+| 15:56–19:50 UTC ([42370000095](https://github.com/korv9/anton-portfolio/actions/runs/42370000095)) | 24 of 24, every stage ok | 34, 4/3, 0 stale | 4.2, 1.2, 12.1, 13.4 s | 1,108.23 neurons (the re-embedding above) | 5 publications with changes, 4.4 to 10.5 min, median 6.3 |
+| 19:56–23:50 UTC ([42391845674](https://github.com/korv9/anton-portfolio/actions/runs/42391845674)) | 25 of 25, every stage ok | 64, 2/20, 0 stale | 4.2, 1.2, 11.9, 13.7 s | 0.74 neurons | 4 publications with changes, 4.5 to 5.5 min, and one removal JobStream served 2,191.6 min after its `removed_date` |
+
+The release at 23:50:21 UTC read `latency_minutes` median 5.5 over 9 publications, the two windows
+together. The first analyse of each window spent 606 to 631 s embedding about 2,435 texts with the
+cluster model on CPU: its cache (`warehouse/ml/jobs`) is not in R2, so on runners each window
+starts it cold; on an always-on host it stays on disk. The idle stack at the end used scheduler
+1.05 GiB, API server 278 MiB, DAG processor 175 MiB and Postgres 42 MiB.
+
 The first publish run (41488252418) failed: `release.py` starts `export.py` as `python`, which in the
 Airflow image is Airflow's interpreter without `duckdb`, and the store upload ran while a stage still
 held its lock. `realtime.run` now puts its own interpreter first on `PATH` (tested), and the workflow
@@ -209,8 +255,8 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    loaded in a long-running worker, or Workers AI embeddings, would cut both the peak and the 18 s.
 6. **The job history warehouse** (`warehouse/jobtech/history.duckdb`) on the host before
    `job_cluster_candidate` can train. It is absent on this laptop, so the weekly DAG is untested.
-7. **Secrets** for Workers AI and the owner profile (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`),
-   and the owner functions in [job-assistant.md](job-assistant.md), before matches are made.
+7. **Secrets** for Workers AI (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`) in `infra/airflow/.env`
+   on the host, as the windows on runners get them from the repository secrets since 2026-11-07.
 
 ## Proposed host and cost
 
