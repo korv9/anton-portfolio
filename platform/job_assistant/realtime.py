@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -232,6 +233,10 @@ def main() -> None:
     if name == "push":
         # Under the lock, so the store is never uploaded while a stage is writing it.
         with lock():
+            # The cluster model's CPU embedding cache goes with the store, so the next window on a
+            # runner reuses it instead of embedding every open ad again (ml/jobs/embeddings.embed).
+            for cache in (ROOT / "warehouse/ml/jobs").glob("embeddings-*.parquet"):
+                shutil.copyfile(cache, folder() / cache.name)
             run([sys.executable, "platform/pipeline.py", "push", "job_assistant"], "realtime-push.log")
         return
     print(json.dumps(stage(name, STAGES[name]), ensure_ascii=False))
