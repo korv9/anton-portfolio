@@ -50,6 +50,10 @@ follow the group order.
 
 Two pages use Cloudflare Workers AI ([workers-ai.md](workers-ai.md)). Ask the law (`#fraga-lagen`)
 answers questions over Swedish statutes or the EU AI Act; `?korpus=ai-act` picks the AI Act.
+Swedish law is a conversation ([allegora-gcp.md](allegora-gcp.md)): each turn shows its steps,
+the answer as a draft until it is checked, and the fable under it. At 1,100 px and wider the
+sources stand in a sticky panel beside the conversation, and a quote's id leads there; narrower
+screens fold them under each turn.
 Ask the platform's page was removed on 2026-11-01, and `#ask-platform` now leads to `#projects`.
 The demo that places a reader's sentence on the party-leader debate map is on `#replik`;
 `#cv-place` leads there.

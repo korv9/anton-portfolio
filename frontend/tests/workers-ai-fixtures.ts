@@ -200,3 +200,42 @@ export async function serveExports(page: Page, requested: string[] = []) {
 }
 
 export const vectorNear = unit
+
+/** A /api/ask stream as worker/ask.ts writes it; a list without result stops mid-draft. */
+export const sse = (events: [string, unknown][]) =>
+  events
+    .map(([name, data]) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`)
+    .join('')
+
+const HITS = LAW.slice(0, 8).map(({ id, title, url, text, law }, i) => ({
+  id,
+  title,
+  url,
+  text,
+  law,
+  kind: 'lag',
+  score: 0.9 - i / 100,
+}))
+export const CHECKED = `Det gäller [[${LAW[0].id}]]"Fixture paragraph 1."`
+export const VERIFIED: [string, unknown][] = [
+  ['hits', { query: 'q', hits: HITS }],
+  ['delta', { text: 'Det gäller ' }],
+  ['delta', { text: `[[${LAW[0].id}]]"Fixture paragraph 1."` }],
+  [
+    'result',
+    {
+      status: 'verified',
+      answer: CHECKED,
+      quotes: [{ id: LAW[0].id, quote: 'Fixture paragraph 1.' }],
+      model: 'claude-sonnet-5-5',
+    },
+  ],
+  [
+    'fable',
+    {
+      allegory:
+        'En räv och en hare arbetade i samma verkstad.\nSensmoral: regeln gäller alla.',
+    },
+  ],
+  ['done', {}],
+]

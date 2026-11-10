@@ -209,3 +209,67 @@
 .lq-more {
   margin-top: var(--sp-4);
 }
+/* A streamed turn (Progress.tsx): the steps it has passed, quiet, the current one in ink. */
+.lq-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--caption);
+  letter-spacing: 0.04em;
+}
+.lq-steps li[data-state='current'] {
+  color: var(--ink);
+  animation: lq-pulse 1.6s ease-in-out infinite;
+}
+.lq-steps li[data-state='failed'] {
+  color: var(--ink);
+}
+@keyframes lq-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lq-steps li[data-state='current'] {
+    animation: none;
+  }
+}
+/* The draft is visibly not the answer: muted, no quote marks, under its label. */
+.lq-draft .lq-answer {
+  color: var(--muted);
+}
+.lq-show {
+  justify-self: start;
+  color: var(--muted);
+  font-size: var(--small);
+}
+/* Wide screens: the conversation and the sources side by side (AskTheLaw.tsx, Sources.tsx). */
+.lq-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.75fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+.lq-main {
+  display: grid;
+  gap: var(--sp-6);
+  min-width: 0;
+}
+.lq-panel {
+  position: sticky;
+  /* Below the fixed rail tools, which end 88px down (project-rail.css). */
+  top: 6.5rem;
+  max-height: calc(100vh - 6.5rem - var(--sp-4));
+  overflow-y: auto;
+  padding: var(--sp-4) var(--sp-5);
+  border-radius: var(--radius);
+  background: var(--lq-tint);
+}
+.lq-panel .lq-caption {
+  overflow-wrap: anywhere;
+}

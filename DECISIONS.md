@@ -116,3 +116,11 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
 - 2026-11-01 · Every page is published, in one charcoal theme (`decision-2026-11-03-016`)
   #start is about Anton, #projects is the overview and each project has its own page (docs/design-system.md). The observatories stay withdrawn.
   decided (implementation not recorded)
+- 2026-11-07 · Allegoras svar strÃ¶mmas som mÃ¤rkt utkast och fÃ¥r âœ“ efter citatkontrollen; faller kontrollen tas utkastet bort. (`decision-2026-11-07-001` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-07 · Fabeln lÃ¤mnar den kritiska vÃ¤gen och visas under det verifierade svaret. (`decision-2026-11-07-002` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-07 · SÃ¶kenheten Ã¤r paragrafen; hÃ¶gst en passage per paragraf och fyra lagar per svar. (`decision-2026-11-07-003` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-07 · Allegora byggs som arbetsyta med trÃ¥d och lagtextpanel i befintlig design; hastighet och sÃ¶kning gÃ¥r fÃ¶re nya korpusar. (`decision-2026-11-07-004` · by Anton)
+  decided (implementation not recorded)

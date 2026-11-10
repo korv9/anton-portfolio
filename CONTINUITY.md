@@ -7,6 +7,10 @@ The version before 2026-11-03 is in Git history if an old receipt is needed.
 
 ## Now
 
+- 2026-11-08 [CODE] PR #261 (`korv9/allegora-stream`) open: Allegora streams `/api/ask` (draft,
+  check, fable after), paragraph search with at most four laws, threshold before Claude,
+  follow-ups, sources panel, `/api/warm`. Search revision `allegora-search-00006-jsr` is live;
+  the Worker deploys on merge. Then measure in production (`docs/allegora-gcp.md`).
 - 2026-11-07 [CODE] Job assistant live: profile v1, engine `job-match-v4`, Airflow windows of
   230 min queued on `main` (`JOB_ADS_SCHEDULER=airflow`), Workers AI secrets passed (#253).
 - 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the

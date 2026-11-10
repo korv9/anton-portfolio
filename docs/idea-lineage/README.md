@@ -17,6 +17,7 @@ How the projects' ideas and decisions evolved, generated from the public journal
 - [Welfare](welfare.md)
 
 ## Diary
+- [7 November 2026](diary/2026-11-07.md)
 - [2 November 2026](diary/2026-11-02.md)
 - [1 November 2026](diary/2026-11-01.md)
 - [31 October 2026](diary/2026-10-31.md)

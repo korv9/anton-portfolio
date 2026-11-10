@@ -147,6 +147,11 @@ async function call<T>(path: string, body: unknown): Promise<T> {
     throw new Unavailable('offline')
   }
   if (response.ok) return response.json()
+  return refuse(response)
+}
+
+/** A response that is not ok, as the reason the page shows. */
+export async function refuse(response: Response): Promise<never> {
   if (response.status === 503) {
     const { reason } = await response.json().catch(() => ({}))
     throw new Unavailable(reason === 'quota' ? 'quota' : 'error')
@@ -173,6 +178,7 @@ export type Found = Passage & {
   title: string
   url: string
   law: string
+  kind?: string
   score: number
 }
 export type Answer = (

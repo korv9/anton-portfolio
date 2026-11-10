@@ -52,7 +52,7 @@ case "${1:-}" in
     stage=$(mktemp -d)
     mkdir -p "$stage/ingest/sfs" "$stage/publish/allegora"
     cp platform/ingest/sfs/chunking.py "$stage/ingest/sfs/"
-    cp platform/publish/allegora/{Dockerfile,vertex.py,sfs_index.py,search_service.py} \
+    cp platform/publish/allegora/{Dockerfile,vertex.py,sfs_index.py,search_service.py,retrieval.py} \
       "$stage/publish/allegora/"
     mv "$stage/publish/allegora/Dockerfile" "$stage/"
     gc builds submit "$stage" --region "$REGION" --tag "$IMAGE"

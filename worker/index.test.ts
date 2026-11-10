@@ -4,14 +4,14 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import worker, {
+import worker, { type Env } from './index.ts'
+import {
   ALLEGORY_SYSTEM,
   canonical,
   checkQuotes,
   fold,
   textHash,
-  type Env,
-} from './index.ts'
+} from './quotes.ts'
 
 const LAW = {
   id: 'sfs-1982-80-1',

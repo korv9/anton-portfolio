@@ -62,12 +62,12 @@ The same ideas followed across myth, philosophy, Riksdag speeches and the AI Act
 - Verified: 2026-11-03, from CONTINUITY.
 
 ### ask-the-law · Allegora
-Questions over a selection of Swedish statutes and the EU AI Act, where the answer is checked word for word against the legal text and then retold as an allegory with a moral. The question: can a language model answer questions on legal text without inventing quotes, on a free plan? Built with paragraphs embedded offline with bge-m3 and compressed to int8 so the search runs in the browser; a Cloudflare Worker embeds the question, checks that the passages sent are published legal text, and has a model answer with quotes that are verified before they are shown.
+Questions about Swedish law answered from every law and ordinance in force, and about the EU AI Act, where the answer is checked word for word against the legal text and then retold as a fable with a moral. The question: can a language model answer questions on legal text without inventing quotes, and fast enough to hold a conversation? Built with the 1,767 laws and 3,045 ordinances in force split by paragraph and embedded with Vertex AI, a search service on Cloud Run that returns the eight nearest whole paragraphs from at most four laws, and a Cloudflare Worker that streams Claude's answer as a draft, gives each quote its ✓ only after the check, and tells the fable from the checked answer.
 
-- Status: experimental. Worker routes refuse foreign origins and answer 503 without the limiter (2026-11-01). "Ask the platform" page removed. The page now carries the project's summary, method and the quote-check rule as text, and is listed under Selected projects (2026-11-04).
-- Code and data: `worker/`, `frontend/src/lawqa/`, `docs/allegora-gcp.md`, `docs/ai-act.md`.
+- Status: experimental. Measured 2026-11-07 (`docs/allegora-gcp.md`): the first draft text after 1.35 s and the checked answer after 3.9 s (median), against 8.1 s for the whole answer before; recall@8 on the paragraph 7 of 11 before and after. The streamed path, the paragraph search and the sources panel are on branch `korv9/allegora-stream`, not yet merged or deployed.
+- Code and data: `worker/ask.ts`, `worker/quotes.ts`, `frontend/src/lawqa/`, `platform/publish/allegora/`, `docs/allegora-gcp.md`, `docs/ai-act.md`.
 - Next: not recorded.
-- Verified: 2026-11-03, from CONTINUITY.
+- Verified: 2026-11-07, from the eval runs in `warehouse/features/workers_ai/eval/sfs-all-*`.
 
 ### drugcomb · Drug Synergy Lab
 Drug fingerprints, RNA expression and cell-line data combined to predict drug synergy, with leakage prevention. The question: does a model predicting synergy still work on pairs, drugs and cell lines it has not seen? Built with drug and cell-line entity resolution, a DuckDB warehouse, LightGBM, and evaluation under four cross-validation strategies so that the answer is honest for each kind of unseen case.
