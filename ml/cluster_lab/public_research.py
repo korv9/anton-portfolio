@@ -18,7 +18,7 @@ import yaml
 
 from . import datasets, evaluate, layouts
 from .config import DEFAULTS, merge
-from .io import ROOT, atomic_json, atomic_parquet, digest, file_hash, read_json
+from ml.experiments.io import ROOT, atomic_json, atomic_parquet, digest, file_hash, read_json
 
 
 def passages(text, words=120, minimum=40):

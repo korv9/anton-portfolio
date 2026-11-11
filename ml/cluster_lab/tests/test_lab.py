@@ -11,7 +11,7 @@ import yaml
 
 from ml.cluster_lab.config import DEFAULTS, load, merge, validate, values
 from ml.cluster_lab import datasets
-from ml.cluster_lab.io import atomic_json, atomic_parquet, digest, file_hash
+from ml.experiments.io import atomic_json, atomic_parquet, digest, file_hash
 from ml.cluster_lab.registry import Registry
 from ml.cluster_lab.representations import representation_identity
 from ml.cluster_lab.evaluate import stability

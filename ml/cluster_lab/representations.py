@@ -13,7 +13,7 @@ from sklearn.preprocessing import normalize
 
 from ml.jobs.embeddings import encode_text_batch
 from ml.jobs.features import segments, MARKETING
-from .io import ROOT, atomic_json, digest, file_hash, read_json, versions
+from ml.experiments.io import ROOT, atomic_json, digest, file_hash, read_json, versions
 from .datasets import DataProblem
 
 

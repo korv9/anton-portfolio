@@ -25,7 +25,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-from ml.cluster_lab.io import atomic_json, atomic_parquet
+from ml.experiments.io import atomic_json, atomic_parquet
 from ml.research.regions import bootstrap_ari
 
 ROOT = Path(__file__).resolve().parents[1]

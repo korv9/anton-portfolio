@@ -23,7 +23,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import atomic_json, atomic_parquet, digest, read_json
+from ml.experiments.io import atomic_json, atomic_parquet, digest, read_json
 from . import embed as emb
 from . import splits
 from .registry import EXPERIMENTS, LOCAL
