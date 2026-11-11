@@ -126,7 +126,7 @@ change through Terraform, not the dashboard.
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
    and the news collection does nothing.
-7. **The first release.** Actions → `publish-r2.yml` → Run workflow. It stages every delivery
+7. **The first release.** Actions → `ops-publish-r2.yml` → Run workflow. It stages every delivery
    group and activates them together; give it `manifests/pipeline-smoke.json` as
    `manifest_key` to check the whole bundle apart from the production pointer, then
    `manifests/current.json`. The site is not wired to the manifest

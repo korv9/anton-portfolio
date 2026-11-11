@@ -52,3 +52,10 @@ frontend/public/data/job-assistant/
 
 # pip install -e . metadata
 *.egg-info/
+
+# Local tool caches and per-machine editor config
+.ruff_cache/
+.import_linter_cache/
+.arena/
+.impeccable/
+.claude/launch.json

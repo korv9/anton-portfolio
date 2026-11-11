@@ -124,7 +124,7 @@ före första uppladdningen. `dq` sammanfattar `platform/target/<target>/run_res
 för varje subject i `pipeline.yml` med samma `group` och ett dbt-steg: status
 `pass`, `warn`, `error` eller `not_run`, testantal, `failing` och `warnings`.
 `error` (en nod med `fail`, `error` eller `skipped`) stoppar publiceringen. Saknas
-resultatfil för hela gruppen, till exempel vid `publish-r2.yml`, blir det `not_run` med
+resultatfil för hela gruppen, till exempel vid `ops-publish-r2.yml`, blir det `not_run` med
 `reason`, och publiceringen fortsätter. Har bara några subjects resultat stoppar ett saknat
 subject publiceringen som `error` med listan `not_run`, om det inte är markerat `manual` i
 `pipeline.yml`.
@@ -281,7 +281,7 @@ automatiskt efteråt.
 
 ## Bootstrap i Actions
 
-`publish-r2.yml` gör den första aktiveringen och tar `manifest_key` som input:
+`ops-publish-r2.yml` gör den första aktiveringen och tar `manifest_key` som input:
 `manifests/pipeline-smoke.json` för att kontrollera hela bundlet skilt från
 produktionspekaren, därefter `manifests/current.json`. Workflowet läser redan
 godkända gruppmanifest med `release.py current` och återanvänder exakt de
@@ -291,7 +291,7 @@ Varje release läses tillbaka och verifieras före den enda aktiveringen.
 
 Obligatoriska grupper är `baseline`, `jobs`, `jobs-analysis`, `news` och
 `public-data`. `diva` tas med först när en verklig export eller katalogpost finns.
-`sweden` och `job-assistant` saknas i workflowets grupplista (`publish-r2.yml`) och
+`sweden` och `job-assistant` saknas i workflowets grupplista (`ops-publish-r2.yml`) och
 publiceras bara av pipelinekörningar. Aktiveringen slås ihop med manifestets nuvarande grupper,
 så `manifests/current.json` behåller deras pekare; ett nytt manifest som
 `manifests/pipeline-smoke.json` saknar dem.

@@ -318,10 +318,10 @@ Every secret lives in the GitHub environment `anton-portfolio`; nothing is set f
 
 | Secret | Used by | Token permissions |
 | --- | --- | --- |
-| `CLOUDFLARE_ACCOUNT_ID` | `setup-job-assistant.yml`, the hourly run (`rank.py`) | none; it is the account id (a repository variable of the same name also works) |
-| `CLOUDFLARE_API_TOKEN` | `setup-job-assistant.yml`; the hourly run when there is no `CLOUDFLARE_AI_TOKEN` | Account > D1 > Edit, Account > Workers Scripts > Edit and Account > Workers AI > Read and Edit, on this account only |
+| `CLOUDFLARE_ACCOUNT_ID` | `ops-setup-job-assistant.yml`, the hourly run (`rank.py`) | none; it is the account id (a repository variable of the same name also works) |
+| `CLOUDFLARE_API_TOKEN` | `ops-setup-job-assistant.yml`; the hourly run when there is no `CLOUDFLARE_AI_TOKEN` | Account > D1 > Edit, Account > Workers Scripts > Edit and Account > Workers AI > Read and Edit, on this account only |
 | `CLOUDFLARE_AI_TOKEN` (optional) | `rank.py` in the hourly run, through `data-subject.yml`, in place of `CLOUDFLARE_API_TOKEN` | Account > Workers AI > Read and Edit, nothing else |
-| `JOB_ASSIST_TOKEN` | copied into the Worker by `setup-job-assistant.yml`; `sync.py` | none; a long random value, also pasted on the review page |
+| `JOB_ASSIST_TOKEN` | copied into the Worker by `ops-setup-job-assistant.yml`; `sync.py` | none; a long random value, also pasted on the review page |
 
 With a single Cloudflare token (chosen 2026-10-25), the hourly run uses `CLOUDFLARE_API_TOKEN`
 for Workers AI. That token also has D1 Edit and Workers Scripts Edit, which an unattended scheduled

@@ -45,7 +45,7 @@ PAIR_COLUMNS = ["cluster", "r_lag0", "p_lag0", "best_lag", "r_best_lag", "p_best
 DEVIATIONS = [
     {"date": "2026-10-22", "change": "storage",
      "reason": "The first UMAP fit ran out of memory on the laptop, so the clustering runs in "
-               ".github/workflows/cluster-jobs.yml and the sample and embedding shards are kept in "
+               ".github/workflows/heavy-compute.yml and the sample and embedding shards are kept in "
                "the R2 warehouse store under features/sweden/futures_topics/run/, never in a release."},
     {"date": "2026-10-22", "change": "compute",
      "reason": "The method is unchanged: UMAP on the full centred vectors with the registered grid on a "

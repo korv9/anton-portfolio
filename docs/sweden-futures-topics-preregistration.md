@@ -84,7 +84,7 @@ about. The commit that adds this file is the record; any departure is listed in 
 ## Changes after registration
 
 - 2026-10-22, storage. The first UMAP fit ran out of memory on the laptop, so the clustering
-  moves to `.github/workflows/cluster-jobs.yml`. The sample (with its sentence text) and the
+  moves to `.github/workflows/heavy-compute.yml`. The sample (with its sentence text) and the
   embedding shards are therefore stored in the project's R2 warehouse store under
   `features/sweden/futures_topics/run/`, beside the raw speeches and abstracts they were drawn
   from. They are not part of any release, and the site still receives only sentence ids,

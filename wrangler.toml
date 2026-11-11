@@ -39,7 +39,7 @@ namespace_id = "1001"
 simple = { limit = 20, period = 60 }
 
 # The job assistant's owner records (worker/jobs.ts). The id (not a secret) is the one the workflow
-# setup-job-assistant.yml printed (run 41710481305), which also applied worker/migrations.
+# ops-setup-job-assistant.yml printed (run 41710481305), which also applied worker/migrations.
 [[d1_databases]]
 binding = "JOBS_DB"
 database_name = "job-assistant"

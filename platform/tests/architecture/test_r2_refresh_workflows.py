@@ -19,7 +19,7 @@ from data_workflows import REUSABLE, workflow  # noqa: E402
 REFRESHERS = {"refresh-jobs.yml": "jobs", "refresh-news.yml": "news",
               "refresh-welfare.yml": "public-data", "refresh-diva.yml": "diva",
               "refresh-job-analysis.yml": "jobs-analysis", "refresh-job-assistant.yml": "job-assistant"}
-WORKFLOWS = [*REFRESHERS, "publish-r2.yml", "build-warehouse.yml", "cluster-jobs.yml"]
+WORKFLOWS = [*REFRESHERS, "ops-publish-r2.yml", "build-warehouse.yml", "heavy-compute.yml"]
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
 SHA = "a" * 40
 
@@ -171,7 +171,7 @@ def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
-    filename = "publish-r2.yml"
+    filename = "ops-publish-r2.yml"
     staged = commands(filename, "portfolio.publish.release", "publish")
     activated = commands(filename, "portfolio.publish.release", "activate")
     assert staged and len(activated) == 1, "bootstrap must stage groups then activate one snapshot"
@@ -327,7 +327,7 @@ def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch,
 
 def test_cluster_jobs_accepts_only_known_trees_and_never_pushes_a_failed_raw_rebuild():
     """The corpus rebuild writes the raw tree, so a failed run must not overwrite stored files."""
-    text = (ROOT / ".github/workflows/cluster-jobs.yml").read_text(encoding="utf-8")
+    text = (ROOT / ".github/workflows/heavy-compute.yml").read_text(encoding="utf-8")
     assert '[ "$TREE" != features ] && [ "$TREE" != raw ]' in text
     assert 'if [ "$TREE" = raw ]; then echo "Run failed: raw files are not pushed."; exit 0; fi' in text
     config = yaml.safe_load((ROOT / "configs/cluster_lab/jobs_corpus.yaml").read_text(encoding="utf-8"))

@@ -1,4 +1,4 @@
-name: Refresh public data
+name: Refresh welfare data
 
 # Daily: welfare (five sources), parliament (Riksdagen, SCB, Valmyndigheten) and taxes (OECD,
 # Skatteverket), each fetched, built, tested and exported by platform/pipeline.py as

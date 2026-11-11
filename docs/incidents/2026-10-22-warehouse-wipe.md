@@ -56,5 +56,5 @@ missed `warehouse`.
 - Never use force removal as cleanup. [docs/development.md](../development.md) says this
   and lists what to check before a worktree is removed.
 - Keep anything that exists only locally pushed to R2 before cleanup. The job-ad corpus is
-  now rebuilt and stored by the `cluster-jobs` workflow
-  ([.github/workflows/cluster-jobs.yml](../../.github/workflows/cluster-jobs.yml)).
+  now rebuilt and stored by the `heavy-compute` workflow
+  ([.github/workflows/heavy-compute.yml](../../.github/workflows/heavy-compute.yml)).
