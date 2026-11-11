@@ -69,10 +69,6 @@ groups:
       - *data_check
       - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
       - python -m portfolio.publish.release publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
-  diva:
-    publish:
-      - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
-      - python -m portfolio.publish.release publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
   job-assistant:
     publish:
       - python platform/job_assistant/export.py --check frontend/public/data
@@ -497,17 +493,6 @@ subjects:
       - export: python platform/publish/quality/export_quality.py
       # Structural checks (gate: true in quality_registry.yml) fail the subject, after its report is written.
       - export: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
-
-  diva:
-    schedule: manual
-    sla: {fresh_within: none}
-    write: {raw: {merge: [path]}, delivery: versioned}
-    group: diva
-    manual: true
-    raw: [diva]
-    steps:
-      - ingest: python platform/ingest/diva/harvest.py --from ${DIVA_FROM:-2023-01} --to ${DIVA_TO:-2025-12}
-      - export: python platform/publish/diva_clusters.py
 
   # The IT report: run_history_pipeline.py picks the published archive years and passes them
   # to dbt as vars, so its dbt build (target/jobs) stays inside the script.

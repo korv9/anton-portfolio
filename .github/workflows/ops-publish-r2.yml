@@ -47,7 +47,7 @@ jobs:
       - name: Materialize and stage all available publication groups
         run: |
           : > "$RUNNER_TEMP/release-bundle.tsv"
-          for group in baseline jobs jobs-analysis news public-data diva; do
+          for group in baseline jobs jobs-analysis news public-data; do
             existing=$(python -m portfolio.publish.release current --group "$group" \
               --manifest-key manifests/current.json | python -c "import json,sys; print(json.load(sys.stdin)['release'] or '')")
             if [ -z "$existing" ] && [ "${SOURCE_MANIFEST_KEY:-manifests/current.json}" != manifests/current.json ]; then
@@ -56,10 +56,6 @@ jobs:
             fi
             if [ -n "$existing" ]; then
               printf '%s\t%s\n' "$group" "$existing" >> "$RUNNER_TEMP/release-bundle.tsv"
-              continue
-            fi
-            if [ "$group" = diva ] && ! python -c "import json,pathlib,sys; p=pathlib.Path('frontend/public/data'); c=json.load(open(p/'catalog.json')); sys.exit(0 if (p/'diva/clusters.json').exists() or any(f['path']=='diva/clusters.json' for f in c['files']) else 1)"; then
-              echo "No DiVA export exists; its independent manual workflow can add that group later."
               continue
             fi
             python -m portfolio.publish.release materialize --root frontend/public/data \
