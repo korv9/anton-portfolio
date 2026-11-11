@@ -1,4 +1,4 @@
-"""Philosophy Lab clustering experiments (docs/cluster-experiments-philosophy.md).
+"""Philosophy Lab clustering experiments (docs/research/clustering/philosophy.md).
 
     python -m ml.experiments.philosophy prepare|select|final|export [--deadline-minutes N]
 

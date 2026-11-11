@@ -24,7 +24,7 @@ runs:
           value="${value#"${value%%[![:space:]]*}"}"
           value="${value%"${value##*[![:space:]]}"}"
           export "$name=$value"
-          if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/deploy.md)"; exit 1; fi
+          if [ -z "${!name}" ]; then echo "::error::$name is not set (docs/platform/deploy.md)"; exit 1; fi
         done
     - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:

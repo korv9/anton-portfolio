@@ -68,7 +68,7 @@ export default function Sections({
             'Data: JobTech, Arbetsförmedlingen open data (CC0). Not affiliated with Arbetsförmedlingen. ',
             'Data: JobTech, Arbetsförmedlingens öppna data (CC0). Inte knuten till Arbetsförmedlingen. ',
           )}
-          <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/job-assistant.md">
+          <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/jobs/job-assistant.md">
             {l('Method and code on GitHub', 'Metod och kod på GitHub')}
           </a>
         </p>

@@ -11,7 +11,7 @@
  * map, the audit's top-ranked cross-book clusters are shown as data with two passages each.
  *
  * The pipeline is platform/ingest/symbolic → dbt (bronze, silver, gold) → platform/nlp/symbolic
- * → platform/publish/symbolic; docs/symbolic-atlas.md describes it and its limits.
+ * → platform/publish/symbolic; docs/products/labs/symbolic-atlas.md describes it and its limits.
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
@@ -705,7 +705,7 @@ function Method({
       </div>
       <p>
         <a
-          href="https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md"
+          href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/symbolic-atlas.md"
           target="_blank"
           rel="noreferrer"
         >

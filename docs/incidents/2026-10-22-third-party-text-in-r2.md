@@ -2,7 +2,9 @@
 
 Status: resolved. The files were deleted from the bucket and `LOCAL_ONLY` keeps them local. The
 same gap later let raw job-ad answers with contact details reach the bucket; that finding is open,
-see [storage-and-serving.md](../storage-and-serving.md).
+see [storage-and-serving.md](../platform/storage-and-serving.md).
+
+Now at: `platform/publish/warehouse_store.py` has since moved to `src/portfolio/storage/warehouse_store.py`; the paths below are as they were at the time.
 
 ## Summary
 

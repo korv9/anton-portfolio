@@ -2,7 +2,7 @@
 
     python -m ml.three_swedens
 
-Follows docs/sweden-three-spaces-preregistration.md. Reads the published 2024 indicators and
+Follows docs/research/preregistrations/sweden-three-spaces-preregistration.md. Reads the published 2024 indicators and
 boundaries (sweden/similarity), gold.mart_job_ad_municipality_field and
 gold.fct_election_municipality. Writes features/clusters/three-swedens/run/{metrics.json,
 municipalities.parquet}; dbt reads the parquet into gold.mart_municipality_three_spaces and
@@ -247,7 +247,7 @@ def main() -> None:
     candidates = {str(k): {key: v for key, v in g.items() if key != "labels"} for k, g in groups["candidates"].items()}
     metrics = {
         "name": "three-swedens", "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "preregistration": "docs/sweden-three-spaces-preregistration.md",
+        "preregistration": "docs/research/preregistrations/sweden-three-spaces-preregistration.md",
         "method": {"social": f"{len(features)} indicators of sweden/similarity (2024), standardised; Euclidean",
                    "jobs": f"CLR of distinct ads (+0.5) over {jobs.shape[1]} occupation fields, "
                            f"{JOB_YEARS[0]}-{JOB_YEARS[-1]} pooled, at least {MIN_ADS} ads; Aitchison",

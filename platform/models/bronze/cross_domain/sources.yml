@@ -1,7 +1,7 @@
 version: 2
 
 # The AI Act's own terms counted per month in Riksdag speeches and job ads by
-# ml/ai_act/diffusion.py (docs/ai-act-diffusion-preregistration.md), a features folder kept in R2.
+# ml/ai_act/diffusion.py (docs/research/preregistrations/ai-act-diffusion-preregistration.md), a features folder kept in R2.
 # Only counts: no speech or ad text is stored.
 
 sources:

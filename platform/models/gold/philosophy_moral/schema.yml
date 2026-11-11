@@ -1,6 +1,6 @@
 version: 2
 
-# docs/philosophy-moral-preregistration.md. Agreement figures only; no text.
+# docs/research/preregistrations/philosophy-moral-preregistration.md. Agreement figures only; no text.
 
 models:
   - name: mart_moral_foundation_agreement

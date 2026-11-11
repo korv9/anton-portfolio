@@ -43,7 +43,7 @@ const INDICATORS: Record<string, [string, string]> = {
 }
 
 /** The stability check of the four-group split, pre-registered in
- * docs/sweden-three-spaces-preregistration.md. */
+ * docs/research/preregistrations/sweden-three-spaces-preregistration.md. */
 type Swedens = {
   grouping: {
     n: number

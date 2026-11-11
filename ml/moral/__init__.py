@@ -1,4 +1,4 @@
-"""Philosophy track 1 (docs/philosophy-moral-preregistration.md): shared paths and the bge-m3 call.
+"""Philosophy track 1 (docs/research/preregistrations/philosophy-moral-preregistration.md): shared paths and the bge-m3 call.
 
 Raw source files live under warehouse/raw/philosophy_moral (with rawstore's _manifest.jsonl), the
 derived tables under warehouse/features/philosophy/moral; warehouse_store.py carries only the features

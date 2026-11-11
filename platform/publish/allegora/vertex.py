@@ -1,4 +1,4 @@
-"""Vertex AI text embeddings for Allegora's whole-SFS search (docs/allegora-gcp.md).
+"""Vertex AI text embeddings for Allegora's whole-SFS search (docs/products/allegora/allegora-gcp.md).
 
 On Cloud Run the access token comes from the metadata server, as the service's own account;
 locally from VERTEX_ACCESS_TOKEN (`gcloud auth print-access-token`). No key file is used.

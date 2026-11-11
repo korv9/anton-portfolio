@@ -3,7 +3,7 @@
     python -m ml.moral.ethics ask        # 200 test items per subset x 2 wordings (resumes; ledgered)
     python -m ml.moral.ethics analyze    # FEATURES/ethics_agreement.parquet
 
-Sample, parsing, baseline and null are fixed in docs/philosophy-moral-preregistration.md. The
+Sample, parsing, baseline and null are fixed in docs/research/preregistrations/philosophy-moral-preregistration.md. The
 wordings below are the ones the answers were made with; the pre-registration does not hold their exact
 text, so they were not fixed before the first call. Answers are stored as item id, wording and
 the model's reply (a word or two), never the scenario text. CLOUDFLARE_API_TOKEN and

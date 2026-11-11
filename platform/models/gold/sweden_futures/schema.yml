@@ -344,7 +344,7 @@ models:
   - name: mart_sweden_future_topics
     description: >-
       Futures topic pilot: year × corpus × unsupervised cluster of sampled future-marked sentences
-      (docs/sweden-futures-topics-preregistration.md). Labels are unreviewed; cluster -1 is noise.
+      (docs/research/preregistrations/sweden-futures-topics-preregistration.md). Labels are unreviewed; cluster -1 is noise.
     config:
       contract: {enforced: true}
     data_tests:

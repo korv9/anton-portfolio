@@ -39,7 +39,7 @@ Party names and abbreviations are masked in the text first, so the label cannot 
 
 ## Gate
 
-Beat the permutation null in 80% of sessions, mean AUC > 0.60. The null shuffles party between speakers since 2026-11-01 (docs/ml-gate-amendments.md); the shuffle of rows it replaced could not fail.
+Beat the permutation null in 80% of sessions, mean AUC > 0.60. The null shuffles party between speakers since 2026-11-01 (docs/research/ml-gate-amendments.md); the shuffle of rows it replaced could not fail.
 
 Outcome: **passed**. 33 of 33 sessions under p 0.05, 30 under the Bonferroni limit 0.0015; mean AUC 0.649.
 

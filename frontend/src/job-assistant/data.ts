@@ -1,5 +1,5 @@
 /**
- * The job assistant's data (docs/job-assistant.md): the released files job-assistant/*.json,
+ * The job assistant's data (docs/products/jobs/job-assistant.md): the released files job-assistant/*.json,
  * read through the delivery manifest, and the owner's records at /api/jobs/*, read and written
  * only with the owner token, kept on this device until the owner forgets it.
  */
@@ -55,7 +55,7 @@ export async function loadRecords(): Promise<Records> {
   }
 }
 
-// localStorage: the owner pastes the token once per device (docs/job-assistant.md, Security of
+// localStorage: the owner pastes the token once per device (docs/products/jobs/job-assistant.md, Security of
 // writes); it is sent only to this site's /api/jobs/ routes and removed by "Forget the token".
 const TOKEN_KEY = 'job-assistant-owner-token'
 // Where storage is blocked (some private windows) the token lasts for this page only.

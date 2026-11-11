@@ -11,7 +11,7 @@ frontend/public/data/philosophy/moral/:
   ethics.json             per ETHICS subset and wording: accuracy, kappa, the majority baseline and
                           the label-shuffle null.
 
-Everything is fixed in docs/philosophy-moral-preregistration.md. No text is published. An export
+Everything is fixed in docs/research/preregistrations/philosophy-moral-preregistration.md. No text is published. An export
 without its null refuses to write (check_nulls).
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ import duckdb
 ROOT = Path(__file__).resolve().parents[3]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 OUT = ROOT / "frontend/public/data/philosophy/moral"
-PREREGISTRATION = "docs/philosophy-moral-preregistration.md"
+PREREGISTRATION = "docs/research/preregistrations/philosophy-moral-preregistration.md"
 SOURCES = [
     {"name": "Moral Foundations Reddit Corpus (MFRC)", "url": "https://huggingface.co/datasets/USC-MOLA-Lab/MFRC",
      "revision": "ddc21d2f03e156732fd1ba95a51c4c29f07975be", "licence": "CC BY 4.0", "checked": "2026-10-22"},

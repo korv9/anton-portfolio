@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Allegora's whole-SFS search on Google Cloud (docs/allegora-gcp.md). Run from the repository root.
+# Allegora's whole-SFS search on Google Cloud (docs/products/allegora/allegora-gcp.md). Run from the repository root.
 #
 #   bash platform/publish/allegora/deploy.sh setup    # once, by the project owner: accounts, roles, key
 #   bash platform/publish/allegora/deploy.sh raw      # warehouse/raw/sfs -> gs://<bucket>/raw/sfs

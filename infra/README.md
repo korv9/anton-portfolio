@@ -1,6 +1,6 @@
 # Infrastructure as code
 
-Two Terraform stacks describe what [docs/deploy.md](../docs/deploy.md) used to set by hand.
+Two Terraform stacks describe what [docs/platform/deploy.md](../docs/platform/deploy.md) used to set by hand.
 Both keep their state in the private R2 bucket `anton-portfolio-tfstate`, under their own key.
 
 | Stack | Manages | Left outside Terraform |

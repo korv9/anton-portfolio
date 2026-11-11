@@ -8,7 +8,7 @@ import './design-system.css'
 import './tokens.css'
 
 // Cloudflare Web Analytics: cookieless page views, on only when the build sets the site token
-// (VITE_CF_BEACON_TOKEN, a Workers Builds variable; see docs/deploy.md).
+// (VITE_CF_BEACON_TOKEN, a Workers Builds variable; see docs/platform/deploy.md).
 const beaconToken = import.meta.env.VITE_CF_BEACON_TOKEN
 if (beaconToken) {
   const beacon = document.createElement('script')

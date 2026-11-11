@@ -4,7 +4,7 @@ name: Run a heavy compute job
 # pulls its inputs from the warehouse store in R2 (src/portfolio/storage/warehouse_store.py), runs, and
 # pushes its outputs back under the same features folder. It publishes nothing to the site.
 #
-#   futures-topics  the SWEDEN E topic pilot (docs/sweden-futures-topics-preregistration.md):
+#   futures-topics  the SWEDEN E topic pilot (docs/research/preregistrations/sweden-futures-topics-preregistration.md):
 #                   cluster, analyze, then a scratch dbt build and export_futures_topics.py whose
 #                   topics.json is kept as an artifact for review.
 #   module          python -m <module> <arguments>, <module> under ml., with <path> of the <tree>
@@ -12,7 +12,7 @@ name: Run a heavy compute job
 #                   later batch needs no change here. The job-ad corpus behind Cluster Lab:
 #                   tree raw, path jobtech/cluster-corpus,
 #                   args ml.cluster_lab.cli prepare --config configs/cluster_lab/jobs_corpus.yaml
-#   experiments     the clustering experiments (docs/cluster-experiments.md), args '<domain> <step[,step]>',
+#   experiments     the clustering experiments (docs/research/clustering/method.md), args '<domain> <step[,step]>',
 #                   domain philosophy|symbolic|jobs|debates, steps select|final|export, and an
 #                   optional third word repro[:label] for a from-scratch refit in separate folders. It pulls the
 #                   warehouse, the shared features/experiments folder (registry, embeddings,

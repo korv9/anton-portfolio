@@ -1,5 +1,5 @@
 # Acceptance criteria for a Philosophy Lab candidate, fixed on 2026-10-29 before any final
-# evaluation ran (docs/cluster-experiments.md). Both runs are fitted on the evaluation side with
+# evaluation ran (docs/research/clustering/method.md). Both runs are fitted on the evaluation side with
 # the evaluation seeds; the champion is the published pipeline refitted the same way.
 frozen_at: '2026-10-29'
 split_groups: [document_id]

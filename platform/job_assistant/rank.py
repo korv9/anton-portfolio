@@ -45,7 +45,7 @@ def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
             return None, {"reason": f"profile route unreachable: {type(error).__name__}", "status": None,
                           "keep": True, "error": False}
         code = response.status_code
-        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). The
+        # 503: the Worker has no D1 binding yet (docs/products/jobs/job-assistant.md, What the owner applies). The
         # Worker never answers 403, so a 403 is from something in front of it.
         if code in (403, 404, 503):
             return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": False}

@@ -1,6 +1,6 @@
 name: Set up the job assistant
 
-# One-off and safe to rerun (docs/job-assistant.md, What the owner applies). From main, in the
+# One-off and safe to rerun (docs/products/jobs/job-assistant.md, What the owner applies). From main, in the
 # anton-portfolio environment, with the secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID:
 #  1. finds the D1 database `job-assistant`, or creates it, and prints its id (not a secret);
 #  2. applies worker/migrations to it remotely; applied migrations are skipped;
@@ -38,7 +38,7 @@ jobs:
         run: |
           for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID; do
             if [ -z "${!name}" ]; then
-              echo "::error::Secret $name is missing in the anton-portfolio environment (docs/job-assistant.md)."
+              echo "::error::Secret $name is missing in the anton-portfolio environment (docs/products/jobs/job-assistant.md)."
               exit 1
             fi
           done

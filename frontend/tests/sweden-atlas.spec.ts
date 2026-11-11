@@ -1,5 +1,5 @@
 /**
- * SWEDEN atlas: the 3D atlas is offline (docs/sweden-atlas.md). Its code was removed
+ * SWEDEN atlas: the 3D atlas is offline (docs/sweden/atlas.md). Its code was removed
  * and every #sweden-atlas address leads to the SWEDEN page.
  */
 import { test, expect } from './test'

@@ -1,4 +1,4 @@
-# Picked up by `gitleaks git` from the repository root (docs/security.md). The scan covers every
+# Picked up by `gitleaks git` from the repository root (docs/platform/security.md). The scan covers every
 # fetched branch, so an exception here also holds for commits that never reached main.
 [extend]
 useDefault = true

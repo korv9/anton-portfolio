@@ -26,7 +26,7 @@ authorization.
 
 ## Verification and resources
 
-Use `docs/development.md` for verification levels and workspace lifecycle.
+Use `docs/platform/development.md` for verification levels and workspace lifecycle.
 Run `npm run verify:quick`, plus tests of the affected behavior, during development.
 Run `npm run verify:full` for integration or shared frontend changes. Data publication
 and delivery changes also require `npm run verify:delivery`. Required GitHub CI stays
@@ -39,7 +39,7 @@ without a new change or unresolved failure. Poll remote CI at most once per minu
 
 Load only the skill sections needed for the current change; keep already-read
 instructions in context instead of re-reading them. The catalog is `.claude/skills/README.md`.
-- New UI or changed visual design: `docs/design-system.md` (rules, precedence, the eyebrow
+- New UI or changed visual design: `docs/site/design-system.md` (rules, precedence, the eyebrow
   rule) and `frontend/src/tokens.css`. The direction is decided; do not restart design
   discovery. `frontend-design-principles` and `taste-skill` are not loaded unless Anton asks
   for a design exploration or a critique by name.
@@ -53,7 +53,7 @@ instructions in context instead of re-reading them. The catalog is `.claude/skil
 
 When Anton changes a direction, scope, priority, data rule, model choice or design rule, end
 the answer with labelled lines (`Beslut (Anton): …`, `Fynd: …`, `Öppen fråga: …`); the Stop
-hook records them in the Idea Lineage journal and rebuilds `DECISIONS.md`,
-`DATA_DECISIONS.md` and `docs/idea-lineage/` (`docs/idea-lineage.md`). Never store prompts
+hook records them in the Idea Lineage journal and rebuilds `docs/decisions/DECISIONS.md`,
+`docs/decisions/DATA_DECISIONS.md` and `docs/idea-lineage/` (`docs/platform/idea-lineage.md`). Never store prompts
 or transcripts. `CONTINUITY.md` holds only the current handover, under about 30 lines;
 replace its lines at a handover, do not append history.

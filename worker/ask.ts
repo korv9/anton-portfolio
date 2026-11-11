@@ -1,5 +1,5 @@
 /**
- * Allegora's streamed answer (docs/allegora-gcp.md): POST /api/ask {question, history?} searches
+ * Allegora's streamed answer (docs/products/allegora/allegora-gcp.md): POST /api/ask {question, history?} searches
  * every law in force (Allegora's search service on Cloud Run) and answers as server-sent events,
  * in this order:
  *

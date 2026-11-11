@@ -2,7 +2,7 @@ name: Check the Airflow job ads flow
 
 # Manual, and on a push that changes the stack or the flow. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
 # job_ads_near_realtime every ten minutes for a while, restarts the stack to show that the metadata
-# persists, and keeps the evidence as an artifact (docs/job-ads-airflow.md). It reads the job
+# persists, and keeps the evidence as an artifact (docs/products/jobs/job-ads-airflow.md). It reads the job
 # assistant's store and the current cluster model's reference vectors from the bucket's public address,
 # so it needs no secrets, and writes nothing back: JOB_ADS_PUBLISH stays local, so the files are checked
 # but not uploaded, and nothing is deployed.
@@ -15,7 +15,7 @@ name: Check the Airflow job ads flow
 # at most six hours: near real time by polling for a window.
 #
 # Windows chain into operation around the clock on free runners until an always-on host exists
-# (docs/job-ads-airflow.md): each publishing window queues the next, a five-hour schedule is the
+# (docs/products/jobs/job-ads-airflow.md): each publishing window queues the next, a five-hour schedule is the
 # backup, and the concurrency group holds the next window until the one before has pushed the store,
 # so two never write at once. Without JOB_ADS_SCHEDULER=airflow nothing is queued and a scheduled run
 # is skipped; removing the variable turns the chain off.
@@ -114,7 +114,7 @@ jobs:
           R2_BUCKET: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_BUCKET || '' }}
           R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
           # Workers AI for the embeddings and explanations, as the hourly refresh has them
-          # (docs/job-assistant.md, Secrets); without them every ad is matched without similarity.
+          # (docs/products/jobs/job-assistant.md, Secrets); without them every ad is matched without similarity.
           CLOUDFLARE_API_TOKEN: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
           CLOUDFLARE_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
         run: |

@@ -29,7 +29,7 @@ from ads import store_dir  # noqa: E402
 AGENT = "job-assistant"
 CAP = 1500  # neurons per UTC day for this project, of the 10,000 the account shares
 EXPLAIN_MODEL = "@cf/google/gemma-4-26b-a4b-it"
-# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/workers-ai.md).
+# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/products/allegora/workers-ai.md).
 GEMMA_IN, GEMMA_OUT = 9091 / 1e6, 27273 / 1e6
 EXPLAIN_PER_DAY = 12
 TEXT_CHARS = 1500

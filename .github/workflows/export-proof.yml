@@ -2,7 +2,7 @@ name: Export proof
 
 # By hand: build and export the named subjects on two refs against the same stored warehouse and
 # raw files, and fail unless every file they write is the same (scripts/export_proof.py,
-# docs/package.md step 3). Reads R2, publishes and commits nothing.
+# docs/platform/package.md step 3). Reads R2, publishes and commits nothing.
 #
 #     gh workflow run export-proof.yml --ref main -f head=<branch> -f subjects="welfare taxes"
 

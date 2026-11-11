@@ -1,37 +1,23 @@
 # Anton Ernstsson · data portfolio
 
-[![CI](https://github.com/korv9/anton-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/korv9/anton-portfolio/actions/workflows/ci.yml)
-[![Security](https://github.com/korv9/anton-portfolio/actions/workflows/security.yml/badge.svg)](https://github.com/korv9/anton-portfolio/actions/workflows/security.yml)
-[![Build warehouse](https://github.com/korv9/anton-portfolio/actions/workflows/build-warehouse.yml/badge.svg)](https://github.com/korv9/anton-portfolio/actions/workflows/build-warehouse.yml)
+A data platform for Swedish and EU public data, the products built on it, and the site that
+shows them.
 
-A data platform for Swedish and EU public data, the products built on it, and the portfolio
-site that shows them: [antonernstsson.com](https://antonernstsson.com) ·
-[github.com/korv9/anton-portfolio](https://github.com/korv9/anton-portfolio).
+**Live: [antonernstsson.com](https://antonernstsson.com)**
 
-## What it is
+## What it shows
 
-**The data platform.** Python ingestion keeps every raw file with its URL, fetch time and
-SHA-256. dbt on DuckDB builds bronze, silver and gold. dbt tests, enforced model contracts,
-JSON Schemas and Python validators run before anything is published, and each publish is a
-versioned release in Cloudflare R2. One command, `python platform/pipeline.py`, runs every
-subject the same way on a laptop and in GitHub Actions. In numbers[^count]: 19 ingestion
-packages, 26 pipeline subjects, 334 dbt models (158 with an enforced contract), 6,418 published
-files and 18 workflows. The [platform case study](docs/case-studies/platform.md) covers the
-design and what went wrong.
-
-**The job assistant.** The second flagship uses the same platform end to end. An hourly run
-reads Data/IT job ads from JobTech, compares each one with the owner's approved CV profile, and
-publishes the matches as a released delivery group. Every judgement quotes the sentence in the
-ad and the line in the CV it rests on; there is no hiring-chance percentage
-([job assistant](docs/job-assistant.md)).
-
-**Research.** Analyses built on the same pipeline: the SWEDEN research pages, text labs on
-myth, philosophy and concepts, clustering experiments, and pre-registered studies whose
-method is fixed in a dated document before the results exist.
-
-The published site has every page. The home page is about Anton, `#projects` gives an overview
-of the platform and the projects, and each project has its own page
-([frontend/src/router.ts](frontend/src/router.ts)).
+- A data platform: Python ingestion keeps every raw file with its URL, fetch time and SHA-256,
+  dbt on DuckDB builds bronze, silver and gold, and nothing is published before dbt tests,
+  model contracts, JSON Schemas and Python validators pass. Each publish is a versioned release
+  in Cloudflare R2, and `python platform/pipeline.py` runs every subject the same way on a laptop
+  and in GitHub Actions.
+- A job assistant on the same platform: an hourly run reads Data/IT job ads from JobTech,
+  compares each with an approved CV profile and publishes the matches. Every judgement quotes
+  the sentence in the ad and the line in the CV it rests on.
+- Research on the same pipeline: the SWEDEN research pages, text labs on myth, philosophy and
+  concepts, clustering experiments, and studies whose method is fixed in a dated
+  pre-registration before the results exist.
 
 ## Architecture
 
@@ -50,11 +36,9 @@ flowchart LR
   R --> Site
 ```
 
-The site reads committed JSON and the Parquet and shard addresses in `delivery.json`. Only the
-job assistant's files come from the active R2 release (`live` in `delivery.json`)
-([storage and serving](docs/storage-and-serving.md)). Heavy text
-and ML work runs once in Python and ships as compact files; the browser does vector search and
-cheap metrics only.
+The site reads committed JSON and the Parquet and shard addresses in `delivery.json`; only the
+job assistant's files come from the active R2 release. Heavy text and ML work runs once in
+Python and ships as compact files, so the browser does vector search and cheap metrics only.
 
 ## Stack
 
@@ -68,22 +52,27 @@ cheap metrics only.
 | Tests | pytest, dbt tests, Node test runner, Playwright, axe |
 | Infrastructure | GitHub Actions, Terraform for Cloudflare and GitHub |
 
-## How I work
+## Run it
 
-Most of the code is written with AI agents, and four files keep the work readable between
-sessions and for anyone looking in:
+```bash
+npm ci
+npm run dev            # http://127.0.0.1:5173, every page
+npm run verify:quick   # types, formatting, frontend and Worker unit tests
+```
 
-- [PROJECTS.md](PROJECTS.md): what each project is, what question it answers, how it is built,
-  where it stands and what comes next. Written in my words; agents change it only when I ask.
-- [DECISIONS.md](DECISIONS.md) and [DATA_DECISIONS.md](DATA_DECISIONS.md): what was decided, why,
-  what it replaced, and whether it was implemented and verified. Generated from an append-only
-  journal of short events ([docs/idea-lineage.md](docs/idea-lineage.md)); a change is a new
-  event that links to the old one, so the history stays.
-- [docs/idea-lineage/](docs/idea-lineage/README.md): the same history per project and per day.
-- [CONTINUITY.md](CONTINUITY.md): where the last session stopped, for the next one.
+The site's data is committed, so it builds with Node alone. Rebuilding a subject and the
+fuller checks are in [the pipeline](docs/platform/pipeline.md) and
+[the development workflow](docs/platform/development.md).
 
-The design rules in force are in [docs/design-system.md](docs/design-system.md); the agent
-instructions are [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md).
+## Read next
+
+1. [Platform case study](docs/case-studies/platform.md): the problem, the decisions, what failed
+2. [Pipeline](docs/platform/pipeline.md): how a subject gets from source to release
+3. [Job assistant](docs/products/jobs/job-assistant.md): the second flagship, end to end
+4. [Quality and validity](docs/platform/quality-and-validity.md): what the checks prove and what they do not
+5. [Docs index](docs/README.md): every other document, by topic
+
+Most of the code is written with AI agents; [CLAUDE.md](CLAUDE.md) holds the rules they work by.
 
 ## Repository map
 
@@ -96,54 +85,6 @@ instructions are [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md).
 | [`configs/`](configs/README.md) | Delivery groups and schemas, clustering settings, Workers AI settings |
 | [`scripts/`](scripts/README.md) | Verification, build checks and workspace tools |
 | [`infra/`](infra/README.md) | Terraform for Cloudflare and GitHub |
-| [`docs/`](docs/README.md) | One document per topic, grouped in the docs index |
-| `warehouse/` | The local DuckDB warehouse and raw files; gitignored, stored in R2 except folders kept local ([storage and serving](docs/storage-and-serving.md)) |
-
-## Run it
-
-```bash
-npm ci
-npm run dev            # http://127.0.0.1:5173, every page
-npm run verify:quick   # types, formatting, frontend and Worker unit tests
-```
-
-The site's data is committed, so it builds with Node alone. To rebuild a subject, install
-`platform/requirements.txt`:
-
-```bash
-python platform/pipeline.py list            # every subject, its group and schedule
-python platform/pipeline.py run welfare     # fetch, build, test, export
-python platform/pipeline.py check           # the data validators (npm run data:check)
-python -m pytest platform/tests -q
-```
-
-`npm run verify:full` adds the production build, a Wrangler dry run, the import layers, the
-Python suite, dbt compile and the browser tests;
-data and delivery changes also need `npm run verify:delivery`. GitHub runs the full CI on
-every pull request. Scopes, logs and workspace rules are in
-[the development workflow](docs/development.md).
-
-## Documentation
-
-Start here:
-
-1. [Platform case study](docs/case-studies/platform.md): the problem, the decisions, what failed
-2. [Pipeline](docs/pipeline.md): how a subject gets from source to release
-3. [Job assistant](docs/job-assistant.md): the second flagship, end to end
-4. [Quality and validity](docs/quality-and-validity.md): what the checks prove and what they do not
-5. [Development workflow](docs/development.md): verification levels and workspaces
-
-Everything else:
-
-- [Docs index](docs/README.md): platform, delivery, products, research and operations
-- [Pipeline](docs/pipeline.md) and [storage and serving](docs/storage-and-serving.md)
-- [Job assistant](docs/job-assistant.md) and [SWEDEN](docs/sweden-design.md)
-- [Hosting](docs/deploy.md), [security](docs/security.md) and [incidents](docs/incidents/)
-
-[^count]: Counted on 2026-11-01 from this branch. Ingestion packages: folders under
-    `platform/ingest/`. Subjects: entries under `subjects:` in `platform/pipeline.yml`. dbt
-    models: models in the manifest from `dbt parse`, 321 SQL and 13 Python, the figure the site
-    shows. `platform/models/` has 325 `.sql` files because four opt-in job-cluster models are off
-    by default. Contracts: `enforced: true` lines in
-    `platform/models/**/*.yml`. Published files: entries in `frontend/public/data/catalog.json`.
-    Workflows: files in `.github/workflows/`.
+| [`docs/`](docs/README.md) | One document per topic: platform, products, research, SWEDEN, decisions |
+| `warehouse/` | The local DuckDB warehouse and raw files; gitignored, stored in R2 except folders kept local ([storage and serving](docs/platform/storage-and-serving.md)) |
+| `PROJECTS.md`, `CONTINUITY.md` | What each project is and where it stands; where the last session stopped |
