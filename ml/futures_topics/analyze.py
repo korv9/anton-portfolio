@@ -27,10 +27,20 @@ from ml.futures_topics.cluster import centre, embeddings, sample_key
 from ml.futures_topics.sentences import FEATURES, REPO, RUN, SEED, YEARS
 
 sys.path.insert(0, str(REPO / "platform/nlp/symbolic"))
-sys.path.insert(0, str(REPO / "platform/publish"))
-from diva_clusters import STOP  # noqa: E402
 from rank_clusters import ctfidf  # noqa: E402
 
+# Swedish and English stop words, plus thesis boilerplate.
+STOP = set("""
+och att det som en på är av för med till den har de inte om ett han men var jag sig från vi så kan
+man när år säger hon under också efter eller nu sin där vid mot ska skulle kommer ut får finns vara
+hade alla andra mycket än här då sedan över bara in blir upp även vad få två vill ha många hur mer
+dem denna detta dessa dess deras vilka vilken vilket samt genom utan inom mellan både samt hos
+studien studie studiens uppsatsen uppsats arbetet arbete syftet syfte resultat resultaten metod
+undersöka undersöker undersökning visar visade analys analysen kvalitativ kvantitativ intervjuer
+the of and to in a is that for on with as are by this be was it from an at or which were their
+study thesis results result aim purpose method methods analysis based using used paper research
+findings show shows shown also can has have been between its into these this than more how
+""".split())
 ROUNDS = 999
 BOOT = 1000
 LAGS = range(-3, 4)

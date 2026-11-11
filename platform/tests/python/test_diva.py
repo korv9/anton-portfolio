@@ -1,13 +1,10 @@
-"""DiVA: the OAI-PMH page parser on a hand-written Dublin Core response, and the topic clustering
-on a small corpus with two clear subjects."""
+"""DiVA: the OAI-PMH page parser on a hand-written Dublin Core response, and the futures detail rows."""
 import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "ingest/diva"))
-sys.path.insert(0, str(ROOT / "publish"))
 
 from harvest import is_student_thesis, months, parse  # noqa: E402
 
@@ -53,26 +50,6 @@ def test_months_cover_the_range_with_month_ends():
     got = list(months("2024-11", "2025-02"))
     assert [g[0] for g in got] == ["2024-11", "2024-12", "2025-01", "2025-02"]
     assert got[3][2] == "2025-02-28"
-
-
-def test_clustering_separates_two_subjects():
-    pytest.importorskip("sklearn")
-    from diva_clusters import cluster
-
-    energy = ["battery storage grid", "solar panels battery", "wind power grid storage", "electric grid battery charging"]
-    care = ["nurses patient care", "elderly care nurses", "patient safety hospital care", "hospital nurses stress"]
-    records = [
-        {"title": t, "abstract": t, "subjects": [], "year": 2020 + i % 3, "publisher": "KTH" if t in energy else "KI"}
-        for i, t in enumerate((energy + care) * 3)
-    ]
-    out = cluster(records, ks=[2])
-    assert out["k"] == 2
-    by_words = {frozenset(c["words"][:3]) for c in out["clusters"]}
-    assert len(out["clusters"]) == 2 and len(by_words) == 2
-    sizes = sorted(c["size"] for c in out["clusters"])
-    assert sizes == [12, 12]
-    unis = {c["universities"][0]["name"] for c in out["clusters"]}
-    assert unis == {"KTH", "KI"}
 
 
 def test_detail_alternatives_add_up_to_the_future_marker():
