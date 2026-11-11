@@ -64,7 +64,7 @@ Two gates in `src/portfolio/publish/dq_gate.py` run before the upload:
 
 - dbt results. A failing node blocks. When some of a group's subjects have results and another
   non-manual one has none, that also blocks. When none has results, for example in
-  `publish-r2.yml` from a fresh checkout, the manifest records `not_run` and the release goes on.
+  `ops-publish-r2.yml` from a fresh checkout, the manifest records `not_run` and the release goes on.
 - Row counts. A file of at least 100 rows in the active release may lose at most 30 % per release,
   and a file that is gone counts as zero. To let an intended drop through, name its logical paths,
   comma-separated, in `PORTFOLIO_ALLOW_ROW_DROP`; the manifest records it under `reconcile.drops`.
@@ -155,9 +155,9 @@ What stays in YAML is the handling of failure, which differs per workflow:
   subject ends with the structural gate, after the store. Last, `src/portfolio/publish/retention.py`
   plans the deletion of superseded releases, and deletes them only when the repository
   variable `RETENTION_APPLY` is `true` (docs/r2-delivery-contract.md).
-- `publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
+- `ops-publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
-- `cluster-jobs.yml` runs model fits and clustering sweeps that need more memory than a
+- `heavy-compute.yml` runs model fits and clustering sweeps that need more memory than a
   laptop, by hand and only from `main`. It is not a subject and publishes nothing. It pulls one
   features folder from the warehouse store, runs the chosen job (`futures-topics`, or `module`
   for `python -m <args>`) and pushes the folder back, after a failure too, so a stopped run
@@ -229,7 +229,7 @@ run recomputes ai_politics, philosophy and concepts once.
 | `run diva`, `run jobs_analysis` | Hours of harvesting or archive imports; started from the Actions tab |
 | `symbolic:research`, `symbolic:clean`, `symbolic:experiments`, `symbolic:validity`, `symbolic:review` | Research steps that end in a human review of clusters |
 | `politics:parties`, `politics:debates`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
-| `publish-r2.yml` | First activation of a bucket, or a full re-stage |
+| `ops-publish-r2.yml` | First activation of a bucket, or a full re-stage |
 
 `platform/ingest/jobtech/run_history_pipeline.py` keeps its own dbt build: it discovers which
 archive years JobTech has published and passes them to dbt as vars. The registry calls it as
@@ -244,7 +244,7 @@ the build only when the caller asks for them (`scb-key`, `summary`, `workers-ai`
 
 | Workflow | Secrets | Variables |
 |---|---|---|
-| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `publish-r2.yml`, `cluster-jobs.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
+| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `ops-publish-r2.yml`, `heavy-compute.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
 | `refresh-news.yml` | the four above, and optionally `ANTHROPIC_API_KEY` | `R2_PUBLIC_BASE` |
 | `refresh-job-assistant.yml` | the four above, `JOB_ASSIST_TOKEN`, `CLOUDFLARE_AI_TOKEN` or `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_ACCOUNT_ID` (or a variable of that name) | `R2_PUBLIC_BASE` |
 | `ci.yml` | repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, all optional | none |

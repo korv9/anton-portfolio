@@ -274,7 +274,7 @@ about 45 minutes for the lock.
 
 These ran on a standard Ubuntu runner, CPU only, from main after #196 and #197.
 
-- The first dispatch of `cluster-jobs.yml` (job `experiments`, `philosophy select`, run 40993146600)
+- The first dispatch of `heavy-compute.yml` (job `experiments`, `philosophy select`, run 40993146600)
   stopped on `ModuleNotFoundError: psutil`, because the ML lock lacked it. #197 added it. The second
   dispatch (run 40994244944) pulled 327 files from R2 and found every fit already checkpointed.
   Its run step took 3 seconds and pushed 2 files back. This shows that resuming from R2 works;
@@ -342,7 +342,7 @@ ml/.venv/Scripts/python.exe -m ml.experiments.jobs rollback --reason "..." [--co
 pulls `features/experiments` and `raw/job_assistant`, runs `assign` and `monitor`, and pushes
 `features/experiments` back, after a failure too. Started by hand with `retrain`, it also refits a
 candidate; it never passes `--promote`. A person reads the acceptance report and the diff, then runs
-`promote`. It shares the `cluster-jobs-experiments` concurrency group with `cluster-jobs.yml`.
+`promote`. It shares the `cluster-jobs-experiments` concurrency group with `heavy-compute.yml`.
 
 **Tested** (`test_jobs_mlops.py`, 11 tests, about 5 s): missing, empty, non-JSON, wrong-shape and
 mostly invalid input; dedup by duplicate_of, duplicate_key and hash; template stripping and masking;

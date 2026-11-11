@@ -352,7 +352,7 @@ subjects:
 
   # The AI Act diffusion clock (docs/ai-act-diffusion-preregistration.md). The term counts are
   # made by hand: speeches locally with `python -m ml.ai_act.diffusion speeches`, the 2.79M ads in
-  # cluster-jobs.yml (module `ml.ai_act.diffusion ads`, path ai_act/diffusion). This builds the
+  # heavy-compute.yml (module `ml.ai_act.diffusion ads`, path ai_act/diffusion). This builds the
   # mart and the export from the stored counts.
   ai_act_diffusion:
     schedule: manual

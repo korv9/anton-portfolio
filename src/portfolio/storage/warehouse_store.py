@@ -210,7 +210,7 @@ def push_tree(s3, bucket: str, name: str, sub: str = "", prune: bool = False,
         if meta and meta["sha256"] == digest and meta["size"] == path.stat().st_size:
             seen[key] = digest
             return 0
-        # Another job (cluster-jobs.yml runs outside the data-refresh lock) stored a newer copy
+        # Another job (heavy-compute.yml runs outside the data-refresh lock) stored a newer copy
         # after this machine pulled: an untouched local copy stays behind, a changed one is refused.
         # A key absent at the pull but created in the bucket before this push is still last writer
         # wins; the window is one build, accepted.

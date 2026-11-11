@@ -28,7 +28,7 @@ def embed(ids: list[str], texts: list[str], name: str, agent: str) -> np.ndarray
     import workers_ai
 
     run = FEATURES / "vectors" / name
-    # Stored vectors for exactly these ids (pulled from R2 in cluster-jobs.yml) need no call.
+    # Stored vectors for exactly these ids (pulled from R2 in heavy-compute.yml) need no call.
     if ((run / "vectors.npy").is_file() and (run / "ids.json").is_file()
             and json.loads((run / "ids.json").read_text(encoding="utf-8")) == [str(i) for i in ids]):
         return np.load(run / "vectors.npy")

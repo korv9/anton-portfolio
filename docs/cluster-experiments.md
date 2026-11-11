@@ -66,7 +66,7 @@ Every domain module has the same commands: `python -m ml.experiments.<domain> pr
 only one embedding or fit job run at a time. Embeddings are cached per text hash, model revision
 and text version (`embed.py`).
 
-The heavy path in GitHub Actions is the existing `cluster-jobs.yml` `module` job on a standard
+The heavy path in GitHub Actions is the existing `heavy-compute.yml` `module` job on a standard
 Ubuntu runner, CPU only. It pulls the domain's features folder from R2, runs, and pushes it back,
 including checkpoints after a failure. Source texts stay under the storage rules of
 `src/portfolio/storage/warehouse_store.py`: only text whose licence allows redistribution may be in
@@ -103,7 +103,7 @@ Two faults in this round, fixed afterwards:
 
 A repro now uses one root, `features/experiments/repro/<label>/` (`registry.EXPERIMENTS`). The root
 holds its own registry, checkpoints, embeddings, summaries and exports. Nothing outside it changes,
-and `final` judges candidates against an empty registry of its own. In `cluster-jobs.yml` the
+and `final` judges candidates against an empty registry of its own. In `heavy-compute.yml` the
 args are `<domain> <step[,step]> [repro[:label]]`. GNU time records each step's peak memory. A
 re-run keeps the Actions run id and so resumes the same repro.
 

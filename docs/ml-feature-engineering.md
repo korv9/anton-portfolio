@@ -189,5 +189,5 @@ python -m ml.feature_study.talk_vote
 
 The job-ad corpus folders come from `warehouse_store.py pull --only raw --path
 jobtech/cluster-corpus/<year>`. Each run fits in 1 GB on a laptop, so none needs
-`cluster-jobs.yml`. The job-ad run is the slowest: 15 minutes for 2025 alone, longer for two
+`heavy-compute.yml`. The job-ad run is the slowest: 15 minutes for 2025 alone, longer for two
 years, mostly in the employer bootstraps.

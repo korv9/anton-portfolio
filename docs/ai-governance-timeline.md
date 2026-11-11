@@ -84,7 +84,7 @@ in job ads? The method was fixed before any counting, in
 ```
 python platform/nlp/ai_act_terms.py                  # candidate terms, for review
 python -m ml.ai_act.diffusion speeches               # Riksdag counts, local
-gh workflow run cluster-jobs.yml -f job=module \
+gh workflow run heavy-compute.yml -f job=module \
   -f args="ml.ai_act.diffusion ads" -f path=ai_act/diffusion   # ad counts, Actions
 python platform/pipeline.py run ai_act_diffusion     # mart and ai-act/diffusion.json
 ```

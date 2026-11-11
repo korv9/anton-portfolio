@@ -10,7 +10,7 @@ month of record datestamp with futures_theses.py's rule for the Swedish abstract
 month writes candidates/<key>.parquet (document id, year, sentence), so a stopped run resumes.
 The candidates stay under warehouse/ml/futures_topics/, which is not pushed. The sample is written
 to RUN, under the warehouse features tree, so warehouse_store.py carries it to the R2 store that
-the clustering job in .github/workflows/cluster-jobs.yml pulls from. It is never published.
+the clustering job in .github/workflows/heavy-compute.yml pulls from. It is never published.
 """
 from __future__ import annotations
 
