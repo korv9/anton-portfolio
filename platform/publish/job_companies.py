@@ -16,10 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'ingest/jobtech'))
 
 import duckdb
-from compliance_intelligence.cohort import insert_rows, populate_database
-from compliance_intelligence.job_resolution import apply_reviews, resolve_employer
-from compliance_intelligence.registry import encoded, organization_number
-from compliance_intelligence.sources import (ScbClient, load_snapshot, new_output, now,
+from job_assistant.employers.cohort import insert_rows, populate_database
+from job_assistant.employers.job_resolution import apply_reviews, resolve_employer
+from job_assistant.employers.registry import encoded, organization_number
+from job_assistant.employers.sources import (ScbClient, load_snapshot, new_output, now,
     private_path, seal, verify, write_json)
 from weekly_jobs import collect
 from portfolio.core.config import load_env
@@ -161,7 +161,7 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
     with new_output(output) as stage:
         populate_database(stage / 'registry.duckdb', snapshot)
         with duckdb.connect(str(stage / 'registry.duckdb')) as con:
-            con.execute(Path(__file__).parents[1].joinpath('compliance_intelligence/job_links.sql').read_text(encoding='utf-8'))
+            con.execute(Path(__file__).parents[1].joinpath('job_assistant/employers/job_links.sql').read_text(encoding='utf-8'))
             insert_rows(con, 'job_observation', ('job_id', 'publication_date', 'payload_hash'), observations)
             insert_rows(con, 'company_registry_observation', ('company_id','snapshot_date','employee_size_class',
                 'primary_sni_code','source_url','document_hash'), public_companies)
@@ -185,10 +185,10 @@ def project(collection_dir, database, registry_dir, output, *, reviews=None, rev
             'collection_manifest_hash': sha256(encoded(collection)), 'metrics': payload['metrics'],
             'resolution_version':'job-company-v1',
             'implementation_files': {p.relative_to(ROOT).as_posix():sha256(p.read_text(encoding='utf-8').encode('utf-8'))
-                for p in [Path(__file__), ROOT/'platform/compliance_intelligence/job_resolution.py',
-                    ROOT/'platform/compliance_intelligence/registry.py', ROOT/'platform/compliance_intelligence/sources.py',
-                    ROOT/'platform/compliance_intelligence/job_links.sql', ROOT/'platform/compliance_intelligence/schema.sql',
-                    ROOT/'platform/compliance_intelligence/cohort.py', ROOT/'platform/compliance_intelligence/policy.json',
+                for p in [Path(__file__), ROOT/'platform/job_assistant/employers/job_resolution.py',
+                    ROOT/'platform/job_assistant/employers/registry.py', ROOT/'platform/job_assistant/employers/sources.py',
+                    ROOT/'platform/job_assistant/employers/job_links.sql', ROOT/'platform/job_assistant/employers/schema.sql',
+                    ROOT/'platform/job_assistant/employers/cohort.py', ROOT/'platform/job_assistant/employers/policy.json',
                     ROOT/'platform/ingest/jobtech/weekly_jobs.py', ROOT/'platform/ingest/jobtech/ingest_jobs.py',
                     ROOT/'platform/publish/job_content.py']}})
         seal(stage)
