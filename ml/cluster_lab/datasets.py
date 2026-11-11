@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
-from .io import ROOT, atomic_json, atomic_parquet, digest, file_hash, read_json
+from ml.experiments.io import ROOT, atomic_json, atomic_parquet, digest, file_hash, read_json
 
 
 class DataProblem(RuntimeError):

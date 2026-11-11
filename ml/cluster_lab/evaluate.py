@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score, silhouette_score
 
 from ml.jobs.sweep import structure
-from .io import atomic_json, atomic_parquet
+from ml.experiments.io import atomic_json, atomic_parquet
 
 
 def unavailable(reason):
@@ -146,7 +146,7 @@ def profiles(dataset,frame,vectors,labels,config,folder):
         row['_text']=' '.join(texts)
     if rows:
         import sys
-        from .io import ROOT
+        from ml.experiments.io import ROOT
         sys.path.insert(0,str(ROOT/'platform/nlp/symbolic'))
         from rank_clusters import ctfidf, stop_words
         stops=ec['profile_stop_words']

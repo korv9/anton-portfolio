@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import sqlite3
 
-from .io import atomic_json, now
+from ml.experiments.io import atomic_json, lock, now
 
 STATES={'pending','running','completed','failed','interrupted'}
 
@@ -23,32 +23,16 @@ class Registry:
 
     @contextmanager
     def writer(self):
-        path=self.root/'writer.lock'
-        stream=path.open('a+b')
-        if stream.tell()==0:
-            stream.write(b'0')
-            stream.flush()
-        stream.seek(0)
-        try:
-            if os.name=='nt':
-                import msvcrt
-                msvcrt.locking(stream.fileno(),msvcrt.LK_NBLCK,1)
-            else:
-                import fcntl
-                fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
-        except (OSError,IOError) as error:
-            stream.close()
-            raise RuntimeError(f'Another process holds {path}; inspect status before starting a writer') from error
-        atomic_json(self.root/'writer.json',{'pid':os.getpid(),'started_at':now()})
-        # A dead process's running records become resumable, never pretend completed.
-        for row in self.rows():
-            if row['status']=='running':
-                self.put(row['id'],row['kind'],'interrupted',{**row,'error':'Previous writer exited before completion'})
-        try:
-            yield self
-        finally:
-            atomic_json(self.root/'writer.json',{'pid':None,'released_at':now()})
-            stream.close()
+        with lock(self.root/'writer.lock'):
+            atomic_json(self.root/'writer.json',{'pid':os.getpid(),'started_at':now()})
+            # A dead process's running records become resumable, never pretend completed.
+            for row in self.rows():
+                if row['status']=='running':
+                    self.put(row['id'],row['kind'],'interrupted',{**row,'error':'Previous writer exited before completion'})
+            try:
+                yield self
+            finally:
+                atomic_json(self.root/'writer.json',{'pid':None,'released_at':now()})
 
     def put(self,id,kind,status,body):
         if status not in STATES:

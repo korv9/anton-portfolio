@@ -25,7 +25,7 @@ import numpy as np
 import yaml
 from sklearn.metrics import adjusted_mutual_info_score
 
-from ml.cluster_lab.io import file_hash
+from ml.experiments.io import file_hash
 
 CONFIG = Path(__file__).resolve().parents[2] / 'configs' / 'experiments'
 
