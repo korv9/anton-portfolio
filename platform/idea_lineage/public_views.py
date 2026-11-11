@@ -99,7 +99,7 @@ def build_root() -> list[Path]:
     write(out[0], decisions_page(
         "Decisions",
         "What is decided across the portfolio, why, and how far each decision got. Built from the "
-        "public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/idea-lineage.md`). "
+        "public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/platform/idea-lineage.md`). "
         "Current project status and next steps are in `PROJECTS.md`.",
         view, lambda e: True))
     write(out[1], decisions_page(

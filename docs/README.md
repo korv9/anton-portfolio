@@ -59,7 +59,6 @@ The repository overview is in the [root README](../README.md). Folder guides:
 | [labs/concept-layer.md](products/labs/concept-layer.md) | The shared concept layer across four text corpora |
 | [labs/concept-constellation.md](products/labs/concept-constellation.md) | Concept Lab's exploring view |
 | [labs/concept-journey.md](products/labs/concept-journey.md) | Concept Lab's reading view |
-| [compliance-intelligence/](products/compliance-intelligence/README.md) | Compliance research workflow, cohort, gates and risks; not routed |
 
 DrugComb and the Homie API are documented beside their pinned sources in
 [platform/products/](../platform/products/README.md).

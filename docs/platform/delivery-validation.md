@@ -100,15 +100,6 @@ id fanns i arkivet. Validatorn redovisar den begränsningen och tar aldrig bort 
 gammal sammanfattning eller ändrar dess datum. Den verifierar inte språkmodellens
 tolkning av artikeltext eller att alla relevanta artiklar har arkiverats.
 
-## DiVA
-
-`diva_clusters.py` exporterar unika heltals-id:n för kluster och punkter med
-`x`, `y`, `c` och `t`. Validatorn kräver ändliga numeriska koordinater, unika
-kluster-id:n och punktreferenser till befintliga kluster. Exporten har inget
-enskilt post-id i punkterna, så punktunikhet kan inte verifieras. Upprepade
-titlar eller koordinater avslås inte som påstådda dubblettposter. Statusen
-redovisar detta som en varning. Gruppen är verifierad med exportens form som
-testfixture, inte mot en verklig DiVA-fil.
 
 ## Tester
 

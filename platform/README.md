@@ -34,7 +34,6 @@ in the warehouse.
 | `quality/` | Data quality and construct validity registries and their evaluation ([docs/platform/quality-and-validity.md](../docs/platform/quality-and-validity.md)) |
 | `architecture/` | The provenance graph of sources, models and published files (`build_graph.py`) and the feed's Trace data (`feed_provenance.py`) |
 | `products/` | Registry and pinned material for DrugComb, the thesis and Homie ([products/README.md](products/README.md)) |
-| `compliance_intelligence/` | The compliance research workflow; its explorer is not routed ([docs/products/compliance-intelligence/](../docs/products/compliance-intelligence/README.md)) |
 | `job_assistant/` | The job assistant: ads from JobTech, the CV profile, matching and export ([docs/products/jobs/job-assistant.md](../docs/products/jobs/job-assistant.md)) |
 | `idea_lineage/` | The idea journal behind `npm run ideas:*` ([docs/platform/idea-lineage.md](../docs/platform/idea-lineage.md)) |
 | `tests/` | Python tests for ingestion, models, delivery, architecture and workflows (`python -m pytest platform/tests -q`) |

@@ -113,7 +113,6 @@ Sunday morning.
 | clusters | `build-warehouse.yml` | weekly | `run clusters` | sweden | yes |
 | quality | `build-warehouse.yml` | weekly | `run quality` | baseline | yes |
 | ai_act_diffusion | none | by hand | `run ai_act_diffusion` | baseline | no |
-| diva | `refresh-diva.yml` | by hand | `run diva` | diva | one click |
 | jobs_analysis | `refresh-job-analysis.yml` | by hand | `run jobs_analysis` | jobs-analysis | one click |
 | legacy | none | by hand | `run legacy` | baseline | no |
 | job_assistant | `refresh-job-assistant.yml` | hourly at :07 | `run job_assistant` | job-assistant | yes |
@@ -244,7 +243,7 @@ the build only when the caller asks for them (`scb-key`, `summary`, `workers-ai`
 
 | Workflow | Secrets | Variables |
 |---|---|---|
-| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-diva.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `ops-publish-r2.yml`, `heavy-compute.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
+| `refresh-welfare.yml`, `refresh-jobs.yml`, `refresh-job-analysis.yml`, `build-warehouse.yml`, `ops-publish-r2.yml`, `heavy-compute.yml` | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` (or `R2_SECRET_ACCESS_KEY_ID`), `R2_BUCKET` | `R2_PUBLIC_BASE` |
 | `refresh-news.yml` | the four above, and optionally `ANTHROPIC_API_KEY` | `R2_PUBLIC_BASE` |
 | `refresh-job-assistant.yml` | the four above, `JOB_ASSIST_TOKEN`, `CLOUDFLARE_AI_TOKEN` or `CLOUDFLARE_API_TOKEN`, and `CLOUDFLARE_ACCOUNT_ID` (or a variable of that name) | `R2_PUBLIC_BASE` |
 | `ci.yml` | repository secrets `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, all optional | none |

@@ -7,8 +7,7 @@ two short texts on the left. The first says what the data reveals; the second na
 Data–Reality Gap, meaning what the data cannot show. Its routes were `#sweden-atlas` (start)
 and `#sweden-atlas-a` to `-e` plus `#sweden-atlas-x` (Connections). The product pages under `#sweden-*` are unchanged.
 
-Code lives in `frontend/src/sweden/atlas/`. Nothing outside that folder imports it, so
-no route loads the atlas code.
+The atlas code has been removed from `frontend/src/sweden/atlas/`.
 
 ## How a page is built
 

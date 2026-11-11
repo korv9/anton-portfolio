@@ -16,10 +16,9 @@ Selected advertisements survive filters and browser history. A shared link on th
 | --- | --- |
 | `platform/ingest/jobtech/ingest_jobs.py`, `weekly_jobs.py` | Official JobSearch, bounded pagination, retry, window splitting and immutable `raw.job_ads` payload hashes |
 | `platform/publish/job_companies.py` | Current job metadata, canonical links, privacy projection, SCB lookup and reviewed context; now also publishes text packages |
-| `platform/compliance_intelligence/job_resolution.py`, `job_links.sql` | Exact organisation numbers, verified aliases, role-specific links, ambiguity and human review; unchanged identity namespace |
+| `platform/job_assistant/employers/job_resolution.py`, `job_links.sql` | Exact organisation numbers, verified aliases, role-specific links, ambiguity and human review; unchanged identity namespace |
 | SCB registry and frozen cohort | Job employers reuse canonical `company_id`; the frozen 50-company compliance cohort is unchanged |
-| `frontend/src/companies/` | Shared data loader, identity, related jobs, source links and legal release checks; continuous company presentation |
-| Compliance review, Gold, Explorer and exports | Reused intact. Added presentation files to the exact-artifact approval fingerprint |
+| `frontend/src/lib/companies/` | Company model and legal release checks |
 | Historical Labour Market Observatory | Archive/stream models retained; pages withdrawn |
 | `frontend/src/dataSource.ts`, delivery specs and R2 publishing | Integrity-checked, pinned releases; no new backend or company database |
 | `tokens.css`, shared charts and native controls | Grey surfaces, Helvetica, muted violet, accessible chart labels and focus states; no new theme |
@@ -53,7 +52,7 @@ JobSearch is listed as CC0 in the [official data-service catalogue](https://data
 
 ### Private qualification contract
 
-`SearchProfile` schema v1 is defined and validated in `frontend/src/job-intelligence/profile.ts`:
+`SearchProfile` schema v1 is defined and validated in `frontend/src/lib/job-intelligence/profile.ts`:
 
 - `source`: `kind=candidate_supplied_cv`, SHA-256 of the reference CV.
 - `facts.skills[]`: canonical skill, `evidenced` or `partial`, source reference and exact qualification excerpt.
@@ -97,7 +96,7 @@ The local run selected 25 suitable advertisements from those 599, all with verif
 
 Missing reviewed enrichment: company financial history/ratios, exact historical employee counts, long hiring history, procurement/client evidence, verified repository ownership, corporate events and stock/issuer series. Existing context rows can render automatically when approved and directly attributed; five-year financial and workforce charts need real compatible observations first. Current hiring counts by publication day are shown where multiple days support comparison. They are observed postings, not confirmed hires or causal evidence.
 
-`new_output` in `platform/compliance_intelligence/sources.py` retries only bounded Windows access and sharing locks (WinError 5 and 32) while it finalises a staged directory; it never replaces existing output.
+`new_output` in `platform/job_assistant/employers/sources.py` retries only bounded Windows access and sharing locks (WinError 5 and 32) while it finalises a staged directory; it never replaces existing output.
 
 Compliance remains independently gated. The current public release is unavailable pending human review. No unapproved named findings are published; missing coverage is never shown as zero violations. KKV coverage limitations and ranking holds remain. The frozen SCB compliance cohort is unchanged and independent of both the job population and private recommendations.
 

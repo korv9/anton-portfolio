@@ -99,7 +99,7 @@ stycken och går sedan uppifrån. Den behåller det första stycket ur varje par
 paragrafer från högst fyra lagar. Varje paragraf skickas hel, med alla stycken i ordning. En
 paragraf över 4 800 tecken behåller de stycken som ligger närmast frågan.
 
-`platform/publish/allegora/search_compare.py` prövade varianterna på det lokala indexet med de tio
+Ett jämförelseskript, som sedan har tagits bort, prövade varianterna på det lokala indexet med de tio
 svenska evalfrågorna och hyresvärdsfrågan (`warehouse/features/workers_ai/eval/sfs-all-search.json`).
 En fråga räknas som hittad när den väntade paragrafen är bland de åtta.
 

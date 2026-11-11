@@ -140,7 +140,7 @@ The full analysis took 766 seconds: 681 for the five seeds and the map in three 
 
 ## Dimension-reduction benchmark (2026-10-31): not adopted
 
-This benchmark tested whether another reducer gives a better atlas. The published atlas does not use its results and stays on version 2. The code is in `ml/experiments/dr_bench/`; the rules and raw results are in `tmp/dr-bench/`, which Git ignores, so they are summarised here.
+This benchmark tested whether another reducer gives a better atlas. The published atlas does not use its results and stays on version 2. The benchmark code has been removed, and the rules and raw results were in `tmp/dr-bench/`, which Git ignores, so they are summarised here.
 
 Rules, fixed before any method ran:
 
