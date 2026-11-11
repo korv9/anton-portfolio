@@ -45,11 +45,13 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent / "text"))
 
 import clustering  # noqa: E402
 import embeddings  # noqa: E402
 import evaluation  # noqa: E402
 import pipeline  # noqa: E402
+import vectors as text_vectors  # noqa: E402
 from transforms import center_by_document, mask_symbol  # noqa: E402
 
 OUT = pipeline.FEATURES / "experiments"
@@ -194,7 +196,7 @@ def compare_models(names: list[str]) -> int:
                 else:
                     print(f"{model}: embedding {len(texts)} contexts …", flush=True)
                     started = time.monotonic()
-                    vectors = embeddings.embed(texts, model)
+                    vectors = text_vectors.embed(texts, model)
                     seconds = round(time.monotonic() - started, 1)
                     np.save(saved, vectors)
                 cache[config["masking"]] = (vectors, texts, seconds)
@@ -225,7 +227,7 @@ def main(names: list[str] | None = None) -> int:
         if config["masking"] not in cache:
             texts = inputs(data, config["masking"])
             print(f"Embedding {'masked' if config['masking'] else 'original'} contexts …", flush=True)
-            cache[config["masking"]] = (embeddings.embed(texts), texts)
+            cache[config["masking"]] = (text_vectors.embed(texts, embeddings.MODEL), texts)
         vectors, texts = cache[config["masking"]]
         print(f"{name}: UMAP and HDBSCAN …", flush=True)
         metrics = run_experiment(name, config, data, vectors, texts, sample_id)
