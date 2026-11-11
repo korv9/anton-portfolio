@@ -1,6 +1,6 @@
 name: Job-ad clusters (assign and monitor)
 
-# The MLOps loop of the job-ad clustering (docs/cluster-experiments-jobs.md). Weekly, and by hand:
+# The MLOps loop of the job-ad clustering (docs/research/clustering/jobs.md). Weekly, and by hand:
 #  - pulls the shared features/experiments folder (registry, models, snapshots, embedding cache,
 #    monitor files; no source text) and the job-assistant store (raw/job_assistant) from R2;
 #  - assign: diffs the store against the champion model's snapshot, gives new and changed ads a

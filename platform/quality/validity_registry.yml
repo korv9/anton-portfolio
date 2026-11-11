@@ -137,7 +137,7 @@ analyses:
     question_sv: Representerar riksdagsanföranden politiska åsikter?
     target_construct: what parties and politicians think about an issue
     proxy_measure: what is said in the chamber
-    source: docs/ai-politics.md
+    source: docs/products/ai-act/ai-politics.md
     diagnostics:
       - id: scope
         label_en: What the corpus covers
@@ -190,7 +190,7 @@ analyses:
     question_sv: Mäter en terms frekvens i annonser arbetsgivares efterfrågan på kompetensen?
     target_construct: employer demand for a skill
     proxy_measure: share of ads whose headline or description matches the term's pattern
-    source: docs/ai-jobs.md
+    source: docs/products/ai-act/ai-jobs.md
     diagnostics:
       - id: duplicates_within_archive
         function: jobs_duplicate_share

@@ -1,5 +1,5 @@
 """SWEDEN Connections candidates 3.1 and 3.2, as pre-registered in
-docs/sweden-connections-preregistration.md (committed in ecd242f2 before this code ran). Each
+docs/research/preregistrations/sweden-connections-preregistration.md (committed in ecd242f2 before this code ran). Each
 departure from that text is listed in DEVIATIONS and published with the result.
 
 3.1 compares each municipality's library rates with the median of its five nearest social

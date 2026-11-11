@@ -1,5 +1,5 @@
 # Acceptance criteria for a Replik debate-topic candidate, fixed on 2026-10-29 before any final
-# evaluation ran (docs/cluster-experiments.md). Debates are kept whole on one side. Champion: the
+# evaluation ran (docs/research/clustering/method.md). Debates are kept whole on one side. Champion: the
 # published SBERT pipeline (speaker centring, UMAP 5-D, HDBSCAN 150/25) refitted on the evaluation
 # side without the consensus and noise reassignment steps, which a candidate does not get either.
 frozen_at: '2026-10-29'

@@ -1,6 +1,6 @@
-# Cloudflare Workers project serving the site (docs/deploy.md). Cloudflare builds it from this
+# Cloudflare Workers project serving the site (docs/platform/deploy.md). Cloudflare builds it from this
 # repository: build command `npm run build`, deploy command `npx wrangler deploy`.
-# The site is static files plus a Worker for /api/* (worker/index.ts, docs/workers-ai.md);
+# The site is static files plus a Worker for /api/* (worker/index.ts, docs/products/allegora/workers-ai.md);
 # _headers in dist/ sets the headers of the files, the Worker sets its own.
 name = "anton-portfolio"
 main = "worker/index.ts"
@@ -21,7 +21,7 @@ run_worker_first = ["/api/*"]
 [ai]
 binding = "AI"
 
-# Allegora's search over every Swedish law and ordinance in force (docs/allegora-gcp.md). Not a
+# Allegora's search over every Swedish law and ordinance in force (docs/products/allegora/allegora-gcp.md). Not a
 # secret: the service answers only with ALLEGORA_SEARCH_KEY, a Cloudflare secret.
 [vars]
 ALLEGORA_SEARCH_URL = "https://allegora-search-877662270161.europe-west4.run.app"

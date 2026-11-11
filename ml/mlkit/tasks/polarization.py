@@ -445,7 +445,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
                          "low": None, "high": None},
             "gate": {"rule": "Beat the permutation null in 80% of sessions, mean AUC > 0.60. "
                              "The null shuffles party between speakers since 2026-11-01 "
-                             "(docs/ml-gate-amendments.md); the shuffle of rows it replaced "
+                             "(docs/research/ml-gate-amendments.md); the shuffle of rows it replaced "
                              "could not fail.",
                      "passed": passed,
                      "detail": f"{verdict}; mean AUC {headline:.3f}."},

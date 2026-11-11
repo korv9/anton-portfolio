@@ -32,11 +32,11 @@ import {
   type Graphic,
 } from './exports'
 import './compliance.css'
-import publicMethodology from '../../../docs/compliance-intelligence/phase-4-methodology.md?raw'
+import publicMethodology from '../../../docs/products/compliance-intelligence/phase-4-methodology.md?raw'
 import { parseProgress, type Progress } from './progress'
 
 const DOCS =
-  'https://github.com/korv9/anton-portfolio/blob/main/docs/compliance-intelligence/'
+  'https://github.com/korv9/anton-portfolio/blob/main/docs/products/compliance-intelligence/'
 const count = (value: number | null | undefined) =>
   value == null ? 'Not assessed' : new Intl.NumberFormat('en-GB').format(value)
 const day = (value: string | null) =>

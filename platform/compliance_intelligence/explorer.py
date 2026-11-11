@@ -122,7 +122,7 @@ def projection(root, release, cohort, analytics):
             'presentation_sha256':sha256(b''.join((REPO/'frontend/src/compliance'/f).read_text(encoding='utf-8').encode('utf-8') for f in PRESENTATION_FILES)),
             'relationships':sorted(relations,key=lambda r:encoded(r)), 'families':families,
             'coverage':data['mart_compliance_source_coverage'], 'evidence_valid_until':valid_until,
-            'methodology_markdown':(REPO/'docs/compliance-intelligence/phase-4-methodology.md').read_text(encoding='utf-8')}
+            'methodology_markdown':(REPO/'docs/products/compliance-intelligence/phase-4-methodology.md').read_text(encoding='utf-8')}
     finally:
         store.close()
 

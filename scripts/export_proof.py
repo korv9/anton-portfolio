@@ -9,7 +9,7 @@ the exact sha256, and the text of catalog.json and delivery.json. It restores pu
 
 compare passes when every file matches; catalog.json and delivery.json are compared without the
 byte counts, hashes and run_id they embed, which follow from the other files. Used by
-.github/workflows/export-proof.yml (docs/package.md, step 3).
+.github/workflows/export-proof.yml (docs/platform/package.md, step 3).
 """
 import hashlib
 import json

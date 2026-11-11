@@ -41,7 +41,7 @@ STOPS = sorted(STOP | set("herr fru talman ledamot ledamoten jag vi våra vår v
 SECURITY = re.compile(r"\b(?:säkerhet\w*|försvar\w*|hot|hotet|hoten|hotbild\w*|kris|krisen|kriser\w*|krisberedskap"
                       r"|krig\w*|beredskap\w*|terror\w*|militär\w*|nato|ryssland)\b", re.I)
 PAIR_COLUMNS = ["cluster", "r_lag0", "p_lag0", "best_lag", "r_best_lag", "p_best_lag", "r_by_lag"]
-# Departures from docs/sweden-futures-topics-preregistration.md ("Changes after registration").
+# Departures from docs/research/preregistrations/sweden-futures-topics-preregistration.md ("Changes after registration").
 DEVIATIONS = [
     {"date": "2026-10-22", "change": "storage",
      "reason": "The first UMAP fit ran out of memory on the laptop, so the clustering runs in "
@@ -187,7 +187,7 @@ def main() -> None:
     cells.assign(run_id=run_id).to_parquet(FEATURES / "cells.parquet", index=False)
     (FEATURES / "method.json").write_text(json.dumps({**meta, **{k: metrics[k] for k in (
         "sentences", "space", "selected", "stability", "null_shuffled_dimensions", "corpus_ami")},
-        "baseline": metrics["baseline"], "preregistration": "docs/sweden-futures-topics-preregistration.md",
+        "baseline": metrics["baseline"], "preregistration": "docs/research/preregistrations/sweden-futures-topics-preregistration.md",
         "deviations": DEVIATIONS}, indent=2, default=float) + "\n", encoding="utf-8")
     sheet = REPO / "tmp/topics-review.csv"
     sheet.parent.mkdir(exist_ok=True)

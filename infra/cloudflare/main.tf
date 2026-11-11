@@ -1,4 +1,4 @@
-# Cloudflare resources around the site and its data (docs/deploy.md). The Worker script itself is
+# Cloudflare resources around the site and its data (docs/platform/deploy.md). The Worker script itself is
 # deployed by Workers Builds and wrangler.toml; only its custom domains are managed here.
 
 locals {
@@ -83,7 +83,7 @@ resource "cloudflare_workers_custom_domain" "site" {
   zone_id    = data.cloudflare_zone.site.id
 }
 
-# The job assistant's owner records (worker/jobs.ts, docs/job-assistant.md): profile drafts and
+# The job assistant's owner records (worker/jobs.ts, docs/products/jobs/job-assistant.md): profile drafts and
 # versions, uploaded CVs, review statuses and relevance labels. The table comes from the
 # migration in worker/migrations/, applied with wrangler after this database exists.
 resource "cloudflare_d1_database" "job_assistant" {

@@ -261,10 +261,23 @@ def test_root_decisions_pages_hold_public_decisions_only_and_track_progress(home
     ])
     public_views.build_root()
     public_views.build_docs()
-    decisions = (home / "root/DECISIONS.md").read_text(encoding="utf-8")
+    decisions = (home / "root/docs/decisions/DECISIONS.md").read_text(encoding="utf-8")
     assert "Private choice" not in decisions
     assert "Why: the source has no licence" in decisions
     assert "decided → implemented: commit abc1234 → verified: 41051018576" in decisions
-    assert "decision-2026-10-07-001" in (home / "root/DATA_DECISIONS.md").read_text(encoding="utf-8")
+    assert "decision-2026-10-07-001" in (home / "root/docs/decisions/DATA_DECISIONS.md").read_text(encoding="utf-8")
     assert (home / "root/docs/idea-lineage/symbolic-atlas.md").exists()
-    assert "Private choice" not in (home / "root/docs/idea-lineage/diary/2026-10-07.md").read_text(encoding="utf-8")
+    assert "Private choice" not in (home / "root/docs/idea-lineage/symbolic-atlas.md").read_text(encoding="utf-8")
+
+
+def test_extract_reads_stdin_as_utf8_whatever_the_console_code_page(home):
+    import os
+    import subprocess
+
+    # cp1252 is the Windows pipe default that once turned "strömmas" into "strÃ¶mmas".
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    title = "Allegoras svar strömmas och får ✓ efter kontrollen."
+    done = subprocess.run([sys.executable, str(ROOT / "platform/idea_lineage/extract.py"), "--mode", "auto"],
+                          input=f"Beslut (Anton): {title}\n".encode("utf-8"), capture_output=True, env=env)
+    assert done.returncode == 0, done.stderr
+    assert [e["title"] for e in store.read_events()] == [title]

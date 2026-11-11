@@ -1,6 +1,6 @@
 import { test, expect } from './test'
 
-// docs/design-system.md, "One look": every product route is ivory on charcoal, its page title in the
+// docs/site/design-system.md, "One look": every product route is ivory on charcoal, its page title in the
 // Helvetica Neue stack and the signature's gradient, and no rules between sections. Same routes as
 // scripts/goals.mjs.
 const ROUTES = [

@@ -927,11 +927,11 @@ function Method({ summary }: { summary: Summary }) {
       </ul>
       <p>
         <a
-          href="https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md"
+          href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/philosophy-atlas.md"
           target="_blank"
           rel="noreferrer"
         >
-          docs/philosophy-atlas.md
+          docs/products/labs/philosophy-atlas.md
         </a>
       </p>
     </>

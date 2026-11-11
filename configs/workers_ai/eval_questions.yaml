@@ -1,4 +1,4 @@
-# Questions for choosing the model behind /api/answer (docs/workers-ai.md), read by
+# Questions for choosing the model behind /api/answer (docs/products/allegora/workers-ai.md), read by
 # platform/publish/workers_ai/eval_answer.ts. Ten on Swedish law (corpus sfs) and ten on the AI Act
 # (corpus ai-act-sv), asked as a lay reader would. `expected` lists the passage ids in the corpus's
 # meta.json that answer the question; a retrieval counts as a hit when any of them is among the

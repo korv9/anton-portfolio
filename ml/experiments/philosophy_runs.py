@@ -1,4 +1,4 @@
-"""Philosophy Lab `select` and `final` (docs/cluster-experiments-philosophy.md).
+"""Philosophy Lab `select` and `final` (docs/research/clustering/philosophy.md).
 
 select: on the selection side, seeds 0-2, every embedding variant (model x passage unit) and
 representation (raw, centred on the work) is reduced once per seed and clustered with a small
@@ -39,7 +39,7 @@ def pipeline(model: str, unit: str, representation: str, clustering: dict) -> di
 # The published pipeline: MiniLM, the work-centred map the site shows by default (karta=author_centered),
 # UMAP 10-D n15 min_dist 0, HDBSCAN min_cluster_size 25, min_samples 8.
 CHAMPION = pipeline('minilm', 'passage', 'centred', {'method': 'hdbscan', 'min_cluster_size': 25, 'min_samples': 8})
-# Chosen after `select` (selection side only); reasons in docs/cluster-experiments-philosophy.md.
+# Chosen after `select` (selection side only); reasons in docs/research/clustering/philosophy.md.
 CANDIDATES: list[tuple[str, dict]] = [
     ('candidate: champion with HDBSCAN min_cluster_size 40',
      pipeline('minilm', 'passage', 'centred', {'method': 'hdbscan', 'min_cluster_size': 40, 'min_samples': 8})),

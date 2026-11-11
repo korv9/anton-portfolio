@@ -39,7 +39,7 @@ Leave one session out: each session is predicted by a model that never saw it, b
 
 ## Gate
 
-Within-session AUC of the text model with procedure words masked, above a baseline of two binary title-procedure flags: lower bound of the paired bootstrap difference over reports above zero. Amended 2026-11-01 (docs/ml-gate-amendments.md), knowing that fixed flags scored 0.663 against the unmasked model's 0.681. The first gate, the unmasked model against the committee prior, passed at 0.681 against 0.532 in run 20261030-2145.
+Within-session AUC of the text model with procedure words masked, above a baseline of two binary title-procedure flags: lower bound of the paired bootstrap difference over reports above zero. Amended 2026-11-01 (docs/research/ml-gate-amendments.md), knowing that fixed flags scored 0.663 against the unmasked model's 0.681. The first gate, the unmasked model against the committee prior, passed at 0.681 against 0.532 in run 20261030-2145.
 
 Outcome: **failed**. Within-session AUC 0.646 with procedure words masked, against 0.661 for the flags; difference -0.015 (-0.041 to +0.010).
 

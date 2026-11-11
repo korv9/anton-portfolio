@@ -73,7 +73,7 @@ def excerpt(context: str, term: str, limit: int = EXCERPT) -> str:
     return piece
 
 
-# Registering a file in the catalogue lives with the catalogue (docs/package.md); imported here so
+# Registering a file in the catalogue lives with the catalogue (docs/platform/package.md); imported here so
 # exporters calling export_symbolic.register keep working.
 from portfolio.publish.catalog import is_atlas_parquet, register  # noqa: E402,F401
 

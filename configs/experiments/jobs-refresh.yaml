@@ -1,5 +1,5 @@
 # Added 2026-10-29, after the first final evaluation, as a separately documented rule for retraining
-# the champion's exact pipeline on a newer snapshot (docs/cluster-experiments-jobs.md, Deviation).
+# the champion's exact pipeline on a newer snapshot (docs/research/clustering/jobs.md, Deviation).
 # It is not used to choose between different pipelines: those are judged by jobs.yaml, which stays
 # frozen. A refresh must keep the absolute floors and may not be worse than the champion on employer
 # dominance or separation; it needs no measured gain.

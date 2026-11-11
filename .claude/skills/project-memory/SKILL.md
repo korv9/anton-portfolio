@@ -11,8 +11,8 @@ Four files, one owner each. Facts live in one place; the others link to it.
 |---|---|---|---|
 | `PROJECTS.md` | Anton | what each project is, its status, next step, blockers, delete zone | the agent, only when Anton asks in the conversation |
 | `CONTINUITY.md` | the agent | where work stands now, under about 30 lines | the agent, at a handover; lines are replaced, not appended |
-| `DECISIONS.md`, `DATA_DECISIONS.md`, `docs/idea-lineage/` | generated | decisions and history from the Idea Lineage journal | `npm run ideas:build`; never by hand |
-| `docs/design-system.md` | Anton | the design rules in force | the agent, when a design decision is recorded in the journal |
+| `docs/decisions/DECISIONS.md`, `docs/decisions/DATA_DECISIONS.md`, `docs/idea-lineage/` | generated | decisions and history from the Idea Lineage journal | `npm run ideas:build`; never by hand |
+| `docs/site/design-system.md` | Anton | the design rules in force | the agent, when a design decision is recorded in the journal |
 
 ## Start of a session
 

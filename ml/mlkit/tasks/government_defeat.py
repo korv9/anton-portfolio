@@ -13,7 +13,7 @@ items within the same session: given this year's agenda, which items does the go
 Points of one committee report are correlated (a lost report often loses several points), so
 intervals resample reports, not rows.
 
-Gate, as amended 2026-11-01 (docs/ml-gate-amendments.md): the text model with procedure words
+Gate, as amended 2026-11-01 (docs/research/ml-gate-amendments.md): the text model with procedure words
 masked ranks defeats better than two title-procedure flags, with the lower bound of the paired
 bootstrap difference above zero. The first gate compared the unmasked model to the committee
 prior with the same threshold, and two binary flags nearly matched that model.
@@ -181,7 +181,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool, transformers: boo
     passed = bool(gain["low"] is not None and gain["low"] > 0)
     rule = ("Within-session AUC of the text model with procedure words masked, above a baseline of "
             "two binary title-procedure flags: lower bound of the paired bootstrap difference over "
-            "reports above zero. Amended 2026-11-01 (docs/ml-gate-amendments.md), knowing that fixed "
+            "reports above zero. Amended 2026-11-01 (docs/research/ml-gate-amendments.md), knowing that fixed "
             "flags scored 0.663 against the unmasked model's 0.681. The first gate, the unmasked "
             "model against the committee prior, passed at 0.681 against 0.532 in run 20261030-2145.")
     detail = (f"Within-session AUC {headline['point']:.3f} with procedure words masked, against "

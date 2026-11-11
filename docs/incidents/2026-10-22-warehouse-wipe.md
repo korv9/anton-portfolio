@@ -2,6 +2,8 @@
 
 Status: resolved. The warehouse was restored from R2 and the missing parts rebuilt.
 
+Now at: `platform/publish/warehouse_store.py` has since moved to `src/portfolio/storage/warehouse_store.py`; the paths below are as they were at the time.
+
 ## Summary
 
 Removing a finished Git worktree with `git worktree remove --force` deleted the contents of
@@ -53,7 +55,7 @@ missed `warehouse`.
 - Unlink every junction in a worktree before removing it. List them with
   `Get-ChildItem -Recurse -Attributes ReparsePoint -Depth 2`, remove each one with
   `cmd /c rmdir`, then check that the shared targets still exist.
-- Never use force removal as cleanup. [docs/development.md](../development.md) says this
+- Never use force removal as cleanup. [docs/platform/development.md](../platform/development.md) says this
   and lists what to check before a worktree is removed.
 - Keep anything that exists only locally pushed to R2 before cleanup. The job-ad corpus is
   now rebuilt and stored by the `cluster-jobs` workflow

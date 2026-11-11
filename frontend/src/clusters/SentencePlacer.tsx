@@ -1,5 +1,5 @@
 /**
- * A visitor's sentence on the party-leader debate map (docs/workers-ai.md): the Worker embeds it
+ * A visitor's sentence on the party-leader debate map (docs/products/allegora/workers-ai.md): the Worker embeds it
  * with bge-m3, the browser finds its 15 nearest passages among the int8 vectors and places it at
  * their closeness-weighted position. Three examples carry their vectors and work without the
  * Worker. The vectors load when the reader first focuses the box or picks an example. Shown only

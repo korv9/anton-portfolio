@@ -1,6 +1,6 @@
 /**
  * #jobs, the desk: every open Data/IT ad from JobTech with its fit against the approved CV
- * profile (docs/job-assistant.md). One top row (title, a compact search, last update), list tabs
+ * profile (docs/products/jobs/job-assistant.md). One top row (title, a compact search, last update), list tabs
  * with counts and compact filters, the list ("Ads") on the left and the open ad on the right; under 760 px the ad
  * replaces the list with a back button. The search, filters, list, tab and open ad live in the
  * address, so a link shares the view and the back button closes an ad. Marks (saved, applied,

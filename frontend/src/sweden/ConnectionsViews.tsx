@@ -1,5 +1,5 @@
 /**
- * Connections' two pre-registered candidates (docs/sweden-connections-preregistration.md):
+ * Connections' two pre-registered candidates (docs/research/preregistrations/sweden-connections-preregistration.md):
  * the matched-neighbour dot plot (3.1), one row per measure with the chosen municipality as the
  * only accent, and the within-municipality change model as a coefficient table (3.2).
  */

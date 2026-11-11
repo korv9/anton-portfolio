@@ -4,7 +4,7 @@
  * A slot is either filled (the file was published and read) or empty. An empty slot is drawn
  * as a ghost (a dashed outline) and listed in the page's DATA drawer with what it needs, never
  * filled with sample values. To fill one, publish the file at `path` with the `shape` below;
- * the scene picks it up on the next load. docs/sweden-atlas.md has the same list.
+ * the scene picks it up on the next load. docs/sweden/atlas.md has the same list.
  */
 import { useEffect, useState } from 'react'
 import { fetchJson } from '../../dataSource'

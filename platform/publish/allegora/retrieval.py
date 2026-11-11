@@ -1,4 +1,4 @@
-"""Allegora's ranking (docs/allegora-gcp.md): the paragraph is the unit a question finds.
+"""Allegora's ranking (docs/products/allegora/allegora-gcp.md): the paragraph is the unit a question finds.
 
 The index holds one passage per paragraph, or per stycke of a long one (chunking.py). A search
 scores every passage, then walks them from the best down and keeps the first passage of each

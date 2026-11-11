@@ -1,16 +1,13 @@
 # Continuity
 
-The handover note for the next session: where work stands now, nothing older. Decisions and
-their history are in `DECISIONS.md` and the Idea Lineage journal; project status and next steps
-are in `PROJECTS.md`. Keep this under about 30 lines; replace lines, do not append history.
-The version before 2026-11-03 is in Git history if an old receipt is needed.
+The handover for the next session, nothing older. Decisions: `docs/decisions/DECISIONS.md`;
+status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not append history.
 
 ## Now
-
 - 2026-11-08 [CODE] PR #261 (`korv9/allegora-stream`) open: Allegora streams `/api/ask` (draft,
   check, fable after), paragraph search with at most four laws, threshold before Claude,
   follow-ups, sources panel, `/api/warm`. Search revision `allegora-search-00006-jsr` is live;
-  the Worker deploys on merge. Then measure in production (`docs/allegora-gcp.md`).
+  the Worker deploys on merge. Then measure in production (`docs/products/allegora/allegora-gcp.md`).
 - 2026-11-07 [CODE] Job assistant live: profile v1, engine `job-match-v4`, Airflow windows of
   230 min queued on `main` (`JOB_ADS_SCHEDULER=airflow`), Workers AI secrets passed (#253).
 - 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the
@@ -21,16 +18,11 @@ The version before 2026-11-03 is in Git history if an old receipt is needed.
   raw job answers from the public bucket on 2026-11-04.
 
 ## Uncommitted elsewhere
-
 - 2026-11-07 [TOOL] None known; check `git worktree list`.
 
 ## Open
-
 - 2026-11-07 [USER-PENDING] Always-on Airflow host needs an approved budget
-  (`docs/job-ads-airflow.md`, Proposed host and cost).
+  (`docs/products/jobs/job-ads-airflow.md`, Proposed host and cost).
 - 2026-11-07 [TOOL] Workers Builds previews fail: build token lacks preview permission.
 
-## Start here
-
-Read `PROJECTS.md`, then the project's page in `docs/idea-lineage/`. Verify branch state with
-`git status` before trusting the lines above.
+Start with `PROJECTS.md`, then the project's page in `docs/idea-lineage/`; check `git status`.

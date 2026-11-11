@@ -1,6 +1,6 @@
 /**
  * Ask the eval questions (configs/workers_ai/eval_questions.yaml) through the same path as the
- * Fråga lagen page, to choose the model behind /api/answer (docs/workers-ai.md).
+ * Fråga lagen page, to choose the model behind /api/answer (docs/products/allegora/workers-ai.md).
  *
  *   node --experimental-strip-types platform/publish/workers_ai/eval_answer.ts \
  *     run --model @cf/openai/gpt-oss-20b [--options '{"reasoning_effort":"low"}'] [--label low]  *     [--max-neurons 1500] [--limit 1]

@@ -3,7 +3,7 @@
 Airflow schedules the job assistant's ads near real time by polling: every ten minutes it reads the
 changes JobStream has since the last stored cursor, analyses the new and changed ads with the current
 model and checks the publication files. The design, the measurements and the steps left for
-continuous operation are in [docs/job-ads-airflow.md](../../docs/job-ads-airflow.md).
+continuous operation are in [docs/products/jobs/job-ads-airflow.md](../../docs/products/jobs/job-ads-airflow.md).
 
 | DAG | Schedule | Does |
 |---|---|---|

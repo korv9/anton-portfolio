@@ -36,7 +36,7 @@ def test_projects_md_links_point_at_existing_paths():
 
 def test_generated_views_are_not_older_than_the_public_journal():
     journal = max(p.stat().st_mtime for p in (ROOT / ".idea-lineage/public/journal").glob("*.jsonl"))
-    for name in ["DECISIONS.md", "DATA_DECISIONS.md", "docs/idea-lineage/README.md"]:
+    for name in ["docs/decisions/DECISIONS.md", "docs/decisions/DATA_DECISIONS.md", "docs/idea-lineage/README.md"]:
         path = ROOT / name
         assert path.exists(), f"{name} missing: run npm run ideas:build"
         text = path.read_text(encoding="utf-8")
@@ -44,7 +44,7 @@ def test_generated_views_are_not_older_than_the_public_journal():
     # Content check rather than mtime: every public decision id appears in DECISIONS.md.
     ids = [json.loads(l)["id"] for p in (ROOT / ".idea-lineage/public/journal").glob("*.jsonl")
            for l in p.read_text(encoding="utf-8").splitlines() if l.strip()]
-    decisions = (ROOT / "DECISIONS.md").read_text(encoding="utf-8")
+    decisions = (ROOT / "docs/decisions/DECISIONS.md").read_text(encoding="utf-8")
     missing = [i for i in ids if i.startswith(("decision-", "rejection-")) and i not in decisions]
     assert not missing, f"stale DECISIONS.md, run npm run ideas:build: {missing}"
     assert journal  # the journal exists

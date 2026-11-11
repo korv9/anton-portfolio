@@ -4,7 +4,7 @@
     python -m ml.futures_topics.sentences diva --from 2005-01
     python -m ml.futures_topics.sentences sample             # RUN/sample.parquet, the pre-registered draw
 
-The unit, filters and draw are fixed in docs/sweden-futures-topics-preregistration.md. Riksdag
+The unit, filters and draw are fixed in docs/research/preregistrations/sweden-futures-topics-preregistration.md. Riksdag
 archives are streamed once and deleted, as futures_language.py does; DiVA is harvested month by
 month of record datestamp with futures_theses.py's rule for the Swedish abstract. Each archive or
 month writes candidates/<key>.parquet (document id, year, sentence), so a stopped run resumes.

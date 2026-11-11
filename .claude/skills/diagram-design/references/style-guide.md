@@ -31,7 +31,7 @@ Every token is referred to by **semantic role**, not by its hex value. Type refe
 > **Note:** The pre-baked example HTML files in `assets/` were built under an earlier skin. Regenerating them against the current `style-guide.md` is a v5.1 task. New diagrams the skill produces will use the tokens above.
 
 > **This repository:** the semantic roles above are the portfolio's own tokens from
-> `frontend/src/tokens.css` (see `docs/design-system.md`): warm grey page, near-black ink, and the
+> `frontend/src/tokens.css` (see `docs/site/design-system.md`): warm grey page, near-black ink, and the
 > `--info` blue as the one focal accent. Type is the system Helvetica stack for names and titles and the system
 > monospace for technical labels. When a diagram ships inside the site, read the CSS variables
 > (`var(--ink)`, `var(--paper)` …) rather than the hex values, so a `.plate` recolours it.
@@ -89,7 +89,7 @@ A self-contained palette for the terminal-window primitive (see [primitive-termi
 
 Diagrams on this site use the portfolio stack from `frontend/src/tokens.css`: the system
 Helvetica stack for all text and the system monospace stack for sublabels, type tags and axis
-labels. No font `<link>`: the site requests no web fonts (`docs/design-system.md`). The
+labels. No font `<link>`: the site requests no web fonts (`docs/site/design-system.md`). The
 upstream skill's Google Fonts link (Instrument Serif, Geist, Noto) is not used here; the
 Korean guidance below is kept for a diagram that must render Hangul, where a Noto fallback can
 be added to that one element.

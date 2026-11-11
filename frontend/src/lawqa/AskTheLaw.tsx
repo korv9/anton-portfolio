@@ -1,5 +1,5 @@
 /**
- * Allegora (#fraga-lagen, docs/allegora-gcp.md): the name, then a conversation about Swedish law
+ * Allegora (#fraga-lagen, docs/products/allegora/allegora-gcp.md): the name, then a conversation about Swedish law
  * (Thread.tsx). The Worker finds the eight paragraphs nearest the question among every law and
  * ordinance in force (POST /api/ask, searched on Google Cloud) and streams the answer as a draft;
  * the answer is kept only when every quote is verbatim in its paragraph, and a fable told from it

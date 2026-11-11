@@ -1,6 +1,6 @@
 version: 2
 
-# The job assistant's published tables (docs/job-assistant.md). platform/job_assistant/export.py
+# The job assistant's published tables (docs/products/jobs/job-assistant.md). platform/job_assistant/export.py
 # writes job-assistant/*.json from them; nothing here is a chance of being hired.
 
 models:

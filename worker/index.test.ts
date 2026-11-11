@@ -123,7 +123,7 @@ test('quotes: a quote written before its [[id]] is turned around and checked', (
 
 test('quotes: Markdown marks are ignored on both sides, the words are not', () => {
   const table = {
-    id: 'docs/taxes.md#checks',
+    id: 'docs/platform/taxes.md#checks',
     text: '| Part | Source |\n|---|---|\n| Tax on a **salary** | OECD `Taxing Wages` |',
   }
   const q = (quote: string) =>

@@ -1,5 +1,5 @@
 /**
- * CPU time of one POST /api/ask in the Worker's own code (docs/allegora-gcp.md), measured in Node
+ * CPU time of one POST /api/ask in the Worker's own code (docs/products/allegora/allegora-gcp.md), measured in Node
  * with the network mocked, since the Free plan allows 10 ms of CPU per request.
  *
  *   node --experimental-strip-types platform/publish/allegora/cpu_ask.ts [--deltas 150] [--runs 50]

@@ -1,4 +1,4 @@
-"""Allegora's search variants compared on the local index (docs/allegora-gcp.md).
+"""Allegora's search variants compared on the local index (docs/products/allegora/allegora-gcp.md).
 
     python search_compare.py --index ../../../tmp/allegora-index
 

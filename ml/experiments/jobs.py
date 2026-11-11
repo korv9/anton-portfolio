@@ -1,4 +1,4 @@
-"""Job-ad clustering experiments and their MLOps lifecycle (docs/cluster-experiments-jobs.md).
+"""Job-ad clustering experiments and their MLOps lifecycle (docs/research/clustering/jobs.md).
 
     python -m ml.experiments.jobs prepare [--hold-out-newest 0.15]   versioned, cleaned, deduplicated snapshot
     python -m ml.experiments.jobs select   [--deadline-minutes N]    selection side, seeds 0-2, checkpointed

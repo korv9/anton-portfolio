@@ -1,4 +1,4 @@
-"""Export the debate passages for "Where does your sentence land?" (docs/workers-ai.md).
+"""Export the debate passages for "Where does your sentence land?" (docs/products/allegora/workers-ai.md).
 
 python -m ml.research.export_workers_ai [--map debate] [--examples]
 

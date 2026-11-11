@@ -5,7 +5,7 @@
     python -m ml.moral.riksdag gate --labels tmp/mf-review.csv   # Swedish F1 against English: gate.json
     python -m ml.moral.riksdag score           # only after the gate passed: shares.parquet, spread.parquet
 
-Unit, sample, review draw, threshold and null are fixed in docs/philosophy-moral-preregistration.md.
+Unit, sample, review draw, threshold and null are fixed in docs/research/preregistrations/philosophy-moral-preregistration.md.
 The candidates and RUN/sample.parquet (passage text) stay in ignored local storage and are never
 published, so score runs on this machine as well; it needs the whole sample embedded, which
 `score` asks Workers AI for first.

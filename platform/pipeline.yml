@@ -1,5 +1,5 @@
 # Every subject, from source to site. Read by platform/pipeline.py; nothing else defines a
-# step sequence, a dbt selector or a raw path list. docs/pipeline.md describes how it runs.
+# step sequence, a dbt selector or a raw path list. docs/platform/pipeline.md describes how it runs.
 #
 # A subject is an ordered list of steps. Each step has one phase key:
 #   ingest   a command that fetches or prepares inputs
@@ -197,7 +197,7 @@ subjects:
   # vote, citation, reservation, speech/motion/proposition link, law mention/provision, budget
   # frame, job and UMAP facts) and marts/budget-report, jobs, debate, rfc-drift and overview.
   # dbt builds the other nine and the vote marts (models/gold/politics, export_politics.py),
-  # and defines the model's metrics and relationships (docs/gold-semantic-model.md).
+  # and defines the model's metrics and relationships (docs/platform/gold-semantic-model.md).
   legacy:
     schedule: manual
     sla: {fresh_within: none}
@@ -225,7 +225,7 @@ subjects:
       - dbt: {select: [tag:ai_act], freshness: true}
       - export: python platform/publish/eu_ai_act/export_ai_act.py
 
-  # The laws behind "Fråga lagen" (docs/workers-ai.md). The export writes the passages that
+  # The laws behind "Fråga lagen" (docs/products/allegora/workers-ai.md). The export writes the passages that
   # platform/nlp/workers_ai.py embeds; the embedding and compression run by hand within the quota.
   # With SFS_ALL set it also fetches the whole statute book (about 11,600 texts, a few hours the
   # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
@@ -350,7 +350,7 @@ subjects:
       - dbt: {select: [tag:cross_domain], exclude: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
-  # The AI Act diffusion clock (docs/ai-act-diffusion-preregistration.md). The term counts are
+  # The AI Act diffusion clock (docs/research/preregistrations/ai-act-diffusion-preregistration.md). The term counts are
   # made by hand: speeches locally with `python -m ml.ai_act.diffusion speeches`, the 2.79M ads in
   # cluster-jobs.yml (module `ml.ai_act.diffusion ads`, path ai_act/diffusion). This builds the
   # mart and the export from the stored counts.
@@ -366,7 +366,7 @@ subjects:
       - dbt: {select: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_act_diffusion.py
 
-  # Philosophy track 1 (docs/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
+  # Philosophy track 1 (docs/research/preregistrations/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
   # the Swedish check and the ETHICS answers are made by hand with python -m ml.moral.{mfrc,riksdag,
   # ethics} (Workers AI within the free quota); riksdag score runs locally too, since the passage
   # sample is text and never leaves the machine. This builds the marts and the export from the
@@ -522,7 +522,7 @@ subjects:
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
 
-  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
+  # The job assistant (docs/products/jobs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
   # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
   # GitHub starts scheduled runs late or drops them: from 2026-10-23 to 10-25 these runs began 2.4 to
   # 5.7 hours apart, and the hourly data heartbeat's runs were as sparse, so the SLA is 8h, not 1h.
@@ -540,7 +540,7 @@ subjects:
       # Matches the ads with the approved profile from the Worker into the raw match store, which
       # dbt reads next. A 200 without a profile empties the store; a route it cannot read keeps the
       # last matches (or writes an empty store) with the reason; both exit 0. An unexpected answer or
-      # an invalid profile exits 1, allowed so the ads are still published (docs/job-assistant.md).
+      # an invalid profile exits 1, allowed so the ads are still published (docs/products/jobs/job-assistant.md).
       - ingest: python platform/job_assistant/rank.py
         secrets: [CLOUDFLARE_API_TOKEN]
         ok_exit: [1]
