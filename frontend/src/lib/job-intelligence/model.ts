@@ -40,7 +40,7 @@ export type WorkspaceContent = {
   selection: string
   jobs: JobDetail[]
 }
-export type CvMatchCapability = {
+type CvMatchCapability = {
   state: 'disabled'
   reason: string
   processing: 'none'

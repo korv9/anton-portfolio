@@ -5,7 +5,7 @@ import {
   hiringDaily,
   parseCompanyData,
   relatedJobs,
-} from '../../src/companies/model.ts'
+} from '../../src/lib/companies/model.ts'
 
 test('verified company links reconcile and duplicate ads do not enter', () => {
   const d = fixtureCompanies()

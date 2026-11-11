@@ -6,6 +6,7 @@
  */
 import { useEffect, useId, useState } from 'react'
 import { l } from '../../i18n'
+import { count as number } from '../../format'
 import { fetchJson } from '../../dataSource'
 import { ChartCard } from './Dash'
 
@@ -36,8 +37,6 @@ const loadSchema = () =>
   }))
 
 type Step = { title: string; detail: string }
-
-const number = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 
 /**
  * The primary key: the columns a model-level unique test names, e.g.

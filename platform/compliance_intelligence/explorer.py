@@ -25,13 +25,8 @@ from portfolio.storage.rawstore import sha256  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[2]
 TARGET = REPO/'frontend/public/data/compliance/release.json'
-PRESENTATION_FILES = ['model.ts','exports.ts','ComplianceExplorer.tsx','compliance.css','progress.ts',
-    '../companies/model.ts','../companies/CompanyIntelligence.tsx','../companies/companies.css',
-    '../companies/CompanyDeepDive.tsx','../companies/CompanyEvidence.tsx','../companies/CompanyJobCard.tsx','../companies/CompanyCompliance.tsx','../job-intelligence/model.ts',
-    '../job-intelligence/JobIntelligence.tsx','../job-intelligence/workspace.css',
-    '../job-intelligence/JobResearch.tsx','../job-intelligence/Requirements.tsx',
-    '../job-intelligence/CvMatch.tsx','../job-intelligence/JobFilters.tsx',
-    '../job-intelligence/useWorkspace.ts','../job-intelligence/profile.ts','../job-intelligence/ranking.ts']
+PRESENTATION_FILES = ['model.ts','progress.ts','../companies/model.ts',
+    '../job-intelligence/model.ts','../job-intelligence/profile.ts','../job-intelligence/ranking.ts']
 COMPANY_FIELDS = ('company_id','organization_number','registered_legal_name','country_code',
     'registry_authority','registry_number','primary_sni_code','employee_size_class','snapshot_date',
     'source_url','document_hash','last_verified_at')
@@ -119,7 +114,7 @@ def projection(root, release, cohort, analytics):
                     'financial_metadata':None})
         valid_until = public_deadline(store,[r for r in rows if r['record_id'] in used])
         return {'schema_version':1,'context':context,'companies':companies,
-            'presentation_sha256':sha256(b''.join((REPO/'frontend/src/compliance'/f).read_text(encoding='utf-8').encode('utf-8') for f in PRESENTATION_FILES)),
+            'presentation_sha256':sha256(b''.join((REPO/'frontend/src/lib/compliance'/f).read_text(encoding='utf-8').encode('utf-8') for f in PRESENTATION_FILES)),
             'relationships':sorted(relations,key=lambda r:encoded(r)), 'families':families,
             'coverage':data['mart_compliance_source_coverage'], 'evidence_valid_until':valid_until,
             'methodology_markdown':(REPO/'docs/compliance-intelligence/phase-4-methodology.md').read_text(encoding='utf-8')}

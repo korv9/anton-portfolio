@@ -9,7 +9,7 @@ export const rolePatterns: Record<string, string> = {
   data_analyst: 'data.?analyst|dataanalytiker',
   ml_engineer: 'machine.?learning|maskininlärning',
 }
-export const skillAliases: Record<string, string> = {
+const skillAliases: Record<string, string> = {
   python: 'python',
   sql: 'sql',
   pyspark: 'pyspark',

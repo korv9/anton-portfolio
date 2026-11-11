@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import { parseCompanyData } from '../frontend/src/companies/model.ts'
-import { parseWorkspace } from '../frontend/src/job-intelligence/model.ts'
+import { parseCompanyData } from '../frontend/src/lib/companies/model.ts'
+import { parseWorkspace } from '../frontend/src/lib/job-intelligence/model.ts'
 try {
   const data=parseCompanyData(JSON.parse(await readFile(new URL('../frontend/public/data/jobs/company-intelligence.json',import.meta.url),'utf8')),{allowExpired:true})
   console.log(data ? `Job/company contract valid: ${data.jobs.length} observed ads; ${Date.parse(data.valid_until)>Date.now()?'current':'expired, browser withholds records'}` : 'Job/company release unavailable')

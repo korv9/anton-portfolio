@@ -107,14 +107,14 @@ export type Payload = {
   evidence_valid_until: string | null
   methodology_markdown: string
 }
-export type Publication = {
+type Publication = {
   review_status: 'approved'
   reviewed_at: string
   valid_until: string
   payload_sha256: string
 }
-export type Release = { payload: Payload; publication: Publication }
-export type Filters = {
+type Release = { payload: Payload; publication: Publication }
+type Filters = {
   authority: string
   category: string
   status: string
@@ -124,7 +124,7 @@ export type Filters = {
   size: string
   scope: 'legal_entity' | 'corporate_group'
 }
-export type Summary = {
+type Summary = {
   id: string
   label: string
   members: Company[]
@@ -138,7 +138,7 @@ export type Summary = {
 }
 
 const HEX = /^[a-f0-9]{64}$/
-export const STATUSES = [
+const STATUSES = [
   'investigation',
   'alleged',
   'decided',
@@ -390,13 +390,13 @@ export function independentRankingScope(filters: Filters) {
     (!filters.category || filters.category === 'data_protection')
   )
 }
-export function cents(amount: string) {
+function cents(amount: string) {
   return BigInt(amount.replace('.', ''))
 }
-export function decimal(value: bigint) {
+function decimal(value: bigint) {
   return `${value / 100n}.${(value % 100n).toString().padStart(2, '0')}`
 }
-export function uniqueDocuments(families: Family[]): Source[] {
+function uniqueDocuments(families: Family[]): Source[] {
   return [
     ...new Map(
       families.flatMap((f) => f.documents).map((d) => [d.document_hash, d]),

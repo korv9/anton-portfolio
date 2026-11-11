@@ -28,8 +28,8 @@ def test_original_text_fidelity_and_separate_interpretation():
 
 
 def test_publication_review_fingerprint_covers_new_company_surfaces():
-    expected = ['../companies/CompanyDeepDive.tsx', '../job-intelligence/JobIntelligence.tsx',
-                '../job-intelligence/model.ts', '../job-intelligence/workspace.css']
+    expected = ['../companies/model.ts', '../job-intelligence/model.ts',
+                '../job-intelligence/profile.ts', '../job-intelligence/ranking.ts']
     gate = Path(__file__).resolve().parents[3] / 'scripts/check_compliance_release.mjs'
     assert set(expected).issubset(PRESENTATION_FILES)
     assert all(name in gate.read_text(encoding='utf-8') for name in PRESENTATION_FILES)

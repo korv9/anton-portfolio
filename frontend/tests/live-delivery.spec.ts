@@ -2,9 +2,6 @@ import { createHash } from 'node:crypto'
 import { test, expect } from '@playwright/test'
 
 const manifestUrl = process.env.E2E_R2_MANIFEST_URL
-const liveBase =
-  process.env.E2E_SITE_URL ??
-  `http://127.0.0.1:${process.env.PLAYWRIGHT_PORT ?? 5173}`
 // jobs-analysis is a manual group (pipeline.yml), active only after an owner runs it.
 const required = ['baseline', 'jobs', 'news', 'public-data']
 const samples = {

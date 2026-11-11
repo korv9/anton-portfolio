@@ -278,24 +278,6 @@ export function hiringDaily(data: CompanyData, id: string) {
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([day, ads]) => ({ day, ads }))
 }
-export const sizeLabels: Record<string, string> = {
-  '1': '0',
-  '2': '1–4',
-  '3': '5–9',
-  '4': '10–19',
-  '5': '20–49',
-  '6': '50–99',
-  '7': '100–199',
-  '8': '200–499',
-  '9': '500–999',
-  '10': '1,000–1,499',
-  '11': '1,500–1,999',
-  '12': '2,000–2,999',
-  '13': '3,000–3,999',
-  '14': '4,000–4,999',
-  '15': '5,000–9,999',
-  '16': '10,000+',
-}
 
 export function jobInstant(value: string, deadline = false) {
   if (/^\d{4}-\d{2}-\d{2}$/.test(value))

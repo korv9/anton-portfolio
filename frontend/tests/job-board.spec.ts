@@ -151,7 +151,7 @@ test('How it works shows the last fetch, the delay and the last day of runs', as
   }
   await board(page, '#jobs?tab=about', {
     ...base,
-    ads: { ...base.ads, pipeline },
+    ads: { ...base.ads, pipeline } as typeof base.ads,
   })
   const line = page.locator('.ja-freshness')
   await expect(line).toContainText('Median delay')

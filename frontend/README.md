@@ -24,7 +24,7 @@ npm run verify:quick     # types, formatting, unit tests
 | `src/clusters/`, `src/lawqa/`, `src/workersAi/` | Cluster visuals, Ask the law, browser-side vector search |
 | `src/tech/ModelCards.tsx` | The model cards that `src/clusters/GatedModels.tsx` shows for models that passed their gate |
 | `src/products/` | DrugComb, the thesis, Homie and the DiVA lakehouse pages |
-| `src/compliance/`, `src/companies/`, `src/job-intelligence/` | Not routed; kept because `scripts/check_compliance_release.mjs` and `check_job_companies.mjs` read them |
+| `src/lib/` | Release and job parsers that `scripts/check_compliance_release.mjs`, `check_job_companies.mjs` and `rank_local_jobs.mjs` read; no page imports them |
 | `src/tokens.css` | Design tokens ([design system](../docs/design-system.md)) |
 | `public/data/` | Delivered data committed for first paint, with `catalog.json` and `delivery.json` |
 | `tests/` | Playwright specs and `tests/unit/` ([how to run them](tests/README.md)) |

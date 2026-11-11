@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { fetchJson } from '../dataSource'
 import ClusterScatter, { type ClusterPoint } from './ClusterScatter'
 import './experiments/experiments.css'
@@ -65,7 +66,6 @@ const SHOWN_PAIRS: [string, string, () => string][] = [
   ],
   ['debates', 'laws', () => l('Party to law', 'Parti till lag')],
 ]
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const dec = (n: number) => l(n.toFixed(2), n.toFixed(2).replace('.', ','))
 const pct = (n: number) => `${Math.round(n * 100)} %`
 /** One decimal, so 99.5 % is not shown as 100 %. */

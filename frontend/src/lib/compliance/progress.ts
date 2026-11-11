@@ -1,5 +1,5 @@
 /** Aggregate processing progress only; it cannot supply a company finding or sanction metric. */
-export type Progress = {
+type Progress = {
   schema_version: 1
   state: 'awaiting_human_review'
   observed_at: string

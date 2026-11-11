@@ -73,7 +73,7 @@ const r=await m.parseRelease(JSON.parse(fs.readFileSync(process.argv[2],'utf8'))
 const rows=m.summaries(r.payload,m.filtersOf(new URLSearchParams(),r.payload));
 process.stdout.write(JSON.stringify(rows.map(r=>({id:r.id,sanctions:r.sanctions,amounts:r.finalAmounts}))));"""
     result=subprocess.run(['node','--experimental-strip-types','--input-type=module','-e',script,
-        (REPO/'frontend/src/compliance/model.ts').as_uri(),str(output)],capture_output=True,text=True,check=True)
+        (REPO/'frontend/src/lib/compliance/model.ts').as_uri(),str(output)],capture_output=True,text=True,check=True)
     browser=json.loads(result.stdout)
     original=json.loads((analytics/'mart_compliance_company_summary.json').read_text())
     assert {r['id']:(r['sanctions'],r['amounts']) for r in browser} == {
