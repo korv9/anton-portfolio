@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import {
   CLUSTER_COLOURS as COLOURS,
   projectClusterPoints,
@@ -20,7 +21,6 @@ export type ClusterPoint = {
   label?: string
 }
 
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 /** The name of a group that has none of its own: never its bare number. */
 export const unnamed = () => l('No clear theme', 'Inget tydligt tema')
 const SHOWN = 12

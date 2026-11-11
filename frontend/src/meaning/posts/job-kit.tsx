@@ -8,7 +8,6 @@ import { xTickY } from '../axes'
 import { OTHER, PostOpen, type Post } from '../kit'
 import { FIELD_EN, type Market } from '../../jobs/market'
 import { l } from '../../i18n'
-import { fixed } from '../../format'
 import './job.css'
 
 export const posts: Post[] = []
@@ -34,7 +33,7 @@ export const clusterLabel = (s: string) => l(s, CLUSTER_SV[s] ?? s)
 export const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
 export const fmt = (n: number) =>
   Math.round(n).toLocaleString(l('en-GB', 'sv-SE'))
-export const pct = (n: number, d = 0) => `${fixed(n * 100, d)} %`
+export { pct } from '../../format'
 export const compact = (n: number) =>
   new Intl.NumberFormat(l('en-GB', 'sv-SE'), {
     notation: 'compact',

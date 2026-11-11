@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { fetchJson } from '../dataSource'
 import { WARM_TONES } from '../home/backdropGeometry'
 import { loadDebateMap } from './debateData'
@@ -118,8 +119,6 @@ export const DATASETS: Dataset[] = [
     },
   },
 ]
-
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 
 /** Points, clusters and method: the one line under a map's title. */
 function caption(set: Dataset, data: Data) {

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import './clusterLab.css'
 
 type Layout = {
@@ -56,7 +57,6 @@ type Profile = {
   random_examples: { id: string; text: string }[]
   feature_means?: Record<string, number>
 }
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const base = '/__cluster_lab/'
 function contours(
   ctx: CanvasRenderingContext2D,

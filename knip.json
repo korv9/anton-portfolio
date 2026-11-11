@@ -6,12 +6,6 @@
     "scripts/*.mjs"
   ],
   "project": ["frontend/src/**/*.{ts,tsx}"],
-  "ignore": [
-    "frontend/src/companies/**",
-    "frontend/src/compliance/**",
-    "frontend/src/job-intelligence/**",
-    "frontend/src/sweden/atlas/**",
-    "frontend/src/vite-env.d.ts"
-  ],
+  "ignore": ["frontend/src/vite-env.d.ts"],
   "ignoreBinaries": ["python"]
 }

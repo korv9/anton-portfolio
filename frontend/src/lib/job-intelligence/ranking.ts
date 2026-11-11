@@ -7,12 +7,12 @@ import {
   type SkillFact,
 } from './profile.ts'
 
-export type RequirementMatch = {
+type RequirementMatch = {
   requirement: Requirement
   state: 'matched' | 'partial' | 'not_evidenced'
   evidence: SkillFact | null
 }
-export type Relevance = {
+type Relevance = {
   job_id: string
   score: number
   suitable: boolean

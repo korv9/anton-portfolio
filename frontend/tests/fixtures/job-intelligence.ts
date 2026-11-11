@@ -1,5 +1,5 @@
-import type { CompanyData } from '../../src/companies/model.ts'
-import type { WorkspaceContent } from '../../src/job-intelligence/model.ts'
+import type { CompanyData } from '../../src/lib/companies/model.ts'
+import type { WorkspaceContent } from '../../src/lib/job-intelligence/model.ts'
 
 export function fixtureWorkspace(data: CompanyData): WorkspaceContent {
   return { schema_version:1, state:'available', generated_at:data.generated_at, valid_until:data.valid_until, registry_hash:data.registry_hash,
