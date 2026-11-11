@@ -20,7 +20,7 @@ First written 2026-11-03 from the registry, the old `CONTINUITY.md` and `docs/`,
 33 years of Riksdag party-leader debates and roll calls, read by machine. The question: what do Sweden's parties talk about when they face each other, and does talking alike mean voting alike? Built from 108 debates 1993–2026 split into 33,023 passages, embedded and clustered into 33 topics (UMAP and HDBSCAN, consensus over 12 seeds), 23,024 roll calls over 33 sessions, and a classifier with party names masked and a person-grouped split. It shows what each party talks about, who sets the agenda, and who votes together.
 
 - Status: live on the site. Champion clustering b33f92b1 decided on the runner (2026-10-30). `polarization` passed its gate; `government_defeat` and `reply` failed theirs and are off Cluster Visuals. The "Place a sentence" demo lives on this page only (2026-11-04).
-- Code and data: `frontend/src/replik/`, `ml/mlkit/`, `ml/experiments/`, `docs/cluster-experiments-debates.md`, `docs/ml-gate-amendments.md`.
+- Code and data: `frontend/src/replik/`, `ml/mlkit/`, `ml/experiments/`, `docs/research/clustering/debates.md`, `docs/research/ml-gate-amendments.md`.
 - Next: not recorded.
 - Verified: 2026-11-03, from CONTINUITY and docs.
 
@@ -28,7 +28,7 @@ First written 2026-11-03 from the registry, the old `CONTINUITY.md` and `docs/`,
 Job ads from JobTech, fetched continuously and matched against the owner's CV, with status buttons, a wishes editor and an owner-only draft. The same ad corpus (about 4.9 million ads 2020–2026) feeds the labour-market analyses in `ai-act-clock` and the SWEDEN track. The question: can a public job feed be turned into a personal, honest shortlist without hiding the misses? Built as a Python pipeline (collect, analyse, build, publish), a cluster model register with promote and rollback, and a page that shows when the ads were last fetched and published.
 
 - Status: second flagship, live with CV profile v1 and engine `job-match-v4`. Airflow polls JobStream every ten minutes in windows queued on GitHub runners (`JOB_ADS_SCHEDULER=airflow`); Workers AI embeddings since 2026-11-07. Listed under Selected projects in the rail (2026-11-04).
-- Code and data: `platform/job_assistant/`, `infra/airflow/`, `ml/jobs/registry.json` (cluster model efd2e318dc1621b2), `docs/job-assistant.md`, `docs/job-ads-airflow.md`.
+- Code and data: `platform/job_assistant/`, `infra/airflow/`, `ml/jobs/registry.json` (cluster model efd2e318dc1621b2), `docs/products/jobs/job-assistant.md`, `docs/products/jobs/job-ads-airflow.md`.
 - Next: an always-on Airflow host; host budget not approved.
 - Verified: 2026-11-07, Airflow windows 42314432512 and 42346147449.
 
@@ -38,7 +38,7 @@ Job ads from JobTech, fetched continuously and matched against the owner's CV, w
 An unsupervised exploration of recurring symbolic contexts in mythology, folklore and literature. The question: can symbolic meaning emerge from the data without defining the categories first? Built from 101 public-domain books across 12 traditions indexed by 20 symbol words; Sentence Transformers embeds the passages, UMAP projects them and HDBSCAN forms clusters, with dbt and DuckDB holding the data. The experiments showed that the baseline clustered books, not symbols, so embeddings are centred by book and paratext is removed first, and only a person's review may name a cluster.
 
 - Status: experimental. Published atlas on all-MiniLM-L6-v2 with book-centring and paratext removal (October 2026 lineage). Champion a224a175 from the runner; three later candidates rejected. Listed under Labs on the site, marked experimental (2026-11-04).
-- Code and data: `platform/nlp/symbolic/`, `ml/cluster_lab/`, `docs/cluster-experiments-symbolic.md`, `docs/idea-lineage/symbolic-atlas.md`.
+- Code and data: `platform/nlp/symbolic/`, `ml/cluster_lab/`, `docs/research/clustering/symbolic.md`, `docs/idea-lineage/symbolic-atlas.md`.
 - Open: which v4 clusters survive a person's review; how often a symbol word is literal.
 - Next: not recorded.
 - Verified: 2026-11-03, from the journal.
@@ -47,7 +47,7 @@ An unsupervised exploration of recurring symbolic contexts in mythology, folklor
 A semantic atlas of public-domain philosophy, corrected for each work's own voice. The question: how do recurring moral and philosophical tensions organise texts across thinkers and traditions? Built from thirteen works from Plato to Nietzsche, stripped of translators' introductions and notes, cut into passages, embedded with a multilingual model, mapped with UMAP and HDBSCAN and read through tensions such as freedom ↔ control. Track 1 adds a moral-foundations tagger (bge-m3 and logistic regression) that reaches the human agreement ceiling on English data.
 
 - Status: experimental. Champion f367c26d on the runner. English tagger at the human ceiling (macro-F1 0.32 vs 0.27). Riksdag moral shares unpublished until the owner labels 300 passages and the gate passes. Listed under Labs on the site, marked experimental (2026-11-04).
-- Code and data: `ml/moral/`, `platform/publish/philosophy/`, `docs/philosophy-moral-preregistration.md`, `docs/cluster-experiments-philosophy.md`.
+- Code and data: `ml/moral/`, `platform/publish/philosophy/`, `docs/research/preregistrations/philosophy-moral-preregistration.md`, `docs/research/clustering/philosophy.md`.
 - Blocked: the owner's review of `tmp/mf-review.csv`.
 - Next: label, run `python -m ml.moral.riksdag gate`, then `score`.
 - Verified: 2026-11-03, from CONTINUITY.
@@ -56,7 +56,7 @@ A semantic atlas of public-domain philosophy, corrected for each work's own voic
 The same ideas followed across myth, philosophy, Riksdag speeches and the AI Act, with one model and editorially chosen concepts. The question: where do the same ideas appear as they move from stories to philosophy, politics and law? Built from a balanced sample of four corpora with full provenance, embedded with one multilingual model and read against 28 concepts with anchor sentences in Swedish and English; every relation has a stated type. Concept Journey follows one concept at a time; the atlas (77,753 passages, per-corpus whitening) is the exploring view.
 
 - Status: experimental. Atlas v2 (77,753 passages, Ledoit-Wolf whitening, 87 of 137 clusters stable); DR benchmark rejected 2026-10-31. Listed under Labs on the site, marked experimental (2026-11-04).
-- Code and data: `ml/atlas/`, `docs/cluster-atlas.md`, `docs/concept-constellation.md`.
+- Code and data: `ml/atlas/`, `docs/research/clustering/atlas.md`, `docs/products/labs/concept-constellation.md`.
 - Open: terms unreviewed.
 - Next: not recorded.
 - Verified: 2026-11-03, from CONTINUITY.
@@ -64,8 +64,8 @@ The same ideas followed across myth, philosophy, Riksdag speeches and the AI Act
 ### ask-the-law · Allegora
 Questions about Swedish law answered from every law and ordinance in force, and about the EU AI Act, where the answer is checked word for word against the legal text and then retold as a fable with a moral. The question: can a language model answer questions on legal text without inventing quotes, and fast enough to hold a conversation? Built with the 1,767 laws and 3,045 ordinances in force split by paragraph and embedded with Vertex AI, a search service on Cloud Run that returns the eight nearest whole paragraphs from at most four laws, and a Cloudflare Worker that streams Claude's answer as a draft, gives each quote its ✓ only after the check, and tells the fable from the checked answer.
 
-- Status: experimental. Measured 2026-11-07 (`docs/allegora-gcp.md`): the first draft text after 1.35 s and the checked answer after 3.9 s (median), against 8.1 s for the whole answer before; recall@8 on the paragraph 7 of 11 before and after. The streamed path, the paragraph search and the sources panel are on branch `korv9/allegora-stream`, not yet merged or deployed.
-- Code and data: `worker/ask.ts`, `worker/quotes.ts`, `frontend/src/lawqa/`, `platform/publish/allegora/`, `docs/allegora-gcp.md`, `docs/ai-act.md`.
+- Status: experimental. Measured 2026-11-07 (`docs/products/allegora/allegora-gcp.md`): the first draft text after 1.35 s and the checked answer after 3.9 s (median), against 8.1 s for the whole answer before; recall@8 on the paragraph 7 of 11 before and after. The streamed path, the paragraph search and the sources panel are on branch `korv9/allegora-stream`, not yet merged or deployed.
+- Code and data: `worker/ask.ts`, `worker/quotes.ts`, `frontend/src/lawqa/`, `platform/publish/allegora/`, `docs/products/allegora/allegora-gcp.md`, `docs/products/ai-act/ai-act.md`.
 - Next: not recorded.
 - Verified: 2026-11-07, from the eval runs in `warehouse/features/workers_ai/eval/sfs-all-*`.
 
@@ -79,8 +79,8 @@ Drug fingerprints, RNA expression and cell-line data combined to predict drug sy
 ### ai-act-clock · When does a law arrive?
 How fast an EU law reaches Swedish working life and the Riksdag, measured by counting the AI Act's words in 4.9 million job ads and 129,000 speeches. Built with the Act's terms chosen by weighted log-odds against the Swedish statute book and reviewed by hand, dictionary matching of 4,925,716 job ads (2020–2026) and 129,110 Riksdag speeches, 266 lags each tested against 200 random dates as a pre-registered placebo test, and an article-by-article comparison of the Official Journal text with the consolidated text.
 
-- Status: live. Pre-registration in `docs/ai-act-diffusion-preregistration.md`.
-- Code and data: `platform/publish/eu_ai_act/`, `docs/ai-act.md`, `docs/ai-governance-timeline.md`.
+- Status: live. Pre-registration in `docs/research/preregistrations/ai-act-diffusion-preregistration.md`.
+- Code and data: `platform/publish/eu_ai_act/`, `docs/products/ai-act/ai-act.md`, `docs/products/ai-act/ai-governance-timeline.md`.
 - Next: not recorded.
 - Verified: 2026-11-03, from docs.
 
@@ -90,7 +90,7 @@ How fast an EU law reaches Swedish working life and the Riksdag, measured by cou
 Public data fetched on a schedule, built and tested with dbt in bronze, silver and gold on DuckDB, and released to Cloudflare R2 once every check has passed; the same pattern runs on Microsoft Fabric for DiVA. The question: how do you keep many public sources fresh without publishing a wrong number? Built as Python ingestion with provenance, dbt models with contracts and tests, one registry (`pipeline.yml`) that defines every subject's steps and schedule, scheduled runs in GitHub Actions, versioned releases to R2 with delivery contracts, and a shared experiment core for the ML work.
 
 - Status: live. 334 dbt models (2026-11-01). Publication refuses a 30 % row drop; delivery groups `baseline` and `sweden`; shared experiment core `ml/experiments/`. The case study is shown as prose on Overview, and the site no longer links the incident write-ups (2026-11-04).
-- Code and data: `platform/pipeline.yml`, `platform/models/`, `platform/publish/`, `configs/delivery/`, `docs/pipeline.md`, `docs/storage-and-serving.md`.
+- Code and data: `platform/pipeline.yml`, `platform/models/`, `platform/publish/`, `configs/delivery/`, `docs/platform/pipeline.md`, `docs/platform/storage-and-serving.md`.
 - Open: full selection grids in Actions are unmeasured for debates and jobs peak RAM.
 - Verified: 2026-11-03, from CONTINUITY.
 
@@ -104,7 +104,7 @@ Five studies on Swedish public data under `#sweden`: A, what Sweden measures (4,
 - Verified: 2026-11-03, from CONTINUITY (2026-10-20).
 
 ### Old Bailey extraction (`ml/oldbailey/`)
-Structured facts extracted from Old Bailey trial records (ORDA, CC BY-NC 4.0) with gemma on Workers AI, pre-registered in `docs/oldbailey-extraction-preregistration.md`; 2,000 trials are being answered within the daily free quota.
+Structured facts extracted from Old Bailey trial records (ORDA, CC BY-NC 4.0) with gemma on Workers AI, pre-registered in `docs/research/preregistrations/oldbailey-extraction-preregistration.md`; 2,000 trials are being answered within the daily free quota.
 - Status: gemma answers accrue at 6,000 neurons per UTC day; export refused until all 2,000 are answered (871 on 2026-10-23).
 - Next: wait for the answers, then `python -m ml.oldbailey.score`.
 
@@ -116,7 +116,7 @@ Removed on purpose. Do not recreate without a new decision in the journal.
 |---|---|---|---|
 | Observatories: politics, labour market, Job Intelligence, Compliance Intelligence, wellbeing, AI Act, taxes and budget, statute book (2026-10-21) | the site is a portfolio of projects, not a set of dashboards | `#what-does-it-even-mean`; projects above | a new decision in the journal |
 | `frontend/src/{compliance,companies,job-intelligence}` kept unrouted | `compliance:check` and `jobs:check` read them | none | the checks stop reading them |
-| Platform pages: quality, data model and ER, architecture, catalogue, Idea Lineage page | retired from the site | `docs/quality-and-validity.md`, `docs/data-constellation.md`, `docs/idea-lineage/` | not planned |
+| Platform pages: quality, data model and ER, architecture, catalogue, Idea Lineage page | retired from the site | `docs/platform/quality-and-validity.md`, `docs/platform/data-constellation.md`, `docs/idea-lineage/` | not planned |
 | RAG assistant, pump-sound CNN (MIMII), DiVA topic clustering, Allegoria page | retired from the site | project index | not planned |
 | `frontend/src/ask` and the "Ask the platform" page (2026-11-01); most of `frontend/src/{hub,tech}` | trimmed in the audit | none | not planned |
 | 28 docs and 6 run-log JSON files (2026-10-23) | outdated; Git history keeps them | `docs/README.md` index | never |
