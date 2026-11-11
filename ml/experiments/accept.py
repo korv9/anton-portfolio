@@ -15,7 +15,7 @@ A criterion is one of:
 
 A point estimate from one seed cannot say a gain is real, and noise-free K-means and HDBSCAN are
 not scored on the same rows unless they are made to be, so `common_gain` reads `common_rows`, passed
-as `common` to `check`. Amended 2026-11-01 for future decisions (docs/ml-gate-amendments.md).
+as `common` to `check`. Amended 2026-11-01 for future decisions (docs/research/ml-gate-amendments.md).
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ import numpy as np
 import yaml
 from sklearn.metrics import adjusted_mutual_info_score
 
-from ml.cluster_lab.io import file_hash
+from ml.experiments.io import file_hash
 
 CONFIG = Path(__file__).resolve().parents[2] / 'configs' / 'experiments'
 

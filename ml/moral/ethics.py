@@ -3,7 +3,7 @@
     python -m ml.moral.ethics ask        # 200 test items per subset x 2 wordings (resumes; ledgered)
     python -m ml.moral.ethics analyze    # FEATURES/ethics_agreement.parquet
 
-Sample, parsing, baseline and null are fixed in docs/philosophy-moral-preregistration.md. The
+Sample, parsing, baseline and null are fixed in docs/research/preregistrations/philosophy-moral-preregistration.md. The
 wordings below are the ones the answers were made with; the pre-registration does not hold their exact
 text, so they were not fixed before the first call. Answers are stored as item id, wording and
 the model's reply (a word or two), never the scenario text. CLOUDFLARE_API_TOKEN and
@@ -15,7 +15,6 @@ import argparse
 import json
 import os
 import sys
-import time
 from datetime import datetime, timezone
 
 import numpy as np
@@ -87,28 +86,16 @@ def parse(subset: str, reply: str) -> object | None:
 
 
 def call(session, prompt: str) -> tuple[str, int, int]:
-    url = f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID']}/ai/run/{MODEL}"
+    import workers_ai  # on sys.path from ask()
     body = {"messages": [{"role": "user", "content": prompt}], "max_tokens": 8, "temperature": 0,
             "chat_template_kwargs": {"enable_thinking": False}}
-    for attempt in range(6):
-        try:
-            response = session.post(url, json=body, timeout=120)
-        except OSError:  # requests' timeouts and connection errors
-            time.sleep(2 ** attempt)
-            continue
-        payload = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
-        if response.ok and payload.get("success"):
-            out = payload["result"]
-            text = out.get("response") or ((out.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
-            usage = out.get("usage") or {}
-            return text, int(usage.get("prompt_tokens") or 0), int(usage.get("completion_tokens") or 0)
-        errors = json.dumps(payload.get("errors", []))[:300]
-        if "4006" in errors or "daily free allocation" in errors:
-            raise SystemExit(f"Quota exhausted: {errors}")
-        if response.status_code not in (429, 500, 502, 503, 504):
-            raise RuntimeError(f"Workers AI {response.status_code}: {errors}")
-        time.sleep(2 ** attempt)
-    raise RuntimeError("Workers AI kept failing")
+    try:
+        out = workers_ai.post(session, MODEL, body)
+    except workers_ai.QuotaExhausted as error:
+        raise SystemExit(f"Quota exhausted: {error}") from error
+    text = out.get("response") or ((out.get("choices") or [{}])[0].get("message") or {}).get("content") or ""
+    usage = out.get("usage") or {}
+    return text, int(usage.get("prompt_tokens") or 0), int(usage.get("completion_tokens") or 0)
 
 
 def ledger(tokens_in: int, tokens_out: int) -> None:

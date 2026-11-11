@@ -16,7 +16,7 @@ import json
 import os
 from pathlib import Path
 
-from ml.cluster_lab.io import atomic_json, now
+from .io import atomic_json, lock, now
 from .contract import STATUSES, validate
 
 FEATURES = Path(os.environ.get('PORTFOLIO_FEATURES') or Path(__file__).resolve().parents[2] / 'warehouse' / 'features')
@@ -27,31 +27,6 @@ EXPERIMENTS = FEATURES / 'experiments' / 'repro' / REPRO if REPRO else FEATURES 
 ROOT = Path(os.environ.get('PORTFOLIO_EXPERIMENTS') or EXPERIMENTS / 'registry')
 # Prepared datasets hold source text and stay local (docs/incidents/2026-10-22-third-party-text-in-r2.md).
 LOCAL = Path(__file__).resolve().parents[2] / 'warehouse' / 'ml' / 'experiments'
-
-
-@contextmanager
-def lock(path: Path):
-    """Exclusive, non-blocking OS lock on `path`; raises when another process holds it."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    stream = path.open('a+b')
-    if stream.tell() == 0:
-        stream.write(b'0')
-        stream.flush()
-    stream.seek(0)
-    try:
-        if os.name == 'nt':
-            import msvcrt
-            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
-        else:
-            import fcntl
-            fcntl.flock(stream, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError as error:
-        stream.close()
-        raise RuntimeError(f'{path} is held by another process') from error
-    try:
-        yield
-    finally:
-        stream.close()
 
 
 class Registry:

@@ -3,7 +3,7 @@ under another representation, or once metadata is accounted for?
 
     python -m ml.feature_study.futures
 
-The registered pilot (docs/sweden-futures-topics-preregistration.md) found none: seed ARI 0.38,
+The registered pilot (docs/research/preregistrations/sweden-futures-topics-preregistration.md) found none: seed ARI 0.38,
 subsample ARI 0.36 (frontend/public/data/sweden/futures/topics.json). This does not replace or
 amend it; nothing here is published as topics. Reads the pilot's sample and its MiniLM shards
 (PORTFOLIO_FEATURES/sweden/futures_topics/run). Spaces, each reduced to 50 PCA components:

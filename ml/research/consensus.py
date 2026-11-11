@@ -26,7 +26,7 @@ import yaml
 
 from ml.cluster_lab import datasets, evaluate, representations
 from ml.cluster_lab.config import DEFAULTS, merge
-from ml.cluster_lab.io import ROOT, atomic_json, digest, read_json
+from ml.experiments.io import ROOT, atomic_json, digest, read_json
 from ml.cluster_lab.refine import refine
 from ml.research import topics
 

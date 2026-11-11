@@ -1,4 +1,4 @@
-"""Symbol Lab clustering experiments (docs/cluster-experiments.md, docs/cluster-experiments-symbolic.md).
+"""Symbol Lab clustering experiments (docs/research/clustering/method.md, docs/research/clustering/symbolic.md).
 
     python -m ml.experiments.symbolic prepare|select|final|export [--deadline-minutes N]
 
@@ -20,7 +20,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import atomic_json, atomic_parquet, now, read_json
+from ml.experiments.io import atomic_json, atomic_parquet, now, read_json
 from . import accept, contract, embed, evaluate as ev, export as ex, fit, runtime
 from . import symbolic_data as data
 from . import symbolic_fit as sf
@@ -48,7 +48,7 @@ SELECT = [('context', 'minilm', 'raw'), ('context', 'minilm', 'centred'), ('sent
           ('context', 'multilingual', 'raw'), ('context', 'multilingual', 'centred')]
 SELECT_SEEDS, FINAL_SEEDS = [0, 1, 2], [10, 11, 12, 13, 14]
 CHAMPION = ('champion: published v4', 'context', 'minilm', 'raw', 'hdbscan-20-10')
-# Chosen from select.json (selection side only); reasons in docs/cluster-experiments-symbolic.md.
+# Chosen from select.json (selection side only); reasons in docs/research/clustering/symbolic.md.
 CANDIDATES = [('retuned HDBSCAN (mcs 50)', 'context', 'minilm', 'raw', 'hdbscan-50-10'),
               ('masked symbol word, book-centred', 'masked', 'minilm', 'centred', 'hdbscan-20-10'),
               ('multilingual MiniLM, HDBSCAN mcs 100', 'context', 'multilingual', 'raw', 'hdbscan-100-10')]

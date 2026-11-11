@@ -1,11 +1,11 @@
-name: Refresh public data
+name: Refresh welfare data
 
 # Daily: welfare (five sources), parliament (Riksdagen, SCB, Valmyndigheten) and taxes (OECD,
 # Skatteverket), each fetched, built, tested and exported by platform/pipeline.py as
 # platform/pipeline.yml defines them, then published as one validated, versioned group in R2.
 # The run record (welfare/run.json) is written to R2 on every run, so the status page shows when
 # the pipeline last checked, not only when data last moved. The site reads the active R2 release
-# without a data commit or code deployment. docs/pipeline.md describes the whole flow.
+# without a data commit or code deployment. docs/platform/pipeline.md describes the whole flow.
 
 on:
   schedule:

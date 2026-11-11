@@ -1,5 +1,5 @@
 /**
- * The job assistant's owner records in D1 (docs/job-assistant.md). Reads are public except the
+ * The job assistant's owner records in D1 (docs/products/jobs/job-assistant.md). Reads are public except the
  * uploaded CV files and the unapproved draft; every write, every CV read and the draft need the Worker secret JOB_ASSIST_TOKEN as a
  * bearer token, compared in constant time, and comes from the site's own origin or from no browser
  * at all (the hourly GitHub Actions run).

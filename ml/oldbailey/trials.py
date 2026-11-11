@@ -3,7 +3,7 @@
     python -m ml.oldbailey.trials
 
 Unit, eligibility, gold labels, truncation and the draw are fixed in
-docs/oldbailey-extraction-preregistration.md. Reads warehouse/raw/oldbailey/OBO_XML_7-2.zip one
+docs/research/preregistrations/oldbailey-extraction-preregistration.md. Reads warehouse/raw/oldbailey/OBO_XML_7-2.zip one
 session file at a time. Writes to OUT (warehouse/ml/oldbailey/, never pushed, since it holds
 trial text):
 

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import yaml
 
-from ml.cluster_lab.io import atomic_json, now, read_json
+from ml.experiments.io import atomic_json, now, read_json
 from .contract import DOMAINS
 from .registry import EXPERIMENTS, REPRO, Registry
 

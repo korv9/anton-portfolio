@@ -1,5 +1,5 @@
 /**
- * Allegora's streamed path measured (docs/allegora-gcp.md): the questions eval_live.ts asks, and
+ * Allegora's streamed path measured (docs/products/allegora/allegora-gcp.md): the questions eval_live.ts asks, and
  * three follow-up chains, through worker/ask.ts (POST /api/ask) against a search service and
  * Claude. For each question it records when each event arrived: the hits, the first piece of the
  * draft, the checked result and the fable.

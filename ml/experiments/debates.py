@@ -13,7 +13,7 @@ import json
 
 import numpy as np
 
-from ml.cluster_lab.io import atomic_json, now
+from ml.experiments.io import atomic_json, now
 from . import accept, contract, fit, runtime
 from . import debates_data as data
 from . import debates_select as sel
@@ -26,7 +26,7 @@ QUESTION = ('Which subjects do Swedish party leaders speak about in the party-le
 CORPUS = ('Riksdag party-leader debates 1993-2026 (108 debates, 10,148 speeches), passages of whole '
           'sentences closed at 80 words (min 40, max 150); public parliamentary record')
 EVAL_SEEDS = [10, 11, 12, 13, 14]
-# Chosen on the selection side (docs/cluster-experiments-debates.md, "Selection").
+# Chosen on the selection side (docs/research/clustering/debates.md, "Selection").
 RUNS = {
     'champion': ('sbert-speaker', 'hdbscan-150-25'),
     'sbert-party': ('sbert-party', 'hdbscan-150-25'),

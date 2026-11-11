@@ -114,7 +114,7 @@ const REDIRECTS: Record<string, string> = {
 const PREFIX_REDIRECTS: [string, string][] = [
   ['#quality-', '#projects'],
   ['#data-model-', '#projects'],
-  // The SWEDEN 3D atlas is offline (docs/sweden-atlas.md); its addresses lead to the hub.
+  // The SWEDEN 3D atlas is offline (docs/sweden/atlas.md); its addresses lead to the hub.
   ['#sweden-atlas', '#sweden'],
   // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
   // and the statute book, with every tab, deep dive and older address of theirs.
@@ -216,7 +216,7 @@ function pageOf(path: string): Page {
     return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
-  // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
+  // The job assistant (docs/products/jobs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
   if (path === '#replik') return 'replik'
   if (path === '#lag-ankomst') return 'aiclock'

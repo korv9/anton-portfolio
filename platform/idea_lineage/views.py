@@ -3,7 +3,7 @@ weekly digest. All of them can be deleted and rebuilt; the journal is the only h
 
     python platform/idea_lineage/views.py [state|diary|digest|export|all]
 
-Writes the committed views (`root`: DECISIONS.md, DATA_DECISIONS.md, docs/idea-lineage/, see
+Writes the committed views (`root`: docs/decisions/, docs/idea-lineage/, see
 public_views.py), the private home (state/, diary/, digests/, context.json) and, for `export`,
 the public events the site may show (frontend/public/data/idea-lineage/events.json).
 """
@@ -214,7 +214,7 @@ def clear(folder: Path) -> None:
 
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8")
+    path.write_text(text, encoding="utf-8", newline="\n")
 
 
 def build_state() -> list[Path]:

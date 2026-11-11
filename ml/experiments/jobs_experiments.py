@@ -1,6 +1,6 @@
 """Job-ad clustering experiments: selection on one side of the employer split, final evaluation on the other.
 
-Champion: the ml/jobs research settings (docs/job-market-clustering.md) applied to the job-assistant
+Champion: the ml/jobs research settings (docs/research/clustering/jobs.md) applied to the job-assistant
 corpus: title-description-skills text as served, token-chunk mean MiniLM-L12 at the pinned revision,
 cosine UMAP 10-D with 60 neighbours and min_dist 0, HDBSCAN min_samples 3, eom. Its min_cluster_size
 of 600 was set for 35,861 ads; here it is scaled to the same share (600/35,861 of the ads fitted).
@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import now
+from ml.experiments.io import now
 from . import accept, contract, fit, splits
 from . import evaluate as ev
 from . import jobs_data, jobs_model

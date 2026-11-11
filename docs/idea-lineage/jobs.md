@@ -19,4 +19,4 @@ Raw job-ad answers are LOCAL_ONLY, and push refuses to overwrite keys changed in
   warehouse/raw/job_assistant/raw/ and warehouse/raw/jobtech/stream/raw/. The stored objects await the owner's deletion (docs/storage-and-serving.md).
 
 ## Open questions
-None recorded.
+- Får `ml/jobs` migreras till `ml/experiments`, trots att det ändrar live-tilldelningarna? — 2026-11-11, `question-2026-11-11-001`

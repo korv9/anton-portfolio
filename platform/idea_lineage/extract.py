@@ -72,7 +72,7 @@ TAGS = {
     "lineage": ["lineage", "provenance", "härkomst"],
     "portfolio-design": ["homepage", "design system", "start page", "portfolio"],
     "ux": ["visitor", "navigation", "layout", "mobile"],
-    # Decisions about sources, selection, cleaning, keys and publication: DATA_DECISIONS.md.
+    # Decisions about sources, selection, cleaning, keys and publication: docs/decisions/DATA_DECISIONS.md.
     "data": ["dataset", "data source", "datakälla", "licen", "provenance", "deduplic", "missing",
              "saknade", "retention", "anonymi", "pii", "gdpr", "personuppg", "urval", "selection",
              "publish", "publicer", "r2", "local_only", "schema", "key", "nyckel"],
@@ -280,6 +280,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.mode == "off":
         return 0
+    for stream in (sys.stdin, sys.stdout):  # the console code page would mangle Swedish
+        if hasattr(stream, "reconfigure"):  # tests swap in StringIO
+            stream.reconfigure(encoding="utf-8")
     text = args.input.read_text(encoding="utf-8") if args.input else sys.stdin.read()
     if looks_like_conversation(text):
         print("refused: this looks like a conversation export. Pass only the final answer.",

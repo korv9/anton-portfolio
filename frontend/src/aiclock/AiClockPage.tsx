@@ -3,7 +3,8 @@
  * Riksdag. A head with KPIs, then charts with a legend only, computed on load from the committed
  * ai-act files (compute.ts); method folds away at the foot.
  */
-import { currentLocale, l } from '../i18n'
+import { l } from '../i18n'
+import { fixed as num } from '../format'
 import { LoadNote, loaded, useJson } from '../useJson'
 import { ProjectSection } from '../ui/Project'
 import PageHead, { Legend, Method, type Kpi } from '../ui/PageHead'
@@ -24,12 +25,6 @@ import {
 } from './compute'
 import './aiclock.css'
 
-const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
-const num = (v: number, digits = 0) =>
-  v.toLocaleString(locale(), {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  })
 /** A share between 0 and 1, as a percent. */
 const sh = (v: number, digits = 1) =>
   l(`${num(v * 100, digits)}%`, `${num(v * 100, digits)} %`)

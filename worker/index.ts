@@ -1,6 +1,6 @@
 /**
  * The site's Worker: static assets as before, plus two endpoints on Workers AI
- * (docs/workers-ai.md). POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer
+ * (docs/products/allegora/workers-ai.md). POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer
  * answers a question from passages the browser found, after checking that every passage is
  * verbatim published law text and that every quote in the answer is verbatim in its passage.
  * Visitor text is never logged or stored. Vector search happens in the browser, except for corpus
@@ -42,7 +42,7 @@ export type Env = JobsEnv & {
 
 export const EMBED_MODEL = '@cf/baai/bge-m3'
 export const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
-/** The answer model's reasoning setting (docs/workers-ai.md): tokens here are the cost per answer. */
+/** The answer model's reasoning setting (docs/products/allegora/workers-ai.md): tokens here are the cost per answer. */
 export const ANSWER_OPTIONS: Record<string, unknown> = {
   chat_template_kwargs: { enable_thinking: false },
 }

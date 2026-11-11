@@ -596,12 +596,12 @@ function Method({ summary }: { summary: ConceptSummary }) {
         </li>
       </ul>
       <p className="cc-hint">
-        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-layer.md">
-          docs/concept-layer.md
+        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/concept-layer.md">
+          docs/products/labs/concept-layer.md
         </a>
         ,{' '}
-        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md">
-          docs/concept-constellation.md
+        <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/concept-constellation.md">
+          docs/products/labs/concept-constellation.md
         </a>
       </p>
     </>

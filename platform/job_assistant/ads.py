@@ -39,6 +39,7 @@ from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "ingest/jobtech"))
+from portfolio.core.io import write_json  # noqa: E402
 from portfolio.storage import rawstore  # noqa: E402
 from ingest_jobs import API as SEARCH_URL, fetch_search  # noqa: E402
 from publish.job_content import public_text, public_url, redact  # noqa: E402
@@ -60,11 +61,7 @@ def store_dir() -> Path:
 
 
 def write_atomic(path: Path, value: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(value, ensure_ascii=False, indent=1, sort_keys=True) + "\n",
-                   encoding="utf-8", newline="\n")
-    os.replace(tmp, path)
+    write_json(path, value, indent=1, sort_keys=True, atomic=True)
 
 
 def load_ads(path: Path) -> dict:

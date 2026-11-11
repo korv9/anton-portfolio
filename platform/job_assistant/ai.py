@@ -29,7 +29,7 @@ from ads import store_dir  # noqa: E402
 AGENT = "job-assistant"
 CAP = 1500  # neurons per UTC day for this project, of the 10,000 the account shares
 EXPLAIN_MODEL = "@cf/google/gemma-4-26b-a4b-it"
-# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/workers-ai.md).
+# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/products/allegora/workers-ai.md).
 GEMMA_IN, GEMMA_OUT = 9091 / 1e6, 27273 / 1e6
 EXPLAIN_PER_DAY = 12
 TEXT_CHARS = 1500
@@ -158,10 +158,9 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
     estimate = (len(SYSTEM) + len(prompt)) // 3 * GEMMA_IN + 300 * GEMMA_OUT
     if spent() + estimate > CAP:
         return None
-    url = (f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}"
-           f"/ai/run/{EXPLAIN_MODEL}")
+    # Not workers_ai.post: one attempt, so a timeout is ledgered at its estimate and re-raised as is.
     try:
-        response = http.post(url, timeout=120, json={
+        response = http.post(workers_ai.run_url(EXPLAIN_MODEL), timeout=120, json={
             "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
             "max_tokens": 300, "temperature": 0.1, "chat_template_kwargs": {"enable_thinking": False}})
     except OSError:

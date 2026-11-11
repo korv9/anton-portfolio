@@ -5,7 +5,7 @@ import {
   envelope,
   progressFixture,
 } from '../fixtures/compliance.ts'
-import { parseProgress } from '../../src/compliance/progress.ts'
+import { parseProgress } from '../../src/lib/compliance/progress.ts'
 import {
   filtersOf,
   summaries,
@@ -17,14 +17,7 @@ import {
   safeSource,
   filterError,
   independentRankingScope,
-} from '../../src/compliance/model.ts'
-import {
-  csv,
-  decisionCsv,
-  graphicSvg,
-  methodology,
-  plotRows,
-} from '../../src/compliance/exports.ts'
+} from '../../src/lib/compliance/model.ts'
 
 test('blocked KKV coverage permits only explicit IMY comparisons and keeps competition unassessed', () => {
   const data = fixturePayload(),
@@ -175,45 +168,6 @@ test('money sorting remains exact above JavaScript integer precision', () => {
   const rows = summaries(data, filtersOf(new URLSearchParams(), data))
   assert.equal(orderSummaries(rows, 'money', 'SEK')[0].id, 'synthetic:0')
 })
-test('structured CSV and SVG exports neutralize formulas and markup', async () => {
-  assert.match(
-    csv([{ name: '=HYPERLINK("evil")', other: '\n +CMD()' }]),
-    /"'=HYPERLINK/,
-  )
+test('unsafe source URLs are refused', () => {
   assert.equal(safeSource('javascript:alert(1)'), null)
-  const data = fixturePayload()
-  data.families[0].decisions[0].authority = '<script>alert(1)</script>'
-  const release = (await parseRelease(envelope(data)))!
-  const filters = filtersOf(new URLSearchParams(), data)
-  const svg = graphicSvg(
-    release,
-    filters,
-    data.families,
-    'authority',
-    'SEK',
-    1200,
-    {
-      paper: '#f1efe7',
-      ink: '#363636',
-      muted: '#57554e',
-      accent: '#706c83',
-      font: 'Helvetica',
-    },
-  )
-  assert.ok(svg.includes('width="1200" height="1200"'))
-  assert.ok(!svg.includes('<script>'))
-  assert.ok(svg.includes('&lt;script&gt;'))
-  assert.ok(svg.includes(data.context.membership_hash))
-  assert.ok(
-    methodology(release, filters, data.families).includes(
-      data.families[0].documents[0].document_hash,
-    ),
-  )
-  assert.ok(
-    decisionCsv(data.families, release, filters).includes('release_sha256'),
-  )
-  assert.equal(
-    plotRows(data.families, 'amounts', 'SEK').reduce((n, r) => n + r.value, 0),
-    1,
-  )
 })

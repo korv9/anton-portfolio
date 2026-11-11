@@ -21,7 +21,7 @@ in the warehouse.
 | | |
 |---|---|
 | `ingest/` | Fetch to `warehouse/raw/`. One package per source, plus provenance |
-| `pipeline.yml`, `pipeline.py` | The subject registry and the one command that runs it ([docs/pipeline.md](../docs/pipeline.md)) |
+| `pipeline.yml`, `pipeline.py` | The subject registry and the one command that runs it ([docs/platform/pipeline.md](../docs/platform/pipeline.md)) |
 | `models/` | dbt: `bronze/`, `silver/`, `gold/`, each namespaced per subject area |
 | `publish/` | Delivery: catalogue, Parquet export, upload to object storage |
 | `lib/` | Shared paths, JSON, hashing, delivered-file resolution; `rawstore` (fetch with provenance, and `store_version` for sources that change in place) and `pxweb` (SCB and Folkhälsomyndigheten tables) |
@@ -31,12 +31,11 @@ in the warehouse.
 | `packages/` | The Allegoria meaningquality engine, vendored |
 | `seeds/`, `macros/` | dbt seeds (lexicons, crosswalks, hand-checked reference rows) and macros |
 | `nlp/` | Text processing that runs before dbt: lexicons, embeddings, the Workers AI corpora (`workers_ai.py`) |
-| `quality/` | Data quality and construct validity registries and their evaluation ([docs/quality-and-validity.md](../docs/quality-and-validity.md)) |
+| `quality/` | Data quality and construct validity registries and their evaluation ([docs/platform/quality-and-validity.md](../docs/platform/quality-and-validity.md)) |
 | `architecture/` | The provenance graph of sources, models and published files (`build_graph.py`) and the feed's Trace data (`feed_provenance.py`) |
 | `products/` | Registry and pinned material for DrugComb, the thesis and Homie ([products/README.md](products/README.md)) |
-| `compliance_intelligence/` | The compliance research workflow; its explorer is not routed ([docs/compliance-intelligence/](../docs/compliance-intelligence/README.md)) |
-| `job_assistant/` | The job assistant: ads from JobTech, the CV profile, matching and export ([docs/job-assistant.md](../docs/job-assistant.md)) |
-| `idea_lineage/` | The idea journal behind `npm run ideas:*` ([docs/idea-lineage.md](../docs/idea-lineage.md)) |
+| `job_assistant/` | The job assistant: ads from JobTech, the CV profile, matching and export ([docs/products/jobs/job-assistant.md](../docs/products/jobs/job-assistant.md)) |
+| `idea_lineage/` | The idea journal behind `npm run ideas:*` ([docs/platform/idea-lineage.md](../docs/platform/idea-lineage.md)) |
 | `tests/` | Python tests for ingestion, models, delivery, architecture and workflows (`python -m pytest platform/tests -q`) |
 
 `legacy/` is named for what it is. Those scripts do the work that `models/` and
@@ -46,7 +45,7 @@ is visible instead of looking like architecture.
 ## Running it
 
 Every subject runs through one command, locally and in GitHub Actions. What it does, the
-schedule of each subject and what is still manual are in [docs/pipeline.md](../docs/pipeline.md).
+schedule of each subject and what is still manual are in [docs/platform/pipeline.md](../docs/platform/pipeline.md).
 
 ```powershell
 python platform/pipeline.py list             # every subject
@@ -80,20 +79,20 @@ site on 2026-10-21; their subjects still run and feed the chart feed and the res
 | Subject | Sources | Models | Documentation |
 |---|---|---|---|
 | Jobs (IT report) | JobTech | `models/*/jobs` | `ingest/jobtech/` |
-| News | SVT, Sveriges Radio Ekot, Regeringskansliet (feeds) | `models/*/news`, `seeds/news` | [docs/news.md](../docs/news.md) |
-| Job assistant | JobTech JobSearch and JobStream, the owner's CV | `models/*/job_assistant`, `job_assistant/` | [docs/job-assistant.md](../docs/job-assistant.md) |
-| Job market (all occupations) | JobTech, every archive from 2020 | `models/*/market` | [docs/job-market.md](../docs/job-market.md) |
-| Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/welfare-data-model.md](../docs/welfare-data-model.md) |
-| Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
-| Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes` | [docs/taxes.md](../docs/taxes.md) |
-| EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/ai-act.md](../docs/ai-act.md) |
-| The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/ai-politics.md](../docs/ai-politics.md) |
-| Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/philosophy-atlas.md](../docs/philosophy-atlas.md) |
-| Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/concept-layer.md](../docs/concept-layer.md), [docs/concept-constellation.md](../docs/concept-constellation.md) |
-| AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/ai-jobs.md](../docs/ai-jobs.md) |
-| AI governance timeline | The Riksdag and job-ad marts above, by month | `models/gold/cross_domain`, `seeds/cross_domain`, `publish/cross_domain` | [docs/ai-governance-timeline.md](../docs/ai-governance-timeline.md) |
-| Quality & validity | Every product's checks and analyses | `quality/`, `models/gold/quality`, `publish/quality` | [docs/quality-and-validity.md](../docs/quality-and-validity.md) |
-| Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/parliament-data-model.md](../docs/parliament-data-model.md) |
+| News | SVT, Sveriges Radio Ekot, Regeringskansliet (feeds) | `models/*/news`, `seeds/news` | [docs/platform/news.md](../docs/platform/news.md) |
+| Job assistant | JobTech JobSearch and JobStream, the owner's CV | `models/*/job_assistant`, `job_assistant/` | [docs/products/jobs/job-assistant.md](../docs/products/jobs/job-assistant.md) |
+| Job market (all occupations) | JobTech, every archive from 2020 | `models/*/market` | [docs/products/jobs/job-market.md](../docs/products/jobs/job-market.md) |
+| Welfare | SCB (AKU, population), Försäkringskassan, Folkhälsomyndigheten, ESS, Kolada | `models/*/welfare`, `models/gold/shared` | [docs/platform/welfare-data-model.md](../docs/platform/welfare-data-model.md) |
+| Parliament | Riksdagen (roll calls, reports, news), SCB (elections, PSU), Valmyndigheten | `models/*/parliament`, `seeds/parliament` | [docs/platform/parliament-data-model.md](../docs/platform/parliament-data-model.md) |
+| Taxes | OECD (Revenue Statistics, Taxing Wages), Skatteverket (rates, tax tables) | `models/*/taxes`, `seeds/taxes` | [docs/platform/taxes.md](../docs/platform/taxes.md) |
+| EU AI Act | EU Publications Office (Cellar / EUR-Lex), European Commission | `models/*/eu_ai_act`, `seeds/eu_ai_act`, `publish/eu_ai_act` | [docs/products/ai-act/ai-act.md](../docs/products/ai-act/ai-act.md) |
+| The Riksdag and AI | Riksdagen (every speech since 2016/17), the AI Act's Swedish text | `models/*/ai_politics`, `seeds/ai_politics`, `nlp/ai_politics`, `nlp/text`, `publish/ai_politics` | [docs/products/ai-act/ai-politics.md](../docs/products/ai-act/ai-politics.md) |
+| Philosophy Atlas | Project Gutenberg (thirteen works, translators recorded) | `models/*/philosophy`, `seeds/philosophy`, `nlp/philosophy`, `publish/philosophy` | [docs/products/labs/philosophy-atlas.md](../docs/products/labs/philosophy-atlas.md) |
+| Concept layer | The four corpora above (myth, philosophy, Riksdag, AI Act), by sample | `models/*/concepts`, `seeds/concepts`, `nlp/concepts`, `publish/concepts` | [docs/products/labs/concept-layer.md](../docs/products/labs/concept-layer.md), [docs/products/labs/concept-constellation.md](../docs/products/labs/concept-constellation.md) |
+| AI governance in job ads | JobTech historical archives (counted, no ads kept) | `models/*/job_ai_governance`, `seeds/job_ai_governance`, `publish/job_ai_governance` | [docs/products/ai-act/ai-jobs.md](../docs/products/ai-act/ai-jobs.md) |
+| AI governance timeline | The Riksdag and job-ad marts above, by month | `models/gold/cross_domain`, `seeds/cross_domain`, `publish/cross_domain` | [docs/products/ai-act/ai-governance-timeline.md](../docs/products/ai-act/ai-governance-timeline.md) |
+| Quality & validity | Every product's checks and analyses | `quality/`, `models/gold/quality`, `publish/quality` | [docs/platform/quality-and-validity.md](../docs/platform/quality-and-validity.md) |
+| Politics | Riksdagen, Statskontoret | Budget context and roll-call votes in `models/*/politics`; speeches and language still in `legacy/` | [docs/platform/parliament-data-model.md](../docs/platform/parliament-data-model.md) |
 
 ## Adding a source
 

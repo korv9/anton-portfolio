@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { fetchJson } from '../dataSource'
 import {
   loadAtlasPoints,
@@ -38,7 +39,6 @@ export type MapSpec = {
   variants: Variant[]
 }
 
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const pct = (share: number) =>
   `${(share * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })} %`
 const cut = (text: string, n = 110) =>

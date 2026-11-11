@@ -33,7 +33,6 @@ absent the committed files are kept and the script says so.
 """
 from __future__ import annotations
 
-import hashlib
 import json
 import math
 import os
@@ -81,14 +80,10 @@ FEATURES = {
 }
 
 
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
-
-
 def values(result: dict) -> dict[str, dict]:
     """The 2024 indicator values per municipality, from gold over the files the clustering hashed."""
     for p, recorded in result["sources"].items():
-        if sha256(STORE / Path(p).name) != recorded:
+        if io.raw_sha(STORE / Path(p).name) != recorded:
             raise SystemExit(f"{STORE / Path(p).name} changed since the clustering ran; refusing to mix inputs")
     con = db.warehouse(DATABASE)
     rows = con.sql(f"""select municipality_code, municipality_name, county_name, population,
@@ -297,8 +292,8 @@ def main() -> int:
         "limits": result["limits"],
         "provenance": {"run": RUN, "sources": result["sources"],
                        "boundaries": {"url": "https://scb.se/hitta-statistik/regional-statistik-och-kartor/regionala-indelningar/digitala-granser/",
-                                      "licence": "CC0 1.0", "sha256": sha256(BOUNDARIES)},
-                       "kolada_earlier_years": {f"kolada_structure_{y}.json": sha256(STORE / f"kolada_structure_{y}.json")
+                                      "licence": "CC0 1.0", "sha256": io.raw_sha(BOUNDARIES)},
+                       "kolada_earlier_years": {f"kolada_structure_{y}.json": io.raw_sha(STORE / f"kolada_structure_{y}.json")
                                                 for y in EARLIER if (STORE / f"kolada_structure_{y}.json").exists()},
                        "run_id": os.environ.get("GITHUB_RUN_ID"), "code_sha": os.environ.get("GITHUB_SHA")},
     }

@@ -178,7 +178,7 @@ test('the name is there at first paint and the map sleeps after the hero', async
   })
   await expect(backdrop).toHaveAttribute('data-intro', 'late')
   await expect(backdrop).toHaveAttribute('data-paused', 'false')
-  await page.evaluate(() => scrollTo(0, innerHeight * 2))
+  await page.evaluate(() => window.scrollTo(0, innerHeight * 2))
   await expect(backdrop).toHaveAttribute('data-paused', 'true')
 })
 

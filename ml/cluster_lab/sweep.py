@@ -17,7 +17,7 @@ import pandas as pd
 
 from . import datasets, evaluate, layouts, refine, representations
 from .config import merge, set_value, validate_trial, values
-from .io import atomic_json, atomic_parquet, digest, file_hash, now, provenance, read_json
+from ml.experiments.io import atomic_json, atomic_parquet, digest, file_hash, now, provenance, read_json
 from .registry import Registry
 
 

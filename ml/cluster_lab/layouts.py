@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 from .config import values
-from .io import atomic_json, atomic_parquet, digest, file_hash, now, read_json, versions
+from ml.experiments.io import atomic_json, atomic_parquet, digest, file_hash, now, read_json, versions
 
 
 def parameters(config):

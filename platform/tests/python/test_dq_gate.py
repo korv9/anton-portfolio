@@ -85,7 +85,7 @@ def test_an_unexpected_not_run_blocks_and_a_manual_one_does_not(target):
 
 
 def test_a_group_with_no_results_stays_not_run(target):
-    # publish-r2.yml stages a release from a fresh checkout (docs/r2-delivery-contract.md).
+    # ops-publish-r2.yml stages a release from a fresh checkout (docs/platform/r2-delivery-contract.md).
     assert g.dq("baseline")["status"] == "not_run"
 
 

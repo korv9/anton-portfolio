@@ -21,7 +21,6 @@
     "welfare/*",
     "taxes/*",
     "schema/*",
-    "diva/*",
     "parquet/welfare/*",
     "parquet/welfare_indicator/*",
     "parquet/parliament_roll_calls/*",

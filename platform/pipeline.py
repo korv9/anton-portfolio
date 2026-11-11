@@ -11,7 +11,7 @@
     python platform/pipeline.py check                 # the data contracts on the delivered files
 
 The same command runs locally and in GitHub Actions. Publishing changes the active release in R2
-(the site serves the data committed under frontend/public/data, docs/pipeline.md), so it runs
+(the site serves the data committed under frontend/public/data, docs/platform/pipeline.md), so it runs
 only in Actions or when asked for with --only publish. One failed subject does not stop the
 others; the exit code is non-zero if any failed.
 """

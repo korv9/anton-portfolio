@@ -6,7 +6,7 @@ import shutil
 import pandas as pd
 import yaml
 
-from ml.cluster_lab.io import atomic_json, digest, file_hash, read_json
+from ml.experiments.io import atomic_json, digest, file_hash, read_json
 from ml.cluster_lab.public_research import snapshot
 
 WORD_FIELD=re.compile(r'\bSTYLEREF\s+Kantrubrik\s+\\?\*\s+MERGEFORMAT[^\r\n]*',re.I)

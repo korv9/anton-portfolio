@@ -2,7 +2,7 @@
 
     python platform/nlp/ai_act_terms.py                 # candidates -> tmp/ai_act_terms_candidates.csv
 
-Rule (docs/ai-act-diffusion-preregistration.md): one- to four-token n-grams of the article texts
+Rule (docs/research/preregistrations/ai-act-diffusion-preregistration.md): one- to four-token n-grams of the article texts
 in ai-act/article-text-sv, scored by weighted log-odds with an informative Dirichlet prior
 (Monroe, Colaresi and Quinn 2008) against the SFS paragraphs; the prior for each n-gram is its
 pooled count. Candidates occur at least 10 times in at least 3 articles and neither start nor end

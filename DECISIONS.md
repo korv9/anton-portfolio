@@ -2,7 +2,7 @@
 
 # Decisions
 
-What is decided across the portfolio, why, and how far each decision got. Built from the public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/idea-lineage.md`). Current project status and next steps are in `PROJECTS.md`.
+What is decided across the portfolio, why, and how far each decision got. Built from the public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/platform/idea-lineage.md`). Current project status and next steps are in `PROJECTS.md`.
 
 Each entry shows the steps on record: decided → implemented (a commit, PR or file reference) → verified (a run reference). A later decision that replaces one is linked, and the replaced one moves to *Set aside* with the reason.
 
@@ -116,11 +116,11 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
 - 2026-11-01 · Every page is published, in one charcoal theme (`decision-2026-11-03-016`)
   #start is about Anton, #projects is the overview and each project has its own page (docs/design-system.md). The observatories stay withdrawn.
   decided (implementation not recorded)
-- 2026-11-07 · Allegoras svar strÃ¶mmas som mÃ¤rkt utkast och fÃ¥r âœ“ efter citatkontrollen; faller kontrollen tas utkastet bort. (`decision-2026-11-07-001` · by Anton)
+- 2026-11-07 · Allegoras svar strömmas som märkt utkast och får ✓ efter citatkontrollen; faller kontrollen tas utkastet bort. (`decision-2026-11-07-001` · by Anton)
   decided (implementation not recorded)
-- 2026-11-07 · Fabeln lÃ¤mnar den kritiska vÃ¤gen och visas under det verifierade svaret. (`decision-2026-11-07-002` · by Anton)
+- 2026-11-07 · Fabeln lämnar den kritiska vägen och visas under det verifierade svaret. (`decision-2026-11-07-002` · by Anton)
   decided (implementation not recorded)
-- 2026-11-07 · SÃ¶kenheten Ã¤r paragrafen; hÃ¶gst en passage per paragraf och fyra lagar per svar. (`decision-2026-11-07-003` · by Anton)
+- 2026-11-07 · Sökenheten är paragrafen; högst en passage per paragraf och fyra lagar per svar. (`decision-2026-11-07-003` · by Anton)
   decided (implementation not recorded)
-- 2026-11-07 · Allegora byggs som arbetsyta med trÃ¥d och lagtextpanel i befintlig design; hastighet och sÃ¶kning gÃ¥r fÃ¶re nya korpusar. (`decision-2026-11-07-004` · by Anton)
+- 2026-11-07 · Allegora byggs som arbetsyta med tråd och lagtextpanel i befintlig design; hastighet och sökning går före nya korpusar. (`decision-2026-11-07-004` · by Anton)
   decided (implementation not recorded)

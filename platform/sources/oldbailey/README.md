@@ -33,7 +33,7 @@ use. The portfolio is non-commercial. Attribution goes with every copy and every
 
 ## Used by
 
-The extraction test in `docs/oldbailey-extraction-preregistration.md` (`ml/oldbailey/`).
+The extraction test in `docs/research/preregistrations/oldbailey-extraction-preregistration.md` (`ml/oldbailey/`).
 
 ## Data notes
 

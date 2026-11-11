@@ -5,6 +5,7 @@
  */
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { fetchJson } from '../dataSource'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
@@ -45,7 +46,7 @@ type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/language/'
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
-export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
+export const num = count
 export const name = (c: Category) => l(c.label_en, c.label_sv)
 
 export default function Explore({

@@ -144,7 +144,7 @@ export const PROJECTS: ProjectEntry[] = [
         'Do symbolic contexts recur across stories and traditions?',
       ),
     },
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/symbolic-atlas.md',
     pages: ['symbolic'],
   },
   {
@@ -212,7 +212,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     research: true,
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/philosophy-atlas.md',
     pages: ['philosophy'],
   },
   {
@@ -246,7 +246,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     research: true,
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/concept-constellation.md',
     pages: ['concepts'],
   },
   {
@@ -284,7 +284,7 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#fraga-lagen',
     category: 'ai',
     status: 'experimental',
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/allegora-gcp.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/allegora/allegora-gcp.md',
     pages: ['lawqa'],
   },
   {

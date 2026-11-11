@@ -6,7 +6,7 @@
     python -m ml.moral.mfrc ci       # adds 95 % bootstrap intervals to agreement.parquet (no refit)
 
 Every choice (gold label, split, C grid, threshold grid, ceiling, eMFD scoring) is fixed in
-docs/philosophy-moral-preregistration.md. No comment text is written outside RAW.
+docs/research/preregistrations/philosophy-moral-preregistration.md. No comment text is written outside RAW.
 """
 from __future__ import annotations
 

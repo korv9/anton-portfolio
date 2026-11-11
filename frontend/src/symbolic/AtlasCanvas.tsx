@@ -13,13 +13,13 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { TRADITION, clusterColour, contextName } from './atlasData'
 import type { AtlasPoint } from './atlasTypes'
 
 export type Paint = { fill: string; r: number; layer: number }
 export type MapLabel = { x: number; y: number; text: string }
 
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const PAD = 18
 const ASPECT = 0.68
 const HIT = 9

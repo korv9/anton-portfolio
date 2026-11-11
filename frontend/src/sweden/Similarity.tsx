@@ -117,7 +117,7 @@ type Groups = {
     run_id: string | null
   }
 }
-/** The pre-registered Three Swedens tests (docs/sweden-three-spaces-preregistration.md). */
+/** The pre-registered Three Swedens tests (docs/research/preregistrations/sweden-three-spaces-preregistration.md). */
 type Spaces = {
   diagnostics: {
     n: number

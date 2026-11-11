@@ -23,10 +23,9 @@ PHASES = ("ingest", "dbt", "ml", "export")
 # Workflow, the subjects it runs, and the delivery group it publishes.
 REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["news"], "news"),
               "refresh-welfare.yml": (["welfare", "parliament", "taxes"], "public-data"),
-              "refresh-diva.yml": (["diva"], "diva"),
               "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis"),
               "refresh-job-assistant.yml": (["job_assistant"], "job-assistant")}
-DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "publish-r2.yml"]
+DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "ops-publish-r2.yml"]
 
 
 
@@ -128,7 +127,7 @@ def test_no_group_or_subject_uses_the_unversioned_uploader():
 
 
 def test_raw_pushes_wait_for_a_successful_restore():
-    for filename in ("refresh-jobs.yml", "refresh-welfare.yml", "refresh-diva.yml", "build-warehouse.yml"):
+    for filename in ("refresh-jobs.yml", "refresh-welfare.yml", "build-warehouse.yml"):
         setup = next(step for step in steps(filename) if step.get("uses") == "./.github/actions/data-setup")
         assert setup["id"] == "setup" and setup["with"]["pull"], f"{filename}: restore needs an outcome id"
         pushes = cli(filename, "push")

@@ -1,5 +1,5 @@
 /**
- * Allegora's live path measured (docs/allegora-gcp.md): the Swedish eval questions
+ * Allegora's live path measured (docs/products/allegora/allegora-gcp.md): the Swedish eval questions
  * (configs/workers_ai/eval_questions.yaml, corpus sfs) and two reference questions asked through
  * worker/index.ts itself with corpus 'sfs-all', against the real search service and Claude.
  *

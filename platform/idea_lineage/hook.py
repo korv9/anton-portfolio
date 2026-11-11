@@ -8,11 +8,14 @@ views are rebuilt. Nothing here blocks the session: every failure is printed and
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+# Windows defaults pipes to the ANSI code page; children inherit UTF-8 so Swedish survives.
+CHILD_ENV = {**os.environ, "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8"}
 
 
 def last_answer(transcript: Path) -> str:
@@ -33,6 +36,9 @@ def last_answer(transcript: Path) -> str:
 
 
 def main() -> int:
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):  # tests swap in StringIO
+            stream.reconfigure(encoding="utf-8")
     try:
         payload = json.load(sys.stdin)
     except (json.JSONDecodeError, OSError):
@@ -46,14 +52,14 @@ def main() -> int:
     if not text:
         return 0
     run = [sys.executable, str(HERE / "extract.py"), "--mode", "auto"]
-    done = subprocess.run(run, input=text, capture_output=True, text=True, encoding="utf-8")
+    done = subprocess.run(run, input=text, capture_output=True, text=True, encoding="utf-8", env=CHILD_ENV)
     out = (done.stdout + done.stderr).strip()
     if done.returncode != 0:
         print(f"idea-lineage: extraction failed ({done.returncode}): {out[-400:]}")
         return 0
     if "appended to" in out:
         build = subprocess.run([sys.executable, str(HERE / "views.py"), "root"],
-                               capture_output=True, text=True, encoding="utf-8")
+                               capture_output=True, text=True, encoding="utf-8", env=CHILD_ENV)
         status = "views rebuilt" if build.returncode == 0 else f"view build failed: {build.stderr[-200:]}"
         print("idea-lineage: " + "; ".join(l for l in out.splitlines() if l.startswith(("  ", "note:", "appended")))
               + f"; {status}")

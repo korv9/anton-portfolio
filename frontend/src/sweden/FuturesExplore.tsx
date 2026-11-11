@@ -4,6 +4,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { fetchJson } from '../dataSource'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
@@ -84,7 +85,7 @@ export const BASE = 'sweden/futures/'
 // (academic.jump) are absent.
 const UNEXPLAINED = [2024, 2025]
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
-export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
+export const num = count
 export const name = (t: { label_en: string; label_sv: string }) =>
   l(t.label_en, t.label_sv)
 

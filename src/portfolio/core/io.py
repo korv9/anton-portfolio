@@ -22,26 +22,30 @@ def unwrap(payload):
 
 
 def dumps(payload, *, indent: int | None = None, newline: bool = True, ensure_ascii: bool = False,
-          allow_nan: bool = True) -> str:
+          allow_nan: bool = True, sort_keys: bool = False) -> str:
     """The site's JSON text: compact unless indented, non-ASCII kept as is unless asked to escape.
 
     allow_nan=False raises on NaN or infinity instead of writing tokens browsers cannot parse.
     """
-    options = {"ensure_ascii": ensure_ascii, "allow_nan": allow_nan}
+    options = {"ensure_ascii": ensure_ascii, "allow_nan": allow_nan, "sort_keys": sort_keys}
     text = (json.dumps(payload, indent=indent, **options) if indent
             else json.dumps(payload, separators=(",", ":"), **options))
     return text + "\n" if newline else text
 
 
 def write_json(path, payload, *, indent: int | None = None, newline: bool = True,
-               ensure_ascii: bool = False, allow_nan: bool = True) -> Path:
+               ensure_ascii: bool = False, allow_nan: bool = True, sort_keys: bool = False,
+               atomic: bool = False) -> Path:
     """Write JSON, creating the folder, and return the path.
 
     Always LF: text mode on Windows would write CRLF, so a local run differed from CI's bytes
     (some exporters passed newline="\\n" for this, most did not). On Linux nothing changes.
+    atomic=True writes beside the target and renames over it (write_bytes_retrying), for state
+    files a crash must never leave half-written.
     """
-    return write_text(path, dumps(payload, indent=indent, newline=newline, ensure_ascii=ensure_ascii,
-                                  allow_nan=allow_nan))
+    text = dumps(payload, indent=indent, newline=newline, ensure_ascii=ensure_ascii,
+                 allow_nan=allow_nan, sort_keys=sort_keys)
+    return write_bytes_retrying(path, text.encode("utf-8")) if atomic else write_text(path, text)
 
 
 def write_text(path, text: str) -> Path:

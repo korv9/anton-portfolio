@@ -4,6 +4,7 @@
  */
 import { useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { count, share } from '../format'
 import { fetchJson } from '../dataSource'
 import RankBars from '../charts/RankBars'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -84,10 +85,9 @@ export const GEO_LABEL: Record<Geo, [string, string]> = {
   municipality: ['Municipalities', 'Kommuner'],
   subarea: ['Below municipality', 'Under kommun'],
 }
-export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
+export const num = count
 export const name = (d: Domain) => l(d.label_en, d.label_sv)
-export const pct = (x: number) =>
-  `${(x * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 0 })} %`
+export const pct = share
 const keywordTotal = (s: Sensitivity, id: string) =>
   (s.domains[id]?.scb ?? 0) + (s.domains[id]?.kolada ?? 0)
 

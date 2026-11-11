@@ -1,6 +1,6 @@
 /**
  * The Workers AI demos' data and endpoints: a corpus export (pca.json, vectors.bin, meta.json under
- * data/workers-ai/<corpus>/, docs/workers-ai.md) loaded once per page, and the Worker's
+ * data/workers-ai/<corpus>/, docs/products/allegora/workers-ai.md) loaded once per page, and the Worker's
  * /api/embed and /api/answer. A failed call says why, so the page can fall back on its examples.
  */
 import { fetchData } from '../dataSource'

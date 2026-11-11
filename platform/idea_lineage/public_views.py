@@ -1,5 +1,5 @@
-"""The committed views: DECISIONS.md and DATA_DECISIONS.md in the repository root, and one page
-per project plus a diary under docs/idea-lineage/. They are built from public events only, so a
+"""The committed views: DECISIONS.md and DATA_DECISIONS.md under docs/decisions/, and one page
+per project under docs/idea-lineage/ (the per-day diary is private, see views.build_diary). They are built from public events only, so a
 private event can never reach a committed file. Rebuilt whole by `npm run ideas:build`.
 
 A decision has three steps that are recorded separately: decided (the decision event),
@@ -12,7 +12,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import store
-from views import HEADER, effective, links, long_date, page, project_names, project_state, when, write
+from views import HEADER, effective, links, project_names, project_state, when, write
 
 ROOT = store.ROOT
 DOCS = ROOT / "docs/idea-lineage"
@@ -95,11 +95,11 @@ def decisions_page(title: str, intro: str, view: dict[str, dict], keep) -> str:
 
 def build_root() -> list[Path]:
     view = public_view(store.read_events())
-    out = [ROOT / "DECISIONS.md", ROOT / "DATA_DECISIONS.md"]
+    out = [ROOT / "docs/decisions/DECISIONS.md", ROOT / "docs/decisions/DATA_DECISIONS.md"]
     write(out[0], decisions_page(
         "Decisions",
         "What is decided across the portfolio, why, and how far each decision got. Built from the "
-        "public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/idea-lineage.md`). "
+        "public Idea Lineage journal (`.idea-lineage/public/journal/`, see `docs/platform/idea-lineage.md`). "
         "Current project status and next steps are in `PROJECTS.md`.",
         view, lambda e: True))
     write(out[1], decisions_page(
@@ -112,29 +112,23 @@ def build_root() -> list[Path]:
 
 
 def build_docs() -> list[Path]:
-    """docs/idea-lineage/: one page per project, the portfolio page and a diary, public only."""
+    """docs/idea-lineage/: one page per project and the portfolio page, public only."""
     events = store.read_events()
     view = public_view(events)
     labels = project_names()
     public = sorted(view.values(), key=when)
-    for old in [*DOCS.glob("*.md"), *(DOCS / "diary").glob("*.md")]:
+    for old in DOCS.glob("*.md"):
         old.unlink()
     out = []
     projects = sorted({p for e in public for p in e.get("projects") or []})
     for pid in projects:
         out.append(DOCS / f"{pid}.md")
         write(out[-1], project_state(pid, view, labels.get(pid, pid)))
-    by_day = defaultdict(list)
-    for e in public:
-        by_day[when(e)].append(e)
-    for day, items in sorted(by_day.items()):
-        out.append(DOCS / "diary" / f"{day}.md")
-        write(out[-1], page(long_date(day), items, labels))
     index = [HEADER, "# Idea Lineage", "",
              "How the projects' ideas and decisions evolved, generated from the public journal. "
-             "Decisions in force: `../../DECISIONS.md`. Status and next steps: `../../PROJECTS.md`.", "",
-             "## Projects", *[f"- [{labels.get(p, p)}]({p}.md)" for p in projects], "",
-             "## Diary", *[f"- [{long_date(d)}](diary/{d}.md)" for d in sorted(by_day, reverse=True)], ""]
+             "Decisions in force: `../decisions/DECISIONS.md`. Status and next steps: `../../PROJECTS.md`. "
+             "The per-day diary is private: `npm run ideas:diary`.", "",
+             "## Projects", *[f"- [{labels.get(p, p)}]({p}.md)" for p in projects], ""]
     out.append(DOCS / "README.md")
     write(out[-1], "\n".join(index))
     return out

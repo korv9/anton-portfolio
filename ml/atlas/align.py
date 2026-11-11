@@ -1,7 +1,7 @@
 """Alignment, version 2: four candidates and the rule that picks one, fixed before the run.
 
 Version 1 chose the alignment with the lowest corpus purity, which noise would also win. Two
-checks guard against that here (see docs/cluster-atlas.md, "Version 2"):
+checks guard against that here (see docs/research/clustering/atlas.md, "Version 2"):
 
   retention          does a passage's group (party, tradition, occupation) still win a vote of its
                      15 nearest passages from other units of its corpus? As a ratio to raw vectors

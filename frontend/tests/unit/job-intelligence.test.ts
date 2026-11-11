@@ -8,7 +8,7 @@ import {
   jobInstant,
   latestJobs,
   parseWorkspace,
-} from '../../src/job-intelligence/model.ts'
+} from '../../src/lib/job-intelligence/model.ts'
 
 test('latest 50 use publication instant and stable ID, excluding expiry', () => {
   const d = fixtureCompanies()

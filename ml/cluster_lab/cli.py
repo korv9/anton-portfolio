@@ -9,7 +9,7 @@ from pathlib import Path
 import sys
 
 from .config import load
-from .io import atomic_json, read_json
+from ml.experiments.io import atomic_json, read_json
 
 
 def main():

@@ -1,5 +1,5 @@
 /**
- * Vector search in the browser for the Workers AI demos (docs/workers-ai.md): a bge-m3 vector is
+ * Vector search in the browser for the Workers AI demos (docs/products/allegora/workers-ai.md): a bge-m3 vector is
  * projected with the corpus's PCA, compared with every int8 passage vector, and, on the debate
  * map, placed among its nearest neighbours. No imports, so the unit tests run it in Node.
  */

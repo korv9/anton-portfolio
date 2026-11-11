@@ -1,5 +1,5 @@
 /**
- * Small Workers AI exports for the e2e tests, in the contract's format (docs/workers-ai.md):
+ * Small Workers AI exports for the e2e tests, in the contract's format (docs/products/allegora/workers-ai.md):
  * 1024-dimensional vectors projected onto 4 PCA dimensions, int8 passage vectors, meta.json and
  * examples.json. Debate passages sit on two groups of the published debate map, so a placed
  * sentence lands among real coordinates. Routes are mocked; nothing here is published.
