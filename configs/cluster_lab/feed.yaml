@@ -1,0 +1,129 @@
+# Feed clusterings: one entry per clustering, run with
+#   python -m ml.cluster_lab.feed list
+#   python -m ml.cluster_lab.feed run --only <name> --set warehouse=<path to shared warehouse>
+# Queries are DuckDB SQL. {warehouse} is the shared warehouse folder, {data} is frontend/public/data.
+# The catalogue of further candidates and the rules for adding one are in docs/feed-clustering.md.
+schema_version: 1
+resources:
+  cpu_threads: 2
+  memory_gb: 1.5
+  duckdb_memory_gb: 1
+clusterings:
+  - name: municipal-trajectories
+    family: wel
+    title: Where municipalities moved, 2010-2024
+    note: Unemployment, median earned income and sick pay as z-scores within each year, so the national trend is removed.
+    id: code
+    label: name
+    period: year
+    reference: skr_group
+    transform: none
+    method: kmeans
+    k: [3, 7]
+    query: |
+      with skr as (select m.code, m.skr_group from (select unnest(municipalities) m from read_json('{data}/sweden/similarity/municipalities.json')))
+      select p.municipality_code as code, p.municipality_name as name, p.year, skr.skr_group,
+        (open_unemployment_18_65_pct-avg(open_unemployment_18_65_pct) over w)/stddev(open_unemployment_18_65_pct) over w as unemployment,
+        (median_earned_income_sek-avg(median_earned_income_sek) over w)/stddev(median_earned_income_sek) over w as income,
+        (sick_pay_rate_1_days-avg(sick_pay_rate_1_days) over w)/stddev(sick_pay_rate_1_days) over w as sick_pay
+      from read_parquet('{warehouse}/features/sweden/similarity/mart_municipality_year_panel.parquet') p left join skr on skr.code=p.municipality_code
+      where p.year between 2010 and 2024 window w as (partition by p.year) order by code, year
+
+  - name: municipality-job-mix
+    family: job
+    title: Job-market types of municipalities
+    note: Ads per occupation field 2023-2025, municipalities with at least 300 ads; centred log-ratio of field shares.
+    id: municipality
+    reference: skr_group
+    transform: clr
+    method: kmeans
+    k: [3, 8]
+    query: |
+      with skr as (select m.name, m.skr_group from (select unnest(municipalities) m from read_json('{data}/sweden/similarity/municipalities.json'))),
+      a as (select municipality, occupation_field, count(*) as ads
+        from read_parquet('{warehouse}/raw/jobtech/cluster-corpus/202[3456]*/*.parquet')
+        where published_at >= '2023-01-01' and published_at < '2026-01-01' and municipality is not null and occupation_field is not null
+        group by all),
+      m as (select municipality from a group by 1 having sum(ads) >= 300),
+      p as (pivot (select a.*, skr.skr_group from a join m using (municipality) left join skr on skr.name = a.municipality)
+        on occupation_field using first(ads) group by municipality, skr_group)
+      select municipality, skr_group, coalesce(columns(* exclude (municipality, skr_group)), 0) from p order by 1
+
+  - name: occupation-demand-curves
+    family: job
+    title: Shapes of demand by occupation
+    note: Monthly share of all ads per occupation group (at least 2,000 ads), log and z-scored per occupation. 2026 months may be incomplete in the corpus.
+    id: occupation_group
+    transform: none
+    method: kmeans
+    k: [3, 8]
+    query: |
+      with a as (select occupation_group, strftime(published_at::timestamp, '%Y-%m') as month, count(*) as ads
+        from read_parquet('{warehouse}/raw/jobtech/cluster-corpus/202[3456]*/*.parquet')
+        where published_at >= '2023-01-01' and published_at < '2026-10-01' and occupation_group is not null group by all),
+      g as (select occupation_group from a group by 1 having sum(ads) >= 2000),
+      months as (select month, sum(ads) as total from a group by 1),
+      f as (select g.occupation_group, months.month, ln((coalesce(a.ads, 0) + 0.5) / months.total) as v
+        from g cross join months left join a using (occupation_group, month)),
+      z as (select occupation_group, 'm' || replace(month, '-', '_') as month,
+        (v - avg(v) over w) / nullif(stddev(v) over w, 0) as v from f window w as (partition by occupation_group))
+      pivot z on month using first(v) order by occupation_group
+
+  - name: riksdag-eras
+    family: pol
+    title: Riksdag agendas since 1993
+    note: Share of topic-assigned words per session (one topic model for all sessions); 59 % of words have no topic and are left out.
+    id: session
+    transform: clr
+    method: chain
+    resample: columns
+    k: [2, 7]
+    query: |
+      with t as (select unnest(data, recursive:=true) from read_json('{data}/politics/parliament/parties/*/topics.json')),
+      s as (select session, session_year, 't' || lpad(topic_id::varchar, 2, '0') as topic, sum(words) as words
+        from t where topic_id >= 0 group by all),
+      p as (pivot (select session, session_year, topic, words / sum(words) over (partition by session) as share from s)
+        on topic using first(share))
+      select session, coalesce(columns('^t[0-9]+$'), 0) from p order by session_year
+
+  - name: tax-mix
+    family: wel
+    title: Who taxes like Sweden
+    note: OECD tax revenue by type, 2022, centred log-ratio of the mix; VAT split out of goods and services.
+    id: country_code
+    label: name
+    transform: clr
+    method: ward
+    k: [2, 6]
+    query: |
+      with r as (select r->>'$[0]' as country_code, (r->>'$[1]')::int as year, r->>'$[2]' as tax_code, (r->>'$[3]')::double as pct_gdp
+        from (select unnest(rows) r from read_json('{data}/taxes/countries.json', columns={'rows':'JSON[]'}))),
+      c as (select c->>'country_code' as country_code, c->>'name_en' as name
+        from (select unnest(countries) c from read_json('{data}/taxes/countries.json', columns={'countries':'JSON[]'}))),
+      p as (pivot (select r.country_code, c.name, r.tax_code, r.pct_gdp from r join c using (country_code)
+        where r.year = 2022 and r.tax_code in ('T_1100', 'T_1200', 'T_2000', 'T_3000', 'T_4000', 'T_5000', 'T_5111', 'T_6000'))
+        on tax_code using first(pct_gdp) group by country_code, name)
+      select country_code, name, T_1100 as personal_income, T_1200 as corporate_income, T_2000 as social_security,
+        T_3000 as payroll, T_4000 as property, T_5111 as vat, T_5000 - T_5111 as other_goods_services, T_6000 as other
+      from p order by country_code
+  - name: sfs-paragraphs
+    family: txt
+    title: Statute-book paragraphs by meaning
+    note: bge-m3 vectors of 9,970 paragraphs from only 40 laws; AMI against the law shows how far clusters just recover laws.
+    id: id
+    label: title
+    reference: title
+    vectors: '{warehouse}/features/workers_ai/sfs/run/vectors.npy'
+    ids: '{warehouse}/features/workers_ai/sfs/run/ids.json'
+    transform: none
+    pca: 50
+    method: hdbscan
+    min_cluster_size: 40
+    min_samples: 10
+    resamples: 20
+    nulls: 20
+    query: |
+      attach '{warehouse}/sfs.duckdb' as sfs (read_only);
+      with ids as (select unnest(from_json(content, '["VARCHAR"]')) as id from read_text('{warehouse}/features/workers_ai/sfs/run/ids.json')),
+      k as (select id, 'sfs-' || split_part(id, '-', 2) || '-' || split_part(id, '-', 3) as dok_id from ids)
+      select k.id, d.title, d.kind, (d.issued_year // 10 * 10)::varchar as decade from k left join sfs.gold.fct_sfs_document d using (dok_id)

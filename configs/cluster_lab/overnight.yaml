@@ -118,9 +118,9 @@ resources:
   cpu_threads: 4
   torch_threads: 2
   workers: 1
-  memory_gb: 6
+  memory_gb: 1.5
   min_free_disk_gb: 2
-  duckdb_memory_gb: 3
+  duckdb_memory_gb: 1
   max_spill_gb: 2
 datasets:
 - name: jobs-2023-2026

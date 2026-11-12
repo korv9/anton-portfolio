@@ -1,5 +1,14 @@
 # Cluster Lab
 
+## Klustringar för flödet
+
+`feed.py` kör små validerade klustringar för "What does it even mean?": en DuckDB-fråga eller
+befintliga vektorer per post i `configs/cluster_lab/feed.yaml`, samma diagnostik för alla
+metoder och en kompakt JSON per klustring. Kontrakt, katalog och körprompt:
+[docs/feed-clustering.md](../../docs/feed-clustering.md). Standardgränserna är små
+(`memory_gb: 1.5`, två trådar); `limits.py` stoppar processen med kod 137 om minnet passeras,
+också mitt i en passning. Höj gränsen uttryckligen på en GitHub-runner.
+
 ## Publicerade debatter och länsprofiler
 
 `public_research` återanvänder labbets representationscache, checkpointade embeddings,

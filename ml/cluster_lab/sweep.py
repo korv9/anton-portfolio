@@ -111,6 +111,8 @@ class Runner:
         self.source=provenance()
         self.started=time.monotonic()
         self.current=None
+        from .limits import guard
+        guard(config['resources'],Path(config['output'])/'stop-reason.json')
         import psutil
         self.process=psutil.Process()
         self.process.cpu_percent()
