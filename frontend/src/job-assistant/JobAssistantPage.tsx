@@ -12,7 +12,8 @@ import { setHashParams, type Route } from '../router'
 import AdDetail from './AdDetail'
 import PageHead from '../ui/PageHead'
 import Bar, { Notes } from './Bar'
-import Filters from './Filters'
+import Filters, { type Tab } from './Filters'
+import Market, { MARKET_VIEW } from './Market'
 import JobList from './JobList'
 import Sections from './Sections'
 import { useJobData } from './useJobData'
@@ -66,7 +67,8 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     () => parseQuery(route.params, all, defaultList),
     [route.params, all, defaultList],
   )
-  const about = route.params.get('tab') === 'about'
+  const tabParam = route.params.get('tab')
+  const tab: Tab = tabParam === 'about' || tabParam === 'market' ? tabParam : ''
   const adId = route.params.get('ad')
   const shown = useMemo(() => searchRows(all, query), [all, query])
   const lists = useMemo(() => listCounts(all, query), [all, query])
@@ -89,6 +91,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     setMoved(true)
     const p = queryParams(route.params, q, defaultList)
     p.delete('tab')
+    for (const k of Object.keys(MARKET_VIEW)) p.delete(k)
     if (q.list !== query.list) p.delete('ad')
     go(p, push)
   }
@@ -112,9 +115,9 @@ export default function JobAssistantPage({ route }: { route: Route }) {
       go(p)
     }
   }
-  const showAbout = () => {
+  const showTab = (t: Tab) => {
     const p = new URLSearchParams(route.params)
-    p.set('tab', 'about')
+    p.set('tab', t)
     p.delete('ad')
     go(p, true)
   }
@@ -193,10 +196,12 @@ export default function JobAssistantPage({ route }: { route: Route }) {
             onQuery={setQuery}
             lists={lists}
             counts={counts}
-            about={about}
-            onAbout={showAbout}
+            tab={tab}
+            onTab={showTab}
           />
-          {about ? (
+          {tab === 'market' ? (
+            <Market route={route} data={data} />
+          ) : tab === 'about' ? (
             <Sections
               data={data}
               owner={owner}

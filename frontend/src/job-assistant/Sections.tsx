@@ -3,6 +3,7 @@
  * demand to show), what the CV lacks (only when a match has a gap), the scheduled runs and the owner's tools (only with the token or ?owner).
  */
 import { l } from '../i18n'
+import RankBars from '../charts/RankBars'
 import Owner from './Owner'
 import type { Delivered, Records } from './data'
 import { skillGaps } from './gaps'
@@ -17,7 +18,6 @@ type Props = {
   onOwner: (owner: boolean) => void
   onRecords: (r: Records) => void
 }
-const LEVELS = ['practical', 'education_or_project', 'listed']
 
 export default function Sections({
   data,
@@ -82,82 +82,59 @@ export default function Sections({
               'Vad annonserna frågar efter, mot cv:t',
             )}
           </h2>
-          {top.length > 0 && (
-            <div className="ja-table-wrap">
-              <table className="ja-table ja-demand">
-                <caption className="ja-muted">
-                  {l(
-                    'The skills named most often in the matched ads.',
-                    'De kompetenser som nämns oftast i de matchade annonserna.',
-                  )}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">{l('Skill', 'Kompetens')}</th>
-                    <th scope="col" className="num">
-                      {l('Ads naming it', 'Annonser')}
-                    </th>
-                    <th scope="col" className="num">
-                      {l('As a requirement', 'Som krav')}
-                    </th>
-                    <th scope="col">{l('In the CV', 'I cv:t')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {top.map((s) => (
-                    <tr
-                      key={s.skill}
-                      data-gap={!LEVELS.slice(0, 2).includes(s.cv_level ?? '')}
-                    >
-                      <th scope="row">{s.skill}</th>
-                      <td className="num">{s.ads_naming}</td>
-                      <td className="num">{s.ads_required}</td>
-                      <td>{cvLevelLabel(s.cv_level)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <p className="ja-muted">
+            {l(
+              'The skills named most often in the matched ads.',
+              'De kompetenser som nämns oftast i de matchade annonserna.',
+            )}
+          </p>
+          <div className="ja-skill-bars">
+            <RankBars
+              label={l(
+                'Matched ads naming each skill, with how many require it and the CV level',
+                'Matchade annonser som nämner varje kompetens, med hur många som kräver den och nivån i cv:t',
+              )}
+              rows={top.map((s) => ({
+                key: s.skill,
+                label: s.skill,
+                value: s.ads_naming,
+                note: l(
+                  `${s.ads_required} as a requirement · ${cvLevelLabel(s.cv_level)}`,
+                  `${s.ads_required} som krav · ${cvLevelLabel(s.cv_level)}`,
+                ),
+              }))}
+              format={(v) => String(v)}
+            />
+          </div>
         </section>
       )}
 
       {gaps.length > 0 && (
         <section aria-labelledby="ja-gaps">
           <h2 id="ja-gaps">{l('What the CV lacks', 'Vad cv:t saknar')}</h2>
-          <div className="ja-table-wrap">
-            <table className="ja-table ja-gaps">
-              <caption className="ja-muted">
-                {l(
-                  'Skills the good, possible and stretch matches name that the CV shows neither in work nor in education or a project. First the skills that are the only gap in an ad.',
-                  'Kompetenser som de bra, möjliga och utmanande matchningarna nämner och som cv:t varken visar i arbete eller i utbildning eller projekt. Först de kompetenser som är det enda som saknas i en annons.',
-                )}
-              </caption>
-              <thead>
-                <tr>
-                  <th scope="col">{l('Skill', 'Kompetens')}</th>
-                  <th scope="col" className="num">
-                    {l('Ads lacking it', 'Annonser där den saknas')}
-                  </th>
-                  <th scope="col" className="num">
-                    {l('Good or possible', 'Bra eller möjliga')}
-                  </th>
-                  <th scope="col" className="num">
-                    {l('The only gap', 'Enda som saknas')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {gaps.map((g) => (
-                  <tr key={g.skill}>
-                    <th scope="row">{g.skill}</th>
-                    <td className="num">{g.ads}</td>
-                    <td className="num">{g.listed}</td>
-                    <td className="num">{g.only}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <p className="ja-muted">
+            {l(
+              'Skills the good, possible and stretch matches name that the CV shows neither in work nor in education or a project. First the skills that are the only gap in an ad.',
+              'Kompetenser som de bra, möjliga och utmanande matchningarna nämner och som cv:t varken visar i arbete eller i utbildning eller projekt. Först de kompetenser som är det enda som saknas i en annons.',
+            )}
+          </p>
+          <div className="ja-gap-bars">
+            <RankBars
+              label={l(
+                'Ads lacking each skill, with how many are good or possible and how many lack only it',
+                'Annonser där varje kompetens saknas, med hur många som är bra eller möjliga och hur många där bara den saknas',
+              )}
+              rows={gaps.map((g) => ({
+                key: g.skill,
+                label: g.skill,
+                value: g.ads,
+                note: l(
+                  `${g.listed} good or possible · ${g.only} the only gap`,
+                  `${g.listed} bra eller möjliga · ${g.only} enda som saknas`,
+                ),
+              }))}
+              format={(v) => String(v)}
+            />
           </div>
         </section>
       )}

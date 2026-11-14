@@ -124,10 +124,15 @@ test('How it works counts what the CV lacks over the good, possible and stretch 
 }) => {
   await board(page, '#jobs?tab=about')
   // The fixture's odd ads lack Kubernetes as their only gap; 12 of them are not outside, 9 good or possible.
-  const row = page.locator('table.ja-gaps tbody tr')
+  const row = page.locator('.ja-gap-bars li')
   await expect(row).toHaveCount(1)
-  await expect(row.locator('th')).toHaveText('Kubernetes')
-  await expect(row.locator('td')).toHaveText(['12', '9', '12'])
+  await expect(page.locator('table.ja-gaps')).toHaveCount(0)
+  await expect(row.locator('.rank-label')).toHaveText('Kubernetes')
+  // 12 ads lack it, 9 of them good or possible, and in all 12 it is the only gap.
+  await expect(row.locator('.rank-value')).toHaveText(/^12\s*9 good/)
+  await expect(row.locator('.rank-value small')).toHaveText(
+    '9 good or possible · 12 the only gap',
+  )
 })
 
 test('How it works shows the last fetch, the delay and the last day of runs', async ({
