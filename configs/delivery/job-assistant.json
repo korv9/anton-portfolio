@@ -11,6 +11,9 @@
   "schemas": {
     "job-assistant/time-to-close.json": "configs/delivery/schemas/job-assistant-time-to-close.json"
   },
+  "count_rows": {
+    "job-assistant/time-to-close.json": []
+  },
   "checks": [
     [
       "python",

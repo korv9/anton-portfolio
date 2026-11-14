@@ -8,6 +8,9 @@ unless pipeline.yml marks it manual (left out of --all, so its absence is expect
 
 The row counts are also compared with the active release: losing a large share of a file's rows
 blocks the release, unless PORTFOLIO_ALLOW_ROW_DROP names the file (comma-separated logical paths).
+A delivery spec's `count_rows` names small files that are checked at any size, each with the keys of
+the lists inside a row that are counted instead of the rows ([] counts the rows): a top list of
+two periods counts its employers, a term file its rising and falling terms.
 """
 from __future__ import annotations
 
@@ -85,24 +88,30 @@ def dq(group: str) -> dict:
     return {"status": status, "scope": "dbt build of each subject in the group", "subjects": subjects}
 
 
-def rows(path: str, value) -> int | None:
+def rows(path: str, value, nested: list[str] | None = None) -> int | None:
     """Rows of a tabular file: a JSON array, a JSON object's `rows`, `data` or `items` array (the
-    news feed, the Workers AI passage lists), or Parquet."""
+    news feed, the Workers AI passage lists), or Parquet. With `nested` keys, the items of those
+    lists inside each row are counted instead."""
     if path.endswith(".parquet"):
         import pyarrow as pa
         import pyarrow.parquet as pq
         return pq.ParquetFile(pa.BufferReader(value)).metadata.num_rows
     if isinstance(value, dict):
         value = next((value[k] for k in ("rows", "data", "items") if isinstance(value.get(k), list)), None)
-    return len(value) if isinstance(value, list) else None
+    if not isinstance(value, list):
+        return None
+    if not nested:
+        return len(value)
+    return sum(len(row.get(key) or []) for row in value if isinstance(row, dict) for key in nested)
 
 
-def reconcile(payloads: dict[str, bytes]) -> dict:
+def reconcile(payloads: dict[str, bytes], count_rows: dict[str, list[str]] | None = None) -> dict:
     """Row counts per published file. Where an exporter recorded the source table's count beside a
     published path (welfare/datasets.json: {table, path, rows}), the published count must equal it."""
     values = {p: json.loads(d) if p.endswith(".json") else d
               for p, d in payloads.items() if p.endswith((".json", ".parquet"))}
-    counts = {p: n for p, v in values.items() if (n := rows(p, v)) is not None}
+    count_rows = count_rows or {}
+    counts = {p: n for p, v in values.items() if (n := rows(p, v, count_rows.get(p))) is not None}
     checks = {}
     for path, value in values.items():
         for entry in value if isinstance(value, list) else []:
@@ -114,19 +123,22 @@ def reconcile(payloads: dict[str, bytes]) -> dict:
             else "match" if checks else "counts_only", "rows": counts, "checks": checks}
 
 
-def row_drops(active: dict[str, int], published: dict[str, int]) -> dict:
+def row_drops(active: dict[str, int], published: dict[str, int], always=()) -> dict:
     """Files that lost more than MAX_ROW_DROP of the active release's rows; a file gone counts as 0.
-    `allowed` is true only for a path named in PORTFOLIO_ALLOW_ROW_DROP."""
+    Files in `always` are checked below MIN_ROWS_CHECKED too. `allowed` is true only for a path
+    named in PORTFOLIO_ALLOW_ROW_DROP."""
     allowed = {p.strip() for p in os.environ.get("PORTFOLIO_ALLOW_ROW_DROP", "").split(",")}
     return {path: {"active": before, "published": published.get(path, 0), "allowed": path in allowed}
             for path, before in active.items()
-            if before >= MIN_ROWS_CHECKED and published.get(path, 0) < before * (1 - MAX_ROW_DROP)}
+            if (before >= MIN_ROWS_CHECKED or path in always)
+            and published.get(path, 0) < before * (1 - MAX_ROW_DROP)}
 
 
-def gate(group: str, payloads: dict[str, bytes], active_rows: dict[str, int] | None = None) -> tuple[dict, dict]:
+def gate(group: str, payloads: dict[str, bytes], active_rows: dict[str, int] | None = None,
+         count_rows: dict[str, list[str]] | None = None) -> tuple[dict, dict]:
     """The manifest's `dq` and `reconcile`; raises before upload when either blocks. active_rows is
-    `reconcile.rows` of the group's active release."""
-    quality, counts = dq(group), reconcile(payloads)
+    `reconcile.rows` of the group's active release; count_rows is the delivery spec's."""
+    quality, counts = dq(group), reconcile(payloads, count_rows)
     if quality["status"] == "error":
         failing = sorted({n for s in quality["subjects"].values() for n in s.get("failing", [])})
         failing += [f"{n} (not run)" for n in quality.get("not_run", [])]
@@ -134,7 +146,7 @@ def gate(group: str, payloads: dict[str, bytes], active_rows: dict[str, int] | N
     if counts["status"] == "mismatch":
         bad = [p for p, c in counts["checks"].items() if not c["match"]]
         raise ValueError(f"Row reconciliation failed for {group}: {', '.join(bad)}")
-    drops = row_drops(active_rows or {}, counts["rows"])
+    drops = row_drops(active_rows or {}, counts["rows"], set(count_rows or {}))
     if blocked := [f"{p} ({d['active']} to {d['published']})" for p, d in drops.items() if not d["allowed"]]:
         raise ValueError(f"Row drop blocks {group}: {', '.join(blocked[:10])}; if intended, name the "
                          "paths in PORTFOLIO_ALLOW_ROW_DROP")

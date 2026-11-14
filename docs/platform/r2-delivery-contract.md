@@ -139,7 +139,10 @@ publiceringen före uppladdning, om inte `PORTFOLIO_ALLOW_ROW_DROP` namnger file
 (kommaseparerat). Ett tillåtet tapp skrivs i `reconcile.drops`. Nyhetsflödet och Workers AI:s
 passagelistor räknas genom `items`. `jobs/market.json` och filerna i `job-assistant` är objekt
 utan de nycklarna, och punktfilerna i `diva` och `jobs-analysis` byter path varje körning, så där
-kan spärren inte slå till. De vilar på sina egna valideringar.
+kan spärren inte slå till. De vilar på sina egna valideringar. Små filer som specen namnger under
+`count_rows` kontrolleras oavsett storlek, och listorna som anges där räknas i stället för raderna:
+`jobs/employer-top.json` räknar sina arbetsgivare, `jobs/rising-terms.json` sina stigande och
+fallande termer, och `job-assistant/time-to-close.json` sina rader.
 
 `pipeline.py run --only publish` kräver samma fullständighet som en vanlig körning: saknas ett
 subject som inte är `manual` hoppas gruppen över och körningen misslyckas. `data-heartbeat.yml`

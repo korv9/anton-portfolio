@@ -97,7 +97,7 @@ models:
             columns: [period_kind, employer_rank]
       - unique_combination:
           arguments:
-            columns: [period_kind, employer_name]
+            columns: [period_kind, employer_id]
     columns:
       - name: period_kind
         description: 'Key: latest_12_months or year.'
@@ -125,6 +125,15 @@ models:
               arguments:
                 values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
                 quote: false
+      - name: employer_id
+        description: 'Key, references dim_employer: hash of the organisation number; for tests only, never exported.'
+        data_type: VARCHAR
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_employer')
+                field: employer_id
       - name: employer_name
         description: 'Attribute: the employer name as last advertised.'
         data_type: VARCHAR
