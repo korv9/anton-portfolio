@@ -196,8 +196,14 @@ PUBLISHERS = [
      "outputs": [{"pattern": "concepts/*.json"}]},
     {"path": "platform/publish/job_ai_governance/export_job_ai_governance.py", "domain": "ai_act",
      "outputs": [{"pattern": "ai-act/jobs/*.json"}]},
-    {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [{"pattern": "jobs/market.json"}]},
+    {"path": "platform/publish/export_market.py", "domain": "jobs", "outputs": [
+        {"pattern": "jobs/market.json"}, {"pattern": "jobs/market-weekly.json", "inputs": ["mart_market_weekly"]}]},
     {"path": "platform/job_assistant/export.py", "domain": "jobs", "outputs": [{"pattern": "job-assistant/*.json"}]},
+    {"path": "platform/publish/export_job_history.py", "domain": "jobs", "outputs": [
+        {"pattern": "jobs/ads-*.json", "inputs": ["mart_job_ads_periods"]},
+        {"pattern": "jobs/skill-trends.json", "inputs": ["mart_skill_trends_monthly", "mart_job_trends_monthly"]}]},
+    {"path": "platform/nlp/rising_terms.py", "domain": "jobs",
+     "outputs": [{"pattern": "jobs/rising-terms.json", "inputs": ["stg_job_ads", "fct_job_ads", "mart_job_trends_monthly"]}]},
     {"path": "platform/ingest/jobtech/export_presentation.py", "domain": "jobs",
      "outputs": [{"pattern": "jobs/*.csv"}]},
     {"path": "platform/publish/export_job_clusters.py", "domain": "jobs", "outputs": [

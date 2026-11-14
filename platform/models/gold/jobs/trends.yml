@@ -50,6 +50,43 @@ models:
       - name: role_family
         dimension:
           type: categorical
+  - name: mart_job_ads_periods
+    description: New IT ads per ISO week (Monday start), month and year and role family ('all' for every classified role, Other left out), from fct_job_ads by publication day. complete is true only when every day of the period lies in the analysis range and in a month whose archive import completed; an incomplete period is never compared.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [period_kind, period_start, role_family]
+    columns:
+      - name: period_kind
+        description: 'Key: week, month or year.'
+        data_type: VARCHAR
+        data_tests:
+          - accepted_values:
+              arguments: {values: [week, month, year]}
+      - name: period_start
+        description: 'Key: first day of the period (the Monday of an ISO week).'
+        data_type: DATE
+      - name: role_family
+        description: 'Key: role family from role_patterns, or all for every classified role.'
+        data_type: VARCHAR
+      - name: ads
+        description: 'Measure, additive over role families (not with all): new ads published in the covered days of the period.'
+        data_type: BIGINT
+        data_tests: [not_null]
+      - name: days_covered
+        description: 'Measure, non-additive: days of the period inside the range whose month was imported in full.'
+        data_type: BIGINT
+        data_tests: [not_null]
+      - name: days_in_period
+        description: 'Measure, non-additive: calendar days of the period (7 for a week).'
+        data_type: BIGINT
+        data_tests: [not_null]
+      - name: complete
+        description: 'Attribute: true when days_covered equals days_in_period; only complete periods may be compared.'
+        data_type: BOOLEAN
+        data_tests: [not_null]
   - name: mart_skill_trends_monthly
     description: One row per month, role and technology. Counts, distinct known employers, shares, calendar-aligned growth and weighted three-month shares. total_ads is repeated per skill and must not be summed across skills.
     data_tests:

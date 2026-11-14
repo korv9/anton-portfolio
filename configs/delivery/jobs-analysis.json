@@ -2,5 +2,12 @@
   "schema_version": 2,
   "files": ["gold/marts/jobs.json"],
   "include": ["jobs/*"],
-  "exclude": ["jobs/market.json", "jobs/company-intelligence.json", "jobs/workspace.json", "jobs/workspace-remaining.json"]
+  "exclude": ["jobs/market.json", "jobs/market-weekly.json", "jobs/company-intelligence.json", "jobs/workspace.json", "jobs/workspace-remaining.json"],
+  "schemas": {
+    "jobs/ads-week.json": "configs/delivery/schemas/job-ads-periods.json",
+    "jobs/ads-month.json": "configs/delivery/schemas/job-ads-periods.json",
+    "jobs/ads-year.json": "configs/delivery/schemas/job-ads-periods.json",
+    "jobs/skill-trends.json": "configs/delivery/schemas/skill-trends.json",
+    "jobs/rising-terms.json": "configs/delivery/schemas/rising-terms.json"
+  }
 }

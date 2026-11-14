@@ -7,6 +7,8 @@
 Steps: download and import the archives (ingest_history), dbt build of the jobs models into
 warehouse/jobtech/history.duckdb, the presentation export, and a copy of the five tables
 the site reads into frontend/public/data/jobs/. `npm run data:build` then rebuilds gold.
+After the import it logs, once, how many archive payloads carry a removal date
+(warehouse/jobtech/removal-check.json): whether a time-to-close history could be built at all.
 
 JobTech publishes one archive per calendar year, some months after it ends. By default
 every year from 2022 to the latest published one is used; the report's comparison year
@@ -46,6 +48,22 @@ def published_years() -> list[int]:
     return years
 
 
+def removal_check(database: Path) -> dict:
+    """Payloads in raw.job_ads with a removal date or flag, by the field names JobTech's stream uses."""
+    import duckdb
+    with duckdb.connect(str(database), read_only=True) as con:
+        total, removed_date, removed, removed_true = con.execute("""
+            select count(*), count(payload ->> '$.removed_date'), count(payload ->> '$.removed'),
+                count(*) filter (where payload ->> '$.removed' = 'true')
+            from raw.job_ads""").fetchone()
+    result = {"payloads": total, "removed_date_not_null": removed_date, "removed_not_null": removed,
+              "removed_true": removed_true}
+    (database.parent / "removal-check.json").write_text(json.dumps(result, indent=1) + "
+", encoding="utf-8")
+    print("Removal date in archive payloads:", json.dumps(result), flush=True)
+    return result
+
+
 def run(arguments: list[str], env: dict) -> None:
     print("Running:", " ".join(arguments), flush=True)
     subprocess.run(arguments, cwd=PLATFORM, env=env, check=True)
@@ -76,6 +94,7 @@ def main() -> None:
     if not args.skip_import:
         run([sys.executable, "ingest/jobtech/ingest_history.py", "--years", *map(str, years),
              "--database", str(args.database), "--directory", str(args.archives)], env)
+    removal_check(args.database)
     # One thread: the gold models each scan the full ad table, and in parallel their
     # temporary files outgrow a CI runner's disk.
     run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".", "--indirect-selection", "buildable",

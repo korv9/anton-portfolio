@@ -2,6 +2,11 @@ name: Rebuild the historical IT job report
 
 # Heavy archive work runs independently of the daily whole-market delivery: the jobs_analysis
 # subject of platform/pipeline.yml, published as its own group.
+#
+# Branch mode: dispatched on any ref but main, the same job builds the history and runs the exports
+# (--only ingest,export) without the environment and without R2 credentials, so it can neither
+# publish a release nor record its ingestion in R2. It uploads the new JSON files and the removal
+# date check as an Actions artifact instead. On main it behaves as before.
 on:
   workflow_dispatch:
 
@@ -18,27 +23,45 @@ jobs:
   report:
     runs-on: ubuntu-latest
     timeout-minutes: 300
-    if: github.ref == 'refs/heads/main'
-    environment: anton-portfolio
+    # An empty name runs the job without an environment, so its protected secrets stay out of reach.
+    environment: ${{ github.ref == 'refs/heads/main' && 'anton-portfolio' || '' }}
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_ACCOUNT_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCOUNT_ID || '' }}
+      R2_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCESS_KEY_ID || '' }}
+      R2_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/main' && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+      R2_BUCKET: ${{ github.ref == 'refs/heads/main' && secrets.R2_BUCKET || '' }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - uses: ./.github/actions/data-setup
+        with:
+          r2: ${{ github.ref == 'refs/heads/main' }}
       - name: Rebuild, validate and publish the report without changing daily market data
+        if: github.ref == 'refs/heads/main'
         run: python platform/pipeline.py run jobs_analysis
+      - name: Branch mode, build and export without publishing
+        if: github.ref != 'refs/heads/main'
+        run: python platform/pipeline.py run jobs_analysis --only ingest,export
+      - name: Upload the new files and the removal date check
+        if: ${{ github.ref != 'refs/heads/main' && !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: job-analysis-branch-${{ github.run_id }}
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            frontend/public/data/jobs/ads-*.json
+            frontend/public/data/jobs/skill-trends.json
+            frontend/public/data/jobs/rising-terms.json
+            warehouse/jobtech/removal-check.json
 
   # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
   alert:
     needs: report
-    if: ${{ !cancelled() && needs.report.result != 'skipped' }}
+    if: ${{ github.ref == 'refs/heads/main' && !cancelled() && needs.report.result != 'skipped' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

@@ -42,8 +42,8 @@ behåller även `--prefer-active` en befintlig lokal export.
 Uppladdningsklienten läser samma R2-miljövariabler som `upload.py`.
 
 Grupperna ersätts som helheter. Den dagliga gruppen `jobs` äger
-`jobs/market.json`, `jobs/company-intelligence.json`, `jobs/workspace.json` och
-`jobs/workspace-remaining.json`; årsrapporter och ML-filer får en separat grupp, exempelvis
+`jobs/market.json`, `jobs/market-weekly.json`, `jobs/company-intelligence.json`,
+`jobs/workspace.json` och `jobs/workspace-remaining.json`; årsrapporter och ML-filer får en separat grupp, exempelvis
 `jobs-analysis`. `news` äger `parliament/news.json` och, om den finns, tidigare
 godkänd `parliament/news-summaries.json`. `public-data` omfattar välfärd,
 parlamentets sex publika kontrakt, skatter, deras Parquet och exporterade schemas.

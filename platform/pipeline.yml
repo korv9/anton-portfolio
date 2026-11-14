@@ -506,6 +506,10 @@ subjects:
       - ingest: python platform/ingest/jobtech/run_history_pipeline.py
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
+      # jobs/ads-{week,month,year}.json and jobs/skill-trends.json from the history database.
+      - export: python platform/publish/export_job_history.py
+      # jobs/rising-terms.json: terms and counts only, never ad text.
+      - export: python platform/nlp/rising_terms.py
 
   # The job assistant (docs/products/jobs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
   # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
