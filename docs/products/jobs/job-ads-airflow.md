@@ -185,8 +185,13 @@ with changes. Between the window changes, single new ads were embedded for 0.16 
 
 The release at 23:50:21 UTC read `latency_minutes` median 5.5 over 9 publications, the two windows
 together. The first analyse of each window spent 606 to 631 s embedding about 2,435 texts with the
-cluster model on CPU: its cache (`warehouse/ml/jobs`) is not in R2, so on runners each window
-starts it cold; on an always-on host it stays on disk. The idle stack at the end used scheduler
+cluster model on CPU: its cache (`warehouse/ml/jobs`) was not in R2, so on runners each window
+started it cold; on an always-on host it stays on disk. Since #260, `realtime.py push` stores the
+cache beside the ad store and the workflow restores it. The first window to restore it
+([42501361029](https://github.com/korv9/anton-portfolio/actions/runs/42501361029), 2026-11-08
+19:50 to 23:50 UTC) ran 26 of 26 cycles without a failed stage, its first analyse took 1.42 s with
+0 new texts to embed, and its first publication came 10 min 4 s after the last of the window
+before (19:40:33 to 19:50:37 UTC). The idle stack at the end used scheduler
 1.05 GiB, API server 278 MiB, DAG processor 175 MiB and Postgres 42 MiB.
 
 The first publish run (41488252418) failed: `release.py` starts `export.py` as `python`, which in the
@@ -241,9 +246,9 @@ rewritten each run (16 MB). The embedding cache is 30 MB.
    store, and a cron schedule every five hours stays as a backup, since GitHub started only two of
    its slots between 00:23 and 13:23 UTC on 2026-11-04. A window schedules the DAG for 230 minutes;
    a 270-minute window was stopped after four hours by a runner shutdown (run 41748877006), which
-   cost its store upload, not data: the next window reads again from the last stored cursor. Each
-   change of window leaves a gap of about 15 to 25 minutes (image build, restore and a cold
-   embedding of the open ads). With the variable removed no new window is queued and the hourly
+   cost its store upload, not data: the next window reads again from the last stored cursor. A change
+   of window left a gap of about 15 to 25 minutes (image build, restore and a cold embedding of the
+   open ads); with the cache restored the gap on 2026-11-08 was 10 min 4 s. With the variable removed no new window is queued and the hourly
    refresh takes over again.
 3. **The raw store in R2.** The GitHub flow restores and saves `warehouse/raw/job_assistant` in R2
    each run; the Airflow host keeps it on local disk. Schedule `realtime.py push` daily, or keep a
