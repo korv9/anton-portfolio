@@ -5,6 +5,7 @@ import {
   closeRows,
   fieldSeries,
   funnel,
+  gaps,
   isoWeek,
   latestWeek,
   medianClose,
@@ -136,24 +137,60 @@ test('time to close shows only medians over the limit, the whole board first', (
   assert.equal(medianClose({ ...t, rows: t.rows.slice(0, 3) }), null)
 })
 
-test('the top rise is the largest positive change, and none when nothing grew', () => {
-  const row = (skill: string, share_yoy_pp: number) => ({
-    role_family: 'Data Engineer',
+test('the top rise is the largest positive change among roles with 100 ads in both months', () => {
+  const row = (
+    skill: string,
+    share_yoy_pp: number,
+    total = 400,
+    before = 400,
+  ) => ({
+    role_family: 'Software Developer',
     skill,
-    ads_with_skill: 5,
-    total_ads: 50,
+    ads_with_skill: 50,
+    total_ads: total,
     skill_share: 0.1,
+    previous_year_skill_ads: 40,
+    previous_year_total_ads: before,
     previous_year_share: 0.1,
     share_yoy_pp,
   })
+  const month = '2025-12'
+  assert.equal(
+    topRise({ month, rows: [row('SQL', -3), row('Docker', 5), row('Git', 4)] })!
+      .skill,
+    'Docker',
+  )
+  // A larger rise on fewer than 100 ads in either month is not the key figure.
   assert.equal(
     topRise({
-      month: '2025-12',
-      rows: [row('SQL', -3), row('dbt', 14), row('Git', 10)],
+      month,
+      rows: [
+        row('dbt', 14, 52, 400),
+        row('Git', 10, 400, 39),
+        row('Docker', 5),
+      ],
     })!.skill,
-    'dbt',
+    'Docker',
   )
-  assert.equal(topRise({ month: '2025-12', rows: [row('SQL', -3)] }), null)
+  assert.equal(topRise({ month, rows: [row('dbt', 14, 52, 39)] }), null)
+  assert.equal(topRise({ month, rows: [row('SQL', -3)] }), null)
+})
+
+test('periods absent from the file break the line and are named', () => {
+  const p = (start: string) => ({ start, label: start, ads: 1, complete: true })
+  const weeks = gaps(
+    [p('2026-08-03'), p('2026-08-10'), p('2026-08-31')],
+    'week',
+  )
+  assert.deepEqual([...weeks.after], [2])
+  assert.deepEqual(weeks.missing, ['2026-W34', '2026-W35'])
+  const months = gaps(
+    [p('2025-11-01'), p('2025-12-01'), p('2026-02-01')],
+    'month',
+  )
+  assert.deepEqual([...months.after], [2])
+  assert.deepEqual(months.missing, ['2026-01'])
+  assert.deepEqual(gaps([p('2024-01-01'), p('2025-01-01')], 'year').missing, [])
 })
 
 test('the funnel counts current ads per fit, outside first', () => {

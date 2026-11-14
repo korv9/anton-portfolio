@@ -9,7 +9,7 @@ import { ChartCard } from '../ui/dash/Dash'
 import { Pick } from '../charts/feature/Feature'
 import RankBars from '../charts/RankBars'
 import type { Delivered } from './data'
-import { fitName, monthName, num } from './labels'
+import { cap, fitName, monthName, num, pct } from './labels'
 import {
   closeRows,
   families,
@@ -51,12 +51,12 @@ export function Closing({ t, view, set }: Props & { t?: TimeToClose }) {
         'Dagar från publicering till borttagning',
       )}
       sub={l(
-        `Median per occupation, over the Data/IT ads removed in the last ${t.window_days} days. The archives carry no removal date, so only the stream is counted.`,
-        `Median per yrke, över de Data/IT-annonser som togs bort de senaste ${t.window_days} dagarna. Arkiven har inget borttagningsdatum, så bara strömmen räknas.`,
+        `Median per occupation, of the Data/IT ads removed in the last ${t.window_days} days. The archives carry no removal date, so only the stream is counted.`,
+        `Median per yrke, av de Data/IT-annonser som togs bort de senaste ${t.window_days} dagarna. Arkiven har inget borttagningsdatum, så bara strömmen räknas.`,
       )}
       foot={l(
-        `A median is shown only over at least ${t.min_ads} ads. An ad removed before its deadline is usually filled or withdrawn.`,
-        `En median visas bara över minst ${t.min_ads} annonser. En annons som tas bort före sista dagen är oftast tillsatt eller återkallad.`,
+        `A median is shown only for at least ${t.min_ads} ads. Counting only removals in the last ${t.window_days} days gives long-running ads more weight than a full cohort would. An ad removed before its deadline is usually filled or withdrawn.`,
+        `En median visas bara för minst ${t.min_ads} annonser. Att bara räkna borttagningar de senaste ${t.window_days} dagarna ger annonser som legat länge större vikt än en hel årgång skulle. En annons som tas bort före sista dagen är oftast tillsatt eller återkallad.`,
       )}
     >
       {outcomes.length > 1 && (
@@ -131,8 +131,8 @@ export function Technologies({ s, view, set }: Props & { s?: SkillTrends }) {
             label: r.skill,
             value: r.share_yoy_pp,
             note: l(
-              `${num(r.skill_share * 100)} % of ${num(r.total_ads)}`,
-              `${num(r.skill_share * 100)} % av ${num(r.total_ads)}`,
+              `${pct(r.skill_share * 100)} of ${num(r.total_ads)}`,
+              `${pct(r.skill_share * 100)} av ${num(r.total_ads)}`,
             ),
           }))}
         format={pp}
@@ -141,8 +141,23 @@ export function Technologies({ s, view, set }: Props & { s?: SkillTrends }) {
   )
 }
 
-function TermBars({ title, terms }: { title: string; terms: Term[] }) {
+/** Uses per 1,000 ads of the window, so windows of different size compare. */
+const per1000 = (uses: number, ads: number) => (ads ? (uses / ads) * 1000 : 0)
+
+function TermBars({
+  title,
+  terms,
+  recentAds,
+  beforeAds,
+}: {
+  title: string
+  terms: Term[]
+  recentAds: number
+  beforeAds: number
+}) {
   if (!terms.length) return null
+  const rate = (t: Term) => per1000(t.recent_uses, recentAds)
+  const before = (t: Term) => per1000(t.before_uses, beforeAds)
   return (
     <div>
       <h3>{title}</h3>
@@ -151,14 +166,23 @@ function TermBars({ title, terms }: { title: string; terms: Term[] }) {
         limit={10}
         rows={terms.map((t) => ({
           key: t.term,
-          label: t.term,
-          value: t.recent_uses,
-          ref: t.before_uses,
-          note: l(
-            `from ${num(t.before_uses)}, ${num(t.employers)} employers`,
-            `från ${num(t.before_uses)}, ${num(t.employers)} arbetsgivare`,
+          label: (
+            <>
+              {t.term}
+              <small className="ja-muted">
+                {l(
+                  `${num(t.employers)} employers`,
+                  `${num(t.employers)} arbetsgivare`,
+                )}
+              </small>
+            </>
           ),
+          value: rate(t),
+          ref: before(t),
+          text: num(t.recent_uses),
+          note: l(`from ${num(t.before_uses)}`, `från ${num(t.before_uses)}`),
         }))}
+        max={Math.max(...terms.flatMap((t) => [rate(t), before(t)]), 1)}
         format={(v) => num(v)}
       />
     </div>
@@ -177,10 +201,13 @@ export function Terms({ t, view, set }: Props & { t?: RisingTerms }) {
   const before = `${t.before.from} – ${t.before.to}`
   return (
     <ChartCard
-      title={l('Words and phrases rising', 'Ord och fraser som ökar')}
+      title={l(
+        'Words and phrases rising and falling',
+        'Ord och fraser som ökar och minskar',
+      )}
       sub={l(
-        `Words and two-word phrases in the texts of ${family} ads, ${recent} against ${before}. The bar is the uses in ${recent}, the tick the uses in ${before}.`,
-        `Ord och tvåordsfraser i texterna i ${family}-annonser, ${recent} mot ${before}. Stapeln är användningar ${recent}, strecket användningar ${before}.`,
+        `Words and two-word phrases in the texts of ${family} ads, ${recent} (${num(row.recent_ads)} ads) against ${before} (${num(row.before_ads)} ads). The bar is uses per 1,000 ads in ${recent}, the tick per 1,000 ads in ${before}; the numbers are uses counted, now and before, and the employers that wrote the term in either window.`,
+        `Ord och tvåordsfraser i texterna i ${family}-annonser, ${recent} (${num(row.recent_ads)} annonser) mot ${before} (${num(row.before_ads)} annonser). Stapeln är användningar per 1 000 annonser ${recent}, strecket per 1 000 annonser ${before}; talen är räknade användningar, nu och före, och de arbetsgivare som skrev ordet i något av fönstren.`,
       )}
       slicer={{
         label: l('Role', 'Roll'),
@@ -197,10 +224,17 @@ export function Terms({ t, view, set }: Props & { t?: RisingTerms }) {
       )}
     >
       <div className="ja-market-pair">
-        <TermBars title={l('Used more', 'Används mer')} terms={row.rising} />
+        <TermBars
+          title={l('Used more', 'Används mer')}
+          terms={row.rising}
+          recentAds={row.recent_ads}
+          beforeAds={row.before_ads}
+        />
         <TermBars
           title={l('Used less', 'Används mindre')}
           terms={row.falling}
+          recentAds={row.recent_ads}
+          beforeAds={row.before_ads}
         />
       </div>
     </ChartCard>
@@ -214,7 +248,7 @@ function periodName(r: EmployerTop['rows'][number]) {
   const name =
     r.period_kind === 'year'
       ? l(`Year ${r.from.slice(0, 4)}`, `År ${r.from.slice(0, 4)}`)
-      : `${monthName(r.from)} – ${monthName(until.toISOString())}`
+      : `${cap(monthName(r.from))} – ${monthName(until.toISOString())}`
   return r.complete ? name : l(`${name}, incomplete`, `${name}, ofullständigt`)
 }
 

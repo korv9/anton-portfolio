@@ -56,8 +56,10 @@ export function jobMarketFixture() {
     'market-weekly': {
       ...head,
       latest_complete_week: weeks.at(-2)!,
+      // Week 35 is absent from the file, as a week the stream never read would be.
       rows: weeks.flatMap((w, i) => {
         const complete = i < weeks.length - 1
+        if (i === 3) return []
         return [
           ['all', 4000 + i * 10],
           [DATA_IT, 300 + i],
@@ -108,7 +110,7 @@ export function jobMarketFixture() {
         unique_employers: 10,
         skill_share: s,
         previous_year_skill_ads: 5,
-        previous_year_total_ads: 40,
+        previous_year_total_ads: t,
         previous_year_share: p,
         share_yoy_pp: pp,
       })),

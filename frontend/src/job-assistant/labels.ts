@@ -44,6 +44,16 @@ const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
 /** A count or measure in the reader's language: 1 234 or 1,234. */
 export const num = (v: number, digits = 0) =>
   v.toLocaleString(locale(), { maximumFractionDigits: digits })
+/** A share as "27%" in English and "27 %" in Swedish. */
+export const pct = (v: number, digits = 0) =>
+  l(`${num(v, digits)}%`, `${num(v, digits)} %`)
+/** A list as "a, b and c" or "a, b och c". */
+export const joinAnd = (items: string[]) =>
+  items.length < 2
+    ? (items[0] ?? '')
+    : `${items.slice(0, -1).join(', ')} ${l('and', 'och')} ${items.at(-1)}`
+/** The first letter upper case, for a name that starts a sentence ("december 2025"). */
+export const cap = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1)
 /** 2025-12 as "December 2025". */
 export const monthName = (m: string) =>
   new Date(m.slice(0, 7) + '-15T12:00:00Z').toLocaleDateString(locale(), {

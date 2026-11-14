@@ -1,10 +1,11 @@
 /**
  * The market tab's three key figures: new ads in the latest complete week (market-weekly.json),
  * the median days from publication to removal (time-to-close.json) and the technology whose share
- * grew the most (skill-trends.json). A figure whose file or row is missing is not drawn.
+ * grew the most among roles with at least KPI_MIN_ROLE_ADS ads in both months (skill-trends.json).
+ * A figure whose file or row is missing is not drawn.
  */
 import { l } from '../i18n'
-import { monthName, num } from './labels'
+import { cap, monthName, num, pct } from './labels'
 import {
   latestWeek,
   medianClose,
@@ -30,8 +31,8 @@ export default function Kpis({ f }: { f: MarketFiles }) {
       value: num(week.week.ads),
       note: week.before
         ? l(
-            `${change! > 0 ? '+' : ''}${change} % against week ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminary.`,
-            `${change! > 0 ? '+' : ''}${change} % mot vecka ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminärt.`,
+            `${change! > 0 ? '+' : ''}${pct(change!)} against week ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminary.`,
+            `${change! > 0 ? '+' : ''}${pct(change!)} mot vecka ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminärt.`,
           )
         : l(
             'The week before is incomplete, so it is not compared.',
@@ -49,8 +50,8 @@ export default function Kpis({ f }: { f: MarketFiles }) {
         `${num(close.median_days_open!, 1)} dagar`,
       ),
       note: l(
-        `Over ${num(close.ads)} ads.`,
-        `Över ${num(close.ads)} annonser.`,
+        `Of ${num(close.ads)} ads. Counting only removals in the last ${f.closing!.window_days} days gives long-running ads more weight than a full cohort would.`,
+        `Av ${num(close.ads)} annonser. Att bara räkna borttagningar de senaste ${f.closing!.window_days} dagarna ger annonser som legat länge större vikt än en hel årgång skulle.`,
       ),
     },
     rise && {
@@ -64,8 +65,8 @@ export default function Kpis({ f }: { f: MarketFiles }) {
         `+${num(rise.share_yoy_pp, 1)} p.e.`,
       ),
       note: l(
-        `${monthName(f.skills!.month)} against a year before: ${num(rise.skill_share * 100)} % of ${num(rise.total_ads)} ads, from ${num(rise.previous_year_share * 100)} %.`,
-        `${monthName(f.skills!.month)} mot ett år före: ${num(rise.skill_share * 100)} % av ${num(rise.total_ads)} annonser, från ${num(rise.previous_year_share * 100)} %.`,
+        `${cap(monthName(f.skills!.month))} against a year before: ${num(rise.ads_with_skill)} of ${num(rise.total_ads)} ads (${pct(rise.skill_share * 100)}), from ${num(rise.previous_year_skill_ads)} of ${num(rise.previous_year_total_ads)} (${pct(rise.previous_year_share * 100)}).`,
+        `${cap(monthName(f.skills!.month))} mot ett år före: ${num(rise.ads_with_skill)} av ${num(rise.total_ads)} annonser (${pct(rise.skill_share * 100)}), från ${num(rise.previous_year_skill_ads)} av ${num(rise.previous_year_total_ads)} (${pct(rise.previous_year_share * 100)}).`,
       ),
     },
   ].filter((k) => !!k)

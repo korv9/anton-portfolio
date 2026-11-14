@@ -12,11 +12,12 @@ import { ChartCard, DashGrid, SlicerSelect } from '../ui/dash/Dash'
 import { Pick } from '../charts/feature/Feature'
 import MultiLineChart from '../charts/MultiLineChart'
 import { loadMarket, type Delivered } from './data'
-import { num } from './labels'
+import { cap, joinAnd, num } from './labels'
 import {
   PERIODS,
   fieldIds,
   fieldSeries,
+  gaps,
   roleSeries,
   type MarketFiles,
   type Period,
@@ -45,7 +46,7 @@ const FILES: Record<keyof MarketFiles, [string, string]> = {
   month: ['the archive months', 'arkivets månader'],
   year: ['the archive years', 'arkivets år'],
   skills: ['the technology shares', 'teknikandelarna'],
-  terms: ['the rising terms', 'de växande orden'],
+  terms: ['the rising and falling terms', 'orden som ökar och minskar'],
   employers: ['the employer list', 'arbetsgivarlistan'],
   closing: ['the time to close', 'tiden till stängning'],
 }
@@ -77,9 +78,11 @@ export default function Market({
     <div className="ja-market">
       {missing.length > 0 && (
         <p className="ja-notes" role="status">
-          {l(
-            `Could not load ${missing.map((m) => FILES[m][0]).join(', ')} just now, so those cards are left out.`,
-            `Kunde inte läsa ${missing.map((m) => FILES[m][1]).join(', ')} just nu, så de korten visas inte.`,
+          {cap(
+            l(
+              `${joinAnd(missing.map((m) => FILES[m][0]))} ${missing.length > 1 ? 'are' : 'is'} not available, so ${missing.length > 1 ? 'those cards are' : 'its cards are'} left out.`,
+              `${joinAnd(missing.map((m) => FILES[m][1]))} finns inte att hämta, så de korten visas inte.`,
+            ),
           )}
         </p>
       )}
@@ -152,6 +155,7 @@ function AdsOverTime({
           )}
           name={fieldName(field)}
           points={fieldSeries(f, period, field)}
+          period={period}
           slicer={{
             label: l('Field', 'Yrkesområde'),
             value: field,
@@ -183,6 +187,7 @@ function AdsOverTime({
           )}
           name={familyName(family)}
           points={roleSeries(roleFile, family)}
+          period={period}
           slicer={{
             label: l('Role', 'Roll'),
             value: family,
@@ -203,16 +208,19 @@ function Line({
   title,
   name,
   points,
+  period,
   slicer,
   source,
 }: {
   title: string
+  period: Period
   name: string
   points: Point[]
   slicer: Parameters<typeof SlicerSelect>[0]['slicer']
   source: string
 }) {
-  // Incomplete periods are left off the line, and the line breaks where one was.
+  // Incomplete and absent periods are left off the line, and the line breaks where one was.
+  const absent = gaps(points, period)
   const shown = points.flatMap((p, i) =>
     p.complete
       ? [
@@ -220,7 +228,8 @@ function Line({
             date: p.start,
             label: p.label,
             value: p.ads,
-            breakBefore: i > 0 && !points[i - 1].complete,
+            breakBefore:
+              (i > 0 && !points[i - 1].complete) || absent.after.has(i),
           },
         ]
       : [],
@@ -250,6 +259,12 @@ function Line({
             l(
               `Left off the line as incomplete: ${left.slice(-3).join(', ')}${left.length > 3 ? ` and ${left.length - 3} more` : ''}.`,
               `Utelämnade som ofullständiga: ${left.slice(-3).join(', ')}${left.length > 3 ? ` och ${left.length - 3} till` : ''}.`,
+            )}
+        {absent.missing.length > 0 &&
+          ' ' +
+            l(
+              `Missing from the file, so the line breaks: ${absent.missing.slice(0, 3).join(', ')}${absent.missing.length > 3 ? ` and ${absent.missing.length - 3} more` : ''}.`,
+              `Saknas i filen, så linjen bryts: ${absent.missing.slice(0, 3).join(', ')}${absent.missing.length > 3 ? ` och ${absent.missing.length - 3} till` : ''}.`,
             )}
       </p>
     </div>

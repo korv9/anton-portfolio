@@ -24,9 +24,13 @@ test('the market tab shows three key figures, and its slicers change the chart a
   await expect(kpis.nth(0)).toContainText('4,130')
   await expect(kpis.nth(0)).toContainText('against week 2026-W44 (4,120)')
   await expect(kpis.nth(1)).toContainText('21 days')
-  await expect(kpis.nth(1)).toContainText('Over 412 ads.')
-  await expect(kpis.nth(2)).toContainText('dbt, Data Engineer ads')
-  await expect(kpis.nth(2)).toContainText('+14.1 pp')
+  await expect(kpis.nth(1)).toContainText('Of 412 ads.')
+  // dbt's larger rise is on 52 ads of Data Engineer, under the key figure's 100 in both months.
+  await expect(kpis.nth(2)).toContainText('Kubernetes, Software Developer ads')
+  await expect(kpis.nth(2)).toContainText('+6.1 pp')
+  await expect(kpis.nth(2)).toContainText(
+    'December 2025 against a year before: 68 of 386 ads (18%), from 5 of 386 (12%).',
+  )
 
   const ads = card(page, 'New ads per month')
   const whole = ads.locator('.ja-line').first().getByRole('img')
@@ -42,6 +46,9 @@ test('the market tab shows three key figures, and its slicers change the chart a
   ).toHaveAttribute('aria-label', /from 2026-W32 to 2026-W45/)
   await expect(weekly).toContainText(
     'Left off the line as incomplete: 2026-W46.',
+  )
+  await expect(weekly).toContainText(
+    'Missing from the file, so the line breaks: 2026-W35.',
   )
   await weekly
     .getByRole('combobox', { name: 'Field' })
@@ -64,16 +71,20 @@ test('the market tab shows three key figures, and its slicers change the chart a
   await expect(tech.locator('.rank-label')).toHaveText(['Kubernetes'])
 
   // A role family without rising or falling terms is not offered.
-  const terms = card(page, 'Words and phrases rising')
+  const terms = card(page, 'Words and phrases rising and falling')
   await expect(
     terms.getByRole('combobox', { name: 'Role' }).locator('option'),
   ).toHaveText(['Data Engineer'])
   await expect(terms.locator('.rank-label')).toHaveText([
-    'dataplattformar',
-    'moderna verktyg',
-    'experience',
+    'dataplattformar12 employers',
+    'moderna verktyg12 employers',
+    'experience12 employers',
   ])
-  await expect(terms).toContainText('from 8, 12 employers')
+  // The numbers are raw uses; the bar and tick are per 1,000 ads of each window.
+  await expect(terms.locator('.rank-value').first()).toHaveText('107from 8')
+  await expect(terms).toContainText(
+    '(600 ads) against 2024-01 – 2024-12 (600 ads)',
+  )
 
   const closing = card(page, 'Days from publication to removal')
   await expect(closing.locator('.rank-label')).toHaveText([
@@ -99,7 +110,7 @@ test('a card whose file did not load is not drawn, and the page says which', asy
   await board(page, '#jobs?tab=market', undefined, {
     market: { 'employer-top': 404, 'time-to-close': 404 },
   })
-  await expect(card(page, 'Words and phrases rising')).toBeVisible()
+  await expect(card(page, 'Words and phrases rising and falling')).toBeVisible()
   await expect(
     page.getByRole('heading', {
       name: 'Employers that posted the most IT ads',
@@ -110,7 +121,7 @@ test('a card whose file did not load is not drawn, and the page says which', asy
   ).toHaveCount(0)
   await expect(page.locator('.ja-kpis .dk-kpi')).toHaveCount(2)
   await expect(page.locator('.ja-market .ja-notes')).toHaveText(
-    'Could not load the employer list, the time to close just now, so those cards are left out.',
+    'The employer list and the time to close are not available, so those cards are left out.',
   )
 })
 
