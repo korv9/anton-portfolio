@@ -10,11 +10,16 @@ ends the recent window, and all 24 months must be complete, or nothing is writte
 Words and two-word phrases (platform/nlp/log_odds.py tokens, never across a line break) are
 scored per role family with weighted log-odds (Monroe, Colaresi and Quinn 2008) of the recent
 window against the window before. A term is kept when it
-  - neither starts nor ends with a Swedish or English stopword and has no all-digit token;
+  - has no Swedish or English function word (platform/nlp/job_ad_words.py STOP) as a word or at
+    either end of a phrase, and no all-digit token;
+  - has no ad or application word (job_ad_words.py BOILERPLATE: annons, ansökan, apply ...);
+  - is not concentrated: no one employer wrote more than CONCENTRATION of its uses in a window
+    where it has CONCENTRATION_MIN_USES uses or more (brands, one employer's house style);
   - is used at least MIN_USES times by at least MIN_EMPLOYERS distinct employers over both
     windows, which drops one employer's boilerplate and most names;
-  - is not, as whole words, in the employer's own name in NAME_SHARE or more of its uses
-    (employer names);
+  - does not match the employer's own name in NAME_SHARE or more of its uses: a term word equals
+    an employer-name word or, both of three letters or more, one begins the other and they
+    differ by at most two letters (car, cars);
   - has no token that is, or begins with a place name of six letters or more from, the
     municipalities and counties of the ads (place names);
   - has |z| >= Z_MIN. At most TOP terms per side (rising, falling), with the counts behind each.
@@ -32,13 +37,15 @@ import duckdb
 from portfolio.core import io
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from log_odds import STOP_EN, STOP_SV, TOKEN, allowed, log_odds_z  # noqa: E402
+from job_ad_words import BOILERPLATE, STOP  # noqa: E402
+from log_odds import TOKEN, allowed, log_odds_z  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 DATABASE = ROOT / "warehouse/jobtech/history.duckdb"
 OUT = ROOT / "frontend/public/data/jobs/rising-terms.json"
-STOP = STOP_SV | STOP_EN
 MIN_USES, MIN_EMPLOYERS, NAME_SHARE, PLACE_PREFIX, Z_MIN, TOP = 20, 10, 0.2, 6, 3.29, 30
+# One employer may write at most a third of a term's uses in a window of CONCENTRATION_MIN_USES or more.
+CONCENTRATION, CONCENTRATION_MIN_USES = 1 / 3, 10
 
 COUNTS = """
 with ads as (
@@ -61,18 +68,32 @@ with ads as (
     from lines where len(t) > 1
 ), totals as (
     select side, n, count(*) as grams from grams group by all
+), by_employer as (
+    select term, n, side, employer, count(*) as uses
+    from grams
+    where not list_contains($stop, split_part(term, ' ', 1))
+      and not list_contains($stop, split_part(term, ' ', -1))
+    group by all
+), named as (
+    -- A term word matches an employer-name word when they are equal or, both of three letters
+    -- or more, one begins the other and they differ by at most two letters (car, cars).
+    select *, employer is not null and len(list_filter(string_split(term, ' '), w -> len(list_filter(
+        string_split(trim(employer), ' '), x -> x = w or (least(len(x), len(w)) >= 3
+            and abs(len(x) - len(w)) <= 2 and (starts_with(x, w) or starts_with(w, x))))) > 0)) > 0 as own
+    from by_employer
 )
-select 'total' as kind, side as term, n, grams as recent, 0 as before, 0 as employers, 0 as own_name
+select 'total' as kind, side as term, n, grams as recent, 0 as before, 0 as employers, 0 as own_name,
+    0 as top_recent, 0 as top_before
 from totals
 union all
 select 'term', term, n,
-    count(*) filter (where side = 'recent'), count(*) filter (where side = 'before'),
-    count(distinct employer), count(*) filter (where contains(employer, ' ' || term || ' '))
-from grams
-where not list_contains($stop, split_part(term, ' ', 1))
-  and not list_contains($stop, split_part(term, ' ', -1))
+    coalesce(sum(uses) filter (where side = 'recent'), 0), coalesce(sum(uses) filter (where side = 'before'), 0),
+    count(distinct employer), coalesce(sum(uses) filter (where own), 0),
+    coalesce(max(uses) filter (where side = 'recent' and employer is not null), 0),
+    coalesce(max(uses) filter (where side = 'before' and employer is not null), 0)
+from named
 group by term, n
-having count(*) >= $min_uses and count(distinct employer) >= $min_employers
+having sum(uses) >= $min_uses and count(distinct employer) >= $min_employers
 """
 
 
@@ -92,6 +113,10 @@ def windows(complete: list[date]) -> tuple[date, date, date] | None:
     return add_months(latest, -23), add_months(latest, -11), add_months(latest, 1)
 
 
+def concentrated(uses: int, top: int) -> bool:
+    return uses >= CONCENTRATION_MIN_USES and top > CONCENTRATION * uses
+
+
 def is_place(gram: tuple[str, ...], places: set[str]) -> bool:
     return any(t in places or any(t.startswith(p) for p in places if len(p) >= PLACE_PREFIX)
                for t in gram)
@@ -100,14 +125,19 @@ def is_place(gram: tuple[str, ...], places: set[str]) -> bool:
 def rank(found: list[tuple], places: set[str]) -> dict:
     """The rising and falling terms of one role family from its COUNTS rows."""
     totals = {(side, n): grams for kind, side, n, grams, *_ in found if kind == "total"}
-    dropped = {"stopword_or_number": 0, "employer_name": 0, "place_name": 0}
+    dropped = {"stopword_or_number": 0, "boilerplate": 0, "one_employer": 0, "employer_name": 0,
+               "place_name": 0}
     scored = []
-    for kind, term, n, recent, before, employers, own_name in found:
+    for kind, term, n, recent, before, employers, own_name, top_recent, top_before in found:
         if kind != "term":
             continue
         gram = tuple(term.split())
         if not allowed(gram, STOP):
             dropped["stopword_or_number"] += 1
+        elif any(t in BOILERPLATE for t in gram):
+            dropped["boilerplate"] += 1
+        elif concentrated(recent, top_recent) or concentrated(before, top_before):
+            dropped["one_employer"] += 1
         elif own_name >= NAME_SHARE * (recent + before):
             dropped["employer_name"] += 1
         elif is_place(gram, places):
@@ -159,14 +189,22 @@ def build(connection) -> dict:
         "recent": {"from": recent.isoformat()[:7], "to": add_months(end, -1).isoformat()[:7]},
         "before": {"from": before.isoformat()[:7], "to": add_months(recent, -1).isoformat()[:7]},
         "rules": {"min_uses": MIN_USES, "min_employers": MIN_EMPLOYERS, "employer_name_share": NAME_SHARE,
-                  "place_prefix_letters": PLACE_PREFIX, "z_min": Z_MIN, "top": TOP, "max_words": 2},
+                  "one_employer_share": round(CONCENTRATION, 4), "one_employer_min_uses": CONCENTRATION_MIN_USES,
+                  "place_prefix_letters": PLACE_PREFIX, "z_min": Z_MIN, "top": TOP, "max_words": 2,
+                  "boilerplate": sorted(BOILERPLATE)},
         "method": ("Words and two-word phrases in the ad texts of each role family, the latest twelve "
                    "complete months against the twelve before, scored by weighted log-odds with an "
-                   "informative Dirichlet prior (Monroe, Colaresi and Quinn 2008). Left out: terms "
-                   "that start or end with a stopword or are numbers, terms used fewer than 20 times "
-                   "or by fewer than 10 employers (one employer's boilerplate), terms that are part of "
-                   "the employer's own name in a fifth of their uses, and place names of the ads' "
-                   "municipalities and counties. At most 30 per side; no ad text is published."),
+                   "informative Dirichlet prior (Monroe, Colaresi and Quinn 2008). Left out: function "
+                   "words in Swedish and English (a word, or either end of a phrase) and numbers; "
+                   "words of the ad and the application itself (annons, ansökan, tjänst, rekrytering, "
+                   "urval, intervju, välkommen, apply, position, role and the others listed under "
+                   "rules); terms used fewer than 20 times or by fewer than 10 employers; terms one "
+                   "employer wrote more than a third of in either window (of 10 uses or more), which "
+                   "removes brands and house style; terms matching the employer's own name (a word "
+                   "equal to it, or one of three letters or more that begins it or is begun by it "
+                   "with at most two letters between, as car and cars) in a fifth of their uses; and "
+                   "place names of the ads' municipalities and counties. At most 30 per side; no ad "
+                   "text is published."),
         "rows": result,
     }
 
