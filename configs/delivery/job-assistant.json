@@ -5,8 +5,15 @@
     "job-assistant/texts.json",
     "job-assistant/texts-remaining.json",
     "job-assistant/demand.json",
-    "job-assistant/ads.json"
+    "job-assistant/ads.json",
+    "job-assistant/time-to-close.json"
   ],
+  "schemas": {
+    "job-assistant/time-to-close.json": "configs/delivery/schemas/job-assistant-time-to-close.json"
+  },
+  "count_rows": {
+    "job-assistant/time-to-close.json": []
+  },
   "checks": [
     [
       "python",

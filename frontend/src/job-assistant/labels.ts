@@ -24,6 +24,7 @@ const LEVEL: Record<string, [string, string]> = {
 }
 
 export const markLabel = (m: Mine) => l(...MARK[m])
+export const fitName = (c: Match['class']) => l(...FIT[c])
 const roleName = (role: string) => l(...(ROLE_NAMES[role] ?? ROLE_NAMES.other))
 /** The fit in words: "Good, data engineering role"; unmatched ads say so. */
 export function fitLabel(match?: Match) {
@@ -40,6 +41,25 @@ export const cvLevelLabel = (level: string | null) =>
     : l('Not in the CV', 'Finns inte i cv:t')
 
 const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
+/** A count or measure in the reader's language: 1 234 or 1,234. */
+export const num = (v: number, digits = 0) =>
+  v.toLocaleString(locale(), { maximumFractionDigits: digits })
+/** A share as "27%" in English and "27 %" in Swedish. */
+export const pct = (v: number, digits = 0) =>
+  l(`${num(v, digits)}%`, `${num(v, digits)} %`)
+/** A list as "a, b and c" or "a, b och c". */
+export const joinAnd = (items: string[]) =>
+  items.length < 2
+    ? (items[0] ?? '')
+    : `${items.slice(0, -1).join(', ')} ${l('and', 'och')} ${items.at(-1)}`
+/** The first letter upper case, for a name that starts a sentence ("december 2025"). */
+export const cap = (s: string) => s.charAt(0).toLocaleUpperCase() + s.slice(1)
+/** 2025-12 as "December 2025". */
+export const monthName = (m: string) =>
+  new Date(m.slice(0, 7) + '-15T12:00:00Z').toLocaleDateString(locale(), {
+    month: 'long',
+    year: 'numeric',
+  })
 /** A source time (Stockholm local already) as "12 Oct". */
 export function day(value: string | null | undefined) {
   if (!value) return '–'

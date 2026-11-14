@@ -13,7 +13,7 @@ type Slicer = {
   onChange: (value: string) => void
 }
 
-function SlicerSelect({ slicer }: { slicer: Slicer }) {
+export function SlicerSelect({ slicer }: { slicer: Slicer }) {
   // The label names the select alone; wrapped, its name would include the chosen option.
   const id = useId()
   return (

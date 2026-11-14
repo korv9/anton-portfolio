@@ -10,8 +10,10 @@ status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not appe
   the Worker deploys on merge. Then measure in production (`docs/products/allegora/allegora-gcp.md`).
 - 2026-11-07 [CODE] Job assistant live: profile v1, engine `job-match-v4`, Airflow windows of
   230 min queued on `main` (`JOB_ADS_SCHEDULER=airflow`), Workers AI secrets passed (#253).
-- 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the
-  window change, latency median kept (5.5 min over 9 publications on 2026-11-07 23:50 UTC).
+- 2026-11-14 [CODE] PR #268 (`korv9/jobs-kpis`) open: market view on `#jobs?tab=market`, the
+  weekly, period, time-to-close, technology, rising-term and employer files, and a branch mode in
+  `refresh-job-analysis.yml` (artifact run 43535161468). After merge, dispatch that workflow on
+  `main` so the archive files are published; until then those cards are left out.
 - 2026-11-08 [CODE] #257 merged: explanations that quote the rules' labels pass the quote check;
   unverified ones are retried a later day; 5 verified explanations live on 2026-11-08.
 - 2026-11-08 [CODE] #260 merged and verified in window 42501361029: cluster cache restored,

@@ -11,12 +11,16 @@ inputs:
   ml:
     description: Install the ML dependencies (CPU PyTorch, sentence-transformers, UMAP)
     default: 'false'
+  r2:
+    description: Require the R2 credentials. 'false' only for a run that writes nothing to R2 and pulls nothing.
+    default: 'true'
 
 runs:
   using: composite
   steps:
     # Without the bucket nothing outlives the run, so stop before any fetch.
     - name: Require R2 credentials
+      if: inputs.r2 != 'false'
       shell: bash
       run: |
         for name in R2_ACCOUNT_ID R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_BUCKET; do
