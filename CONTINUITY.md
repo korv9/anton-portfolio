@@ -13,7 +13,9 @@ status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not appe
 - 2026-11-07 [CODE] #255 merged and verified in window 42391845674: no re-embedding at the
   window change, latency median kept (5.5 min over 9 publications on 2026-11-07 23:50 UTC).
 - 2026-11-08 [CODE] #257 merged: explanations that quote the rules' labels pass the quote check;
-  unverified ones are retried a later day. Next: confirm verified explanations in a release.
+  unverified ones are retried a later day; 5 verified explanations live on 2026-11-08.
+- 2026-11-08 [CODE] #260 merged and verified in window 42501361029: cluster cache restored,
+  first analyse 1.42 s, window-change gap 10 min 4 s, 26 of 26 cycles ok.
 - 2026-11-04 [TOOL] PR #248 (`korv9/bucket-hygiene`) open: records the owner's deletion of the
   raw job answers from the public bucket on 2026-11-04.
 
