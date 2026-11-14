@@ -58,8 +58,7 @@ def removal_check(database: Path) -> dict:
             from raw.job_ads""").fetchone()
     result = {"payloads": total, "removed_date_not_null": removed_date, "removed_not_null": removed,
               "removed_true": removed_true}
-    (database.parent / "removal-check.json").write_text(json.dumps(result, indent=1) + "
-", encoding="utf-8")
+    (database.parent / "removal-check.json").write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
     print("Removal date in archive payloads:", json.dumps(result), flush=True)
     return result
 
