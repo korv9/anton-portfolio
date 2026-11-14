@@ -2,11 +2,11 @@
 
     python platform/publish/export_employer_top.py [--database warehouse/jobtech/history.duckdb]
 
-Reads gold.mart_job_employer_top (subject jobs_analysis) and writes warehouse/jobtech/employer-top.json:
-per period (latest_12_months, year) the 20 employers with the most IT ads, name and ad count only.
-The file is outside frontend/public/data and in no delivery spec, so nothing publishes it; the
-branch run of refresh-job-analysis.yml uploads it as an artifact. It refuses to write a file that
-holds anything shaped like an organisation or personal identity number.
+Reads gold.mart_job_employer_top (subject jobs_analysis) and writes frontend/public/data/jobs/employer-top.json
+(delivery spec jobs-analysis): per period (latest_12_months, year) the 20 employers with the most IT
+ads, name and ad count only. The year is left out while it covers the same days as the latest twelve
+months (the owner's decision on 2026-11-14: one list until the next archive year). It refuses to
+write a file that holds anything shaped like an organisation or personal identity number.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ from portfolio.core import io
 from portfolio.core.config import ROOT
 
 DATABASE = ROOT / "warehouse/jobtech/history.duckdb"
-OUT = ROOT / "warehouse/jobtech/employer-top.json"
+OUT = ROOT / "frontend/public/data/jobs/employer-top.json"
 SCHEMA = ROOT / "configs/delivery/schemas/employer-top.json"
 # Ten or twelve digits with an optional dash or plus before the last four (556677-8899, 19900101-1234).
 IDENTITY_NUMBER = re.compile(r"(?<![0-9])(?:[0-9]{2})?[0-9]{6}[-+]?[0-9]{4}(?![0-9])")
@@ -49,8 +49,19 @@ def build(connection) -> dict:
                    "hires. Only employers with the organisation number of a legal entity are counted; "
                    "sole traders, whose number is a personal identity number, are left out. Ties are "
                    "ordered by name. Names and counts only."),
-        "rows": list(periods.values()),
+        "rows": distinct(list(periods.values())),
     }
+
+
+def distinct(periods: list[dict]) -> list[dict]:
+    """Drop a period that covers the same days as one before it, so one list is not shown twice."""
+    seen, out = set(), []
+    for period in periods:
+        span = (period["from"], period["until"])
+        if span not in seen:
+            seen.add(span)
+            out.append(period)
+    return out
 
 
 def problems(data: dict) -> list[str]:
@@ -70,7 +81,6 @@ def main() -> None:
     connection.close()
     if found := problems(data):
         raise SystemExit("employer top: " + "; ".join(found) + "; nothing written")
-    # Not in a delivery spec yet, so the release does not validate it: the export does.
     jsonschema.validate(data, json.loads(SCHEMA.read_text(encoding="utf-8")))
     io.write_json(args.out, data, newline=False)
     print(f"{args.out}: " + ", ".join(f"{p['period_kind']} {len(p['employers'])}" for p in data["rows"]))

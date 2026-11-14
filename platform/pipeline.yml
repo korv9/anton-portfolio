@@ -510,7 +510,7 @@ subjects:
       - export: python platform/publish/export_job_history.py
       # jobs/rising-terms.json: terms and counts only, never ad text.
       - export: python platform/nlp/rising_terms.py
-      # warehouse/jobtech/employer-top.json for the owner's review: in no delivery spec yet.
+      # jobs/employer-top.json: names and ad counts only, legal entities only (export_employer_top.py).
       - export: python platform/publish/export_employer_top.py
 
   # The job assistant (docs/products/jobs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with

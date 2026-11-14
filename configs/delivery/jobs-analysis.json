@@ -8,6 +8,7 @@
     "jobs/ads-month.json": "configs/delivery/schemas/job-ads-periods.json",
     "jobs/ads-year.json": "configs/delivery/schemas/job-ads-periods.json",
     "jobs/skill-trends.json": "configs/delivery/schemas/skill-trends.json",
-    "jobs/rising-terms.json": "configs/delivery/schemas/rising-terms.json"
+    "jobs/rising-terms.json": "configs/delivery/schemas/rising-terms.json",
+    "jobs/employer-top.json": "configs/delivery/schemas/employer-top.json"
   }
 }

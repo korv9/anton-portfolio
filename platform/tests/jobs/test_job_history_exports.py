@@ -160,3 +160,17 @@ def test_employer_top_keeps_names_and_counts_and_refuses_identity_numbers(tmp_pa
         assert top.problems(data) == ["an identity or organisation number is present"]
     data["rows"][0]["employers"] = [{"rank": 1, "employer": "X", "ads": 1}] * 21
     assert top.problems(data) == ["year: more than 20 employers"]
+
+
+def test_employer_top_shows_a_year_that_equals_the_latest_twelve_months_once(tmp_path):
+    import export_employer_top as top
+    con = duckdb.connect(str(tmp_path / "top.duckdb"))
+    con.execute("create schema gold")
+    con.execute("""create table gold.mart_job_employer_top as select * from (values
+        ('year', date '2025-01-01', date '2026-01-01', true, 1, 'Firma A AB', 40),
+        ('latest_12_months', date '2025-01-01', date '2026-01-01', true, 1, 'Firma A AB', 40)) as t(
+        period_kind, period_start, period_end, complete, employer_rank, employer_name, ads)""")
+    assert [p["period_kind"] for p in top.build(con)["rows"]] == ["latest_12_months"]
+    con.execute("update gold.mart_job_employer_top set period_start = date '2025-03-01' "
+                "where period_kind = 'latest_12_months'")
+    assert [p["period_kind"] for p in top.build(con)["rows"]] == ["latest_12_months", "year"]
