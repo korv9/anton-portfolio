@@ -124,3 +124,10 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   decided (implementation not recorded)
 - 2026-11-07 · Allegora byggs som arbetsyta med tråd och lagtextpanel i befintlig design; hastighet och sökning går före nya korpusar. (`decision-2026-11-07-004` · by Anton)
   decided (implementation not recorded)
+- 2026-11-14 · Vecko-KPI:n och de senaste veckorna kommer från JobStreams dagsserie; fct_job_ads ger historik per roll 2022–2025. (`decision-2026-11-14-001` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Arkivhistoriken byggs via R2-workflowen, inte lokalt. (`decision-2026-11-14-002` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Arbetsförmedla får en marknadsvy med tre KPI:er (`decision-2026-11-14-003` · by Anton)
+  Arbetsförmedla får en marknadsvy med tre KPI:er: nya annonser i veckan, mediantid till stängd annons och snabbast växande teknik.
+  decided (implementation not recorded)
