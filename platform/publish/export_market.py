@@ -14,6 +14,10 @@ Writes frontend/public/data/jobs/market.json from the gold market models (dbt ta
     daily        new ads per publication day and field from JobTech's stream, for the days
                  it has read whole (preliminary until the quarter's archive is published)
     preliminary  the months counted from the stream rather than an archive
+
+and frontend/public/data/jobs/market-weekly.json from gold.mart_market_weekly: new ads per ISO
+week (Monday start) and field from the same stream, one row per week and field, with `complete`
+false for a week the stream has not read all seven days of (never compared).
 """
 from __future__ import annotations
 
@@ -25,10 +29,32 @@ from portfolio.core import db, io
 from portfolio.core.config import DATABASE, PUBLIC, ROOT
 
 OUT = PUBLIC / "jobs/market.json"
+WEEKLY = PUBLIC / "jobs/market-weekly.json"
 
 
 def rows(connection, sql: str) -> list[tuple]:
     return connection.execute(sql).fetchall()
+
+
+def weekly(connection) -> dict:
+    """The weekly file: one row per ISO week and field, oldest first."""
+    keys = ("week_start", "iso_week", "field_id", "ads", "vacancies", "days_covered", "complete")
+    found = [dict(zip(keys, r)) for r in rows(connection, """
+        select strftime(week_start, '%Y-%m-%d'), iso_week, field_id, ads, vacancies, days_covered, complete
+        from gold.mart_market_weekly order by week_start, field_id""")]
+    complete = [r["week_start"] for r in found if r["complete"] and r["field_id"] == "all"]
+    return {
+        "schema_version": 1,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "source": "gold.mart_market_weekly (JobTech JobStream, from mart_market_daily)",
+        "latest_complete_week": complete[-1] if complete else None,
+        "method": ("New ads per ISO week, Monday to Sunday, summed from the days JobTech's stream "
+                   "has read whole, per occupation field and for the whole market (field_id all). "
+                   "A week is complete only when all seven days are read; an incomplete week is "
+                   "shown as such and never compared with another. Preliminary until the "
+                   "quarter's archive is published. An ad is not a hire."),
+        "rows": found,
+    }
 
 
 def main() -> None:
@@ -119,9 +145,12 @@ def main() -> None:
                    "number of vacancies counts as one. The latest year is partial, so changes "
                    "compare the same complete months."),
     }, newline=False)
+    week = weekly(connection)
+    io.write_json(WEEKLY, week, newline=False)
     total = sum(n for _, n, _ in monthly["all"])
     print(f"market: {total:,} ads {years[0]}-{monthly['all'][-1][0]}, {len(fields)} fields, "
-          f"{len(occupations)} occupation groups, {len(regions)} counties")
+          f"{len(occupations)} occupation groups, {len(regions)} counties; "
+          f"{len(week['rows'])} week rows, latest complete week {week['latest_complete_week']}")
 
 
 if __name__ == "__main__":

@@ -47,3 +47,5 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
 - 2026-11-01 · Publication refuses a 30 % row drop on files of 100+ rows (`decision-2026-11-03-014`)
   Override with PORTFOLIO_ALLOW_ROW_DROP. A partly missing dbt group blocks, --only publish keeps group completeness, and the heartbeat compares published_at.
   decided (implementation not recorded)
+- 2026-11-14 · Arkivhistoriken byggs via R2-workflowen, inte lokalt. (`decision-2026-11-14-002` · by Anton)
+  decided (implementation not recorded)

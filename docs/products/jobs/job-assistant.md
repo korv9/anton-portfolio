@@ -441,6 +441,47 @@ fills the content area.
 - Worker: writes without the token, with a wrong token and from another origin are refused.
 - Review UI: filter, sort, keyboard status changes and the full ad text.
 
+## Market view
+
+The tab `#jobs?tab=market` shows the market around the ads, from published files only. A card
+whose file is missing, or whose figure falls under its volume limit, is left out.
+
+| Card | File | Built by |
+|---|---|---|
+| New ads this week against the week before | `jobs/market-weekly.json` | `mart_market_weekly`, `export_market.py` |
+| Median days from publication to removal | `job-assistant/time-to-close.json` | `mart_job_assistant_time_to_close`, `export.py` |
+| Largest rise in a technology's share | `jobs/skill-trends.json` | `mart_skill_trends_monthly`, `export_job_history.py` |
+| New ads per week, month and year | `jobs/market-weekly.json`, `jobs/market.json`, `jobs/ads-{week,month,year}.json` | `mart_job_ads_periods` |
+| Technologies rising and falling | `jobs/skill-trends.json` | as above |
+| Words and phrases rising and falling | `jobs/rising-terms.json` | `platform/nlp/rising_terms.py` |
+| Employers that posted the most IT ads | `jobs/employer-top.json` | `mart_job_employer_top`, `export_employer_top.py` |
+| Current ads by fit | `job-assistant/matches.json` | existing |
+
+- Weeks are ISO weeks. A week, month or year that is not complete is marked and never
+  compared; an absent period breaks the line.
+- Time to close counts the Data/IT ads removed in the last 30 days, split into removed before
+  the deadline and ran to the deadline. A median needs at least 20 ads. The yearly archives carry
+  no removal date (`removed_date` was empty in all 88,054 Data/IT payloads of branch run
+  43532360591), so there is no longer history. Long-running ads weigh more than in a full cohort.
+- Technologies compare the latest complete month with the same month a year before, in
+  percentage points, for rows with sufficient volume. The key figure also needs 100 ads of the
+  role in both months: in run 43535161468 that was Kubernetes for software developers, 68 of 386
+  ads in December 2025 against 61 of 528 a year before, +6.1 points.
+- Words and phrases compare the latest 12 complete months with the 12 before by weighted
+  log-odds (`platform/nlp/log_odds.py`, shared with the AI Act terms). Function words, numbers,
+  ad boilerplate, employer and place names, and terms one employer wrote more than a third of are
+  left out; at most 30 per side, with counts. No ad text is published.
+- The employer list holds the 20 that posted the most IT ads, name and count only, legal entities only
+  (sole traders, whose organisation number is a personal identity number, are left out). The
+  list counts who posted the ad, often a staffing or consultancy firm, not who hires. While the
+  latest year covers the same months as the latest 12, one list is shown.
+- Publication refuses a drop of 30 % or more in these files at any size, counting nested items
+  (`count_rows` in the delivery spec).
+- Hand-review precision figures are not shown here.
+
+The archive files are rebuilt by `refresh-job-analysis.yml`. Dispatched on another branch it
+builds and exports without publishing and uploads the files as an artifact.
+
 ## What v1 leaves out
 
 - Occupation fields other than Data/IT.

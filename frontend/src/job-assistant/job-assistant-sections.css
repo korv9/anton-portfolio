@@ -1,4 +1,5 @@
-/* The How it works tab: tables, the method, the owner's tools and the wishes editor. */
+/* The How it works tab: skill bars, the method, the runs table, the owner's tools and the wishes
+   editor; then the market tab's figures and paired charts. */
 .ja-table-wrap {
   overflow-x: auto;
 }
@@ -32,10 +33,6 @@
   color: var(--color-ink-secondary);
   font-size: var(--type-caption);
   font-weight: var(--weight-body);
-}
-.ja-demand tr[data-gap='true'] td:last-child {
-  color: var(--color-ink-secondary);
-  font-style: italic;
 }
 .ja-table tbody tr:last-child > * {
   border-bottom: 0;
@@ -118,6 +115,35 @@
 
 @media (max-width: 760px) {
   .ja-sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The market tab: the key figures over the dashboard grid; two charts side by side in a card. */
+.ja-market {
+  display: grid;
+  gap: var(--dk-gap);
+  margin-top: var(--sp-6);
+}
+.ja-market-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-6);
+  margin-top: var(--sp-4);
+}
+.ja-market-pair .dk-card-head {
+  flex-direction: column;
+}
+.ja-market-pair h3 {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--type-label);
+  font-weight: var(--weight-ui);
+}
+.ja-market .feature-pick {
+  margin-top: var(--sp-2);
+}
+@media (max-width: 760px) {
+  .ja-market-pair {
     grid-template-columns: minmax(0, 1fr);
   }
 }

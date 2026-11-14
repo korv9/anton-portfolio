@@ -306,7 +306,7 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
                 raise ValueError(f"Previously published optional file must be materialized: {path}")
         active_rows = previous.get("reconcile", {}).get("rows", {})
     payloads = prepare(root, spec, group)
-    quality, counts = gate(group, payloads, active_rows)  # Blocks before any upload.
+    quality, counts = gate(group, payloads, active_rows, spec.get("count_rows"))  # Blocks before any upload.
     dependencies = spec.get("dependencies", {})
     for dependency, version in dependencies.items():
         name(dependency)

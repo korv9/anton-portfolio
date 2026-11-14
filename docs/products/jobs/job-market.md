@@ -80,6 +80,13 @@ cd platform && dbt build --select tag:market && cd ..
 python platform/publish/export_market.py
 ```
 
+## Weeks
+
+`mart_market_weekly` sums the stream's days into ISO weeks per occupation field and in total,
+in `jobs/market-weekly.json`. A week is complete only when all seven days were counted. The job
+assistant's market view (`docs/products/jobs/job-assistant.md`, Market view) compares the latest
+complete week with the week before.
+
 ## Reading the numbers
 
 - An ad is not a hire, and one ad can seek several people. Vacancies count an ad without a

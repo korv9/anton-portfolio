@@ -5,7 +5,8 @@
 
 ads.json holds mart_job_assistant_ads (current ads and those removed in the last 30 days, without the
 text), the cursor and the last week of mart_job_assistant_runs_daily, which is the record of
-scheduled operation. matches.json, texts.json, texts-remaining.json and demand.json come from
+scheduled operation. time-to-close.json holds mart_job_assistant_time_to_close (days from
+publication to removal of the removed ads, per occupation and outcome). matches.json, texts.json, texts-remaining.json and demand.json come from
 export_matches.py. The
 marts are built by `dbt build --select tag:job_assistant` (platform/models/*/job_assistant).
 """
@@ -35,6 +36,7 @@ FIELDS = ("id", "headline", "employer", "organisation_number", "municipality", "
           "employment_type", "working_hours", "published", "changed", "first_seen", "application_deadline",
           "removed_at", "duplicate_of", "source_url", "application_url", "content_hash", "expired")
 RUN_DAYS = 7
+MIN_ADS = 20  # the dbt var time_to_close_min_ads: below it the mart publishes no median
 
 
 def pipeline(state: dict, now: datetime) -> dict:
@@ -101,6 +103,28 @@ def build(db, state: dict, now: datetime) -> dict:
     }
 
 
+def time_to_close(db, now: datetime) -> dict:
+    """Days from publication to removal, per occupation ('all' for every one) and outcome."""
+    found = rows(db, """select occupation, outcome, ads, median_days_open
+        from gold.mart_job_assistant_time_to_close
+        order by occupation = 'all' desc, ads desc, occupation, outcome""")
+    return {
+        "schema_version": 1,
+        "generated_at": now.isoformat(timespec="seconds"),
+        "source": "gold.mart_job_assistant_time_to_close (JobTech JobStream, Data/IT ads)",
+        "window_days": 30,
+        "min_ads": MIN_ADS,
+        "method": ("The Data/IT ads JobTech removed in the last 30 days, each counted once (later "
+                   "copies left out): days from the publication day to the removal day, Stockholm "
+                   "time. before_deadline: removed before the application deadline, which usually "
+                   "means filled or withdrawn; to_deadline: removed at or after it; no_deadline: no "
+                   "deadline given. The median is shown only over at least 20 ads. Ads removed "
+                   "earlier than 30 days ago are not in the window, so long-running ads weigh more "
+                   "than in a full cohort."),
+        "rows": found,
+    }
+
+
 def problems(data: dict, now: datetime) -> list[str]:
     out = []
     if data.get("schema_version") != 1 or not isinstance(data.get("ads"), list):
@@ -149,6 +173,7 @@ def main() -> None:
     db.execute("set memory_limit = '1GB'")
     db.execute("set TimeZone = 'UTC'")
     data = build(db, state, now)
+    closing = time_to_close(db, now)
     # rank.py's note on the profile route is provenance of the run, read from the raw store as state is.
     note = json.loads((store_dir() / "matches.json").read_text(encoding="utf-8")).get("note")
     matches, texts, demand, remaining = export_matches.build(db, data["generated_at"], note)
@@ -158,7 +183,7 @@ def main() -> None:
     if found:
         sys.exit("\n".join(found))
     for name, value in (("matches.json", matches), ("texts.json", texts), ("texts-remaining.json", remaining),
-                        ("demand.json", demand), ("ads.json", data)):
+                        ("demand.json", demand), ("time-to-close.json", closing), ("ads.json", data)):
         write_atomic(OUT / name, value)
     print(f"{OUT}: {len(data['ads'])} ads, {len(matches['matches'])} matches, {len(texts['texts'])}+{len(remaining['texts'])} texts, "
           f"{data['counts']}")
