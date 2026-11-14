@@ -353,6 +353,10 @@ def test_catalog_rebuild_keeps_explicit_live_connection(exports, monkeypatch):
     assert "live" not in json.loads((exports / "delivery.json").read_text())
 
 
+MARKET_LIVE = ["jobs/market-weekly.json", "jobs/ads-", "jobs/skill-trends.json",
+               "jobs/rising-terms.json", "jobs/employer-top.json"]
+
+
 def test_catalog_routes_release_only_groups_through_the_manifest(exports, monkeypatch):
     write(exports, "delivery.json", r.encoded({"schema_version": 1}))
     monkeypatch.setattr(catalog, "PUBLIC", exports)
@@ -365,12 +369,16 @@ def test_catalog_routes_release_only_groups_through_the_manifest(exports, monkey
     delivery = json.loads((exports / "delivery.json").read_text())
     assert "manifest_url" not in delivery
     assert delivery["live"] == {"manifest_url": catalog.OBJECT_STORAGE + "manifests/current.json",
-                                "prefixes": ["job-assistant/", "schema/"]}
+                                "prefixes": ["job-assistant/", "schema/", *MARKET_LIVE]}
     # Each live prefix is owned by a group spec, so the active manifest has its files.
     specs = Path(__file__).resolve().parents[3] / "configs/delivery"
     owned = json.loads((specs / "job-assistant.json").read_text())["files"]
     assert all(path.startswith(tuple(delivery["live"]["prefixes"])) for path in owned)
     assert "schema/*" in json.loads((specs / "public-data.json").read_text())["include"]
+    # The market view's files are named by the jobs and jobs-analysis specs, so a release has them.
+    named = [*json.loads((specs / "jobs.json").read_text())["files"],
+             *json.loads((specs / "jobs-analysis.json").read_text())["schemas"]]
+    assert all(any(path.startswith(p) for path in named) for p in MARKET_LIVE)
 
 
 def test_prefer_active_preserves_newer_summary_after_optional_failure(exports):
