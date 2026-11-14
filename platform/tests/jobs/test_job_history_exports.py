@@ -140,3 +140,23 @@ def test_skill_trends_take_the_latest_complete_month_and_only_sufficient_volume(
     assert out["month"] == "2025-12"
     assert [(r["skill"], r["share_yoy_pp"]) for r in out["rows"]] == [("dbt", 25.0), ("SQL", 0.0)]
     assert out["rows"][0]["ads_with_skill"] == 20 and out["rows"][0]["previous_year_total_ads"] == 40
+
+
+def test_employer_top_keeps_names_and_counts_and_refuses_identity_numbers(tmp_path):
+    import export_employer_top as top
+    con = duckdb.connect(str(tmp_path / "top.duckdb"))
+    con.execute("create schema gold")
+    con.execute("""create table gold.mart_job_employer_top as select * from (values
+        ('year', date '2025-01-01', date '2026-01-01', true, 1, 'Firma A AB', 40),
+        ('year', date '2025-01-01', date '2026-01-01', true, 2, 'Firma B AB', 30)) as t(
+        period_kind, period_start, period_end, complete, employer_rank, employer_name, ads)""")
+    data = top.build(con)
+    assert data["rows"] == [{"period_kind": "year", "from": "2025-01-01", "until": "2026-01-01", "complete": True,
+                             "employers": [{"rank": 1, "employer": "Firma A AB", "ads": 40},
+                                           {"rank": 2, "employer": "Firma B AB", "ads": 30}]}]
+    assert top.problems(data) == []
+    for number in ("556677-8899", "8501151234", "19850115-1234"):
+        data["rows"][0]["employers"][1]["employer"] = f"Bo {number}"
+        assert top.problems(data) == ["an identity or organisation number is present"]
+    data["rows"][0]["employers"] = [{"rank": 1, "employer": "X", "ads": 1}] * 21
+    assert top.problems(data) == ["year: more than 20 employers"]

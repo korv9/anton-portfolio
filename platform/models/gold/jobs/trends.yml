@@ -87,6 +87,52 @@ models:
         description: 'Attribute: true when days_covered equals days_in_period; only complete periods may be compared.'
         data_type: BOOLEAN
         data_tests: [not_null]
+  - name: mart_job_employer_top
+    description: The 20 employers with the most IT ads (classified roles) in the latest twelve complete months and in the latest calendar year with ads, by name and ad count only. Only legal entities (organisation number with a month part of 20 or more); sole traders' personal identity numbers are left out, and no number is selected. Counts who posted the ad, staffing firms included, not who hires.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [period_kind, employer_rank]
+      - unique_combination:
+          arguments:
+            columns: [period_kind, employer_name]
+    columns:
+      - name: period_kind
+        description: 'Key: latest_12_months or year.'
+        data_type: VARCHAR
+        data_tests:
+          - accepted_values:
+              arguments: {values: [latest_12_months, year]}
+      - name: period_start
+        description: 'Attribute: first day of the period.'
+        data_type: DATE
+        data_tests: [not_null]
+      - name: period_end
+        description: 'Attribute: the day after the period.'
+        data_type: DATE
+        data_tests: [not_null]
+      - name: complete
+        description: 'Attribute: true when every month of the period was imported in full.'
+        data_type: BOOLEAN
+        data_tests: [not_null]
+      - name: employer_rank
+        description: 'Key: 1 to 20 by ads, ties ordered by name.'
+        data_type: BIGINT
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+                quote: false
+      - name: employer_name
+        description: 'Attribute: the employer name as last advertised.'
+        data_type: VARCHAR
+        data_tests: [not_null]
+      - name: ads
+        description: 'Measure, non-additive across periods: IT ads the employer posted in the period.'
+        data_type: BIGINT
+        data_tests: [not_null]
   - name: mart_skill_trends_monthly
     description: One row per month, role and technology. Counts, distinct known employers, shares, calendar-aligned growth and weighted three-month shares. total_ads is repeated per skill and must not be summed across skills.
     data_tests:

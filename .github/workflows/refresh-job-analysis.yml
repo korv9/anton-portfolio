@@ -57,6 +57,7 @@ jobs:
             frontend/public/data/jobs/skill-trends.json
             frontend/public/data/jobs/rising-terms.json
             warehouse/jobtech/removal-check.json
+            warehouse/jobtech/employer-top.json
 
   # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.
   alert:
