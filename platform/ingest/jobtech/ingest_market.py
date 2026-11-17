@@ -41,8 +41,10 @@ from portfolio.storage.rawstore import RAW
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 try:
+    from .archive_tls import VERIFY
     from .ingest_history import download
 except ImportError:
+    from archive_tls import VERIFY
     from ingest_history import download
 
 REPO = Path(__file__).resolve().parents[3]
@@ -54,14 +56,14 @@ FIRST_YEAR = 2020
 
 def published_archives() -> list[str]:
     """Every archive from FIRST_YEAR in JobTech's listing: '2024', '2026-Q1', ..."""
-    html = requests.get(INDEX, timeout=60).text
+    html = requests.get(INDEX, timeout=60, verify=VERIFY).text
     names = sorted(set(re.findall(r'historiska/(\d{4}(?:-Q\d)?)\.jsonl\.zip', html)))
     return [n for n in names if int(n[:4]) >= FIRST_YEAR]
 
 
 def remote_stamp(name: str) -> dict:
     """Size and date of an archive as the server reports them, to skip unchanged files."""
-    response = requests.head(f"{INDEX}{name}.jsonl.zip", timeout=60, allow_redirects=True)
+    response = requests.head(f"{INDEX}{name}.jsonl.zip", timeout=60, allow_redirects=True, verify=VERIFY)
     response.raise_for_status()
     return {"content_length": response.headers.get("Content-Length"),
             "last_modified": response.headers.get("Last-Modified")}
