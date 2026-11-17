@@ -30,6 +30,8 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   decided (implementation not recorded)
 - 2026-11-02 · Raw job-ad answers are LOCAL_ONLY, and push refuses to overwrite keys changed in the bucket (`decision-2026-11-03-019`)
   decided (implementation not recorded)
+- 2026-11-14 · Airflow-målet stängs utan värd dygnet runt; förslaget med kostnad räcker. (`decision-2026-11-14-006` · by Anton)
+  decided (implementation not recorded)
 
 ## Philosophy Atlas
 
@@ -130,4 +132,8 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   decided (implementation not recorded)
 - 2026-11-14 · Arbetsförmedla får en marknadsvy med tre KPI:er (`decision-2026-11-14-003` · by Anton)
   Arbetsförmedla får en marknadsvy med tre KPI:er: nya annonser i veckan, mediantid till stängd annons och snabbast växande teknik.
+  decided (implementation not recorded)
+- 2026-11-14 · Arbetsgivare publiceras som topplista med bara namn och antal annonser; inga arbetsplatser, inga enskilda firmor. (`decision-2026-11-14-004` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Handgranskningens precision visas inte i marknadsvyn. (`decision-2026-11-14-005` · by Anton)
   decided (implementation not recorded)

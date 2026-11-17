@@ -49,3 +49,5 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   decided (implementation not recorded)
 - 2026-11-14 · Arkivhistoriken byggs via R2-workflowen, inte lokalt. (`decision-2026-11-14-002` · by Anton)
   decided (implementation not recorded)
+- 2026-11-14 · Arbetsgivare publiceras som topplista med bara namn och antal annonser; inga arbetsplatser, inga enskilda firmor. (`decision-2026-11-14-004` · by Anton)
+  decided (implementation not recorded)
