@@ -4,7 +4,8 @@
 
 Reads gold.mart_job_employer_top (subject jobs_analysis) and writes frontend/public/data/jobs/employer-top.json
 (delivery spec jobs-analysis): per period (latest_12_months, year) the 20 employers with the most IT
-ads, name and ad count only. The year is left out while it covers the same days as the latest twelve
+ads, name and ad count only. The year is the latest calendar year whose twelve months were all
+imported in full, never a part-year. It is left out while it covers the same days as the latest twelve
 months (the owner's decision on 2026-11-14: one list until the next archive year). It refuses to
 write a file that holds anything shaped like an organisation or personal identity number.
 """
@@ -41,10 +42,11 @@ def build(connection) -> dict:
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "source": "Arbetsförmedlingen JobTech, historical ad archives (CC0 1.0)",
+        "source": "Arbetsförmedlingen JobTech, historical ad archives and JobStream (CC0 1.0)",
         "model": "gold.mart_job_employer_top",
-        "method": ("The 20 employers that posted the most IT ads in the latest twelve months whose "
-                   "archive was imported in full, and in the latest calendar year with ads. The list "
+        "method": ("The 20 employers that posted the most IT ads in the twelve months ending in the "
+                   "latest month imported in full, and in the latest calendar year whose twelve months "
+                   "were all imported in full. The list "
                    "counts who posted the ad, which can be a staffing or consultancy firm, not who "
                    "hires. Only employers with the organisation number of a legal entity are counted; "
                    "sole traders, whose number is a personal identity number, are left out. Ties are "

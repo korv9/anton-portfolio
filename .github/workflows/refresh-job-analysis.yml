@@ -39,6 +39,9 @@ jobs:
       - uses: ./.github/actions/data-setup
         with:
           r2: ${{ github.ref == 'refs/heads/main' }}
+          # The stored JobStream answers after the last archive (subject market); branch mode
+          # has no R2 credentials, so its data ends with the last archive.
+          pull: ${{ github.ref == 'refs/heads/main' && 'market' || '' }}
       - name: Rebuild, validate and publish the report without changing daily market data
         if: github.ref == 'refs/heads/main'
         run: python platform/pipeline.py run jobs_analysis

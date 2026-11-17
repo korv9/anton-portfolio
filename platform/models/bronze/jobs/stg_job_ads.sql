@@ -26,8 +26,9 @@ with identified as (
         {{ clean_string(taxonomy_value('occupation_field', 'concept_id')) }} as occupation_field_id,
         {{ clean_string("payload ->> '$.original_id'") }} as original_id,
         try_cast(payload ->> '$.number_of_vacancies' as integer) as number_of_vacancies,
-        try_cast(payload ->> '$.publication_date' as timestamp) as published_at,
-        try_cast(payload ->> '$.application_deadline' as timestamp) as last_application_date,
+        -- left 19: part of the 2020 archive writes '2020-01-09 00:00:00,000000000', which does not cast.
+        try_cast(left(payload ->> '$.publication_date', 19) as timestamp) as published_at,
+        try_cast(left(payload ->> '$.application_deadline', 19) as timestamp) as last_application_date,
         {{ clean_string(taxonomy_value('employment_type', 'label')) }} as employment_type,
         coalesce(payload ->> '$.description.text', '') as description,
         coalesce(json_extract(payload, '$.must_have.skills'), '[]'::json) as required_skills,

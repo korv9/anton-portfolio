@@ -88,7 +88,7 @@ models:
         data_type: BOOLEAN
         data_tests: [not_null]
   - name: mart_job_employer_top
-    description: The 20 employers with the most IT ads (classified roles) in the latest twelve complete months and in the latest calendar year with ads, by name and ad count only. Only legal entities (organisation number with a month part of 20 or more); sole traders' personal identity numbers are left out, and no number is selected. Counts who posted the ad, staffing firms included, not who hires.
+    description: The 20 employers with the most IT ads (classified roles) in the twelve months ending in the latest complete month and in the latest calendar year whose twelve months are all complete, by name and ad count only. Only legal entities (organisation number with a month part of 20 or more); sole traders' personal identity numbers are left out, and no number is selected. Counts who posted the ad, staffing firms included, not who hires.
     config:
       contract: {enforced: true}
     data_tests:
