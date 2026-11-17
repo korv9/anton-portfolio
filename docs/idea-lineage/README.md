@@ -11,6 +11,7 @@ How the projects' ideas and decisions evolved, generated from the public journal
 - [Concept Constellation](concept-constellation.md)
 - [Jobs](jobs.md)
 - [Philosophy Atlas](philosophy-atlas.md)
+- [Platform](platform.md)
 - [Politics](politics.md)
 - [Portfolio](portfolio.md)
 - [Symbolic Atlas](symbolic-atlas.md)
