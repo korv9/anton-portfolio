@@ -161,3 +161,22 @@ CPU-tid: `platform/publish/allegora/cpu_ask.ts` kör `/api/ask` i Node med näte
 paragrafer om 2 000 tecken, och mäter `process.cpuUsage()` över 400 frågor. Medel 5,0 ms med 150
 bitar från Claude och 7,2 ms med 400. Talet tar med testets egen läsning av strömmen och är en
 övre gräns. Den första frågan, innan V8 har optimerat koden, tog 47 ms.
+
+## I produktion, 2026-11-17
+
+`platform/publish/allegora/eval_stream.ts --label prod-2026-11-17 --live --limit 8` ställer de
+åtta första evalfrågorna till `https://antonernstsson.com/api/ask`, alltså genom den publicerade
+Workern och Cloud Run, från en dator i Sverige
+(`warehouse/features/workers_ai/eval/sfs-all-prod-2026-11-17.jsonl`). Sidans kvot är tio frågor
+per IP och dygn, så kedjorna och de sista frågorna togs inte med. Medianerna gäller de sju frågorna
+efter den första, och de sex av dem som fick ett svar.
+
+| Mått | Lokalt, 2026-11-07 | Produktion, 2026-11-17 |
+| --- | --- | --- |
+| Första innehåll (träffarna) | 0,33 s median | 0,37 s median (0,30–0,43 s) |
+| Första svarstext | 1,35 s median | 1,52 s median (1,40–1,72 s) |
+| Verifierat svar | 3,9 s median | 4,3 s median (3,1–5,0 s) |
+| Fabeln klar | 8,7 s median | 9,1 s median (8,0–10,6 s) |
+
+- Den första frågan träffade en kall söktjänst: träffarna efter 6,0 s, svaret efter 10,1 s.
+- Status: sju `verified`, en `no_answer`. Den rätta paragrafen fanns bland de åtta i fem av åtta.
