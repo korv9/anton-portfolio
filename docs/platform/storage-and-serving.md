@@ -24,8 +24,11 @@ which carry recruiters' e-mail addresses and phone numbers.
 
 Open findings, 2026-11-02:
 
-- Answers pushed before that exclusion are still public under `warehouse/raw/job_assistant/raw/`
-  and `warehouse/raw/jobtech/stream/raw/` until the owner deletes them.
+- Answers pushed before that exclusion were public under `warehouse/raw/job_assistant/raw/`.
+  The owner deleted that prefix on 2026-11-04: 12 objects before, 0 after, and a former object's
+  public address answers 404. The last 12 were stream answers of 2026-11-02, pushed by Airflow
+  windows that ran from a `main` without the exclusion (commit 4c55a096 added it).
+  `warehouse/raw/jobtech/stream/raw/` held 0 objects at the same check.
 - `warehouse/raw/jobtech/cluster-corpus/` holds JobTech's archive descriptions without contact
   redaction. They are a copy of JobTech's own public data; keeping them is an owner decision.
 - Terraform creates a private bucket, `anton-portfolio-warehouse` (`infra/cloudflare/main.tf`),
