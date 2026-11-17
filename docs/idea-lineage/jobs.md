@@ -18,6 +18,10 @@ Airflow-målet stängs utan värd dygnet runt; förslaget med kostnad räcker.
 ## Latest findings
 - Raw JobStream and JobSearch answers with recruiters' contact details had been pushed to the public bucket — 2026-11-02, `finding-2026-11-03-007`
   warehouse/raw/job_assistant/raw/ and warehouse/raw/jobtech/stream/raw/. The stored objects await the owner's deletion (docs/storage-and-serving.md).
+- Klustermodellens CPU-cache (`warehouse/ml/jobs`) ligger inte i R2. — 2026-11-08, `finding-2026-11-08-002`
+  Klustermodellens CPU-cache (`warehouse/ml/jobs`) ligger inte i R2. Varje fönster lägger därför 606–631 s på att embedda om cirka 2435 texter vid starten. Det kostar inget, och på en värd som alltid är på ligger cachen kvar på disk.
+- #259 är live — 2026-11-08, `finding-2026-11-08-003`
+  #259 är live: sidan visar 100 körningar, 0 misslyckade steg, 36 ändringar, 30 s per körning och 1188 neurons för senaste dygnet.
 - Sajten läser jobs/* från incheckade kopior; bara job-assistant/ och schema/ läses live från R2, så nya releasefiler syntes inte förrän de… — 2026-11-14, `finding-2026-11-14-005`
 - Marknadsvyn visar arkivdata live efter #269; veckokortet och tid-till-stängning väntar på nästa jobs-release respektive… — 2026-11-14, `finding-2026-11-14-006`
 
