@@ -20,18 +20,16 @@ test('the market tab shows three key figures and one chart, and its slicers chan
   ).toHaveAttribute('aria-pressed', 'true')
   const kpis = page.locator('.ja-kpis .dk-kpi')
   await expect(kpis).toHaveCount(3)
-  // The fixture's last week is incomplete, so the latest complete one is W45, against W44.
+  // The fixture's last week is incomplete, so the latest complete one is W45.
   await expect(kpis.nth(0)).toContainText('week 2026-W45')
   await expect(kpis.nth(0)).toContainText('4,130')
-  await expect(kpis.nth(0)).toContainText('against 2026-W44 (4,120)')
   await expect(kpis.nth(1)).toContainText('21 days')
-  await expect(kpis.nth(1)).toContainText('412 ads removed')
   // dbt's larger rise is on 52 ads of Data Engineer, under the key figure's 100 in both months.
   await expect(kpis.nth(2)).toContainText('Kubernetes, Software Developer')
   await expect(kpis.nth(2)).toContainText('+6.1 pp')
-  await expect(kpis.nth(2)).toContainText(
-    'December 2025: 18% of 386 ads, from 12%',
-  )
+  await expect(kpis.nth(2)).toContainText('December 2025')
+  // The figures carry no notes: the chart below holds the detail.
+  await expect(page.locator('.ja-kpis .dk-note')).toHaveCount(0)
 
   // One chart on the page; it opens on new ads per month for the whole market.
   await expect(page.locator('.ja-market .feature')).toHaveCount(1)

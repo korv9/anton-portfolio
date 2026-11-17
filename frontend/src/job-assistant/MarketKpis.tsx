@@ -5,7 +5,7 @@
  * A figure whose file or row is missing is not drawn.
  */
 import { l } from '../i18n'
-import { cap, monthName, num, pct } from './labels'
+import { monthName, num } from './labels'
 import {
   latestWeek,
   medianClose,
@@ -18,9 +18,6 @@ export default function Kpis({ f }: { f: MarketFiles }) {
   const week = latestWeek(f.weekly)
   const close = medianClose(f.closing)
   const rise = topRise(f.skills)
-  const change = week?.before
-    ? Math.round(((week.week.ads - week.before.ads) / week.before.ads) * 100)
-    : null
   const items = [
     week && {
       key: 'week',
@@ -29,12 +26,6 @@ export default function Kpis({ f }: { f: MarketFiles }) {
         `Nya annonser, vecka ${week.week.iso_week}`,
       ),
       value: num(week.week.ads),
-      note: week.before
-        ? l(
-            `${change! > 0 ? '+' : ''}${pct(change!)} against ${week.before.iso_week} (${num(week.before.ads)})`,
-            `${change! > 0 ? '+' : ''}${pct(change!)} mot ${week.before.iso_week} (${num(week.before.ads)})`,
-          )
-        : l('Week before incomplete', 'Veckan före ofullständig'),
     },
     close && {
       key: 'close',
@@ -46,24 +37,16 @@ export default function Kpis({ f }: { f: MarketFiles }) {
         `${num(close.median_days_open!, 1)} days`,
         `${num(close.median_days_open!, 1)} dagar`,
       ),
-      note: l(
-        `${num(close.ads)} ads removed, last ${f.closing!.window_days} days`,
-        `${num(close.ads)} borttagna annonser, senaste ${f.closing!.window_days} dagarna`,
-      ),
     },
     rise && {
       key: 'rise',
       label: l(
-        `Largest rise in share: ${rise.skill}, ${rise.role_family}`,
-        `Största andelsökning: ${rise.skill}, ${rise.role_family}`,
+        `Largest rise in share, ${monthName(f.skills!.month)}: ${rise.skill}, ${rise.role_family}`,
+        `Största andelsökning, ${monthName(f.skills!.month)}: ${rise.skill}, ${rise.role_family}`,
       ),
       value: l(
         `+${num(rise.share_yoy_pp, 1)} pp`,
         `+${num(rise.share_yoy_pp, 1)} p.e.`,
-      ),
-      note: l(
-        `${cap(monthName(f.skills!.month))}: ${pct(rise.skill_share * 100)} of ${num(rise.total_ads)} ads, from ${pct(rise.previous_year_share * 100)}`,
-        `${cap(monthName(f.skills!.month))}: ${pct(rise.skill_share * 100)} av ${num(rise.total_ads)} annonser, från ${pct(rise.previous_year_share * 100)}`,
       ),
     },
   ].filter((k) => !!k)
@@ -73,10 +56,7 @@ export default function Kpis({ f }: { f: MarketFiles }) {
       {items.map((k) => (
         <div key={k.key} className="dk-kpi">
           <dt>{k.label}</dt>
-          <dd>
-            {k.value}
-            <div className="dk-note">{k.note}</div>
-          </dd>
+          <dd>{k.value}</dd>
         </div>
       ))}
     </dl>
