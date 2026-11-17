@@ -68,10 +68,14 @@ def main() -> None:
         select field_id, field, occupation_groups from gold.dim_market_field order by field""")]
 
     monthly: dict[str, list] = defaultdict(list)
-    for month, field, ads, vacancies in rows(connection, """
+    # Complete months only: the marts also hold the running month from the stream, which the
+    # delivery check refuses ("incomplete or future period"); the period table leaves it out.
+    for month, field, ads, vacancies in rows(connection, f"""
             select strftime(month, '%Y-%m'), field_id, ads, vacancies from gold.mart_market_field_monthly
+            where month <= make_date({latest_year}, {last_month}, 1)
             union all
             select strftime(month, '%Y-%m'), 'all', ads, vacancies from gold.mart_market_field_monthly_total
+            where month <= make_date({latest_year}, {last_month}, 1)
             order by 1, 2"""):
         monthly[field].append([month, ads, vacancies])
 
@@ -113,9 +117,9 @@ def main() -> None:
             select strftime(day, '%Y-%m-%d'), field_id, ads, vacancies
             from gold.mart_market_daily order by day, field_id"""):
         daily[field].append([day, ads, vacancies])
-    preliminary = [m for (m,) in rows(connection, """
+    preliminary = [m for (m,) in rows(connection, f"""
         select distinct strftime(month, '%Y-%m') from gold.mart_market_field_monthly_total
-        where preliminary order by 1""")]
+        where preliminary and month <= make_date({latest_year}, {last_month}, 1) order by 1""")]
 
     archives = [{"archive": a, "source_url": u, "sha256": s, "ads": n}
                 for a, u, s, n in rows(connection, """

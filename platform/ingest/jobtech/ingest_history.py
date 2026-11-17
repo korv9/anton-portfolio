@@ -14,6 +14,11 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 try:
+    from .archive_tls import VERIFY
+except ImportError:
+    from archive_tls import VERIFY
+
+try:
     from .ingest_jobs import ingest
     from .role_scope import is_candidate, ROOT
 except ImportError:
@@ -36,7 +41,7 @@ def download(year, directory, on_checkpoint=None):
             status_forcelist=[429, 500, 502, 503, 504])))
         offset = partial.stat().st_size if partial.exists() else 0
         headers = {'Range': f'bytes={offset}-'} if offset else {}
-        with session.get(url, headers=headers, stream=True, timeout=(30, 120)) as response:
+        with session.get(url, headers=headers, stream=True, timeout=(30, 120), verify=VERIFY) as response:
             response.raise_for_status()
             if response.status_code != 206:
                 offset = 0
