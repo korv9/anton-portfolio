@@ -17,7 +17,8 @@ status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not appe
   the Workers Builds preview.
 - 2026-11-17 [CODE] PR #248 (`korv9/bucket-hygiene`) rebuilt on `main`, mergeable.
 - 2026-11-14 [CODE] Market view live on `#jobs?tab=market` (#268, #269).
-- 2026-11-10 [CODE] Allegora stream merged (#261); production timings not yet measured.
+- 2026-11-17 [CODE] PR #273 (`korv9/allegora-prod-timing`): Allegora measured in production, 1.52 s to
+  draft, 4.3 s to the checked answer (median, 8 questions).
 
 ## Uncommitted elsewhere
 - 2026-11-17 [TOOL] None known; check `git worktree list`.
