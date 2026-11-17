@@ -7,6 +7,12 @@
  *   ALLEGORA_SEARCH_KEY=... [ALLEGORA_SEARCH_URL=http://localhost:8080] \
  *     node --experimental-strip-types platform/publish/allegora/eval_stream.ts --label after
  *
+ * With --live it asks the production endpoint instead, with no keys and the site's own quota
+ * (worker/quota.ts: 10 questions per IP and UTC day), so --limit caps the questions and the
+ * chains are skipped:
+ *
+ *   node --experimental-strip-types platform/publish/allegora/eval_stream.ts --label prod --live --limit 8
+ *
  * Writes warehouse/features/workers_ai/eval/sfs-all-<label>.jsonl and, for the chains,
  * sfs-all-<label>-chains.jsonl. Keys are never printed.
  */
@@ -31,19 +37,19 @@ const arg = (name: string) => {
   return i > 0 ? process.argv[i + 1] : undefined
 }
 
+const LIVE = process.argv.includes('--live')
+
 async function ask(env: Env, question: string, history: Turn[] = []) {
   const t0 = performance.now()
   const at: Record<string, number> = {}
   const data: Record<string, any> = {}
   let draft = ''
-  const response = await worker.fetch(
-    new Request('https://antonernstsson.com/api/ask', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question, history }),
-    }),
-    env,
-  )
+  const request = new Request('https://antonernstsson.com/api/ask', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question, history }),
+  })
+  const response = LIVE ? await fetch(request) : await worker.fetch(request, env)
   if (!response.ok) return { status: response.status, at, data, draft }
   const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader()
   let buffer = ''
@@ -93,8 +99,8 @@ function row(question: string, expected: string[], got: Awaited<ReturnType<typeo
 
 async function main() {
   const label = arg('label') ?? 'stream'
-  const keys = dotenv()
-  if (!process.env.ALLEGORA_SEARCH_KEY || !keys.ANTHROPIC_API_KEY)
+  const keys: Record<string, string | undefined> = LIVE ? {} : dotenv()
+  if (!LIVE && (!process.env.ALLEGORA_SEARCH_KEY || !keys.ANTHROPIC_API_KEY))
     throw new Error('ALLEGORA_SEARCH_KEY in the environment and ANTHROPIC_API_KEY in .env')
   const env = {
     ALLEGORA_SEARCH_URL: URL_SEARCH,
@@ -107,13 +113,13 @@ async function main() {
 
   const rows = []
   if (!process.argv.includes('--chains-only'))
-    for (const q of questions()) {
+    for (const q of questions().slice(0, Number(arg('limit') ?? Infinity))) {
       const r = row(q.question, q.expected, await ask(env, q.question))
       rows.push(r)
       console.log(r.status, r.found, r.laws, JSON.stringify(r.ms))
     }
   const chains = []
-  for (const [first, follow] of CHAINS) {
+  for (const [first, follow] of LIVE ? [] : CHAINS) {
     const a = row(first, [], await ask(env, first))
     const history = a.answer ? [{ question: first, answer: a.answer }] : []
     const b = row(follow, [], await ask(env, follow, history))
@@ -123,7 +129,7 @@ async function main() {
   const write = (name: string, list: unknown[]) =>
     writeFileSync(join(OUT, name), list.map((r) => JSON.stringify(r)).join('\n') + '\n', 'utf-8')
   if (rows.length) write(`sfs-all-${label}.jsonl`, rows)
-  write(`sfs-all-${label}-chains.jsonl`, chains)
+  if (chains.length) write(`sfs-all-${label}-chains.jsonl`, chains)
 }
 
 main()
