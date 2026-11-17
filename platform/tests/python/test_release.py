@@ -491,3 +491,13 @@ def test_job_assistant_release_carries_no_owner_records():
     assert export.problems(data, now) == []
     data["ads"] = [ad | {"status": "applied", "note": "sent"}]
     assert "ad 1: fields differ from the contract" in export.problems(data, now)
+
+
+def test_public_data_validator_loads_without_platform_publish_on_path():
+    # The pipeline runs python -m portfolio.publish.release; a bare import failed there from
+    # 2026-11-03 to 2026-11-17 while this suite passed, since other tests add platform/publish.
+    import subprocess
+    code = ("import sys; from pathlib import Path; from portfolio.publish import release; "
+            "assert not any(Path(p).as_posix().endswith('platform/publish') for p in sys.path); "
+            "validate, contracts = release.public_data_validator(); assert callable(validate) and contracts")
+    subprocess.run([sys.executable, "-c", code], check=True)

@@ -26,6 +26,7 @@ from datetime import date
 from pathlib import Path
 
 import requests
+from archive_tls import VERIFY
 
 PLATFORM = Path(__file__).resolve().parents[2]
 ROOT = PLATFORM.parent
@@ -40,7 +41,7 @@ def published_years() -> list[int]:
     """Every year from FIRST_YEAR whose archive JobTech has published."""
     years = []
     for year in range(FIRST_YEAR, date.today().year + 1):
-        response = requests.head(ARCHIVE_URL.format(year=year), timeout=60, allow_redirects=True)
+        response = requests.head(ARCHIVE_URL.format(year=year), timeout=60, allow_redirects=True, verify=VERIFY)
         if response.status_code == 200:
             years.append(year)
         elif response.status_code != 404:
