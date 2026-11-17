@@ -25,48 +25,45 @@ export default function Kpis({ f }: { f: MarketFiles }) {
     week && {
       key: 'week',
       label: l(
-        `New ads in the whole market, week ${week.week.iso_week}`,
-        `Nya annonser på hela marknaden, vecka ${week.week.iso_week}`,
+        `New ads, week ${week.week.iso_week}`,
+        `Nya annonser, vecka ${week.week.iso_week}`,
       ),
       value: num(week.week.ads),
       note: week.before
         ? l(
-            `${change! > 0 ? '+' : ''}${pct(change!)} against week ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminary.`,
-            `${change! > 0 ? '+' : ''}${pct(change!)} mot vecka ${week.before.iso_week} (${num(week.before.ads)}). JobStream, preliminärt.`,
+            `${change! > 0 ? '+' : ''}${pct(change!)} against ${week.before.iso_week} (${num(week.before.ads)})`,
+            `${change! > 0 ? '+' : ''}${pct(change!)} mot ${week.before.iso_week} (${num(week.before.ads)})`,
           )
-        : l(
-            'The week before is incomplete, so it is not compared.',
-            'Veckan före är ofullständig, så den jämförs inte.',
-          ),
+        : l('Week before incomplete', 'Veckan före ofullständig'),
     },
     close && {
       key: 'close',
       label: l(
-        `Median days from publication to removal, Data/IT ads removed in the last ${f.closing!.window_days} days`,
-        `Mediandagar från publicering till borttagning, Data/IT-annonser borttagna de senaste ${f.closing!.window_days} dagarna`,
+        'Median days to removal, Data/IT',
+        'Mediandagar till borttagning, Data/IT',
       ),
       value: l(
         `${num(close.median_days_open!, 1)} days`,
         `${num(close.median_days_open!, 1)} dagar`,
       ),
       note: l(
-        `Of ${num(close.ads)} ads. Counting only removals in the last ${f.closing!.window_days} days gives long-running ads more weight than a full cohort would.`,
-        `Av ${num(close.ads)} annonser. Att bara räkna borttagningar de senaste ${f.closing!.window_days} dagarna ger annonser som legat länge större vikt än en hel årgång skulle.`,
+        `${num(close.ads)} ads removed, last ${f.closing!.window_days} days`,
+        `${num(close.ads)} borttagna annonser, senaste ${f.closing!.window_days} dagarna`,
       ),
     },
     rise && {
       key: 'rise',
       label: l(
-        `Largest rise in a technology's share: ${rise.skill}, ${rise.role_family} ads`,
-        `Största ökningen av en tekniks andel: ${rise.skill}, ${rise.role_family}-annonser`,
+        `Largest rise in share: ${rise.skill}, ${rise.role_family}`,
+        `Största andelsökning: ${rise.skill}, ${rise.role_family}`,
       ),
       value: l(
         `+${num(rise.share_yoy_pp, 1)} pp`,
         `+${num(rise.share_yoy_pp, 1)} p.e.`,
       ),
       note: l(
-        `${cap(monthName(f.skills!.month))} against a year before: ${num(rise.ads_with_skill)} of ${num(rise.total_ads)} ads (${pct(rise.skill_share * 100)}), from ${num(rise.previous_year_skill_ads)} of ${num(rise.previous_year_total_ads)} (${pct(rise.previous_year_share * 100)}).`,
-        `${cap(monthName(f.skills!.month))} mot ett år före: ${num(rise.ads_with_skill)} av ${num(rise.total_ads)} annonser (${pct(rise.skill_share * 100)}), från ${num(rise.previous_year_skill_ads)} av ${num(rise.previous_year_total_ads)} (${pct(rise.previous_year_share * 100)}).`,
+        `${cap(monthName(f.skills!.month))}: ${pct(rise.skill_share * 100)} of ${num(rise.total_ads)} ads, from ${pct(rise.previous_year_share * 100)}`,
+        `${cap(monthName(f.skills!.month))}: ${pct(rise.skill_share * 100)} av ${num(rise.total_ads)} annonser, från ${pct(rise.previous_year_share * 100)}`,
       ),
     },
   ].filter((k) => !!k)

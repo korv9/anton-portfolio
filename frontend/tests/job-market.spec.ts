@@ -4,12 +4,13 @@ import type { Page } from '@playwright/test'
 import { test, expect } from './test'
 import { board, shots } from './job-board-helpers'
 
-const card = (page: Page, title: string) =>
-  page.locator('.dk-card', {
-    has: page.getByRole('heading', { level: 2, name: title }),
-  })
+const chart = (page: Page) => page.locator('#ja-market-chart')
+const show = (page: Page, name: string) =>
+  chart(page)
+    .getByRole('group', { name: 'Show' })
+    .getByRole('button', { name, exact: true })
 
-test('the market tab shows three key figures, and its slicers change the chart and the address', async ({
+test('the market tab shows three key figures and one chart, and its slicers change the chart and the address', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
@@ -22,122 +23,127 @@ test('the market tab shows three key figures, and its slicers change the chart a
   // The fixture's last week is incomplete, so the latest complete one is W45, against W44.
   await expect(kpis.nth(0)).toContainText('week 2026-W45')
   await expect(kpis.nth(0)).toContainText('4,130')
-  await expect(kpis.nth(0)).toContainText('against week 2026-W44 (4,120)')
+  await expect(kpis.nth(0)).toContainText('against 2026-W44 (4,120)')
   await expect(kpis.nth(1)).toContainText('21 days')
-  await expect(kpis.nth(1)).toContainText('Of 412 ads.')
+  await expect(kpis.nth(1)).toContainText('412 ads removed')
   // dbt's larger rise is on 52 ads of Data Engineer, under the key figure's 100 in both months.
-  await expect(kpis.nth(2)).toContainText('Kubernetes, Software Developer ads')
+  await expect(kpis.nth(2)).toContainText('Kubernetes, Software Developer')
   await expect(kpis.nth(2)).toContainText('+6.1 pp')
   await expect(kpis.nth(2)).toContainText(
-    'December 2025 against a year before: 68 of 386 ads (18%), from 5 of 386 (12%).',
+    'December 2025: 18% of 386 ads, from 12%',
   )
 
-  const ads = card(page, 'New ads per month')
-  const whole = ads.locator('.ja-line').first().getByRole('img')
-  await expect(whole).toHaveAttribute(
+  // One chart on the page; it opens on new ads per month for the whole market.
+  await expect(page.locator('.ja-market .feature')).toHaveCount(1)
+  const c = chart(page)
+  await expect(c.getByRole('heading', { level: 2 })).toHaveText(
+    'New ads per month: Whole market',
+  )
+  await expect(c.getByRole('img')).toHaveAttribute(
     'aria-label',
     /Whole market, new ads from 2024-01/,
   )
-  await ads.getByRole('button', { name: 'Week' }).click()
+  // One series: the title names it, so no legend.
+  await expect(c.locator('.chart-legend')).toHaveCount(0)
+  await c.getByRole('button', { name: 'Week' }).click()
   await expect(page).toHaveURL(/period=week/)
-  const weekly = card(page, 'New ads per week')
-  await expect(
-    weekly.locator('.ja-line').first().getByRole('img'),
-  ).toHaveAttribute('aria-label', /from 2026-W32 to 2026-W45/)
-  await expect(weekly).toContainText(
-    'Left off the line as incomplete: 2026-W46.',
+  await expect(c.getByRole('img')).toHaveAttribute(
+    'aria-label',
+    /from 2026-W32 to 2026-W45/,
   )
-  await expect(weekly).toContainText(
+  await c.getByText('About the numbers').click()
+  await expect(c).toContainText('Left off as incomplete: 2026-W46.')
+  await expect(c).toContainText(
     'Missing from the file, so the line breaks: 2026-W35.',
   )
-  await weekly
-    .getByRole('combobox', { name: 'Field' })
-    .selectOption('apaJ_2ja_LuF')
+  const selection = c.getByRole('combobox', { name: 'Selection' })
+  await selection.selectOption('apaJ_2ja_LuF')
   await expect(page).toHaveURL(/field=apaJ_2ja_LuF/)
-  await expect(
-    weekly.locator('.ja-line').first().getByRole('img'),
-  ).toHaveAttribute('aria-label', /: Data\/IT, new ads/)
-  await weekly
-    .getByRole('combobox', { name: 'Role' })
-    .selectOption('Data Engineer')
-  await expect(page).toHaveURL(/family=Data\+Engineer/)
+  await expect(c.getByRole('img')).toHaveAttribute(
+    'aria-label',
+    /^Data\/IT, new ads/,
+  )
+  // The Data/IT roles sit in the same slicer, from the archive files.
+  await selection.selectOption('role:Data Engineer')
+  await expect(page).toHaveURL(/field=role%3AData\+Engineer/)
+  await expect(c.getByRole('heading', { level: 2 })).toHaveText(
+    'New ads per week: Data/IT: Data Engineer',
+  )
 
-  const tech = card(page, 'Technologies rising and falling')
-  await expect(tech.locator('.rank-label')).toHaveText(['dbt', 'SQL'])
-  await tech
+  await show(page, 'Technologies').click()
+  await expect(page).toHaveURL(/show=tech/)
+  await expect(c.locator('.rank-label')).toHaveText(['dbt', 'SQL'])
+  await c
     .getByRole('combobox', { name: 'Role' })
     .selectOption('Software Developer')
   await expect(page).toHaveURL(/tech=Software\+Developer/)
-  await expect(tech.locator('.rank-label')).toHaveText(['Kubernetes'])
+  await expect(c.locator('.rank-label')).toHaveText(['Kubernetes'])
 
   // A role family without rising or falling terms is not offered.
-  const terms = card(page, 'Words and phrases rising and falling')
+  await show(page, 'Words').click()
   await expect(
-    terms.getByRole('combobox', { name: 'Role' }).locator('option'),
+    c.getByRole('combobox', { name: 'Role' }).locator('option'),
   ).toHaveText(['Data Engineer'])
-  await expect(terms.locator('.rank-label')).toHaveText([
-    'dataplattformar12 employers',
-    'moderna verktyg12 employers',
-    'experience12 employers',
+  await expect(c.locator('.rank-label')).toHaveText([
+    'dataplattformar',
+    'moderna verktyg',
   ])
   // The numbers are raw uses; the bar and tick are per 1,000 ads of each window.
-  await expect(terms.locator('.rank-value').first()).toHaveText('107from 8')
-  await expect(terms).toContainText(
-    '(600 ads) against 2024-01 – 2024-12 (600 ads)',
-  )
+  await expect(c.locator('.rank-value').first()).toHaveText('107from 8')
+  await c.getByRole('button', { name: 'Used less' }).click()
+  await expect(page).toHaveURL(/dir=down/)
+  await expect(c.locator('.rank-label')).toHaveText(['experience'])
 
-  const closing = card(page, 'Days from publication to removal')
-  await expect(closing.locator('.rank-label')).toHaveText([
+  await show(page, 'Time to close').click()
+  await expect(c.locator('.rank-label')).toHaveText([
     'All Data/IT ads',
     'Mjukvaru- och systemutvecklare m.fl.',
   ])
-  await closing.getByRole('button', { name: 'Ran to the deadline' }).click()
+  await c.getByRole('button', { name: 'Ran to the deadline' }).click()
   await expect(page).toHaveURL(/close=to_deadline/)
-  await expect(closing.locator('.rank-value').first()).toContainText('28 days')
+  await expect(c.locator('.rank-value').first()).toContainText('28 days')
 
   // Strong 6, possible 12, stretch 6, outside 6 in the fixture's 30 matches.
-  await expect(
-    card(page, 'Current ads by fit').locator('.rank-value'),
-  ).toHaveText(['6', '6', '12', '6'])
+  await show(page, 'Fit').click()
+  await expect(c.locator('.rank-value')).toHaveText(['6', '6', '12', '6'])
   // A list tab leaves the market and its slicers.
   await page.getByRole('button', { name: /^All / }).click()
-  await expect(page).not.toHaveURL(/tab=|period=|field=|family=|tech=|close=/)
+  await expect(page).not.toHaveURL(
+    /tab=|show=|period=|field=|tech=|dir=|close=/,
+  )
 })
 
-test('a card whose file did not load is not drawn, and the page says which', async ({
+test('a view whose file did not load is not offered, and the page says which', async ({
   page,
 }) => {
   await board(page, '#jobs?tab=market', undefined, {
     market: { 'employer-top': 404, 'time-to-close': 404 },
   })
-  await expect(card(page, 'Words and phrases rising and falling')).toBeVisible()
-  await expect(
-    page.getByRole('heading', {
-      name: 'Employers that posted the most IT ads',
-    }),
-  ).toHaveCount(0)
-  await expect(
-    page.getByRole('heading', { name: 'Days from publication to removal' }),
-  ).toHaveCount(0)
+  await expect(show(page, 'Words')).toBeVisible()
+  await expect(show(page, 'Employers')).toHaveCount(0)
+  await expect(show(page, 'Time to close')).toHaveCount(0)
   await expect(page.locator('.ja-kpis .dk-kpi')).toHaveCount(2)
   await expect(page.locator('.ja-market .ja-notes')).toHaveText(
-    'The employer list and the time to close are not available, so those cards are left out.',
+    'The employer list and the time to close could not be loaded.',
   )
 })
 
 test('the employer list shows each employer and its number of ads, nothing more', async ({
   page,
 }) => {
-  await board(page, '#jobs?tab=market')
-  const list = card(page, 'Employers that posted the most IT ads')
-  await expect(list).toContainText('January 2025 – December 2025.')
-  await expect(list).toContainText('not who hires')
-  await expect(list.locator('li')).toHaveText([
+  await board(page, '#jobs?tab=market&show=employers')
+  const c = chart(page)
+  await expect(c.getByRole('heading', { level: 2 })).toHaveText(
+    'IT ads per employer, January 2025 – December 2025',
+  )
+  await c.getByText('About the numbers').click()
+  await expect(c).toContainText('not who hires')
+  await expect(c.locator('li')).toHaveText([
     /^Testbemanning A AB\s*199$/,
     /^Testkonsult B AB\s*181$/,
     /^Testverket\s*81$/,
   ])
-  await expect(list.locator('.rank-value small')).toHaveCount(0)
+  await expect(c.locator('.rank-value small')).toHaveCount(0)
 })
 
 test('#jobs?tab=market has no axe violations', async ({ page, isMobile }) => {
@@ -169,7 +175,7 @@ for (const language of ['en', 'sv'] as const)
       ]) {
         await page.setViewportSize({ width, height })
         await board(page, '#jobs?tab=market', undefined, { market: 'served' })
-        await expect(page.locator('.ja-market .dk-grid')).toBeVisible()
+        await expect(page.locator('#ja-market-chart')).toBeVisible()
         await page.waitForLoadState('networkidle')
         expect(
           await page.evaluate(
