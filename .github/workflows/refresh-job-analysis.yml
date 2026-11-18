@@ -27,20 +27,28 @@ jobs:
     environment: ${{ github.ref == 'refs/heads/main' && 'anton-portfolio' || '' }}
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
-      R2_ACCOUNT_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCOUNT_ID || '' }}
-      R2_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCESS_KEY_ID || '' }}
-      R2_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/main' && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
-      R2_BUCKET: ${{ github.ref == 'refs/heads/main' && secrets.R2_BUCKET || '' }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # The R2 keys go only to the steps that talk to the bucket, and only on main.
       - uses: ./.github/actions/data-setup
+        env:
+          R2_ACCOUNT_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/main' && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ github.ref == 'refs/heads/main' && secrets.R2_BUCKET || '' }}
         with:
           r2: ${{ github.ref == 'refs/heads/main' }}
+      # The whole run: ingestion is recorded in R2 and the group published there.
       - name: Rebuild, validate and publish the report without changing daily market data
         if: github.ref == 'refs/heads/main'
+        env:
+          R2_ACCOUNT_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/main' && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/main' && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ github.ref == 'refs/heads/main' && secrets.R2_BUCKET || '' }}
         run: python platform/pipeline.py run jobs_analysis
       - name: Branch mode, build and export without publishing
         if: github.ref != 'refs/heads/main'

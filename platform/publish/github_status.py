@@ -33,7 +33,8 @@ DAYS = 30
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
 RUN_FIELDS = ("id", "name", "status", "conclusion", "event", "created_at", "run_started_at",
               "updated_at", "html_url", "head_sha", "head_branch")
-ISSUE_FIELDS = ("number", "title", "html_url", "body", "created_at", "closed_at")
+# No body: an issue text can hold anything pasted into it, and this file is public.
+ISSUE_FIELDS = ("number", "title", "html_url", "created_at", "closed_at")
 
 
 def api(path: str):

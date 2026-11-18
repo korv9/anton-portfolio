@@ -4,6 +4,7 @@
  */
 import { useEffect, useState } from 'react'
 import { l } from '../i18n'
+import { https } from '../links'
 import type { Hit } from './Thread'
 
 const WIDE = '(min-width: 1100px)'
@@ -50,7 +51,7 @@ export function Sources({
             hidden={!all && i >= FIRST}
           >
             <p className="lq-title">
-              <a href={item.url}>{item.title}</a>{' '}
+              <a href={https(item.url)}>{item.title}</a>{' '}
               <small translate="no">{item.id}</small>
             </p>
             {item.text.split(/\n\n+/).map((part, n) => (
