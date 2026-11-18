@@ -108,7 +108,7 @@ export type MarketFiles = {
 }
 
 /** One period on a line: its first day, its label and whether every day of it is counted. */
-export type Point = {
+type Point = {
   start: string
   label: string
   ads: number

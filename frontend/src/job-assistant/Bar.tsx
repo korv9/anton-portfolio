@@ -59,8 +59,6 @@ export default function Bar({ data, q, onSearch, day }: Props) {
           <time dateTime={data.ads.generated_at}>
             {clock(data.ads.generated_at, day)}
           </time>
-          {data.matches.profile &&
-            ` · ${l('matched against profile', 'matchad mot profil')} v${data.matches.profile.profile_version}`}
         </p>
       )}
     </header>
