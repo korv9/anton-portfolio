@@ -57,6 +57,15 @@
   font-size: var(--fs-meta);
   font-weight: 600;
 }
+.feature-notes {
+  max-width: 68ch;
+  margin-top: 0.5rem;
+  font-size: var(--fs-label);
+  color: var(--muted);
+}
+.feature-notes p {
+  margin: 0 0 0.5rem;
+}
 .feature-table-wrap {
   max-height: 22rem;
   margin-top: 0.5rem;

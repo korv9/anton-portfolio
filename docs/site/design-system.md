@@ -216,8 +216,14 @@ which logs one console error per page ([security.md](../platform/security.md)).
 | Predicted against observed               | Scatter with a diagonal                    | The calibration's interquartile range is not a confidence interval.                                    |
 | Proximity in a representation            | Projection, with a list beside it          | Show cluster size, examples and quality measures. Map distance is not a KPI.                           |
 
-Near every main chart: the question, the measure and unit, the period, the comparison and a
-short interpretation. Show the denominator for shares and keep per cent apart from percentage
+Let the chart speak (Anton, 2026-11-17). A dashboard tab is one `Feature` chart with slicers,
+not a grid of cards: a "Show" slicer picks the view, and each view adds its own slicers. The
+title names the measure, unit, period and comparison; there is no lead paragraph. Method and
+caveats fold into `notes` ("About the numbers"), the source stays one line. A chart with one
+series has no legend. `job-assistant/Market.tsx` is the reference.
+
+Near every main chart: the question, the measure and unit, the period and the comparison, in
+the title or the folded notes. Show the denominator for shares and keep per cent apart from percentage
 points. Missing values read "missing", never zero. A rise is not coloured as good: more job
 ads, higher tax and more sick leave mean different things.
 

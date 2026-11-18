@@ -87,7 +87,6 @@
   background: transparent;
   border: 0;
   padding: 0.75rem 0;
-  border-top: 1px solid var(--line);
 }
 .project-shell #main .dk-kpi dd {
   font-size: 1.8rem;
