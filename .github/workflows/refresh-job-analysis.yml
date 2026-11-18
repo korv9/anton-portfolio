@@ -41,6 +41,9 @@ jobs:
           R2_BUCKET: ${{ github.ref == 'refs/heads/main' && secrets.R2_BUCKET || '' }}
         with:
           r2: ${{ github.ref == 'refs/heads/main' }}
+          # The stored JobStream answers after the last archive (subject market); branch mode
+          # has no R2 credentials, so its data ends with the last archive.
+          pull: ${{ github.ref == 'refs/heads/main' && 'market' || '' }}
       # The whole run: ingestion is recorded in R2 and the group published there.
       - name: Rebuild, validate and publish the report without changing daily market data
         if: github.ref == 'refs/heads/main'

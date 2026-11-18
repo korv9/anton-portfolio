@@ -1,7 +1,9 @@
-"""Stream official annual ZIP/JSONL archives, retaining role candidates and coverage."""
+"""Stream JobTech's yearly and quarterly ZIP/JSONL archives, and the JobStream answers after the
+last of them, retaining role candidates and month coverage."""
 import argparse
 from collections import Counter
-from datetime import date
+from datetime import date, timedelta
+import gzip
 import hashlib
 import json
 from pathlib import Path
@@ -65,18 +67,27 @@ def download(year, directory, on_checkpoint=None):
     return target, url
 
 
-def import_archive(path, year, database, source_uri=None, batch_size=500):
+def archive_months(name):
+    """The first day of each month an archive covers: '2025' -> 12 months, '2026-Q2' -> April to June."""
+    year = int(str(name)[:4])
+    quarter = int(str(name)[-1]) if '-Q' in str(name) else None
+    months = range(3 * quarter - 2, 3 * quarter + 1) if quarter else range(1, 13)
+    return [date(year, m, 1) for m in months]
+
+
+def import_archive(path, name, database, source_uri=None, batch_size=500):
     started = time.monotonic()
+    months = archive_months(name)
     scope_hash = hashlib.sha256((ROOT / 'seeds/role_patterns.csv').read_bytes()).hexdigest()
     with path.open('rb') as handle:
         checksum = hashlib.file_digest(handle, 'sha256').hexdigest()
     ingest([], database, 'historical')
     # Mark every month incomplete before writing. Failed/restarted imports must not publish zeros.
     with duckdb.connect(str(database)) as con:
-        for month in range(1, 13):
+        for month in months:
             con.execute('''insert or replace into raw.collection_coverage values
                 (?, ?, ?, 0, 0, null, 'loading', ?)''',
-                [date(year, month, 1), source_uri or str(path), checksum, scope_hash])
+                [month, source_uri or str(path), checksum, scope_hash])
     counts, candidates = Counter(), Counter()
     batch, added, rows, outside_year = [], 0, 0, 0
     with zipfile.ZipFile(path) as archive:
@@ -93,7 +104,7 @@ def import_archive(path, year, database, source_uri=None, batch_size=500):
                         raise ValueError('Expected one JSON object per line')
                     published = date.fromisoformat(ad['publication_date'][:10])
                     rows += 1
-                    if published.year != year:
+                    if published.replace(day=1) not in months:
                         # Preserve spillover candidates: a 2024 ad can occur in the 2025 file.
                         # Its publication date determines analysis membership, never the filename.
                         outside_year += 1
@@ -106,7 +117,7 @@ def import_archive(path, year, database, source_uri=None, batch_size=500):
                         added += ingest(batch, database, 'historical')
                         batch.clear()
                     if rows % 100000 == 0:
-                        print(f'{year}: scanned {rows:,} rows; retained {sum(candidates.values()):,}', flush=True)
+                        print(f'{name}: scanned {rows:,} rows; retained {sum(candidates.values()):,}', flush=True)
     if batch:
         added += ingest(batch, database, 'historical')
     if not rows:
@@ -114,13 +125,12 @@ def import_archive(path, year, database, source_uri=None, batch_size=500):
     # Reading to EOF checks ZIP member CRC. Coverage is committed only after the entire archive succeeds.
     with duckdb.connect(str(database)) as con:
         con.execute('begin')
-        for month in range(1, 13):
-            key = date(year, month, 1)
+        for key in months:
             con.execute('''update raw.collection_coverage set source_rows=?, candidate_rows=?,
                 completed_at=current_timestamp, status='complete' where publication_month=?''',
                 [counts[key], candidates[key], key])
         con.execute('commit')
-    result = {'year': year, 'source_rows': rows, 'outside_publication_year': outside_year,
+    result = {'archive': str(name), 'source_rows': rows, 'outside_archive_months': outside_year,
               'candidate_rows': sum(candidates.values()),
               'new_versions': added, 'seconds': round(time.monotonic() - started, 2),
               'source_uri': source_uri or str(path), 'sha256': checksum, 'scope_version': scope_hash}
@@ -128,9 +138,66 @@ def import_archive(path, year, database, source_uri=None, batch_size=500):
     return result
 
 
+def month_end(month):
+    return (month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+
+
+def import_stream(database, after, raw_root, batch_size=500):
+    """Candidates published after `after` (the last archive day) from the JobStream answers that
+    ingest_stream.py stored under raw_root/jobtech/stream/raw, oldest first so the latest version
+    of an ad wins, up to the stream's last complete day. A month is complete when the stream covers
+    every day of it (manifest_stream.json); otherwise it is 'partial', never compared. Returns None,
+    and writes nothing, when no stream is stored."""
+    manifest_path = raw_root / 'jobtech/market/manifest_stream.json'
+    files = sorted((raw_root / 'jobtech/stream/raw').glob('*.json.gz'))
+    if not manifest_path.exists() or not files:
+        print(f'No stored stream under {raw_root}: nothing after {after} is imported', flush=True)
+        return None
+    manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+    complete_from = date.fromisoformat(manifest['complete_from'])
+    last = date.fromisoformat(manifest['last_complete_day'])
+    started = time.monotonic()
+    ingest([], database, 'historical')
+    seen, candidates, batch, added = {}, set(), [], 0
+    for path in files:
+        for ad in json.loads(gzip.decompress(path.read_bytes())):
+            if ad.get('removed') or not ad.get('publication_date'):
+                continue  # a removal comes without its publication date; the earlier version stays
+            published = date.fromisoformat(ad['publication_date'][:10])
+            if not after < published <= last:
+                continue
+            seen[str(ad['id'])] = published.replace(day=1)
+            if is_candidate(ad):
+                candidates.add(str(ad['id']))
+                batch.append(ad)
+            if len(batch) >= batch_size:
+                added += ingest(batch, database, 'historical')
+                batch.clear()
+    if batch:
+        added += ingest(batch, database, 'historical')
+    scope_hash = hashlib.sha256((ROOT / 'seeds/role_patterns.csv').read_bytes()).hexdigest()
+    rows, kept = Counter(seen.values()), Counter(seen[i] for i in candidates)
+    source = f'https://jobstream.api.jobtechdev.se/stream {complete_from} to {last}'
+    month, months = (after + timedelta(days=1)).replace(day=1), []
+    with duckdb.connect(str(database)) as con:
+        while month <= last:
+            status = 'complete' if complete_from <= month and month_end(month) <= last else 'partial'
+            con.execute('''insert or replace into raw.collection_coverage values
+                (?, ?, ?, ?, ?, current_timestamp, ?, ?)''',
+                [month, source, manifest.get('sha256'), rows[month], kept[month], status, scope_hash])
+            months.append(f'{month:%Y-%m} {status}')
+            month = month_end(month) + timedelta(days=1)
+    result = {'archive': 'stream', 'answers': len(files), 'ads': len(seen), 'candidate_rows': len(candidates),
+              'new_versions': added, 'months': months, 'seconds': round(time.monotonic() - started, 2)}
+    print(json.dumps(result), flush=True)
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--years', nargs='+', default=['2024', '2025'])
+    parser.add_argument('--years', nargs='+', default=['2024', '2025'], help="Archives: '2025', '2026-Q1' ...")
+    parser.add_argument('--stream', action='store_true',
+                        help='Also import the stored JobStream answers after the last archive')
     parser.add_argument('--database', default='data/history.duckdb')
     parser.add_argument('--directory', type=Path, default=Path('data/history_archives'))
     parser.add_argument('--archive', type=Path, help='Local archive; requires one year')
@@ -149,7 +216,12 @@ def main():
                 from full_corpus import import_archive_all
             results.append(import_archive_all(path, str(year), args.corpus_output, uri))
         else:
-            results.append(import_archive(path, int(year), args.database, uri))
+            results.append(import_archive(path, year, args.database, uri))
+    if args.stream:
+        from portfolio.storage.rawstore import RAW
+        after = max(month_end(m) for name in args.years for m in archive_months(name))
+        if stream := import_stream(args.database, after, RAW):
+            results.append(stream)
     args.directory.mkdir(parents=True, exist_ok=True)
     (args.directory / 'last_import.json').write_text(json.dumps(results, indent=2), encoding='utf-8')
 

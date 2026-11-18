@@ -1,6 +1,7 @@
 -- The 20 employers that posted the most IT ads (classified roles; Other left out) in two periods:
--- the latest twelve months whose archive import completed, and the latest calendar year with ads.
--- complete is false when a month of the period was not imported in full.
+-- the twelve months ending in the latest month whose import completed, and the latest calendar year
+-- whose twelve months all completed (never a part-year). complete is false when a month of the
+-- twelve was not imported in full.
 -- Only employers with an organisation number of a legal entity: digits only, the last ten, whose
 -- month part (third and fourth digit) is 20 or more. A personal identity or coordination number
 -- (a sole trader) has a month of 01-12 and is left out, as is anything else below 20. The number
@@ -15,9 +16,11 @@ with months as (
         (max(publication_month) + interval 1 month)::date as period_end
     from months where complete
     union all
-    select 'year', date_trunc('year', max(published_at))::date,
-        (date_trunc('year', max(published_at)) + interval 1 year)::date
-    from {{ ref('fct_job_ads') }} where role_family <> 'Other'
+    select 'year', make_date(max(y), 1, 1), make_date(max(y) + 1, 1, 1)
+    from (
+        select year(publication_month) as y from months
+        group by 1 having count(*) filter (where complete) = 12
+    )
 ), covered as (
     select p.period_kind, p.period_start, p.period_end,
         count(*) filter (where m.complete) = date_diff('month', p.period_start, p.period_end) as complete

@@ -27,7 +27,7 @@ from portfolio.core.config import PUBLIC, ROOT
 DATABASE = ROOT / "warehouse/jobtech/history.duckdb"
 OUT = PUBLIC / "jobs"
 KINDS = ("week", "month", "year")
-SOURCE = "Arbetsförmedlingen JobTech, historical ad archives (CC0 1.0)"
+SOURCE = "Arbetsförmedlingen JobTech, historical ad archives and JobStream (CC0 1.0)"
 
 
 def records(connection, sql: str, params=()) -> list[dict]:

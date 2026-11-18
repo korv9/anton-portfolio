@@ -494,8 +494,9 @@ subjects:
       # Structural checks (gate: true in quality_registry.yml) fail the subject, after its report is written.
       - export: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
 
-  # The IT report: run_history_pipeline.py picks the published archive years and passes them
-  # to dbt as vars, so its dbt build (target/jobs) stays inside the script.
+  # The IT report: run_history_pipeline.py imports every published archive from 2020 (the current
+  # year's quarters), then the market subject's stored JobStream answers after the last archive,
+  # and passes the covered months to dbt as vars, so its dbt build (target/jobs) stays inside the script.
   jobs_analysis:
     schedule: manual
     sla: {fresh_within: none}
