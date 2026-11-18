@@ -29,3 +29,19 @@ models:
       - unique_combination:
           arguments:
             columns: [analysis_id, run_label, experiment, metric]
+  - name: stg_raw_fetch_log
+    description: One row per fetch of a raw file across every source's fetch log.
+    columns:
+      - name: raw_source
+        data_tests: [not_null]
+      - name: ingested_at
+        data_tests: [not_null]
+      - name: sha256
+        description: The hash of the stored bytes; absent only on a failed request.
+        data_tests:
+          - not_null: {config: {where: "error is null and entry = 'file'"}}
+      - name: bytes
+        data_tests:
+          - not_null: {config: {where: "error is null and entry = 'file'"}}
+          - between:
+              arguments: {min: 0, max: 100000000000}

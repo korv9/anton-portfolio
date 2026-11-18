@@ -33,6 +33,7 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "publish"))
 import ingest_status  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_lanes  # noqa: E402
@@ -246,11 +247,17 @@ def command_run(args, config: dict) -> int:
             failed[name] = laned[name]
             continue
         own = {p for p in phases if p.split(":")[0] != "ingest"} if name in laned else phases
-        started = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        now = datetime.now(timezone.utc)
+        started = now.isoformat(timespec="seconds")
+        # Each fetch-log line names the subject that wrote it (rawstore.lineage).
+        os.environ["PORTFOLIO_SUBJECT"] = name
         try:
             run_subject(name, subjects[name], own, args.ml, run)
         except RuntimeError as error:
             failed[name] = str(error)
+        if "ingest" in own and not run.dry_run and (
+                bad := rawstore.mismatched(subjects[name].get("raw", []), since=now.timestamp() - 1)):
+            failed.setdefault(name, f"raw files differ from their fetch log: {', '.join(bad[:3])}")
         if "ingest" in own and not run.dry_run and any("ingest" in s for s in subjects[name]["steps"]):
             try:
                 ingest_status.record(name, subjects[name], started, failed.get(name))
