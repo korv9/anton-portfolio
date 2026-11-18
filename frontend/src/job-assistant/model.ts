@@ -185,14 +185,7 @@ export function recordsNote(p: Records['problem']): [string, string] {
   ]
 }
 
-/** A link from the source data, only when it is an absolute https URL; anything else gets no link. */
-export function https(url: string | null | undefined) {
-  try {
-    return url && new URL(url).protocol === 'https:' ? url : undefined
-  } catch {
-    return undefined
-  }
-}
+export { https } from '../links.ts'
 
 export type Row = { ad: Ad; match?: Match; mine?: Mine }
 

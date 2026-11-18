@@ -67,7 +67,10 @@ SHARD_DIRECTORIES = (
 # BASES, until the whole site reads the manifest (manifest_url). job-assistant/ exists only as
 # an R2 release. schema/ is published whole by public-data (configs/delivery/public-data.json),
 # so its example rows follow each release instead of the copies committed under public/data.
-LIVE_PREFIXES = ("job-assistant/", "schema/")
+# The job market view's files (docs/products/jobs/job-assistant.md, Market view) exist only as
+# releases of jobs (market-weekly.json) and jobs-analysis (the rest), so they are read live too.
+LIVE_PREFIXES = ("job-assistant/", "schema/", "jobs/market-weekly.json", "jobs/ads-",
+                 "jobs/skill-trends.json", "jobs/rising-terms.json", "jobs/employer-top.json")
 
 SESSION_PATTERN = re.compile(r"/(?:session=)?(\d{4}-\d{2,4})/")
 

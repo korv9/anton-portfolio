@@ -109,6 +109,49 @@ models:
       - name: vacancies
         description: 'Measure, additive: positions sought that day; an ad without a valid number counts as one (preliminary).'
         data_type: BIGINT
+  - name: mart_market_weekly
+    description: New ads and vacancies per ISO week (Monday start) and occupation field ('all' is the whole market), summed from mart_market_daily. complete is true only when the stream read all seven days; an incomplete week is never compared. Preliminary.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [week_start, field_id]
+    columns:
+      - name: week_start
+        description: 'Key: the Monday that starts the ISO week.'
+        data_type: DATE
+        data_tests: [not_null]
+      - name: iso_week
+        description: 'Attribute: ISO year and week, as 2026-W42.'
+        data_type: VARCHAR
+        data_tests: [not_null]
+      - name: field_id
+        description: 'Key, references dim_market_field: occupation field id, or all for the whole market.'
+        data_type: VARCHAR
+      - name: field
+        description: 'Attribute: occupation field label from dim_market_field; Hela arbetsmarknaden for all.'
+        data_type: VARCHAR
+      - name: ads
+        description: 'Measure, additive over fields: new ads published in the week''s covered days (preliminary).'
+        data_type: BIGINT
+        data_tests: [not_null]
+      - name: vacancies
+        description: 'Measure, additive over fields: positions sought in the week''s covered days (preliminary).'
+        data_type: BIGINT
+      - name: days_covered
+        description: 'Measure, non-additive: days of the week the stream read whole, from 1 to 7.'
+        data_type: BIGINT
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7]
+                quote: false
+      - name: complete
+        description: 'Attribute: true when days_covered is 7; only complete weeks may be compared.'
+        data_type: BOOLEAN
+        data_tests: [not_null]
   - name: mart_market_occupation_yearly
     description: Ads per occupation group and year, in full and over the months the latest year covers (ads_ytd), with the year before over the same months.
     config:

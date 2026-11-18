@@ -72,6 +72,32 @@ models:
         description: 'Attribute: the application deadline has passed.'
         data_tests: [not_null]
 
+  - name: mart_job_assistant_time_to_close
+    description: Days from publication to removal of the removed Data/IT ads in mart_job_assistant_ads (removed in the last 30 days, first copies only), per occupation and outcome (before_deadline, to_deadline, no_deadline, all), with all for every occupation. The median is null under 20 ads.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments:
+            columns: [occupation, outcome]
+    columns:
+      - name: occupation
+        data_type: VARCHAR
+        description: 'Key: JobTech occupation label, or all for every occupation.'
+      - name: outcome
+        data_type: VARCHAR
+        description: 'Key: before_deadline (removed before the application deadline), to_deadline (removed at or after it), no_deadline (none given) or all.'
+        data_tests:
+          - accepted_values:
+              arguments: {values: [before_deadline, to_deadline, no_deadline, all]}
+      - name: ads
+        data_type: BIGINT
+        description: 'Measure, additive over occupations and outcomes: removed ads counted.'
+        data_tests: [not_null]
+      - name: median_days_open
+        data_type: DOUBLE
+        description: 'Measure, non-additive: median days from publication day to removal day; null under 20 ads.'
+
   - name: mart_job_assistant_matches
     description: One row per matched current ad, in rank order, with the profile version and CV it used.
     config:

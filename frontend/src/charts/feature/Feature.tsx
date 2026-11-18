@@ -21,6 +21,7 @@ export function Feature({
   lead,
   controls,
   table,
+  notes,
   source,
   children,
 }: {
@@ -32,6 +33,8 @@ export function Feature({
   controls?: ReactNode
   /** The same numbers as a table. */
   table?: ReactNode
+  /** Method and caveats, folded away so the chart carries the page. */
+  notes?: ReactNode
   source: ReactNode
   children: ReactNode
 }) {
@@ -46,6 +49,12 @@ export function Feature({
       </header>
       <div className="feature-body">{children}</div>
       <footer className="feature-foot">
+        {notes && (
+          <details className="feature-table">
+            <summary>{l('About the numbers', 'Om siffrorna')}</summary>
+            <div className="feature-notes">{notes}</div>
+          </details>
+        )}
         {table && (
           <details className="feature-table">
             <summary>{l('Show as a table', 'Visa som tabell')}</summary>

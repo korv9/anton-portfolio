@@ -2,6 +2,7 @@
 import type { Page } from '@playwright/test'
 import { expect } from './test'
 import { jobAssistantFixture } from './fixtures/job-assistant'
+import { jobMarketFixture } from './fixtures/job-market'
 
 export const shots = process.env.JOBS_SCREENSHOTS
 
@@ -12,6 +13,12 @@ export type Options = {
   fail?: Partial<
     Record<'ads' | 'matches' | 'texts' | 'demand' | 'texts-remaining', number>
   >
+  /**
+   * The market tab's files (jobs/*.json and job-assistant/time-to-close.json): the synthetic
+   * fixture by default, a status per file name to fail it, or 'served' to leave jobs/ to the
+   * dev server (real archive copies placed in public/data/jobs for screenshots).
+   */
+  market?: 'served' | Record<string, number>
   /** Every /api/jobs/ route answers with this status (503: storage not configured). */
   api?: number
   /** Requests for texts-remaining.json. */
@@ -31,15 +38,29 @@ export async function board(
     const { live: _, ...local } = await (await route.fetch()).json()
     return route.fulfill({ json: local })
   })
+  const market: Record<string, unknown> = jobMarketFixture()
+  const marketStatus = typeof o.market === 'object' ? o.market : {}
   await page.route('**/data/job-assistant/*.json', (route) => {
     const name = new URL(route.request().url()).pathname.split('/').pop()!
-    const failed = o.fail?.[name.replace('.json', '') as 'ads']
+    const key = name.replace('.json', '')
+    const failed = o.fail?.[key as 'ads'] ?? marketStatus[key]
     if (failed) return route.fulfill({ status: failed, body: 'down' })
     if (name === 'texts-remaining.json') o.remaining?.push(name)
     return route.fulfill({
-      json: f[name.replace('.json', '') as 'ads' | 'texts-remaining'],
+      json: key in f ? f[key as 'ads' | 'texts-remaining'] : market[key],
     })
   })
+  if (o.market !== 'served')
+    await page.route('**/data/jobs/*.json', (route) => {
+      const key = new URL(route.request().url()).pathname
+        .split('/')
+        .pop()!
+        .replace('.json', '')
+      if (!(key in market)) return route.fallback()
+      if (marketStatus[key])
+        return route.fulfill({ status: marketStatus[key], body: 'down' })
+      return route.fulfill({ json: market[key] })
+    })
   await page.route('**/api/jobs/**', (route) => {
     const request = route.request()
     const what = new URL(request.url()).pathname.split('/').pop()

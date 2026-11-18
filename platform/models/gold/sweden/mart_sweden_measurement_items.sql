@@ -12,6 +12,9 @@ with scb as (
     left join {{ ref('scb_subject_domains') }} area on area.subject_code = t.subject_area
     left join {{ ref('stg_sweden_scb_geography') }} g using (table_id)
     where t.is_public
+      -- SCB lists test tables as public (TAB2216 "Testtabell ...", subject OV9901, from
+      -- 2026-11-12); they are not published statistics.
+      and not starts_with(t.title, 'Testtabell')
 ),
 
 kolada as (

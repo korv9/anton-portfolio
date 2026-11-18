@@ -1,16 +1,22 @@
-"""Rebuild the job-market report from JobTech's yearly archives, in dependency order.
+"""Rebuild the job-market report from JobTech's archives and stream, in dependency order.
 
-    python platform/ingest/jobtech/run_history_pipeline.py              # every complete year
-    python platform/ingest/jobtech/run_history_pipeline.py --years 2023 2024 2025
+    python platform/ingest/jobtech/run_history_pipeline.py              # 2020 to yesterday
+    python platform/ingest/jobtech/run_history_pipeline.py --archives 2024 2025 2026-Q1
     python platform/ingest/jobtech/run_history_pipeline.py --skip-import
 
-Steps: download and import the archives (ingest_history), dbt build of the jobs models into
+Steps: download and import the archives and then the stored JobStream answers after the last of
+them (ingest_history --stream), dbt build of the jobs models into
 warehouse/jobtech/history.duckdb, the presentation export, and a copy of the five tables
 the site reads into frontend/public/data/jobs/. `npm run data:build` then rebuilds gold.
+After the import it logs, once, how many archive payloads carry a removal date
+(warehouse/jobtech/removal-check.json): whether a time-to-close history could be built at all.
 
-JobTech publishes one archive per calendar year, some months after it ends. By default
-every year from 2022 to the latest published one is used; the report's comparison year
-follows the data.
+JobTech publishes one archive per calendar year, some months after it ends, and for the current
+year one per quarter (https://data.arbetsformedlingen.se/annonser/historiska/). By default every
+archive from 2020 is used, quarters only for a year without its yearly archive. The stream
+(ingest_stream.py, subject market) covers the days after; without it stored, they are absent.
+The analysis ends in the latest month with coverage; the year comparison (presentation tables)
+uses the latest two calendar years whose twelve months are all complete.
 """
 from __future__ import annotations
 
@@ -20,30 +26,48 @@ import os
 import shutil
 import subprocess
 import sys
-from datetime import date
 from pathlib import Path
 
-import requests
+from ingest_market import published_archives
 
 PLATFORM = Path(__file__).resolve().parents[2]
 ROOT = PLATFORM.parent
 WAREHOUSE = ROOT / "warehouse/jobtech"
-ARCHIVE_URL = "https://data.arbetsformedlingen.se/annonser/historiska/{year}.jsonl.zip"
-FIRST_YEAR = 2022
 SITE_TABLES = ("01_overview", "02_ads_by_year_role", "03_ads_by_month",
                "05_junior_by_month", "06_top_technologies")
 
 
-def published_years() -> list[int]:
-    """Every year from FIRST_YEAR whose archive JobTech has published."""
-    years = []
-    for year in range(FIRST_YEAR, date.today().year + 1):
-        response = requests.head(ARCHIVE_URL.format(year=year), timeout=60, allow_redirects=True)
-        if response.status_code == 200:
-            years.append(year)
-        elif response.status_code != 404:
-            response.raise_for_status()
-    return years
+def archives(names: list[str]) -> list[str]:
+    """Yearly archives, and the quarters of a year that has no yearly archive yet."""
+    years = {n for n in names if "-Q" not in n}
+    return sorted(n for n in names if n[:4] not in years or n in years)
+
+
+def coverage(database: Path) -> tuple[str, str, list[int]]:
+    """First and last month with coverage, and the calendar years whose twelve months are complete."""
+    import duckdb
+    with duckdb.connect(str(database), read_only=True) as con:
+        first, last = con.execute("select min(publication_month), max(publication_month) "
+                                  "from raw.collection_coverage").fetchone()
+        years = [y for (y,) in con.execute("""
+            select year(publication_month) from raw.collection_coverage group by 1
+            having count(*) filter (where status = 'complete') = 12 order by 1""").fetchall()]
+    return first.isoformat(), last.isoformat(), years
+
+
+def removal_check(database: Path) -> dict:
+    """Payloads in raw.job_ads with a removal date or flag, by the field names JobTech's stream uses."""
+    import duckdb
+    with duckdb.connect(str(database), read_only=True) as con:
+        total, removed_date, removed, removed_true = con.execute("""
+            select count(*), count(payload ->> '$.removed_date'), count(payload ->> '$.removed'),
+                count(*) filter (where payload ->> '$.removed' = 'true')
+            from raw.job_ads""").fetchone()
+    result = {"payloads": total, "removed_date_not_null": removed_date, "removed_not_null": removed,
+              "removed_true": removed_true}
+    (database.parent / "removal-check.json").write_text(json.dumps(result, indent=1) + "\n", encoding="utf-8")
+    print("Removal date in archive payloads:", json.dumps(result), flush=True)
+    return result
 
 
 def run(arguments: list[str], env: dict) -> None:
@@ -54,40 +78,45 @@ def run(arguments: list[str], env: dict) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--years", nargs="+", type=int, help="Default: every published year")
+    parser.add_argument("--archives", nargs="+", help="Default: every published archive from 2020")
+    parser.add_argument("--no-stream", action="store_true", help="Archives only")
     parser.add_argument("--skip-import", action="store_true",
                         help="Use the archives already imported into the database")
     parser.add_argument("--database", type=Path, default=WAREHOUSE / "history.duckdb")
-    parser.add_argument("--archives", type=Path, default=WAREHOUSE / "archives")
+    parser.add_argument("--directory", type=Path, default=WAREHOUSE / "archives")
     args = parser.parse_args()
+    # The steps run from platform/: resolve relative paths against the caller's directory first.
+    args.database, args.directory = args.database.resolve(), args.directory.resolve()
 
-    years = sorted(args.years or published_years())
-    if not years:
-        raise SystemExit("No published archive year found")
-    comparison, baseline = years[-1], years[-2] if len(years) > 1 else years[-1]
+    names = archives(args.archives or published_archives())
+    if not names:
+        raise SystemExit("No published archive found")
     env = dict(os.environ, PORTFOLIO_DB=str(args.database), DBT_SEND_ANONYMOUS_USAGE_STATS="false")
-    dbt_vars = json.dumps({
-        "analysis_start": f"{years[0]}-01-01",
-        "analysis_end": f"{years[-1]}-12-01",
-        "baseline_year": baseline,
-        "comparison_year": comparison,
-    })
 
     if not args.skip_import:
-        run([sys.executable, "ingest/jobtech/ingest_history.py", "--years", *map(str, years),
-             "--database", str(args.database), "--directory", str(args.archives)], env)
+        run([sys.executable, "ingest/jobtech/ingest_history.py", "--years", *names,
+             "--database", str(args.database), "--directory", str(args.directory)]
+            + ([] if args.no_stream else ["--stream"]), env)
+    removal_check(args.database)
+    first, last, years = coverage(args.database)
+    if not years:
+        raise SystemExit("No calendar year with twelve complete months")
+    dbt_vars = json.dumps({
+        "analysis_start": first, "analysis_end": last,
+        "baseline_year": years[-2] if len(years) > 1 else years[-1], "comparison_year": years[-1],
+    })
     # One thread: the gold models each scan the full ad table, and in parallel their
     # temporary files outgrow a CI runner's disk.
     run([sys.executable, "-m", "dbt.cli.main", "build", "--profiles-dir", ".", "--indirect-selection", "buildable",
          "--select", "+tag:jobs", "--full-refresh", "--threads", "1", "--target-path", "target/jobs", "--vars", dbt_vars], env)
     presentation = WAREHOUSE / "presentation"
     run([sys.executable, "ingest/jobtech/export_presentation.py", "--database", str(args.database),
-         "--output", str(presentation), "--first-year", str(years[0]),
-         "--last-year", str(years[-1])], env)
+         "--output", str(presentation)], env)
     site = ROOT / "frontend/public/data/jobs"
     for table in SITE_TABLES:
         shutil.copyfile(presentation / f"{table}.csv", site / f"{table}.csv")
-    print(f"Copied {len(SITE_TABLES)} tables for {years[0]}-{years[-1]} to {site}")
+    print(f"Copied {len(SITE_TABLES)} tables for {years[0]}-{years[-1]} to {site}; "
+          f"analysis {first[:7]} to {last[:7]}")
 
 
 if __name__ == "__main__":

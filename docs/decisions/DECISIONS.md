@@ -30,6 +30,8 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   decided (implementation not recorded)
 - 2026-11-02 · Raw job-ad answers are LOCAL_ONLY, and push refuses to overwrite keys changed in the bucket (`decision-2026-11-03-019`)
   decided (implementation not recorded)
+- 2026-11-14 · Airflow-målet stängs utan värd dygnet runt; förslaget med kostnad räcker. (`decision-2026-11-14-006` · by Anton)
+  decided (implementation not recorded)
 
 ## Philosophy Atlas
 
@@ -123,4 +125,15 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
 - 2026-11-07 · Sökenheten är paragrafen; högst en passage per paragraf och fyra lagar per svar. (`decision-2026-11-07-003` · by Anton)
   decided (implementation not recorded)
 - 2026-11-07 · Allegora byggs som arbetsyta med tråd och lagtextpanel i befintlig design; hastighet och sökning går före nya korpusar. (`decision-2026-11-07-004` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Vecko-KPI:n och de senaste veckorna kommer från JobStreams dagsserie; fct_job_ads ger historik per roll 2022–2025. (`decision-2026-11-14-001` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Arkivhistoriken byggs via R2-workflowen, inte lokalt. (`decision-2026-11-14-002` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Arbetsförmedla får en marknadsvy med tre KPI:er (`decision-2026-11-14-003` · by Anton)
+  Arbetsförmedla får en marknadsvy med tre KPI:er: nya annonser i veckan, mediantid till stängd annons och snabbast växande teknik.
+  decided (implementation not recorded)
+- 2026-11-14 · Arbetsgivare publiceras som topplista med bara namn och antal annonser; inga arbetsplatser, inga enskilda firmor. (`decision-2026-11-14-004` · by Anton)
+  decided (implementation not recorded)
+- 2026-11-14 · Handgranskningens precision visas inte i marknadsvyn. (`decision-2026-11-14-005` · by Anton)
   decided (implementation not recorded)

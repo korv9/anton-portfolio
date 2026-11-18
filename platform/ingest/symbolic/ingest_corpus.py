@@ -4,8 +4,9 @@
 
 Each document in corpus.json is fetched as Gutenberg's plain-text UTF-8 file and stored exactly
 as received under warehouse/raw/symbolic/gutenberg/<id>.txt, with its provenance line in
-warehouse/raw/symbolic/_manifest.jsonl (src/portfolio/storage/rawstore.py). A refetch that returns the same bytes
-does not rewrite the file. No cleaning happens here: the text is cleaned in dbt (silver).
+warehouse/raw/symbolic/_manifest.jsonl (src/portfolio/storage/rawstore.py). The books do not change,
+so a stored copy is reused for a year; a refetch that returns the same bytes does not rewrite the
+file. The timeout is short: a stalled Gutenberg answer once held the weekly build for four hours. No cleaning happens here: the text is cleaned in dbt (silver).
 
 The corpus metadata (title, author, tradition) is copied to warehouse/raw/symbolic/corpus.json
 next to the texts so the bronze model reads one place.
@@ -21,6 +22,8 @@ from portfolio.storage import rawstore  # noqa: E402
 HERE = Path(__file__).resolve().parent
 SOURCE = "symbolic"
 PAUSE = 2.0
+MAX_AGE_DAYS = 365
+TIMEOUT = (10, 60)  # connect, read seconds
 
 
 def text_url(gutenberg_id: int) -> str:
@@ -34,7 +37,8 @@ def main() -> int:
     for doc in corpus:
         url = text_url(doc["gutenberg_id"])
         try:
-            rawstore.fetch(http, SOURCE, f"gutenberg/{doc['id']}.txt", url, pause=PAUSE)
+            rawstore.fetch(http, SOURCE, f"gutenberg/{doc['id']}.txt", url, pause=PAUSE,
+                           timeout=TIMEOUT, max_age_days=MAX_AGE_DAYS)
             fetched += 1
         except Exception as error:  # one failing book should not stop the others
             failed.append(f"{doc['id']}: {error}")

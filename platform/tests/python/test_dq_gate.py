@@ -108,3 +108,26 @@ def test_an_emptied_news_feed_is_a_row_drop(target):
     assert g.reconcile(news)["rows"] == {"parliament/news.json": 0}
     with pytest.raises(ValueError, match=r"news\.json \(404 to 0\)"):
         g.gate("news", news, {"parliament/news.json": 404})
+
+
+def test_count_rows_checks_small_files_by_their_nested_items(target):
+    """A spec's count_rows: 20 employers cannot become 2, nor rising terms none, at any size."""
+    count_rows = {"jobs/employer-top.json": ["employers"], "jobs/rising-terms.json": ["rising", "falling"]}
+
+    def top(n):
+        return json.dumps({"rows": [{"period_kind": "year", "employers": [{"rank": i} for i in range(n)]}]}).encode()
+
+    def terms(n):
+        return json.dumps({"rows": [{"role_family": r, "rising": [{"term": "a"}] * n, "falling": [{"term": "b"}] * n}
+                                    for r in ("Data Engineer", "Data Scientist")]}).encode()
+
+    full = {"jobs/employer-top.json": top(20), "jobs/rising-terms.json": terms(30)}
+    counts = g.reconcile(full, count_rows)["rows"]
+    assert counts == {"jobs/employer-top.json": 20, "jobs/rising-terms.json": 120}
+    assert "drops" not in g.gate("jobs-analysis", full, counts, count_rows)[1]  # unchanged files pass
+    with pytest.raises(ValueError, match=r"employer-top\.json \(20 to 2\)"):
+        g.gate("jobs-analysis", {**full, "jobs/employer-top.json": top(2)}, counts, count_rows)
+    with pytest.raises(ValueError, match=r"rising-terms\.json \(120 to 0\)"):
+        g.gate("jobs-analysis", {**full, "jobs/rising-terms.json": terms(0)}, counts, count_rows)
+    # Without count_rows the same files are too small to be checked.
+    assert "drops" not in g.gate("jobs-analysis", {**full, "jobs/employer-top.json": top(2)}, {"jobs/employer-top.json": 20})[1]

@@ -103,13 +103,11 @@ test('without a profile the desk lists every open ad under a calm note, with no 
   await expect(page.locator('#ja-asks')).toHaveCount(0)
 })
 
-test('an approved profile and matches: no setup copy anywhere, and the bar names the profile version', async ({
+test('an approved profile and matches: no setup copy anywhere, and the bar shows only the update time', async ({
   page,
 }) => {
   await board(page)
-  await expect(page.locator('.ja-updated')).toContainText(
-    'matched against profile v1',
-  )
+  await expect(page.locator('.ja-updated')).toHaveText(/^Updated \S+$/)
   for (const copy of [
     'Matching against my CV is paused',
     'Matching starts when the CV profile is approved',
@@ -124,10 +122,15 @@ test('How it works counts what the CV lacks over the good, possible and stretch 
 }) => {
   await board(page, '#jobs?tab=about')
   // The fixture's odd ads lack Kubernetes as their only gap; 12 of them are not outside, 9 good or possible.
-  const row = page.locator('table.ja-gaps tbody tr')
+  const row = page.locator('.ja-gap-bars li')
   await expect(row).toHaveCount(1)
-  await expect(row.locator('th')).toHaveText('Kubernetes')
-  await expect(row.locator('td')).toHaveText(['12', '9', '12'])
+  await expect(page.locator('table.ja-gaps')).toHaveCount(0)
+  await expect(row.locator('.rank-label')).toHaveText('Kubernetes')
+  // 12 ads lack it, 9 of them good or possible, and in all 12 it is the only gap.
+  await expect(row.locator('.rank-value')).toHaveText(/^12\s*9 good/)
+  await expect(row.locator('.rank-value small')).toHaveText(
+    '9 good or possible · 12 the only gap',
+  )
 })
 
 test('How it works shows the last fetch, the delay and the last day of runs', async ({
