@@ -10,6 +10,7 @@ import { l } from '../i18n'
 import { ProductQuality } from '../quality/QualityPanel'
 import type { Route } from '../router'
 import { fetchJson } from '../dataSource'
+import { https } from '../links'
 import Journey, { ConceptQuality } from './Journey'
 import ProjectTech from '../projects/ProjectTech'
 import { useViewParams } from '../report/useViewParams'
@@ -886,7 +887,7 @@ function ConceptPage({ data, concept }: { data: Data; concept: Concept }) {
                           <p>{p.text}</p>
                           <footer>
                             <Kind kind="source" />{' '}
-                            <a href={p.source_url} rel="noreferrer">
+                            <a href={https(p.source_url)} rel="noreferrer">
                               {p.document_title}
                             </a>
                             , {p.location}

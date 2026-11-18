@@ -230,9 +230,12 @@ run recomputes ai_politics, philosophy and concepts once.
 | `politics:parties`, `politics:debates`, `data:upload` | Single scripts over local legacy outputs; `upload.py` is the unversioned uploader that preceded `release.py` |
 | `ops-publish-r2.yml` | First activation of a bucket, or a full re-stage |
 
-`platform/ingest/jobtech/run_history_pipeline.py` keeps its own dbt build: it discovers which
-archive years JobTech has published and passes them to dbt as vars. The registry calls it as
-the jobs_analysis ingest step.
+`platform/ingest/jobtech/run_history_pipeline.py` keeps its own dbt build: it imports every
+archive JobTech has published from 2020 (yearly, and quarterly for the current year), then the
+JobStream answers the market subject stored after the last archive, and passes the covered months
+to dbt as vars. The registry calls it as the jobs_analysis ingest step. On `main` the workflow
+restores the market subject's raw files first; a branch-mode run has no R2 credentials, so its
+data ends with the last archive.
 
 ## Secrets and variables
 

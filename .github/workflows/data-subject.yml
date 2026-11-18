@@ -55,20 +55,10 @@ jobs:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
       # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
-      SCB_API_KEY: ${{ inputs.scb-key && secrets.SCB_API_KEY || '' }}
-      # The news subject writes the week's summary only when this is set (platform/pipeline.yml).
-      ANTHROPIC_API_KEY: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY || '' }}
-      # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
-      # A Workers-AI-only CLOUDFLARE_AI_TOKEN when it exists; otherwise the owner's choice of one token,
-      # CLOUDFLARE_API_TOKEN (docs/products/jobs/job-assistant.md, Secrets).
-      CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
+      # Whether the summary key is set, not the key: the SDK install below needs no secret.
+      SUMMARY_KEY_SET: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY != '' }}
       # The job assistant reads the Worker through workers.dev: the zone's bot protection on
       # antonernstsson.com answers GitHub's runners with 403 (docs/products/jobs/job-assistant.md).
       JOB_ASSIST_API: https://anton-portfolio.anton-ernstson.workers.dev/api/jobs
@@ -82,10 +72,17 @@ jobs:
       - name: Set up and restore the stored raw files
         id: setup
         uses: ./.github/actions/data-setup
+        # The R2 keys go only to the steps that talk to the bucket, and the API keys only to the
+        # build; the SDK install, the profile sync and the artifact upload get neither.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: ${{ inputs.store }}
       - name: Summary SDK (optional)
-        if: env.ANTHROPIC_API_KEY != ''
+        if: env.SUMMARY_KEY_SET == 'true'
         run: pip install --require-hashes -r platform/requirements-news.lock || echo "::warning::Optional summary SDK could not be installed."
       # The job assistant's owner token for its profile records (worker/jobs.ts) reaches this step
       # only, never the build's dbt, exports or other subprocesses. It runs before the build, so the
@@ -98,14 +95,39 @@ jobs:
         env:
           JOB_ASSIST_TOKEN: ${{ secrets.JOB_ASSIST_TOKEN }}
       # One failed subject does not stop the others; the step fails if any did, which skips the
-      # publication below. Unquoted on purpose: one argument per subject.
+      # publication below. Unquoted on purpose: one argument per subject. The build needs the R2
+      # keys too: it records each ingestion in R2 (platform/publish/ingest_status.py), and the news
+      # subject syncs its archive and reads the active release there.
       - name: Fetch, build, test and export
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          SCB_API_KEY: ${{ inputs.scb-key && secrets.SCB_API_KEY || '' }}
+          # The news subject writes the week's summary only when this is set (platform/pipeline.yml).
+          ANTHROPIC_API_KEY: ${{ inputs.summary && secrets.ANTHROPIC_API_KEY || '' }}
+          # Without them the job assistant ranks by rules and cached vectors only (platform/job_assistant/ai.py).
+          # A Workers-AI-only CLOUDFLARE_AI_TOKEN when it exists; otherwise the owner's choice of one token,
+          # CLOUDFLARE_API_TOKEN (docs/products/jobs/job-assistant.md, Secrets).
+          CLOUDFLARE_API_TOKEN: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ inputs.workers-ai && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
         run: python platform/pipeline.py run $SUBJECTS --only ingest,dbt,export
       # Raw checkpoints are useful even if a source or a dbt test failed.
       - name: Store the raw files in R2
         if: ${{ always() && steps.setup.outcome == 'success' && inputs.store != '' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py push $STORE
       - name: Data contracts, then publish and verify the group in R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run $SUBJECTS --only publish
       - name: Keep the optional summary outcome
         if: ${{ always() && inputs.summary }}

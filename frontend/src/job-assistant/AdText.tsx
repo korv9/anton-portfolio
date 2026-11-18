@@ -6,6 +6,7 @@
  */
 import { useState } from 'react'
 import { l } from '../i18n'
+import { https } from '../links'
 import { splitLead } from './query'
 import { useAdText } from './useJobData'
 
@@ -23,7 +24,7 @@ export default function AdText({ id, published, opened, source }: Props) {
   const { text, loading, failed } = useAdText(id, published, opened || asked)
   const [lead, rest] = text ? splitLead(text) : ['', '']
   const fallback = source && (
-    <a href={source} target="_blank" rel="noreferrer">
+    <a href={https(source)} target="_blank" rel="noreferrer">
       {l('Read it on Platsbanken', 'Läs den på Platsbanken')}
     </a>
   )

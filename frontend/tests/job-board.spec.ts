@@ -103,13 +103,11 @@ test('without a profile the desk lists every open ad under a calm note, with no 
   await expect(page.locator('#ja-asks')).toHaveCount(0)
 })
 
-test('an approved profile and matches: no setup copy anywhere, and the bar names the profile version', async ({
+test('an approved profile and matches: no setup copy anywhere, and the bar shows only the update time', async ({
   page,
 }) => {
   await board(page)
-  await expect(page.locator('.ja-updated')).toContainText(
-    'matched against profile v1',
-  )
+  await expect(page.locator('.ja-updated')).toHaveText(/^Updated \S+$/)
   for (const copy of [
     'Matching against my CV is paused',
     'Matching starts when the CV profile is approved',

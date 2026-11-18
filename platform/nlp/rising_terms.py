@@ -184,7 +184,7 @@ def build(connection) -> dict:
     return {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "source": "Arbetsförmedlingen JobTech, historical ad archives (CC0 1.0)",
+        "source": "Arbetsförmedlingen JobTech, historical ad archives and JobStream (CC0 1.0)",
         "model": "bronze.stg_job_ads.description with gold.fct_job_ads",
         "recent": {"from": recent.isoformat()[:7], "to": add_months(end, -1).isoformat()[:7]},
         "before": {"from": before.isoformat()[:7], "to": add_months(recent, -1).isoformat()[:7]},

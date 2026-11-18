@@ -120,12 +120,17 @@ async function answer(request: Request, env: Env) {
   const input = await body(request)
   const question = sentence(input?.question)
   const corpus = String(input?.corpus)
-  if (corpus === 'sfs-all' && question) {
-    // Every law in force is searched on Google Cloud and answered by Claude: a daily allowance.
+  // A paid call takes one question from the daily allowance before it is made: the Google Cloud
+  // search of every law in force (sfs-all), or Claude for any corpus once the Worker has its key.
+  const allowance = async () => {
     if (!env.QUOTA) return json({ error: 'quota is not configured' }, 503)
     const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
     const taken = await take(env.QUOTA, ip)
-    if (!taken.ok) return json({ reason: taken.reason }, 429)
+    return taken.ok ? null : json({ reason: taken.reason }, 429)
+  }
+  if (corpus === 'sfs-all' && question) {
+    const refused = await allowance()
+    if (refused) return refused
   }
   const hits =
     corpus === 'sfs-all' && question ? await search(env, question) : undefined
@@ -148,6 +153,10 @@ async function answer(request: Request, env: Env) {
   const found = (passages as Passage[]).map(({ id, text }) => ({ id, text }))
   if (!hits && !(await published(request, env, corpus, found)))
     return json({ error: 'passages must be published text' }, 400)
+  if (!hits && env.ANTHROPIC_API_KEY) {
+    const refused = await allowance()
+    if (refused) return refused
+  }
 
   let text: string
   let usage: unknown
