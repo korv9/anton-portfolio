@@ -10,6 +10,7 @@ import { useId, type ReactNode } from 'react'
 import { useData, type Post } from './kit'
 import type { useFresh } from './freshness'
 import { l } from '../i18n'
+import { https } from '../links'
 
 type Delivery = {
   published_by: string[]
@@ -241,7 +242,7 @@ export function Trace({
                   <>
                     {' '}
                     (
-                    <a href={fresh.run.url}>
+                    <a href={https(fresh.run.url)}>
                       {l('workflow run log', 'körningslogg')}
                     </a>
                     )

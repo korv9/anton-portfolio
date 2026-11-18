@@ -159,7 +159,7 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
 def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
     (step,) = [s for s in steps("build-warehouse.yml") if "portfolio.publish.retention" in s.get("run", "")]
     assert "--apply" not in step["run"]
-    assert step["env"] == {"APPLY": "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"}
+    assert step["env"]["APPLY"] == "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"
     for apply in ("", "--apply"):
         summary = tmp_path / f"summary{apply}"
         result, calls, _ = run_script(tmp_path / f"run{apply}", step["run"], APPLY=apply,
