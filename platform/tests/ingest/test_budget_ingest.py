@@ -1,6 +1,6 @@
 import unittest
 
-from budget_ingest import budget_totals, number, parse_document
+from budget_ingest import budget_totals, number, parse_document, source
 
 
 class BudgetIngestTests(unittest.TestCase):
@@ -67,6 +67,19 @@ class BudgetIngestTests(unittest.TestCase):
                 + "<tr><td>Summa utgiftsområden</td><td></td><td>27 000</td><td>−900</td></tr></table>")
         with self.assertRaisesRegex(ValueError, "summerar"):
             parse_document(html, "2025/26", "HD01FiU1", "https://example.test")
+
+
+class SourceTest(unittest.TestCase):
+    def test_only_parliament_hosts_and_plain_names(self):
+        self.assertEqual(source("2025/26", "HD01FiU1", "//data.riksdagen.se/dokument/HD01FiU1.html"),
+                         ("https://data.riksdagen.se/dokument/HD01FiU1.html", "2025-26_HD01FiU1.html"))
+        self.assertEqual(source("2025/26", "HD01FiU1", None)[0],
+                         "https://data.riksdagen.se/dokument/HD01FiU1")
+        for session, document_id, url in [("2025/26", "x", "https://evil.test/a"),
+                                          ("2025/26", "../../x", None),
+                                          ("../2025", "HD01FiU1", None)]:
+            with self.assertRaises(ValueError):
+                source(session, document_id, url)
 
 
 if __name__ == "__main__":

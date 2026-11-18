@@ -58,6 +58,23 @@ def number(value: str) -> int | None:
 AREA = re.compile(r"\d{1,2}")
 # Rounding each of 27 areas to whole millions moves a sum by at most 13.5.
 ROUNDING_TOLERANCE_MSEK = 13
+# The document list answers with the download address and the names the file is saved under;
+# only parliament's own hosts are fetched, and only plain ids and sessions become file names.
+OFFICIAL = ("https://data.riksdagen.se/", "https://www.riksdagen.se/")
+DOCUMENT_ID = re.compile(r"[A-Za-z0-9-]+")
+SESSION = re.compile(r"\d{4}/\d{2,4}")
+
+
+def source(session: str, document_id: str, url: str | None) -> tuple[str, str]:
+    """The checked download address and file name of one document, or ValueError."""
+    if not SESSION.fullmatch(session) or not DOCUMENT_ID.fullmatch(document_id):
+        raise ValueError(f"unexpected session or document id: {session!r} {document_id!r}")
+    url = url or f"https://data.riksdagen.se/dokument/{document_id}"
+    if url.startswith("//"):
+        url = "https:" + url
+    if not url.startswith(OFFICIAL):
+        raise ValueError(f"{document_id}: not a parliamentary address: {url}")
+    return url, f"{session.replace('/', '-')}_{document_id}.html"
 
 
 def _figures(cells: list[str], expected: int) -> list[str]:
@@ -252,11 +269,10 @@ def main() -> None:
         candidate_errors = []
         for doc in sorted(candidates, key=lambda item: (item["dok_id"].casefold().endswith("d2"), item["dok_id"])):
             document_id = doc["dok_id"]
-            url = doc.get("dokument_url_html") or f"https://data.riksdagen.se/dokument/{document_id}"
-            if url.startswith("//"):
-                url = "https:" + url
-            path = raw / f"{session.replace('/', '-')}_{document_id}.html"
+            url = doc.get("dokument_url_html")
             try:
+                url, name = source(session, document_id, url)
+                path = raw / name
                 if args.refresh or not path.exists():
                     path.write_bytes(download(url))
                 rows = parse_document(path.read_text(encoding="utf-8-sig"), session, document_id, url)

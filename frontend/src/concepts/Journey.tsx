@@ -14,6 +14,7 @@ import type { Route } from '../router'
 import { useViewParams } from '../report/useViewParams'
 import { Feature } from '../charts/feature/Feature'
 import { fetchJson } from '../dataSource'
+import { https } from '../links'
 import { DataQuestion, Interpretation, QualityBrief } from '../ui/Story'
 import {
   CORPUS_ORDER,
@@ -181,7 +182,7 @@ export default function Journey({ route, data }: { route: Route; data: Data }) {
                         <p className="cj-excerpt">{excerpt(x.text)}</p>
                         <p className="cj-source">
                           <a
-                            href={x.source_url}
+                            href={https(x.source_url)}
                             target="_blank"
                             rel="noreferrer"
                           >
