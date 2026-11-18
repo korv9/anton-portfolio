@@ -87,7 +87,7 @@ before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
 ## Subjects
 
 Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13, which runs
-`pipeline.py run --all`; it is early enough to finish before the daily runs queue behind it on
+`pipeline.py run --all` after its parallel ingest lanes; it is early enough to finish before the daily runs queue behind it on
 Sunday morning.
 
 | Subject | Workflow | Schedule | Command | Group | Automatic |
@@ -149,8 +149,15 @@ What stays in YAML is the handling of failure, which differs per workflow:
   publishes, so the next run starts from them even if validation fails.
 - `refresh-news.yml` installs the optional summary SDK when `ANTHROPIC_API_KEY` is set. The
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
-- `build-warehouse.yml` builds every subject, stores the warehouse only if all of them
-  built, then exports and publishes each group whose subjects all came through. The quality
+- `build-warehouse.yml` fetches in parallel lanes first (`pipeline.py lanes`,
+  `platform/pipeline_lanes.py`). Each lane is one job for the subjects that write the same raw
+  sources. Its ingest step stops before the job's timeout, and the lane then pushes its raw and
+  feature files whatever happened, so a stalled source stops only its own lane and the next run
+  resumes from what was stored. The build job then builds every subject from the stored files
+  (`run --all --ingest-results tmp/lanes`). A subject whose lane failed or left no outcome
+  counts as failed. news and quality have no lane and ingest in the build job. The build stores
+  the warehouse only if every subject built, then exports and publishes each group whose
+  subjects all came through. The quality
   subject ends with the structural gate, after the store. Last, `src/portfolio/publish/retention.py`
   plans the deletion of superseded releases, and deletes them only when the repository
   variable `RETENTION_APPLY` is `true` (docs/platform/r2-delivery-contract.md).

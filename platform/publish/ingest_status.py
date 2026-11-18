@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -60,6 +61,30 @@ def merged(current: bytes | None, name: str, value: dict) -> dict:
     return {"subjects": {**subjects, name: value}}
 
 
+def write_merged(s3, bucket: str, name: str, value: dict, attempts: int = 5) -> None:
+    """Merge one subject into the stored file with a conditional write. The build's parallel ingest
+    lanes record at the same time; a write that lost the race (412) reads the new file and retries."""
+    from botocore.exceptions import ClientError
+    for attempt in range(attempts):
+        try:
+            current = s3.get_object(Bucket=bucket, Key=KEY)
+            body, condition = current["Body"].read(), {"IfMatch": current["ETag"]}
+        except s3.exceptions.NoSuchKey:
+            body, condition = None, {"IfNoneMatch": "*"}
+        try:
+            s3.put_object(Bucket=bucket, Key=KEY,
+                          Body=json.dumps(merged(body, name, value), indent=1).encode(),
+                          ContentType="application/json", CacheControl="no-cache, max-age=0",
+                          **condition)
+            return
+        except ClientError as error:
+            code = error.response.get("Error", {}).get("Code")
+            lost_race = code in ("PreconditionFailed", "412", "ConditionalRequestConflict")
+            if not lost_race or attempt == attempts - 1:
+                raise
+            time.sleep(1 + attempt)
+
+
 def record(name: str, subject: dict, started: str, error: str | None) -> None:
     value = entry(subject, started, error)
     LOCAL.parent.mkdir(parents=True, exist_ok=True)
@@ -69,14 +94,7 @@ def record(name: str, subject: dict, started: str, error: str | None) -> None:
         return
     from portfolio.storage.upload import client
     s3, bucket = client()
-    try:
-        current = s3.get_object(Bucket=bucket, Key=KEY)["Body"].read()
-    except s3.exceptions.NoSuchKey:
-        current = None
-    # Read-modify-write is safe: the data workflows share the concurrency group data-refresh.
-    body = json.dumps(merged(current, name, value), indent=1).encode()
-    s3.put_object(Bucket=bucket, Key=KEY, Body=body, ContentType="application/json",
-                  CacheControl="no-cache, max-age=0")
+    write_merged(s3, bucket, name, value)
     print(f"  recorded ingestion of {name} in {KEY}")
 
 
