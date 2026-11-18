@@ -3,6 +3,7 @@
  * verdict. Results and verdicts are read from ml/models.json; the gate wording is the card's.
  */
 import { l } from '../i18n'
+import { https } from '../links'
 import { ok, useJson } from '../useJson'
 import './tech.css'
 
@@ -127,7 +128,7 @@ export function ModelCards({ passedOnly = false }: { passedOnly?: boolean }) {
                 <strong>{l('Gate', 'Spärr')}:</strong> {gate}
               </p>
               <p className="tech-meta">
-                <a href={c.card_url}>{l('Model card', 'Modellkort')}</a>
+                <a href={https(c.card_url)}>{l('Model card', 'Modellkort')}</a>
               </p>
             </li>
           )

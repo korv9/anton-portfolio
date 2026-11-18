@@ -457,3 +457,36 @@ test('quota: PER_VISITOR questions a visitor a day, then 429; a new day starts o
     'IPs are hashed',
   )
 })
+
+test('answer: with the Claude key every corpus takes from the daily allowance before the call', async () => {
+  const real = globalThis.fetch
+  let claude = 0
+  globalThis.fetch = (async () => {
+    claude++
+    return Response.json({ content: [{ type: 'text', text: 'NO_ANSWER' }] })
+  }) as typeof fetch
+  try {
+    const e = await env()
+    Object.assign(e, { ANTHROPIC_API_KEY: 'test' })
+    assert.equal(
+      (await worker.fetch(ask(), e)).status,
+      503,
+      'no quota configured',
+    )
+    const kv = new Map<string, string>()
+    const day = new Date().toISOString().slice(0, 10)
+    kv.set(`q:${day}:total`, '200')
+    Object.assign(e, {
+      QUOTA: {
+        get: async (k: string) => kv.get(k) ?? null,
+        put: async (k: string, v: string) => void kv.set(k, v),
+      },
+    })
+    const spent = await worker.fetch(ask(), e)
+    assert.equal(spent.status, 429)
+    assert.deepEqual(await spent.json(), { reason: 'site' })
+    assert.equal(claude, 0, 'Claude is never called without an allowance')
+  } finally {
+    globalThis.fetch = real
+  }
+})

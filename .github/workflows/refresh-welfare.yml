@@ -38,10 +38,6 @@ jobs:
       PORTFOLIO_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '0' }}
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
       # The bucket's public address once a custom domain is connected; empty keeps r2.dev.
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
     steps:
@@ -52,34 +48,71 @@ jobs:
       - name: Set up and restore verified raw files
         id: setup
         uses: ./.github/actions/data-setup
+        # The R2 keys go only to the steps that talk to the bucket. Each subject run records its
+        # ingestion in R2 (platform/publish/ingest_status.py), so it gets them as well.
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: welfare parliament taxes
       - name: Fetch, build, test and export welfare
         id: welfare
         continue-on-error: true
         timeout-minutes: 70
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run welfare --only ingest,dbt,export
       - name: Save welfare checkpoints
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py push welfare
       - name: Fetch, build, test and export parliament
         id: parliament
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         continue-on-error: true
         timeout-minutes: 90
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run parliament --only ingest,dbt,export
       - name: Save parliament checkpoints
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py push parliament
       - name: Fetch, build, test and export taxes
         id: taxes
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         continue-on-error: true
         timeout-minutes: 60
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run taxes --only ingest,dbt,export
       # Raw checkpoints are useful even if a later source or dbt test fails.
       - name: Save all available checkpoints
         if: ${{ always() && steps.setup.outcome == 'success' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py push welfare parliament taxes
       - name: Require successful subject builds
         if: ${{ !cancelled() }}
@@ -90,6 +123,11 @@ jobs:
         run: |
           [ "$WELFARE" = success ] && [ "$PARLIAMENT" = success ] && [ "$TAXES" = success ]
       - name: Data contracts, then publish and verify the group in R2
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run welfare parliament taxes --only publish
 
   # A failed or timed-out run opens (or comments on) an issue; a successful one closes it.

@@ -214,7 +214,7 @@ def json_document(payload: bytes) -> None:
 
 
 def fetch(http: requests.Session, source: str, relative: str, url: str, *, method: str = "GET",
-          body: object | None = None, pause: float = 0.0, timeout: int = 300,
+          body: object | None = None, pause: float = 0.0, timeout: float | tuple[float, float] = 300,
           headers: dict | None = None, versioned: bool = False,
           max_age_days: float = 0, validate: Callable[[bytes], None] | None = None) -> Path:
     """Fetch a URL and store it. `pause` spaces requests out for rate-limited APIs.
