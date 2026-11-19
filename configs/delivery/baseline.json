@@ -41,6 +41,7 @@
     "politics/parliament/votes/*",
     "politics/parliament/manifest.json",
     "sweden/*",
+    "outdoor/*",
     "job-assistant/*",
     "clusters/*"
   ],
