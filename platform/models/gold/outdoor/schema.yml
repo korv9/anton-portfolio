@@ -1,0 +1,166 @@
+version: 2
+
+# The outdoor subject, read by platform/publish/outdoor/export_outdoor.py. The tests are its
+# publication gate: every metro station has a count in every edition, and the counts add up to
+# what each edition prints for the whole metro (tests/outdoor/).
+
+models:
+  - name: dim_outdoor_station
+    description: SL's metro stations in today's GTFS, one per station name.
+    config:
+      contract: {enforced: true}
+    columns:
+      - name: station_key
+        data_type: VARCHAR
+        description: 'Key: the station name lowercased with everything but letters removed.'
+        data_tests: [not_null, unique]
+      - name: station_name
+        data_type: VARCHAR
+        description: 'Attribute: the parent stop''s name in GTFS.'
+        data_tests: [not_null]
+      - name: latitude
+        data_type: DOUBLE
+        description: 'Attribute: WGS84 latitude, mean of the station''s parent stops.'
+        data_tests:
+          - not_null
+          - between: {arguments: {min: 59.0, max: 59.6}}
+      - name: longitude
+        data_type: DOUBLE
+        description: 'Attribute: WGS84 longitude, mean of the station''s parent stops.'
+        data_tests:
+          - not_null
+          - between: {arguments: {min: 17.6, max: 18.4}}
+      - name: lines
+        data_type: VARCHAR[]
+        description: 'Attribute: metro line numbers (route_short_name) calling at the station.'
+      - name: terminal
+        data_type: BOOLEAN
+        description: 'Attribute: the station is the most common last stop of a route in one direction.'
+        data_tests: [not_null]
+
+  - name: fct_outdoor_station_year
+    description: Boardings per metro station on an average winter weekday, per edition 2013–2022.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [station_key, year]}
+    columns:
+      - name: station_key
+        data_type: VARCHAR
+        description: 'Foreign key to dim_outdoor_station.'
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_outdoor_station'), field: station_key}}
+      - name: year
+        data_type: INTEGER
+        description: 'Attribute: the edition''s year (the count was made that winter).'
+        data_tests: [not_null]
+      - name: boardings
+        data_type: BIGINT
+        description: 'Measure, additive over stations: boardings per average winter weekday.'
+        data_tests: [not_null]
+      - name: h06_09
+        data_type: BIGINT
+        description: 'Measure: boardings 06.00–09.00; 2013–2020 only.'
+      - name: h0730_0830
+        data_type: BIGINT
+        description: 'Measure: boardings 07.30–08.30; 2013–2020 only.'
+      - name: h15_18
+        data_type: BIGINT
+        description: 'Measure: boardings 15.00–18.00; 2013–2020 only.'
+      - name: h1630_1730
+        data_type: BIGINT
+        description: 'Measure: boardings 16.30–17.30; 2013–2020 only.'
+      - name: read_from
+        data_type: VARCHAR
+        description: 'Attribute: appendix (the edition''s table) or map (its metro map).'
+        data_tests:
+          - not_null
+          - accepted_values: {arguments: {values: [appendix, map]}}
+      - name: source_url
+        data_type: VARCHAR
+        description: 'Attribute: the URL the edition was fetched from.'
+      - name: original_url
+        data_type: VARCHAR
+        description: 'Attribute: the publisher''s URL (sll.se for 2013–2018, now archived).'
+      - name: source_sha256
+        data_type: VARCHAR
+        description: 'Attribute: SHA-256 of the fetched PDF.'
+
+  - name: fct_outdoor_station_halfhour
+    description: Boardable metro departures per station and half-hour on one weekday of today's GTFS.
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [station_key, half_hour]}
+    columns:
+      - name: station_key
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dim_outdoor_station'), field: station_key}}
+      - name: service_date
+        data_tests: [not_null]
+      - name: departures
+        data_tests: [not_null]
+
+  - name: fct_outdoor_rail_stop
+    description: Commuter-rail, local-railway and tram stations with their routes.
+    columns:
+      - name: station_id
+        data_tests: [not_null, unique]
+
+  - name: fct_outdoor_deso_year
+    description: Residents and employed residents per DeSO and year in Stockholm County.
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [deso_version, deso_code, year]}
+    columns:
+      - name: deso_code
+        data_tests: [not_null]
+
+seeds:
+  - name: outdoor_planned_stations
+    description: >-
+      The 18 planned stations of Nya tunnelbanan (nyatunnelbanan.se/stationer), compiled by hand
+      2026-11-19: 15 new places and new platforms at Gullmarsplan, Fridhemsplan and Liljeholmen.
+      Coordinates from Wikidata or OpenStreetMap (coordinate_id); Södra Hagalund's Wikidata
+      position is given to 0.01°.
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [station]}
+    columns:
+      - name: station
+        data_tests: [not_null]
+      - name: branch
+        data_tests:
+          - accepted_values: {arguments: {values: [barkarby, arenastaden, nacka_soderort, alvsjo]}}
+      - name: kind
+        data_tests:
+          - accepted_values: {arguments: {values: [new, interchange]}}
+      - name: latitude
+        data_tests: [not_null, {between: {arguments: {min: 59.0, max: 59.6}}}]
+      - name: longitude
+        data_tests: [not_null, {between: {arguments: {min: 17.6, max: 18.4}}}]
+      - name: source_url
+        data_tests: [not_null]
+
+  - name: outdoor_opening_forecasts
+    description: >-
+      Every dated official opening forecast per branch found in Stockholmsförhandlingen's and
+      Sverigeförhandlingen's agreements and annual reports and on nyatunnelbanan.se, compiled
+      2026-11-19 (checked_on). A row without a year records a statement that gave none.
+    columns:
+      - name: branch
+        data_tests:
+          - accepted_values: {arguments: {values: [barkarby, arenastaden, nacka_soderort, alvsjo]}}
+      - name: scope
+        data_tests:
+          - accepted_values: {arguments: {values: [branch, hagastaden]}}
+      - name: statement_date
+        data_tests: [not_null]
+      - name: opening_quarter
+        data_tests: [{between: {arguments: {min: 1, max: 4}}}]
+      - name: source_url
+        data_tests: [not_null]
+      - name: checked_on
+        data_tests: [not_null]

@@ -29,6 +29,7 @@ const AskTheLaw = lazy(() => import('./lawqa/AskTheLaw'))
 const JobAssistantPage = lazy(() => import('./job-assistant/JobAssistantPage'))
 const ReplikPage = lazy(() => import('./replik/ReplikPage'))
 const AiClockPage = lazy(() => import('./aiclock/AiClockPage'))
+const OutdoorPage = lazy(() => import('./outdoor/OutdoorPage'))
 const DrugCombPage = lazy(() =>
   import('./products/CaseStudies').then((m) => ({ default: m.DrugCombPage })),
 )
@@ -146,6 +147,7 @@ export default function App() {
                 {page === 'homie' && <HomiePage />}
                 {page === 'replik' && <ReplikPage />}
                 {page === 'aiclock' && <AiClockPage />}
+                {page === 'outdoor' && <OutdoorPage route={route} />}
               </Suspense>
             </ProjectStructure>
           </PageBoundary>

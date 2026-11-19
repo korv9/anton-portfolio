@@ -288,6 +288,35 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['lawqa'],
   },
   {
+    id: 'outdoor',
+    title: t('När kommer publiken fram?', 'When does the audience arrive?'),
+    descriptor: t(
+      'DOOH-publiken i Stockholms tunnelbana',
+      'The DOOH audience in Stockholm’s metro',
+    ),
+    summary: t(
+      'Tunnelbanestationer lästa som skärmplatser: var publiken finns, vilka timmar, hur den rört sig sedan 2013 och hur stor och när den kommer vid stationer som inte är byggda än.',
+      'Metro stations read as screen locations: where the audience is, at what hours, how it has moved since 2013, and how large it will be, and when, at stations not yet built.',
+    ),
+    question: t(
+      'Var och när finns kollektivtrafikpubliken, och när kommer den till de nya stationerna?',
+      'Where and when is the public-transport audience, and when does it reach the new stations?',
+    ),
+    built: t(
+      'Påstigande per station ur tio utgåvor av Fakta om SL och länet (2013–2022), SL:s GTFS-tidtabell, SCB:s DeSO-statistik och en källbelagd lista över planerade stationer och varje officiell prognos; två förregistrerade förutsägelser.',
+      'Boardings per station from ten editions of Fakta om SL och länet (2013–2022), SL’s GTFS timetable, SCB DeSO statistics and a sourced list of planned stations and every official forecast; two pre-registered predictions.',
+    ),
+    result: t(
+      'Publik per station och år, ett timindex per station, förutsagda påstigande med intervall vid de planerade stationerna och ett intervall för öppningsår per sträcka.',
+      'Audience per station and year, an hourly index per station, predicted boardings with intervals at the planned stations and a range of opening years per branch.',
+    ),
+    tech: ['Python', 'dbt', 'DuckDB', 'GTFS', 'PyMuPDF'],
+    href: '#publiken',
+    category: 'data',
+    status: 'experimental',
+    pages: ['outdoor'],
+  },
+  {
     id: 'drugcomb',
     title: t('Drug Synergy Lab', 'Drug Synergy Lab'),
     descriptor: t(
@@ -403,6 +432,7 @@ export const PROJECT_GROUPS = [
       'symbolic-atlas',
       'concept-constellation',
       'ai-act-clock',
+      'outdoor',
     ],
   },
 ]
@@ -419,6 +449,7 @@ export const PROJECT_WORKSPACE: Record<string, 'labs' | 'engineering'> = {
   drugcomb: 'labs',
   replik: 'labs',
   'ai-act-clock': 'labs',
+  outdoor: 'labs',
   thesis: 'engineering',
   homie: 'engineering',
   platform: 'engineering',

@@ -85,6 +85,12 @@ export const GROUPS: { en: string; sv: string; items: Item[] }[] = [
         sv: 'När kommer en lag fram?',
       },
       {
+        href: '#publiken',
+        en: 'When does the audience arrive?',
+        sv: 'När kommer publiken fram?',
+        experimental: true,
+      },
+      {
         href: MEANING,
         en: 'What does it even mean?',
         sv: 'What does it even mean?',
@@ -111,6 +117,7 @@ function activeHref(route: Route) {
     jobs: '#jobs',
     replik: '#replik',
     aiclock: '#lag-ankomst',
+    outdoor: '#publiken',
     sweden: '#sweden',
     lawqa: '#fraga-lagen',
     clusters: '#cluster-visuals',

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "now",
+    "seed",
+    "resamples",
+    "branches"
+  ],
+  "properties": {
+    "branches": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "branch",
+          "latest_forecast",
+          "revisions",
+          "range",
+          "forecasts"
+        ],
+        "properties": {
+          "forecasts": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "statement_date",
+                "opening_year",
+                "source_url"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -64,7 +64,9 @@ TREES = ("raw", "features", "cluster_lab")
 # jobtech/stream/raw) carry recruiters' e-mails and phone numbers; nothing reads them back, runs
 # resume from the redacted ads.json and the counted stream/ads. Features: text working files (the
 # Riksdag passage sample).
-LOCAL_ONLY = {"raw": ("philosophy_moral", "job_assistant/raw", "jobtech/stream/raw"),
+# sl_facts/pdf: Region Stockholm's fact books carry no open licence; only the figures read from
+# them (sl_facts/parsed) are stored.
+LOCAL_ONLY = {"raw": ("philosophy_moral", "job_assistant/raw", "jobtech/stream/raw", "sl_facts/pdf"),
               "features": ("philosophy/moral/run",)}
 # A prune deletes stored files that are absent locally; more than this share of a folder's stored
 # files is taken as an incomplete local tree, not a cleanup. Raise it (--max-delete-pct or

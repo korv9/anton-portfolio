@@ -1,0 +1,17 @@
+{
+  "schema_version": 2,
+  "files": [
+    "outdoor/about.json",
+    "outdoor/dayparts.json",
+    "outdoor/new-stations.json",
+    "outdoor/stations.json",
+    "outdoor/timing.json"
+  ],
+  "schemas": {
+    "outdoor/stations.json": "configs/delivery/schemas/outdoor/stations.json",
+    "outdoor/dayparts.json": "configs/delivery/schemas/outdoor/dayparts.json",
+    "outdoor/new-stations.json": "configs/delivery/schemas/outdoor/new-stations.json",
+    "outdoor/timing.json": "configs/delivery/schemas/outdoor/timing.json",
+    "outdoor/about.json": "configs/delivery/schemas/outdoor/about.json"
+  }
+}

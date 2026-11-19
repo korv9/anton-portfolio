@@ -58,6 +58,8 @@ models:
         +tags: [sweden_language]
       sweden_futures:
         +tags: [sweden_futures]
+      outdoor:
+        +tags: [outdoor]
       concepts:
         +tags: [concepts]
       quality:
@@ -90,6 +92,8 @@ models:
     gold:
       +materialized: table
       +schema: gold
+      outdoor:
+        +tags: [outdoor]
       job_assistant:
         +tags: [job_assistant]
       quality:
@@ -143,6 +147,14 @@ models:
 # tag lets it build on its own: `dbt build --select tag:welfare`.
 seeds:
   portfolio:
+    outdoor:
+      +tags: [outdoor]
+      +schema: seeds
+      outdoor_planned_stations:
+        +column_types: {latitude: double, longitude: double, terminal: boolean}
+      outdoor_opening_forecasts:
+        +column_types: {statement_date: date, opening_year: integer, opening_quarter: integer,
+                        opening_month: integer, checked_on: date}
     sweden:
       +tags: [sweden]
       +schema: seeds

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "target_year",
+    "check",
+    "sensitivity_2019",
+    "stations",
+    "coefficients",
+    "features"
+  ],
+  "properties": {
+    "check": {
+      "type": "object",
+      "required": [
+        "label",
+        "coverage",
+        "loo_median_abs_log_error",
+        "null_median_abs_log_error"
+      ],
+      "properties": {
+        "label": {
+          "enum": [
+            "model",
+            "not_better_than_median"
+          ]
+        }
+      }
+    },
+    "stations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "station",
+          "branch",
+          "kind",
+          "source_url"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "new",
+              "interchange"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

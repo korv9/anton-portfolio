@@ -44,4 +44,6 @@ test('statute book and AI Act addresses land on Allegora', () => {
     assert.equal(route.path, '#fraga-lagen', hash)
   }
   assert.equal(parseHash('#ai-act-clock').path, '#lag-ankomst')
+  assert.equal(parseHash('#outdoor').path, '#publiken')
+  assert.equal(parseHash('#publiken').page, 'outdoor')
 })
