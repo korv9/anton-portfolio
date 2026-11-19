@@ -7,8 +7,8 @@ status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not appe
 - 2026-11-19 [CODE] Branch `korv9/outdoor` (worktree `tmp/wt-outdoor`, not pushed): new subject
   `dooh` (renamed from `outdoor` on the owner's word), Labs page `#publiken`, pre-registration
   committed before the fit (ec7633e8, file keeps the name `outdoor`). Release `dooh` 832b8a68 is
-  active in R2; the earlier `outdoor` group (e3ced3c9) is still in the manifest until the owner
-  removes it. Raw pushed, fact-book PDFs kept local. The new-station model missed the
+  active in R2; the `outdoor` group was retired from the manifest 2026-11-19 with the new
+  `release.py retire` (uncommitted). Raw pushed, fact-book PDFs kept local. The new-station model missed the
   pre-registered 25 % (23.7 %): label `not_better_than_median`. No `PROJECTS.md` entry yet.
 - 2026-11-17 [CODE] PR #270 (`korv9/jobs-archive-tls`) merged: repairs refresh-jobs (Telia chain for
   data.arbetsformedlingen.se, failing since 2026-11-13; running month in the market export, since

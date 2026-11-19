@@ -19,6 +19,11 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
   Also: Symbolic Atlas, Philosophy Atlas, Politics, AI Act
   decided → implemented: commit 278a788
 
+## Dooh
+
+- 2026-11-19 · Subjektet `outdoor` byter namn till `dooh`; sidan heter fortfarande "När kommer publiken fram?" på `#publiken`. (`decision-2026-11-19-001` · by Anton)
+  decided (implementation not recorded)
+
 ## Jobs
 
 - 2026-11-01 · The job assistant is the second flagship, refreshed hourly with an 8 h SLA (`decision-2026-11-03-017`)
