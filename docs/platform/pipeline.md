@@ -179,6 +179,20 @@ file is merged into an uncached copy in R2 outside every release; locally it is 
 are the first segments of a subject's `raw` paths; a subject whose fetch log is kept outside
 R2 lists it under `sources` (news).
 
+Each fetch-log line carries its lineage:
+- `fetched_at` says when the file was ingested and `content_changed_at` when its bytes last changed.
+- `source_modified_at` and `etag` say what the server reported about its own copy.
+- `run_id` and `subject` say which run and subject fetched it.
+
+A refetch of a file the server tagged asks whether it changed (`If-None-Match`, `If-Modified-Since`). A 304 is logged with `not_modified` and downloads nothing.
+
+An answer is checked before it replaces the stored copy (`src/portfolio/storage/rawstore_validate.py`):
+- its format, by suffix;
+- no HTML error page;
+- not a fraction of the stored size.
+
+After a subject's ingest, a file written in the run whose bytes differ from its own log line fails the subject. `stg_raw_fetch_log` (quality) reads every source's log into the warehouse.
+
 Each subject declares `sla: {fresh_within: ...}` and, per layer it writes, the `write` mode its
 code uses (header of `platform/pipeline.yml`; `platform/tests/architecture/test_pipeline_spec.py`
 checks both against the code). Every hour `data-heartbeat.yml` (`platform/publish/heartbeat.py`)
