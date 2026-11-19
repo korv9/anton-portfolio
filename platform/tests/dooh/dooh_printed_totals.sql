@@ -6,7 +6,7 @@ with printed(year, printed) as (
     values (2013, 1203100), (2014, 1205300), (2015, 1235000), (2016, 1273100), (2017, 1276900),
            (2018, 1286600), (2019, 1265900), (2020, 801800), (2021, 723000), (2022, 912000)
 ), totals as (
-    select year, sum(boardings) as total from {{ ref('fct_outdoor_station_year') }} group by year
+    select year, sum(boardings) as total from {{ ref('fct_dooh_station_year') }} group by year
 )
 select p.year, p.printed, t.total
 from printed as p full join totals as t using (year)

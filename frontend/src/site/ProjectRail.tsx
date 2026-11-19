@@ -117,7 +117,7 @@ function activeHref(route: Route) {
     jobs: '#jobs',
     replik: '#replik',
     aiclock: '#lag-ankomst',
-    outdoor: '#publiken',
+    dooh: '#publiken',
     sweden: '#sweden',
     lawqa: '#fraga-lagen',
     clusters: '#cluster-visuals',

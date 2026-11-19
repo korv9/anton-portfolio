@@ -1,9 +1,9 @@
 version: 2
 
-# Bronze for the outdoor subject (DOOH audience at Stockholm's metro stations). Files fetched by
-# platform/ingest/outdoor/{sl_facts,gtfs_rail,scb_deso}.py, each source directory with a
+# Bronze for the dooh subject (DOOH audience at Stockholm's metro stations). Files fetched by
+# platform/ingest/dooh/{sl_facts,gtfs_rail,scb_deso}.py, each source directory with a
 # _manifest.jsonl of URL, fetch time and SHA-256. The planned stations and the opening forecasts
-# are hand-compiled with a source URL per row: platform/seeds/outdoor/.
+# are hand-compiled with a source URL per row: platform/seeds/dooh/.
 
 sources:
   - name: sl_facts

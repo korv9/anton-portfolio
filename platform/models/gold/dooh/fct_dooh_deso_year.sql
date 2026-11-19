@@ -3,5 +3,5 @@
 -- 2024). SCB fills the other division's cells of a year with zeros, so a division is kept for a
 -- year only where it has residents. Employed residents begin in 2020.
 select deso_version, deso_code, year, residents, employed
-from {{ ref('stg_outdoor_deso') }}
+from {{ ref('stg_dooh_deso') }}
 qualify sum(residents) over (partition by deso_version, year) > 0

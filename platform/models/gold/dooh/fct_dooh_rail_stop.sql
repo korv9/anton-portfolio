@@ -6,8 +6,8 @@ select
     min(p.latitude) as latitude,
     min(p.longitude) as longitude,
     list_sort(list(distinct d.route_id)) as route_ids
-from {{ ref('stg_outdoor_gtfs_departures') }} as d
-join {{ ref('stg_outdoor_gtfs_stops') }} as s using (stop_id)
-join {{ ref('stg_outdoor_gtfs_stops') }} as p on p.stop_id = s.station_id
+from {{ ref('stg_dooh_gtfs_departures') }} as d
+join {{ ref('stg_dooh_gtfs_stops') }} as s using (stop_id)
+join {{ ref('stg_dooh_gtfs_stops') }} as p on p.stop_id = s.station_id
 where d.route_type in ('100', '900')
 group by s.station_id

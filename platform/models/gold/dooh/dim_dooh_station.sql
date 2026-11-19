@@ -4,9 +4,9 @@
 -- most common last stop of a route in one direction. A stop where no metro train takes on
 -- passengers is not a station.
 with departures as (
-    select * from {{ ref('stg_outdoor_gtfs_departures') }} where route_type = '401'
+    select * from {{ ref('stg_dooh_gtfs_departures') }} where route_type = '401'
 ), stops as (
-    select * from {{ ref('stg_outdoor_gtfs_stops') }}
+    select * from {{ ref('stg_dooh_gtfs_stops') }}
 ), calls as (
     select d.*, s.station_id from departures as d join stops as s using (stop_id)
 ), last_stops as (
@@ -19,7 +19,7 @@ with departures as (
     from last_stops group by route_id, direction_id
 ), stations as (
     select p.stop_id as station_id, p.stop_name, p.latitude, p.longitude,
-           {{ outdoor_name_key('p.stop_name') }} as station_key
+           {{ dooh_name_key('p.stop_name') }} as station_key
     from stops as p
     where p.stop_id in (select station_id from calls where boarding)
 )

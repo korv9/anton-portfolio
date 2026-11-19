@@ -1,22 +1,20 @@
 /**
  * When does the audience arrive? (#publiken): a KPI head and one chart with five views, each read
- * from the committed outdoor files. Checks the page against the JSON, not typed-in numbers.
+ * from the committed dooh files. Checks the page against the JSON, not typed-in numbers.
  */
 import { test, expect } from './test'
 
 const SHOWS = ['stations', 'hours', 'profiles', 'new', 'opening']
 
-test('the outdoor page shows five views with figures from the data @mobile', async ({
+test('the dooh page shows five views with figures from the data @mobile', async ({
   page,
   request,
 }) => {
   const errors: string[] = []
   page.on('pageerror', (e) => errors.push(e.message))
-  const stations = await (
-    await request.get('/data/outdoor/stations.json')
-  ).json()
+  const stations = await (await request.get('/data/dooh/stations.json')).json()
   const planned = await (
-    await request.get('/data/outdoor/new-stations.json')
+    await request.get('/data/dooh/new-stations.json')
   ).json()
 
   await page.goto('/#publiken')
@@ -30,11 +28,11 @@ test('the outdoor page shows five views with figures from the data @mobile', asy
   // Each view has a title; the new-station view says whether the model beat the median.
   for (const key of SHOWS) {
     await page.goto(`/#publiken?show=${key}`)
-    await expect(page.locator('#outdoor-chart h2')).toBeVisible()
+    await expect(page.locator('#dooh-chart h2')).toBeVisible()
   }
   await page.goto('/#publiken?show=new')
   if (planned.check.label !== 'model')
-    await expect(page.locator('#outdoor-chart h2')).toContainText(
+    await expect(page.locator('#dooh-chart h2')).toContainText(
       'did not beat the median',
     )
   await expect(page.locator('.od-rows li')).toHaveCount(
@@ -49,6 +47,6 @@ test('the outdoor page shows five views with figures from the data @mobile', asy
 
 test('the English address leads to the page', async ({ page, isMobile }) => {
   test.skip(isMobile, 'routing is the same on a phone')
-  await page.goto('/#outdoor')
+  await page.goto('/#dooh')
   await expect(page).toHaveURL(/#publiken$/)
 })

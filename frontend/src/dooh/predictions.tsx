@@ -1,5 +1,5 @@
 /**
- * The two predicted views of the outdoor page: the planned stations' audience and when they
+ * The two predicted views of the dooh page: the planned stations' audience and when they
  * open (docs/research/preregistrations/outdoor-preregistration.md).
  */
 import { l } from '../i18n'

@@ -15,7 +15,7 @@ import { Feature, Pick } from '../charts/feature/Feature'
 import { hoursSpec, profilesSpec, stationsSpec, type Spec } from './views'
 import { newSpec, openingSpec } from './predictions'
 import type { Dayparts, NewStations, Stations, Timing } from './types'
-import './outdoor.css'
+import './dooh.css'
 
 const VIEW = { show: 'stations', measure: 'level' }
 
@@ -27,13 +27,13 @@ const SHOWS: [string, [string, string]][] = [
   ['opening', ['Opening', 'Öppning']],
 ]
 
-export default function OutdoorPage({ route }: { route: Route }) {
+export default function DoohPage({ route }: { route: Route }) {
   const [view, setView] = useViewParams(route, VIEW)
   const files = {
-    stations: useJson<Stations>('outdoor/stations.json'),
-    dayparts: useJson<Dayparts>('outdoor/dayparts.json'),
-    planned: useJson<NewStations>('outdoor/new-stations.json'),
-    timing: useJson<Timing>('outdoor/timing.json'),
+    stations: useJson<Stations>('dooh/stations.json'),
+    dayparts: useJson<Dayparts>('dooh/dayparts.json'),
+    planned: useJson<NewStations>('dooh/new-stations.json'),
+    timing: useJson<Timing>('dooh/timing.json'),
   }
   const s = loaded(files.stations)
   const d = loaded(files.dayparts)
@@ -98,7 +98,7 @@ export default function OutdoorPage({ route }: { route: Route }) {
       })
   }
   return (
-    <article className="project-page outdoor">
+    <article className="project-page dooh">
       <PageHead
         title={l('When does the audience arrive?', 'När kommer publiken fram?')}
         sentence={l(
@@ -110,7 +110,7 @@ export default function OutdoorPage({ route }: { route: Route }) {
       <LoadNote files={Object.values(files)} />
       {spec && (
         <Feature
-          id="outdoor-chart"
+          id="dooh-chart"
           title={spec.title}
           controls={
             <>

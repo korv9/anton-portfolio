@@ -1,4 +1,4 @@
-"""What lies around a station: the spatial features of the outdoor subject (pre-registration,
+"""What lies around a station: the spatial features of the dooh subject (pre-registration,
 docs/research/preregistrations/outdoor-preregistration.md, prediction 1).
 
 For points in WGS84 this computes, in SWEREF99 TM:

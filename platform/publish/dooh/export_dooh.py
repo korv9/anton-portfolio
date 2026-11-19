@@ -1,14 +1,14 @@
-"""Publish the outdoor subject, "När kommer publiken fram?": the public-transport audience at
+"""Publish the dooh subject, "När kommer publiken fram?": the public-transport audience at
 Stockholm's metro stations as a digital out-of-home media owner would read it.
 
-    python platform/publish/outdoor/export_outdoor.py
+    python platform/publish/dooh/export_dooh.py
 
-Inputs: gold.dim_outdoor_station, fct_outdoor_station_year, fct_outdoor_station_halfhour,
-fct_outdoor_rail_stop and fct_outdoor_deso_year; seeds.outdoor_planned_stations and
-seeds.outdoor_opening_forecasts (hand-compiled, a source URL per row); SCB's DeSO 2025 and retail
+Inputs: gold.dim_dooh_station, fct_dooh_station_year, fct_dooh_station_halfhour,
+fct_dooh_rail_stop and fct_dooh_deso_year; seeds.dooh_planned_stations and
+seeds.dooh_opening_forecasts (hand-compiled, a source URL per row); SCB's DeSO 2025 and retail
 area layers in warehouse/raw/scb_deso.
 
-Writes frontend/public/data/outdoor/:
+Writes frontend/public/data/dooh/:
 - `stations.json`: boardings per station and edition 2013–2022, change 2013→2019 and 2019→2022.
 - `dayparts.json`: the hourly audience index per station (2019 bands, today's departures), and
   morning and afternoon shares of shopping and other locations.
@@ -38,7 +38,7 @@ from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT  # noqa: E402
 from portfolio.core.io import write_json  # noqa: E402
 from portfolio.publish.catalog import register  # noqa: E402
 
-OUT = PUBLIC / "outdoor"
+OUT = PUBLIC / "dooh"
 TRAIN_YEAR, SENSITIVITY_YEAR, DAYPART_YEAR = 2022, 2019, 2019
 MIN_KM = 0.25
 FEATURES = ("log_residents", "log_employed", "log1p_retail_employees", "log_km_to_centre",
@@ -61,10 +61,10 @@ def deso_values(con, year: int) -> tuple[str, dict[str, tuple], dict[str, int]]:
     Returns the DeSO division, deso_code -> (residents, employed), and the years used."""
     used, versions, out = {}, set(), {}
     for column in ("residents", "employed"):
-        have = [y for (y,) in con.sql(f"select distinct year from gold.fct_outdoor_deso_year where {column} is not null order by 1").fetchall()]
+        have = [y for (y,) in con.sql(f"select distinct year from gold.fct_dooh_deso_year where {column} is not null order by 1").fetchall()]
         use = max((y for y in have if y <= year), default=min(have))
         used[column] = use
-        for version, code, value in con.sql(f"select deso_version, deso_code, {column} from gold.fct_outdoor_deso_year where year = {use}").fetchall():
+        for version, code, value in con.sql(f"select deso_version, deso_code, {column} from gold.fct_dooh_deso_year where year = {use}").fetchall():
             versions.add(version)
             out.setdefault(code, [None, None])[column == "employed"] = value
     if len(versions) != 1:
@@ -75,14 +75,14 @@ def deso_values(con, year: int) -> tuple[str, dict[str, tuple], dict[str, int]]:
 def station_features(con, geo, points: dict, year: int) -> tuple[dict, dict]:
     version, values, used = deso_values(con, year)
     rail = {r["station_id"]: (r["longitude"], r["latitude"], r["route_ids"])
-            for r in rows(con, "select * from gold.fct_outdoor_rail_stop")}
+            for r in rows(con, "select * from gold.fct_dooh_rail_stop")}
     centre = next((lon, lat) for k, (lon, lat) in points.items() if k == "tcentralen")
     return catchment.features(geo, points, version, values, rail, centre), used | {"deso": int(version)}
 
 
 def audience(con, stations: list[dict]) -> dict:
-    years = [r["year"] for r in rows(con, "select distinct year from gold.fct_outdoor_station_year order by 1")]
-    data = rows(con, "select * from gold.fct_outdoor_station_year order by station_key, year")
+    years = [r["year"] for r in rows(con, "select distinct year from gold.fct_dooh_station_year order by 1")]
+    data = rows(con, "select * from gold.fct_dooh_station_year order by station_key, year")
     totals = {y: sum(r["boardings"] for r in data if r["year"] == y) for y in years}
     by = {(r["station_key"], r["year"]): r["boardings"] for r in data}
     out = []
@@ -93,17 +93,17 @@ def audience(con, stations: list[dict]) -> dict:
                     "share": [round(by[(k, y)] / totals[y], 5) for y in years],
                     "change_2013_2019": round(math.log(by[(k, 2019)] / by[(k, 2013)]), 4),
                     "change_2019_2022": round(math.log(by[(k, 2022)] / by[(k, 2019)]), 4)})
-    sources = rows(con, "select distinct year, read_from, source_url, original_url, source_sha256 from gold.fct_outdoor_station_year order by year")
+    sources = rows(con, "select distinct year, read_from, source_url, original_url, source_sha256 from gold.fct_dooh_station_year order by year")
     return {"years": years, "totals": [totals[y] for y in years], "stations": out, "editions": sources,
             "unit": "boardings per average winter weekday, counted by hand"}
 
 
 def daypart_view(con, stations: list[dict], shopping: dict[str, bool]) -> dict:
-    bands = {r["station_key"]: r for r in rows(con, f"select * from gold.fct_outdoor_station_year where year = {DAYPART_YEAR}")}
+    bands = {r["station_key"]: r for r in rows(con, f"select * from gold.fct_dooh_station_year where year = {DAYPART_YEAR}")}
     deps: dict[str, dict[int, int]] = {}
-    for r in rows(con, "select * from gold.fct_outdoor_station_halfhour"):
+    for r in rows(con, "select * from gold.fct_dooh_station_halfhour"):
         deps.setdefault(r["station_key"], {})[r["half_hour"]] = r["departures"]
-    service_date = con.sql("select any_value(service_date) from gold.fct_outdoor_station_halfhour").fetchone()[0]
+    service_date = con.sql("select any_value(service_date) from gold.fct_dooh_station_halfhour").fetchone()[0]
     hourly = {}
     for s in stations:
         b = bands[s["station_key"]]
@@ -171,7 +171,7 @@ def timing(con, now: date) -> dict:
     # A forecast counts when it gives a year for the whole branch: the 2014 date for Hagastaden
     # alone is a different milestone, and a statement without a year ("not set", a time after
     # project start) moves nothing. Those rows are published apart, as `undated`.
-    every = rows(con, "select * from seeds.outdoor_opening_forecasts order by branch, statement_date")
+    every = rows(con, "select * from seeds.dooh_opening_forecasts order by branch, statement_date")
     forecasts = [f for f in every if f["scope"] == "branch" and f["opening_year"] is not None]
     branches = sorted({f["branch"] for f in forecasts})
     series = {b: [(predict.decimal_date(f["statement_date"]),
@@ -196,11 +196,11 @@ def timing(con, now: date) -> dict:
 
 def main() -> int:
     con = db.warehouse(DATABASE)
-    stations = rows(con, "select * from gold.dim_outdoor_station order by station_name")
+    stations = rows(con, "select * from gold.dim_dooh_station order by station_name")
     target = {(r["station_key"], r["year"]): r["boardings"]
-              for r in rows(con, "select station_key, year, boardings from gold.fct_outdoor_station_year")}
-    planned = rows(con, "select * from seeds.outdoor_planned_stations order by branch, station")
-    checked = con.sql("select max(checked_on) from seeds.outdoor_opening_forecasts").fetchone()[0]
+              for r in rows(con, "select station_key, year, boardings from gold.fct_dooh_station_year")}
+    planned = rows(con, "select * from seeds.dooh_planned_stations order by branch, station")
+    checked = con.sql("select max(checked_on) from seeds.dooh_opening_forecasts").fetchone()[0]
     geo = catchment.connect({v: RAW / f"scb_deso/deso_{v}.geojson" for v in ("2018", "2025")},
                             RAW / "scb_deso/retail_2020.geojson")
     inventory = new_inventory(con, geo, stations, target, planned)
@@ -212,13 +212,13 @@ def main() -> int:
     write("timing.json", timing(con, checked))
     write("about.json", about(con))
     register([OUT / n for n in ("stations.json", "dayparts.json", "new-stations.json", "timing.json", "about.json")])
-    print(f"outdoor: {len(stations)} stations, {len(planned)} planned, label {inventory['check']['label']} "
+    print(f"dooh: {len(stations)} stations, {len(planned)} planned, label {inventory['check']['label']} "
           f"-> {OUT.relative_to(ROOT)}")
     return 0
 
 
 def about(con) -> dict:
-    feed = con.sql("select any_value(service_date) from gold.fct_outdoor_station_halfhour").fetchone()[0]
+    feed = con.sql("select any_value(service_date) from gold.fct_dooh_station_halfhour").fetchone()[0]
     return {
         "preregistration": "docs/research/preregistrations/outdoor-preregistration.md",
         "gtfs_service_date": str(feed),

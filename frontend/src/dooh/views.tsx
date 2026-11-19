@@ -1,5 +1,5 @@
 /**
- * The three observed views of the outdoor page's one chart: where the audience is and how it
+ * The three observed views of the dooh page's one chart: where the audience is and how it
  * moved, its hours, and commuter against shopping locations (the predicted two are in
  * predictions.tsx). Each returns a title, its own slicer, the chart, a table, folded notes and
  * a source line.

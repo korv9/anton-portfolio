@@ -1,4 +1,4 @@
-"""The outdoor subject's two pre-registered predictions
+"""The dooh subject's two pre-registered predictions
 (docs/research/preregistrations/outdoor-preregistration.md).
 
 1. `boardings`: ordinary least squares on log boardings with an 80 % jackknife+ interval, its

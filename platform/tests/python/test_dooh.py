@@ -1,6 +1,6 @@
-"""The outdoor subject: reading the SL fact books, the daypart model and the two pre-registered
+"""The dooh subject: reading the SL fact books, the daypart model and the two pre-registered
 predictions (docs/research/preregistrations/outdoor-preregistration.md). The counts' totals per
-edition are a dbt test (platform/tests/outdoor/outdoor_printed_totals.sql)."""
+edition are a dbt test (platform/tests/dooh/dooh_printed_totals.sql)."""
 import importlib.util
 import sys
 from pathlib import Path
@@ -19,10 +19,10 @@ def load(name: str, relative: str):
     return module
 
 
-sl_facts = load("outdoor_sl_facts", "platform/ingest/outdoor/sl_facts.py")
-sys.path.insert(0, str(ROOT / "platform/publish/outdoor"))
-dayparts = load("dayparts", "platform/publish/outdoor/dayparts.py")
-predict = load("predict", "platform/publish/outdoor/predict.py")
+sl_facts = load("dooh_sl_facts", "platform/ingest/dooh/sl_facts.py")
+sys.path.insert(0, str(ROOT / "platform/publish/dooh"))
+dayparts = load("dayparts", "platform/publish/dooh/dayparts.py")
+predict = load("predict", "platform/publish/dooh/predict.py")
 
 
 def pdf(lines: list[str]):

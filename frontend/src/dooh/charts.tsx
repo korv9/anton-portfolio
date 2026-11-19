@@ -1,5 +1,5 @@
 /**
- * The outdoor page's own marks, where RankBars and MultiLineChart cannot say it: an hour-by-
+ * The dooh page's own marks, where RankBars and MultiLineChart cannot say it: an hour-by-
  * station heatmap, predictions with intervals, and opening-year ranges against the official
  * forecasts. HTML and CSS, so labels wrap on a phone; every value is also in the view's table.
  */

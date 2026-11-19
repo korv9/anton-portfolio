@@ -1,0 +1,17 @@
+{
+  "schema_version": 2,
+  "files": [
+    "dooh/about.json",
+    "dooh/dayparts.json",
+    "dooh/new-stations.json",
+    "dooh/stations.json",
+    "dooh/timing.json"
+  ],
+  "schemas": {
+    "dooh/stations.json": "configs/delivery/schemas/dooh/stations.json",
+    "dooh/dayparts.json": "configs/delivery/schemas/dooh/dayparts.json",
+    "dooh/new-stations.json": "configs/delivery/schemas/dooh/new-stations.json",
+    "dooh/timing.json": "configs/delivery/schemas/dooh/timing.json",
+    "dooh/about.json": "configs/delivery/schemas/dooh/about.json"
+  }
+}

@@ -1,4 +1,4 @@
-/** The outdoor subject's published files (platform/publish/outdoor/export_outdoor.py). */
+/** The dooh subject's published files (platform/publish/dooh/export_dooh.py). */
 
 export type Station = {
   station_key: string

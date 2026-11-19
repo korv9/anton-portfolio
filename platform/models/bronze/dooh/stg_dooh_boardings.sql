@@ -14,5 +14,5 @@ with editions as (
            null::bigint as h1630_1730
     from editions, unnest(stations) as t(m)
 )
-select *, {{ outdoor_name_key('station') }} as station_key
+select *, {{ dooh_name_key('station') }} as station_key
 from (select * from appendix union all by name select * from map)

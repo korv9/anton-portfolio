@@ -1,11 +1,11 @@
 version: 2
 
-# The outdoor subject, read by platform/publish/outdoor/export_outdoor.py. The tests are its
+# The dooh subject, read by platform/publish/dooh/export_dooh.py. The tests are its
 # publication gate: every metro station has a count in every edition, and the counts add up to
-# what each edition prints for the whole metro (tests/outdoor/).
+# what each edition prints for the whole metro (tests/dooh/).
 
 models:
-  - name: dim_outdoor_station
+  - name: dim_dooh_station
     description: SL's metro stations in today's GTFS, one per station name.
     config:
       contract: {enforced: true}
@@ -38,7 +38,7 @@ models:
         description: 'Attribute: the station is the most common last stop of a route in one direction.'
         data_tests: [not_null]
 
-  - name: fct_outdoor_station_year
+  - name: fct_dooh_station_year
     description: Boardings per metro station on an average winter weekday, per edition 2013–2022.
     config:
       contract: {enforced: true}
@@ -48,10 +48,10 @@ models:
     columns:
       - name: station_key
         data_type: VARCHAR
-        description: 'Foreign key to dim_outdoor_station.'
+        description: 'Foreign key to dim_dooh_station.'
         data_tests:
           - not_null
-          - relationships: {arguments: {to: ref('dim_outdoor_station'), field: station_key}}
+          - relationships: {arguments: {to: ref('dim_dooh_station'), field: station_key}}
       - name: year
         data_type: INTEGER
         description: 'Attribute: the edition''s year (the count was made that winter).'
@@ -88,7 +88,7 @@ models:
         data_type: VARCHAR
         description: 'Attribute: SHA-256 of the fetched PDF.'
 
-  - name: fct_outdoor_station_halfhour
+  - name: fct_dooh_station_halfhour
     description: Boardable metro departures per station and half-hour on one weekday of today's GTFS.
     data_tests:
       - unique_combination:
@@ -97,19 +97,19 @@ models:
       - name: station_key
         data_tests:
           - not_null
-          - relationships: {arguments: {to: ref('dim_outdoor_station'), field: station_key}}
+          - relationships: {arguments: {to: ref('dim_dooh_station'), field: station_key}}
       - name: service_date
         data_tests: [not_null]
       - name: departures
         data_tests: [not_null]
 
-  - name: fct_outdoor_rail_stop
+  - name: fct_dooh_rail_stop
     description: Commuter-rail, local-railway and tram stations with their routes.
     columns:
       - name: station_id
         data_tests: [not_null, unique]
 
-  - name: fct_outdoor_deso_year
+  - name: fct_dooh_deso_year
     description: Residents and employed residents per DeSO and year in Stockholm County.
     data_tests:
       - unique_combination:
@@ -119,7 +119,7 @@ models:
         data_tests: [not_null]
 
 seeds:
-  - name: outdoor_planned_stations
+  - name: dooh_planned_stations
     description: >-
       The 18 planned stations of Nya tunnelbanan (nyatunnelbanan.se/stationer), compiled by hand
       2026-11-19: 15 new places and new platforms at Gullmarsplan, Fridhemsplan and Liljeholmen.
@@ -144,7 +144,7 @@ seeds:
       - name: source_url
         data_tests: [not_null]
 
-  - name: outdoor_opening_forecasts
+  - name: dooh_opening_forecasts
     description: >-
       Every dated official opening forecast per branch found in Stockholmsförhandlingen's and
       Sverigeförhandlingen's agreements and annual reports and on nyatunnelbanan.se, compiled

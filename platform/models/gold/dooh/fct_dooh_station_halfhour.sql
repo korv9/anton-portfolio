@@ -3,10 +3,10 @@
 -- earliest such date on a tie). Half-hour 0 starts at the service day's midnight; GTFS times
 -- after 24:00 give half-hours past 47.
 with departures as (
-    select * from {{ ref('stg_outdoor_gtfs_departures') }} where route_type = '401' and boarding
+    select * from {{ ref('stg_dooh_gtfs_departures') }} where route_type = '401' and boarding
 ), dates as (
     select sd.service_date, count(distinct d.trip_id) as trips
-    from {{ ref('stg_outdoor_gtfs_service_dates') }} as sd
+    from {{ ref('stg_dooh_gtfs_service_dates') }} as sd
     join departures as d using (service_id)
     group by all
 ), chosen as (
@@ -22,9 +22,9 @@ select
     d.departure_minute // 30 as half_hour,
     count(*) as departures
 from departures as d
-join {{ ref('stg_outdoor_gtfs_service_dates') }} as sd
+join {{ ref('stg_dooh_gtfs_service_dates') }} as sd
     on sd.service_id = d.service_id and sd.service_date = (select service_date from chosen)
-join {{ ref('stg_outdoor_gtfs_stops') }} as st using (stop_id)
-join (select stop_id as station_id, {{ outdoor_name_key('stop_name') }} as station_key
-      from {{ ref('stg_outdoor_gtfs_stops') }}) as s using (station_id)
+join {{ ref('stg_dooh_gtfs_stops') }} as st using (stop_id)
+join (select stop_id as station_id, {{ dooh_name_key('stop_name') }} as station_key
+      from {{ ref('stg_dooh_gtfs_stops') }}) as s using (station_id)
 group by all

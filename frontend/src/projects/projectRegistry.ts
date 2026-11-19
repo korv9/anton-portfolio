@@ -288,7 +288,7 @@ export const PROJECTS: ProjectEntry[] = [
     pages: ['lawqa'],
   },
   {
-    id: 'outdoor',
+    id: 'dooh',
     title: t('När kommer publiken fram?', 'When does the audience arrive?'),
     descriptor: t(
       'DOOH-publiken i Stockholms tunnelbana',
@@ -314,7 +314,7 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#publiken',
     category: 'data',
     status: 'experimental',
-    pages: ['outdoor'],
+    pages: ['dooh'],
   },
   {
     id: 'drugcomb',
@@ -432,7 +432,7 @@ export const PROJECT_GROUPS = [
       'symbolic-atlas',
       'concept-constellation',
       'ai-act-clock',
-      'outdoor',
+      'dooh',
     ],
   },
 ]
@@ -449,7 +449,7 @@ export const PROJECT_WORKSPACE: Record<string, 'labs' | 'engineering'> = {
   drugcomb: 'labs',
   replik: 'labs',
   'ai-act-clock': 'labs',
-  outdoor: 'labs',
+  dooh: 'labs',
   thesis: 'engineering',
   homie: 'engineering',
   platform: 'engineering',

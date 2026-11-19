@@ -4,7 +4,7 @@
 -- map's value. Vreten was renamed Solna strand in 2014.
 with boardings as (
     select *, case station_key when 'vreten' then 'solnastrand' else station_key end as key
-    from {{ ref('stg_outdoor_boardings') }}
+    from {{ ref('stg_dooh_boardings') }}
 ), appendix as (
     select year, key, sum(day) as day, sum(h06_09) as h06_09, sum(h0730_0830) as h0730_0830,
            sum(h15_18) as h15_18, sum(h1630_1730) as h1630_1730, count(*) as appendix_rows
@@ -24,7 +24,7 @@ select
     e.url as source_url,
     e.original_url,
     e.sha256 as source_sha256
-from {{ ref('dim_outdoor_station') }} as s
+from {{ ref('dim_dooh_station') }} as s
 cross join editions as e
 left join appendix as a on a.key = s.station_key and a.year = e.year
 left join map as m on m.key = s.station_key and m.year = e.year
