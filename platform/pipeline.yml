@@ -19,7 +19,10 @@
 # prune (raw pushes delete remote files that are gone locally), target (dbt target folder when it
 # differs from the subject name), manual (left out of --all, and not required by its group),
 # sources (raw folders whose fetch log is kept outside R2 by the ingest itself, for the
-# ingestion status in status/ingestion.json; the first segments of `raw` count already).
+# ingestion status in status/ingestion.json; the first segments of `raw` count already),
+# lane (the parallel ingest job of build-warehouse.yml that runs its ingest steps; subjects that
+# write the same raw source share one, see platform/pipeline_lanes.py), ingest_timeout (minutes
+# for its lane's ingest step, default 70).
 #
 # Every subject also declares, without changing what the code does:
 #   sla    {fresh_within: <n>h | <n>d | none}: how old its last successful ingestion in
@@ -90,6 +93,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     raw: [scb, fohm, fk, ess, kolada]
     prune: true
     steps:
@@ -106,6 +110,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
     prune: true
@@ -123,8 +128,9 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     needs: [parliament]
-    raw: [oecd, skatteverket]
+    raw: [oecd, skatteverket, scb/hut]
     prune: true
     steps:
       # Rejects partial or unverified parliament inputs before dbt can build on them.
@@ -138,6 +144,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: jobs
+    lane: jobtech
     raw: [jobtech/market, jobtech/stream, jobtech/_manifest.jsonl]
     steps:
       - ingest: python platform/ingest/jobtech/ingest_market.py
@@ -215,6 +222,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: ai_act
     raw: [eu_ai_act]
     steps:
       - ingest: python platform/ingest/eu_ai_act/run.py
@@ -231,6 +239,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: sfs
     raw: [sfs]
     steps:
       - ingest: python platform/ingest/sfs/ingest.py
@@ -248,8 +257,9 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: public
     needs: [ai_act]
-    raw: [riksdagen/speeches]
+    raw: [riksdagen/speeches, riksdagen/_manifest.jsonl]
     features: [ai_politics]
     steps:
       - ingest: python platform/ingest/riksdagen/ingest_speeches.py
@@ -272,6 +282,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: symbolic
     raw: [symbolic]
     features: [symbolic]
     steps:
@@ -290,6 +301,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: philosophy
     raw: [philosophy]
     features: [philosophy]
     steps:
@@ -314,6 +326,9 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: jobtech
+    # The first run counts every JobTech archive (about 90 minutes); later runs skip unchanged ones.
+    ingest_timeout: 120
     raw: [jobtech/governance]
     steps:
       - ingest: python platform/ingest/jobtech/ingest_governance_terms.py
@@ -388,6 +403,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {raw: mirror, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: sweden
     needs: [welfare, parliament, taxes]
     raw: [catalogue, geography, kb]
     features: [sweden/similarity]
@@ -406,8 +422,10 @@ subjects:
   sweden_language:
     schedule: '13 21 * * 6'
     sla: {fresh_within: 8d}
-    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: jobtech
+    raw: [jobtech/taxonomy]
     features: [sweden/ad_language]
     steps:
       # At most three new archives a run: the backfill since 2006 spreads over the first runs
@@ -423,6 +441,7 @@ subjects:
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: sweden_futures
     features: [sweden/futures, sweden/futures_theses, sweden/futures_theses_detail]
     steps:
       - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
@@ -523,6 +542,7 @@ subjects:
     sla: {fresh_within: 8h}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: job-assistant
+    lane: job_assistant
     raw: [job_assistant]
     steps:
       # platform/job_assistant/sync.py turns a new CV upload into a draft and stores an approved

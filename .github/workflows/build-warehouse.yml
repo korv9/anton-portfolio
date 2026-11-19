@@ -4,15 +4,16 @@ name: Build, store and publish the warehouse
 # public sources to the R2 release. The whole DuckDB warehouse is stored in R2 with every raw file it
 # was built from and the ML stages' outputs (src/portfolio/storage/warehouse_store.py), and each
 # delivery group whose subjects all came through is validated and published. Nothing is
-# committed. A run starts from the raw files already stored, so closed parliamentary sessions and
-# archives that have not changed are not downloaded again.
+# committed. Fetching runs in parallel lanes, one job each, that store what they fetched even
+# when they fail; the build job then builds every subject from the stored files. A run starts
+# from the raw files already stored, so what is still fresh is not downloaded again.
 #
 # Afterwards the bucket holds warehouse/portfolio.duckdb.gz, warehouse/manifest.json,
 # warehouse/raw/ and warehouse/features/. Fetch them anywhere with:
 #     python -m portfolio.storage.warehouse_store pull
 
 on:
-  # Saturday evening: the run may take its whole timeout and must be done before the daily
+  # Saturday evening: the run must be done before the daily
   # refreshes queue behind it on Sunday morning (they share the data-refresh lock).
   schedule:
     - cron: '13 21 * * 6'
@@ -41,13 +42,96 @@ concurrency:
   queue: max
 
 jobs:
-  build:
+  # The ingest lanes (platform/pipeline_lanes.py): subjects that write the same raw source share one.
+  plan:
     runs-on: ubuntu-latest
-    # The first run counts every JobTech archive for the AI governance terms (about 90 minutes);
-    # later runs skip unchanged archives.
-    timeout-minutes: 300
-    # The R2 credentials are secrets of the anton-portfolio environment.
+    timeout-minutes: 5
     if: github.ref == 'refs/heads/main'
+    outputs:
+      lanes: ${{ steps.lanes.outputs.lanes }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - id: lanes
+        run: |
+          pip install --quiet pyyaml
+          echo "lanes=$(python platform/pipeline.py lanes)" >> "$GITHUB_OUTPUT"
+
+  # One job per lane, in parallel. A source that stalls stops only its own lane, and the lane
+  # stores what it fetched even when its ingest failed or timed out, so the next run resumes:
+  # stored files that are still fresh are reused, not fetched again.
+  ingest:
+    needs: plan
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ matrix.job_timeout }}
+    environment: anton-portfolio
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.lanes) }}
+    env:
+      DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
+      PORTFOLIO_FULL_REFRESH: ${{ inputs.full_refresh && '1' || '0' }}
+      PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
+      PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
+      PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      SUBJECTS: ${{ matrix.subjects }}
+      LANE: ${{ matrix.lane }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up and start from the lane's stored raw and feature files
+        id: setup
+        uses: ./.github/actions/data-setup
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        with:
+          pull: ${{ matrix.subjects }}
+      # Stops before the job does, so the store below always has time to run.
+      - name: Fetch the lane's subjects
+        timeout-minutes: ${{ matrix.timeout }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        # Unquoted on purpose: one argument per subject.
+        run: python platform/pipeline.py run $SUBJECTS --only ingest --results "tmp/lanes/ingest-$LANE.json"
+      - name: Store what the lane fetched, whatever the outcome
+        if: ${{ always() && steps.setup.outcome == 'success' }}
+        env:
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python platform/pipeline.py push $SUBJECTS
+      - name: Hand the outcome to the build
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ingest-${{ matrix.lane }}
+          path: tmp/lanes/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  build:
+    needs: ingest
+    runs-on: ubuntu-latest
+    # Runs when lanes failed: their subjects count as failed, and the others build and publish.
+    if: ${{ github.ref == 'refs/heads/main' && !cancelled() && needs.ingest.result != 'skipped' }}
+    timeout-minutes: 150
+    # The R2 credentials are secrets of the anton-portfolio environment.
     environment: anton-portfolio
     env:
       DBT_SEND_ANONYMOUS_USAGE_STATS: 'false'
@@ -76,15 +160,22 @@ jobs:
         with:
           pull: --all
           ml: 'true'
+      - name: Collect the lanes' outcomes
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: ingest-*
+          path: tmp/lanes
+          merge-multiple: true
+      # Lane subjects only build here; news and quality also ingest here (pipeline_lanes.py).
       # One failed subject does not stop the others; the step fails if any did.
-      - name: Fetch, build and test every subject
+      - name: Build and test every subject
         id: build
         env:
           R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: python platform/pipeline.py run --all --only ingest,dbt,ml --ml "$ML"
+        run: python platform/pipeline.py run --all --only ingest,dbt,ml --ml "$ML" --ingest-results tmp/lanes
       # Only a complete build replaces the stored warehouse.
       - name: Store the warehouse, raw files and ML outputs in R2
         env:
@@ -93,18 +184,6 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py push --all
-      - name: Save public-source checkpoints after a failed build
-        if: ${{ failure() && steps.setup.outcome == 'success' }}
-        env:
-          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-          R2_BUCKET: ${{ secrets.R2_BUCKET }}
-        run: |
-          python platform/pipeline.py push welfare parliament taxes
-          python platform/pipeline.py push ai_politics --only raw
-          # SWEDEN's counts take hours to rebuild; keep what this run counted.
-          python platform/pipeline.py push sweden sweden_language sweden_futures
       # After the store, so the data is kept whatever the result. A subject that did not build
       # is not exported, and its group is not published; the other groups are. The quality
       # subject ends with the structural gate (gate: true in platform/quality/quality_registry.yml).

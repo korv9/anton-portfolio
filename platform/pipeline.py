@@ -9,6 +9,7 @@
     python platform/pipeline.py push welfare
     python platform/pipeline.py push ai_politics --only raw
     python platform/pipeline.py check                 # the data contracts on the delivered files
+    python platform/pipeline.py lanes                 # the build's parallel ingest jobs (JSON)
 
 The same command runs locally and in GitHub Actions. Publishing changes the active release in R2
 (the site serves the data committed under frontend/public/data, docs/platform/pipeline.md), so it runs
@@ -32,6 +33,9 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "publish"))
 import ingest_status  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import pipeline_lanes  # noqa: E402
 
 PLATFORM = Path(__file__).resolve().parent
 ROOT = PLATFORM.parent
@@ -231,21 +235,29 @@ def command_run(args, config: dict) -> int:
     if not args.only and not args.dry_run and os.environ.get("GITHUB_ACTIONS") != "true":
         phases.discard("publish")
     run, failed = Runner(args.dry_run), {}
+    # Subjects a lane job already ingested (pipeline_lanes.py): their outcome, not a second ingest.
+    laned = pipeline_lanes.read_results(Path(args.ingest_results), subjects) if args.ingest_results else {}
     for name in names:
         print(f"\n== {name}", flush=True)
         if blocked := [n for n in subjects[name].get("needs", []) if n in failed]:
             failed[name] = f"needs {', '.join(blocked)}"
             continue
+        if laned.get(name):
+            failed[name] = laned[name]
+            continue
+        own = {p for p in phases if p.split(":")[0] != "ingest"} if name in laned else phases
         started = datetime.now(timezone.utc).isoformat(timespec="seconds")
         try:
-            run_subject(name, subjects[name], phases, args.ml, run)
+            run_subject(name, subjects[name], own, args.ml, run)
         except RuntimeError as error:
             failed[name] = str(error)
-        if "ingest" in phases and not run.dry_run and any("ingest" in s for s in subjects[name]["steps"]):
+        if "ingest" in own and not run.dry_run and any("ingest" in s for s in subjects[name]["steps"]):
             try:
                 ingest_status.record(name, subjects[name], started, failed.get(name))
             except Exception as error:  # noqa: BLE001 - the status page must not fail a subject
                 print(f"::warning::ingestion status of {name} not recorded: {error}", flush=True)
+    if args.results:
+        pipeline_lanes.write_results(Path(args.results), names, failed)
     if "publish" in phases:
         publish(config, names, failed, phases, run)
     for path in dict.fromkeys(run.missing):
@@ -299,6 +311,7 @@ def main() -> int:
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("list")
     commands.add_parser("check")
+    commands.add_parser("lanes")
     for name in ("run", "pull", "push"):
         sub = commands.add_parser(name)
         sub.add_argument("subjects", nargs="*")
@@ -315,10 +328,15 @@ def main() -> int:
                      help="Refetch history as well as current data (PORTFOLIO_FULL_REFRESH=1)")
     run.add_argument("--ml", choices=["missing", "always", "stale"], default="missing",
                      help="missing: only stages with no stored output; stale: also when inputs changed")
+    run.add_argument("--results", help="Write {subject: null | error} here (a lane job's outcome)")
+    run.add_argument("--ingest-results", help="Folder of lane outcomes: lane subjects skip their ingest")
     args = parser.parse_args()
     config = registry()
     if args.command == "list":
         return command_list(config)
+    if args.command == "lanes":
+        print(json.dumps(pipeline_lanes.matrix(config["subjects"])))
+        return 0
     if args.command == "check":
         for command in flat(config["definitions"]["data_check"]):
             Runner(False)(expand(command))

@@ -82,7 +82,9 @@ def test_data_workflows_share_the_writer_lock_and_the_setup(filename):
 def test_a_failed_data_job_opens_an_issue_from_a_job_of_its_own(filename):
     jobs = workflow(filename)["jobs"]
     alert = jobs.pop("alert")
-    (data,) = jobs
+    # The weekly build's lanes and plan feed its build job, which the alert follows.
+    data = "build" if filename == "build-warehouse.yml" else next(iter(jobs))
+    assert filename == "build-warehouse.yml" or len(jobs) == 1, filename
     assert alert["needs"] == data and f"needs.{data}.result" in alert["if"] and "!cancelled()" in alert["if"]
     assert alert["permissions"] == {"contents": "read", "actions": "read", "issues": "write"}
     assert "environment" not in alert, "the alert needs no data secrets"
@@ -244,7 +246,7 @@ def test_the_weekly_run_builds_every_dbt_subject_before_the_warehouse_is_stored(
     publish = next(i for i, _, argv in cli(filename, "run") if "publish" in argv[argv.index("--only") + 1])
     retention = next(i for i, s in enumerate(steps(filename)) if "portfolio.publish.retention" in s.get("run", ""))
     assert build < store < publish < retention
-    setup = steps(filename)[0:2][1]["with"]
+    setup = workflow(filename)["jobs"]["build"]["steps"][1]["with"]
     assert setup["pull"] == "--all" and setup["ml"] == "true"
     weekly = {name: s for name, s in SUBJECTS.items() if not s.get("manual")}
     selected = {sel.lstrip("+") for s in weekly.values() for step in s["steps"] if "dbt" in step
