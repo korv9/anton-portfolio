@@ -302,7 +302,7 @@ test('jobs routes need the rate limiter; reads and writes count apart', async ()
 
 test('CV upload accepts PDF and DOCX only and serves the file back', async () => {
   const e = env()
-  const upload = (type: string, bytes: Uint8Array) =>
+  const upload = (type: string, bytes: Uint8Array<ArrayBuffer>) =>
     call(e, 'cv', {
       method: 'POST',
       body: bytes,

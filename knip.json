@@ -6,6 +6,5 @@
     "scripts/*.mjs"
   ],
   "project": ["frontend/src/**/*.{ts,tsx}"],
-  "ignore": ["frontend/src/vite-env.d.ts"],
-  "ignoreBinaries": ["python"]
+  "ignoreExportsUsedInFile": true
 }
