@@ -25,6 +25,7 @@ CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/
 ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{8}|\d{6})\.json\.zip")
 SOURCE = "riksdagen"
 PAUSE = 3.0
+CLOSED_DAYS = 90
 
 
 def archives(html: str, first: str) -> list[tuple[str, str]]:
@@ -45,10 +46,12 @@ def main() -> int:
     if not found:
         raise SystemExit("No speech archives found on Riksdagen's open-data page")
     failed = []
+    newest = found[-1][0]
     for code, url in found:
         try:
+            # A closed riksmöte rarely changes: checked again each quarter, the current one daily.
             rawstore.fetch(http, SOURCE, f"speeches/anforande-{code}.json.zip", url, pause=PAUSE,
-                           timeout=600)
+                           timeout=(10, 600), max_age_days=1 if code == newest else CLOSED_DAYS)
             print(f"  {code[:4]}/{code[4:]}: stored", flush=True)
         except Exception as error:  # one failing session should not stop the others
             failed.append(f"{code}: {error}")

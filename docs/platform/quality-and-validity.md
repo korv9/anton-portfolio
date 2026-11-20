@@ -241,7 +241,7 @@ construct validity are reported side by side, from `research-history.json`.
 - Thresholds are editorial and stated with every check.
 - Freshness depends on the fetch logs and the job stream's manifest. Job ads, parliament,
   welfare, taxes and news refresh each morning; the other sources weekly, when
-  `build-warehouse.yml` rebuilds the warehouse (Saturday 21:13 UTC), so their currentness ages
+  `build-warehouse.yml` rebuilds the warehouse (Saturday 07:13 UTC), so their currentness ages
   between builds.
 - A supported diagnostic means one test did not find a problem, not that a conclusion is
   proven.
