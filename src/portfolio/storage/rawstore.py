@@ -14,7 +14,8 @@ differed; `source_modified_at` and `etag` what the server said about its own cop
 (GITHUB_RUN_ID or local) and `subject` (PORTFOLIO_SUBJECT, set by platform/pipeline.py) say which
 run and subject fetched it. A refetch of a file the server tagged asks whether it changed
 (If-None-Match / If-Modified-Since); a 304 is logged with `not_modified` and downloads nothing.
-Answers are checked before they are stored (rawstore_validate.py).
+Answers are checked before they are stored (rawstore_validate.py), and every stored payload
+against the bronze reader of its path (raw_contract.py).
 """
 from __future__ import annotations
 
@@ -34,6 +35,7 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from portfolio.core.config import ROOT, WAREHOUSE
+from portfolio.storage import raw_contract
 from portfolio.storage import rawstore_validate as checks
 from portfolio.storage.rawstore_validate import json_document  # noqa: F401 - callers import it here
 
@@ -174,8 +176,11 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
     """Write a payload under raw/<source>/<relative> and append its provenance line.
 
     The file is replaced only when its content changed. The manifest line is appended on
-    every fetch, so the manifest is also the fetch log.
+    every fetch, so the manifest is also the fetch log. The payload is first read with the bronze
+    reader of its path (raw_contract.py); a payload that reader rejects raises ValueError and the
+    stored copy is kept. The line names the bronze tables that read the file (`contract`).
     """
+    tables = raw_contract.check(source, relative, payload)
     path = RAW / source / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     digest = sha256(payload)
@@ -203,6 +208,8 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
     } | lineage(served)
     if headers:
         record["headers"] = headers
+    if tables:
+        record["contract"] = tables
     if logical_path:
         record["logical_path"] = logical_path
     append_manifest(source, record)
