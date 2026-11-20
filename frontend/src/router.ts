@@ -24,6 +24,7 @@ export type Page =
   | 'jobs'
   | 'replik'
   | 'aiclock'
+  | 'dooh'
 
 export type Route = {
   /** The full hash, e.g. `#politik-valjarna?partier=S`. */
@@ -106,6 +107,8 @@ const REDIRECTS: Record<string, string> = {
   '#raw-data': MEANING,
   // When does a law arrive? (the AI Act diffusion clock) under its English name.
   '#ai-act-clock': '#lag-ankomst',
+  // When does the audience arrive? under its subject's name.
+  '#dooh': '#publiken',
   // The sentence demo left Cluster Visuals; it lives on Replik.
   '#cv-place': '#replik',
 }
@@ -220,6 +223,7 @@ function pageOf(path: string): Page {
   if (path === '#jobs') return 'jobs'
   if (path === '#replik') return 'replik'
   if (path === '#lag-ankomst') return 'aiclock'
+  if (path === '#publiken') return 'dooh'
   if (path.startsWith('#concept-') || path.startsWith('#concepts-'))
     return 'concepts'
   if (path === '#philosophy-atlas' || path.startsWith('#philosophy-'))

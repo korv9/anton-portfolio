@@ -32,6 +32,7 @@ const ROUTES = [
   '#homie',
   '#replik',
   '#lag-ankomst',
+  '#publiken',
   '#sweden-valfard',
 ]
 // Wording that tells a visitor the work is not finished (docs/site/design-system.md, Validation).

@@ -1,0 +1,19 @@
+station,branch,kind,latitude,longitude,terminal,coordinate_source,coordinate_id,source_url
+Barkarbystaden,barkarby,new,59.4139839,17.87426043,false,wikidata,Q74422118,https://nyatunnelbanan.se/stationer/barkarbystaden/
+Barkarby station,barkarby,new,59.405405,17.858936,true,osm,node/7252127300,https://nyatunnelbanan.se/stationer/barkarby/
+Hagastaden,arenastaden,new,59.34654436,18.03135064,false,wikidata,Q118977951,https://nyatunnelbanan.se/stationer/hagastaden/
+Södra Hagalund,arenastaden,new,59.35793073,18.01161447,false,wikidata,Q118977852,https://nyatunnelbanan.se/stationer/sodra-hagalund/
+Arenastaden,arenastaden,new,59.36608222,18.00686318,true,wikidata,Q118977941,https://nyatunnelbanan.se/stationer/arenastaden/
+Sofia,nacka_soderort,new,59.31594,18.0867,false,wikidata,Q22669541,https://nyatunnelbanan.se/stationer/sofia/
+Hammarby kanal,nacka_soderort,new,59.306079,18.091709,false,osm,node/7259293386,https://nyatunnelbanan.se/stationer/hammarby-kanal/
+Sickla,nacka_soderort,new,59.306499,18.12426,false,osm,node/7259293387,https://nyatunnelbanan.se/stationer/sickla/
+Järla,nacka_soderort,new,59.308101,18.148717,false,osm,node/7259293388,https://nyatunnelbanan.se/stationer/jarla/
+Nacka,nacka_soderort,new,59.311994,18.165283,true,osm,node/7259293587,https://nyatunnelbanan.se/stationer/nacka/
+Slakthusområdet,nacka_soderort,new,59.292129,18.080116,false,osm,node/7259231984,https://nyatunnelbanan.se/stationer/slakthusomradet/
+Gullmarsplan (new Blue line platform),nacka_soderort,interchange,59.298333,18.080833,false,wikidata,Q1186268,https://nyatunnelbanan.se/stationer/gullmarsplan/
+Fridhemsplan (new Yellow line platform),alvsjo,interchange,59.333211,18.029364,false,osm,node/13659513085,https://nyatunnelbanan.se/stationer/fridhemsplan/
+Liljeholmen (new Yellow line platform),alvsjo,interchange,59.310098,18.021506,false,osm,node/13659513086,https://nyatunnelbanan.se/stationer/liljeholmen/
+Årstaberg,alvsjo,new,59.29983,18.031719,false,osm,node/13659513087,https://nyatunnelbanan.se/stationer/arstaberg/
+Årstafältet,alvsjo,new,59.29491667,18.03919444,false,wikidata,Q134078191,https://nyatunnelbanan.se/stationer/arstafaltet/
+Östbergahöjden,alvsjo,new,59.28916667,18.03655556,false,wikidata,Q134078269,https://nyatunnelbanan.se/stationer/ostbergahojden/
+Älvsjö,alvsjo,new,59.277879,18.012423,true,osm,node/13659513090,https://nyatunnelbanan.se/stationer/alvsjo/

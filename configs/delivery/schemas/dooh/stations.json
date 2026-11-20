@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "years",
+    "totals",
+    "stations",
+    "editions",
+    "unit"
+  ],
+  "properties": {
+    "years": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "integer"
+      }
+    },
+    "totals": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "integer",
+        "minimum": 1
+      }
+    },
+    "stations": {
+      "type": "array",
+      "minItems": 100,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": [
+          "station_key",
+          "station_name",
+          "latitude",
+          "longitude",
+          "boardings",
+          "share",
+          "change_2013_2019",
+          "change_2019_2022",
+          "shopping"
+        ],
+        "properties": {
+          "boardings": {
+            "type": "array",
+            "minItems": 10,
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "editions": {
+      "type": "array",
+      "minItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "year",
+          "source_url",
+          "source_sha256"
+        ]
+      }
+    }
+  }
+}
