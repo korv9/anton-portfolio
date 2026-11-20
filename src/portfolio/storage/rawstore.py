@@ -8,6 +8,13 @@ A refetch that returns identical bytes does not rewrite the file.
 
 Large payloads are stored gzip-compressed (`.gz` suffix); the recorded hash is always of the
 uncompressed bytes the server sent, so it can be checked against a fresh download.
+
+Lineage per line: `fetched_at` is when it was ingested; `content_changed_at` when its bytes last
+differed; `source_modified_at` and `etag` what the server said about its own copy; `run_id`
+(GITHUB_RUN_ID or local) and `subject` (PORTFOLIO_SUBJECT, set by platform/pipeline.py) say which
+run and subject fetched it. A refetch of a file the server tagged asks whether it changed
+(If-None-Match / If-Modified-Since); a 304 is logged with `not_modified` and downloads nothing.
+Answers are checked before they are stored (rawstore_validate.py).
 """
 from __future__ import annotations
 
@@ -18,6 +25,7 @@ import os
 import time
 from functools import lru_cache
 from datetime import datetime, timezone
+from email.utils import format_datetime, parsedate_to_datetime
 from pathlib import Path
 from typing import Callable
 
@@ -26,6 +34,8 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 from portfolio.core.config import ROOT, WAREHOUSE
+from portfolio.storage import rawstore_validate as checks
+from portfolio.storage.rawstore_validate import json_document  # noqa: F401 - callers import it here
 
 # Read here rather than taken from config, so a test that sets the variable and reloads sees it.
 RAW = Path(os.environ.get("PORTFOLIO_RAW", WAREHOUSE / "raw"))
@@ -68,6 +78,19 @@ def _records(path: Path, size: int, modified: int) -> dict:
         except (ValueError, KeyError, TypeError):
             continue  # An interrupted final manifest line is not provenance.
     return records
+
+
+def latest_record(source: str, relative: str) -> dict | None:
+    """The last fetch-log line for a path, or for a logical path kept as versions."""
+    manifest = RAW / source / "_manifest.jsonl"
+    if not manifest.is_file():
+        return None
+    stat = manifest.stat()
+    records = _records(manifest, stat.st_size, stat.st_mtime_ns)
+    if relative in records:
+        return records[relative]
+    versions = [r for r in records.values() if r.get("logical_path") == relative and r.get("sha256")]
+    return max(versions, key=lambda r: r.get("fetched_at") or "", default=None)
 
 
 def verified_record(source: str, relative: str) -> dict | None:
@@ -147,7 +170,7 @@ def completed_paths(source: str, group: str, request: object,
 
 def store(source: str, relative: str, payload: bytes, *, url: str, method: str = "GET",
           body: object | None = None, headers: dict | None = None,
-          logical_path: str | None = None) -> Path:
+          logical_path: str | None = None, served: dict | None = None) -> Path:
     """Write a payload under raw/<source>/<relative> and append its provenance line.
 
     The file is replaced only when its content changed. The manifest line is appended on
@@ -160,26 +183,84 @@ def store(source: str, relative: str, payload: bytes, *, url: str, method: str =
         changed = stored_sha(path) != digest
     except (OSError, EOFError, ValueError):
         changed = True
+    previous = latest_record(source, logical_path or relative) or {}
     if changed:
         temporary = path.with_name(path.name + ".tmp")
         temporary.write_bytes(gzip.compress(payload, mtime=0) if path.suffix == ".gz" else payload)
         os.replace(temporary, path)
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
     record = {
         "path": relative,
         "url": url,
         "method": method,
         "body": body,
-        "fetched_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "fetched_at": now,
         "sha256": digest,
         "bytes": len(payload),
         "changed": changed,
-    }
+        "content_changed_at": now if changed or previous.get("sha256") != digest
+        else previous.get("content_changed_at") or previous.get("fetched_at"),
+    } | lineage(served)
     if headers:
         record["headers"] = headers
     if logical_path:
         record["logical_path"] = logical_path
     append_manifest(source, record)
     return path
+
+
+def lineage(served: dict | None) -> dict:
+    """The run, the subject, and what the server said about its copy (HTTP headers)."""
+    found = {"run_id": os.environ.get("GITHUB_RUN_ID") or "local"}
+    if subject := os.environ.get("PORTFOLIO_SUBJECT"):
+        found["subject"] = subject
+    served = {k.lower(): v for k, v in (served or {}).items()}
+    if served.get("etag"):
+        found["etag"] = served["etag"]
+    if served.get("last-modified"):
+        try:
+            found["source_modified_at"] = parsedate_to_datetime(served["last-modified"]) \
+                .astimezone(timezone.utc).isoformat(timespec="seconds")
+        except (TypeError, ValueError):
+            pass
+    return found
+
+
+def not_modified(source: str, previous: dict, served: dict | None) -> Path:
+    """Log a 304: the stored copy stands, checked again at this time."""
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    record = {k: v for k, v in previous.items() if k not in ("run_id", "subject")}
+    record |= {"fetched_at": now, "changed": False, "not_modified": True} | lineage(served)
+    for key in ("etag", "source_modified_at"):  # a 304 may omit them; the copy still has them
+        record.setdefault(key, previous.get(key))
+    record = {k: v for k, v in record.items() if v is not None or k == "body"}
+    append_manifest(source, record)
+    print(f"Unchanged {source}/{record['path']} (304)", flush=True)
+    return RAW / source / record["path"]
+
+
+def mismatched(paths: list[str], since: float = 0) -> list[str]:
+    """Files under raw/<path> written after `since` (epoch seconds) whose bytes differ from their
+    own fetch-log line. A file without a line is not counted: some ingests keep their own log."""
+    bad = []
+    for entry in paths:
+        source = entry.split("/")[0]
+        base = RAW / entry
+        files = [base] if base.is_file() else sorted(base.rglob("*")) if base.is_dir() else []
+        for path in files:
+            relative = path.relative_to(RAW / source).as_posix()
+            if not path.is_file() or path.stat().st_mtime < since or relative == "_manifest.jsonl"                     or relative.endswith(".tmp"):
+                continue
+            record = latest_record(source, relative)
+            if not record or record.get("path") != relative or not record.get("sha256"):
+                continue
+            try:
+                same = stored_sha(path) == record["sha256"]
+            except (OSError, EOFError, ValueError):
+                same = False
+            if not same:
+                bad.append(f"{source}/{relative}")
+    return bad
 
 
 def record_error(source: str, relative: str, url: str, error: object) -> None:
@@ -208,11 +289,6 @@ def append_manifest(source: str, record: dict) -> None:
         manifest.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def json_document(payload: bytes) -> None:
-    """Exactly one JSON value: an HTML error page or two concatenated answers raise ValueError."""
-    json.loads(payload)
-
-
 def fetch(http: requests.Session, source: str, relative: str, url: str, *, method: str = "GET",
           body: object | None = None, pause: float = 0.0, timeout: float | tuple[float, float] = 300,
           headers: dict | None = None, versioned: bool = False,
@@ -222,11 +298,12 @@ def fetch(http: requests.Session, source: str, relative: str, url: str, *, metho
     `headers` are sent and recorded (content negotiation: format, language). With `versioned`
     every distinct payload is kept (see store_version) instead of replacing the file.
     `validate` checks the payload before it is stored, and a reusable stored copy (refetched
-    when it fails). `.json` paths default to json_document, so an answer that is not one JSON
-    document raises here and never replaces the last good file.
+    when it fails). Without one the suffix decides (rawstore_validate.default): an answer that is
+    not one JSON document, not a CSV, not a zip, an HTML error page, or a fraction of the stored
+    copy's size raises here and never replaces the last good file.
     """
-    if validate is None and relative.endswith((".json", ".json.gz")):
-        validate = json_document
+    if validate is None:
+        validate = checks.default(relative)
     if not versioned and reusable(source, relative, url, method=method, body=body,
                                  headers=headers, max_age_days=max_age_days):
         path = RAW / source / relative
@@ -239,26 +316,43 @@ def fetch(http: requests.Session, source: str, relative: str, url: str, *, metho
         else:
             print(f"Reuse {source}/{relative}", flush=True)
             return path
+    previous = latest_record(source, relative) if not full_refresh() else None
+    if previous and not verified_record(source, previous["path"]):
+        previous = None  # no stored copy to fall back on: ask for the whole answer
     if method == "POST":
         response = http.post(url, json=body, timeout=timeout, headers=headers)
     else:
-        response = http.get(url, timeout=timeout, headers=headers)
+        ask = {}
+        if previous and previous.get("url") == url:
+            if previous.get("etag"):
+                ask["If-None-Match"] = previous["etag"]
+            if previous.get("source_modified_at"):
+                ask["If-Modified-Since"] = format_datetime(
+                    datetime.fromisoformat(previous["source_modified_at"]), usegmt=True)
+        response = http.get(url, timeout=timeout, headers={**(headers or {}), **ask} or None)
+        if ask and getattr(response, "status_code", 200) == 304:
+            if pause:
+                time.sleep(pause)
+            return not_modified(source, previous, getattr(response, "headers", None))
     response.raise_for_status()
     if pause:
         time.sleep(pause)
-    if validate:
-        try:
+    try:
+        checks.not_an_error_page(relative, response.content)
+        if not full_refresh():
+            checks.not_truncated(response.content, (previous or {}).get("bytes"))
+        if validate:
             validate(response.content)
-        except (ValueError, KeyError, TypeError) as error:
-            raise ValueError(
-                f"{source}/{relative}: rejected the answer from {url} "
-                f"(HTTP {getattr(response, 'status_code', '?')}, "
-                f"{getattr(response, 'headers', {}).get('Content-Type')}, "
-                f"{len(response.content)} bytes, starts "
-                f"{response.content[:60]!r}); the stored copy is kept: {error}") from error
+    except (ValueError, KeyError, TypeError) as error:
+        raise ValueError(
+            f"{source}/{relative}: rejected the answer from {url} "
+            f"(HTTP {getattr(response, 'status_code', '?')}, "
+            f"{getattr(response, 'headers', {}).get('Content-Type')}, "
+            f"{len(response.content)} bytes, starts "
+            f"{response.content[:60]!r}); the stored copy is kept: {error}") from error
     save = store_version if versioned else store
     return save(source, relative, response.content, url=url, method=method, body=body,
-                headers=headers)
+                headers=headers, served=getattr(response, "headers", None))
 
 
 def fetch_summary(source: str, since: str | None = None) -> dict:
@@ -287,6 +381,9 @@ def fetch_summary(source: str, since: str | None = None) -> dict:
         "files": len(latest),
         "bytes": sum(r.get("bytes") or 0 for r in latest.values()),
     }
+    # What the servers say about their own copies, where they say it (Last-Modified).
+    if served := [r["source_modified_at"] for r in latest.values() if r.get("source_modified_at")]:
+        summary["source_modified_at"] = max(served)
     if since:
         recent = [r for _, r in lines if r["fetched_at"] >= since]
         summary |= {"fetched": len(recent),
@@ -302,7 +399,8 @@ def version_path(relative: str, digest: str) -> str:
 
 
 def store_version(source: str, relative: str, payload: bytes, *, url: str, method: str = "GET",
-                  body: object | None = None, headers: dict | None = None) -> Path:
+                  body: object | None = None, headers: dict | None = None,
+                  served: dict | None = None) -> Path:
     """Keep every distinct version of a payload: stored as `<stem>@<sha12><suffix>`.
 
     For sources that change in place (web pages, query answers), where the history is the
@@ -312,4 +410,4 @@ def store_version(source: str, relative: str, payload: bytes, *, url: str, metho
     digest = sha256(payload)
     relative_version = version_path(relative, digest)
     return store(source, relative_version, payload, url=url, method=method, body=body,
-                 headers=headers, logical_path=relative)
+                 headers=headers, logical_path=relative, served=served)

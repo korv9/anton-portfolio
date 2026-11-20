@@ -14,7 +14,7 @@ import heartbeat  # noqa: E402
 
 SUBJECTS = yaml.safe_load((ROOT / "platform/pipeline.yml").read_text(encoding="utf-8"))["subjects"]
 KEYS = {"schedule", "sla", "write", "group", "needs", "raw", "features", "prune", "target", "manual",
-        "sources", "steps"}
+        "sources", "steps", "lane", "ingest_timeout"}
 MERGE_BY_PATH = {"merge": ["path"]}
 
 

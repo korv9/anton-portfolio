@@ -188,7 +188,7 @@ def check_references(source: str, value, paths: set[str]):
                 check_references(source, item, paths)
 
 
-def prepare(root: Path, spec: dict, group: str):
+def prepare(root: Path, spec: dict, group: str, others=frozenset()):
     """Freeze approved bytes before checks and any network writes."""
     if spec.get("schema_version") != 2:
         raise ValueError("Publication spec must have schema_version 2")
@@ -196,6 +196,10 @@ def prepare(root: Path, spec: dict, group: str):
     if any(p.lower() in PRIVATE_ROOT for p in root.parts):
         raise ValueError("Staging root must contain public exports only")
     paths = set(selected(root, spec))
+    if spec.get("remainder"):
+        # The catch-all group (baseline) leaves every path another active group owns, so a
+        # new group publishes without an exclude here. Other specs still refuse an overlap.
+        paths -= others
     if not paths:
         raise ValueError("A publication group must have files")
     payloads = {}
@@ -309,13 +313,18 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
     current_data, _ = read(s3, bucket, CURRENT)
     expected = {group: strict_json(current_data)["groups"].get(group, {}).get("release") if current_data else None}
     active_rows = {}
+    others = set()
+    if current_data and spec.get("remainder"):
+        for other, pointer in strict_json(current_data)["groups"].items():
+            if other != group:
+                others.update(group_manifest(s3, bucket, pointer)["files"])
     if current_data and group in strict_json(current_data)["groups"]:
         previous = group_manifest(s3, bucket, strict_json(current_data)["groups"][group])
         for path in spec.get("optional_files", []):
             if path in previous["files"] and not (root / path).is_file():
                 raise ValueError(f"Previously published optional file must be materialized: {path}")
         active_rows = previous.get("reconcile", {}).get("rows", {})
-    payloads = prepare(root, spec, group)
+    payloads = prepare(root, spec, group, others)
     quality, counts = gate(group, payloads, active_rows, spec.get("count_rows"))  # Blocks before any upload.
     dependencies = spec.get("dependencies", {})
     for dependency, version in dependencies.items():
