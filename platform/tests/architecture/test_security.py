@@ -19,7 +19,9 @@ def test_pr_ci_has_no_cloud_credentials_and_releases_require_main():
         config = yaml.safe_load(path.read_text())
         for job in config['jobs'].values():
             if job.get('environment') == 'anton-portfolio':
-                assert job['if'] == "github.ref == 'refs/heads/main'", path.name
+                # The main condition, alone or as the first term of a conjunction.
+                main = "github.ref == 'refs/heads/main'"
+                assert job['if'] == main or job['if'].startswith(f"${{{{ {main} && "), path.name
 
 
 def test_remote_actions_are_pinned_to_commits():

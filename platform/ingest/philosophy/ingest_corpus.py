@@ -5,7 +5,8 @@
 Each work in corpus.json (or the corpus file named) is fetched as Gutenberg's plain-text UTF-8 file and stored exactly as
 received under warehouse/raw/philosophy/gutenberg/<id>.txt, with its provenance line in
 warehouse/raw/philosophy/_manifest.jsonl (src/portfolio/storage/rawstore.py). Requests are spaced out and retried,
-since Gutenberg resets connections under load. The corpus metadata (author, year, tradition,
+since Gutenberg resets connections under load. The books do not change, so a stored copy is reused
+for a year. The timeout is short: a stalled Gutenberg answer held the weekly build for four hours. The corpus metadata (author, year, tradition,
 translator) is copied next to the texts. Cleaning happens in dbt (silver).
 """
 from __future__ import annotations
@@ -21,6 +22,8 @@ HERE = Path(__file__).resolve().parent
 SOURCE = "philosophy"
 PAUSE = 6.0
 ATTEMPTS = 4
+MAX_AGE_DAYS = 365
+TIMEOUT = (10, 60)  # connect, read seconds
 
 
 def text_url(gutenberg_id: int) -> str:
@@ -36,7 +39,8 @@ def main() -> int:
         url = text_url(doc["gutenberg_id"])
         for attempt in range(ATTEMPTS):
             try:
-                rawstore.fetch(http, SOURCE, f"gutenberg/{doc['id']}.txt", url, pause=PAUSE)
+                rawstore.fetch(http, SOURCE, f"gutenberg/{doc['id']}.txt", url, pause=PAUSE,
+                               timeout=TIMEOUT, max_age_days=MAX_AGE_DAYS)
                 break
             except Exception as error:
                 if attempt == ATTEMPTS - 1:

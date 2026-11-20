@@ -501,3 +501,14 @@ def test_public_data_validator_loads_without_platform_publish_on_path():
             "assert not any(Path(p).as_posix().endswith('platform/publish') for p in sys.path); "
             "validate, contracts = release.public_data_validator(); assert callable(validate) and contracts")
     subprocess.run([sys.executable, "-c", code], check=True)
+
+
+def test_the_remainder_group_leaves_paths_another_group_owns(exports):
+    s3 = S3()
+    r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
+    rest = {"schema_version": 2, "include": ["*"], "remainder": True}
+    published = r.publish(s3, "bucket", "baseline", exports, rest)
+    files = r.group_manifest(s3, "bucket", published["groups"]["baseline"])["files"]
+    assert list(files) == ["parliament/news.json"]
+    with pytest.raises(ValueError, match="owned by both"):
+        r.publish(s3, "bucket", "news", exports, spec("jobs/market.json", "parliament/news.json"))
