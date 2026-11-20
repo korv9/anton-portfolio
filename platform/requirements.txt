@@ -5,6 +5,7 @@ dbt-duckdb==1.11.0
 duckdb==1.5.5
 requests==2.34.2
 pypdf==6.21.4           # official Riksdag PDFs when documentstatus has no HTML
+PyMuPDF==1.28.2         # ingest/dooh/sl_facts.py (SL fact-book PDFs and their tests)
 pytest==9.1.1
 pandas==3.1.0            # ingest (budget, outturn, votes, policy), legacy builders
 pyarrow==25.0.1          # ingest (jobtech, diva), compliance_intelligence
