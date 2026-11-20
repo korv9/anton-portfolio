@@ -350,6 +350,20 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
                 "checks": spec.get("checks", []), "coverage": spec.get("coverage", {})}
     release = digest(encoded(identity))
     prefix = f"releases/{group}/{release}/"
+    key = prefix + "manifest.json"
+    existing, _ = read(s3, bucket, key)
+    if existing is not None:
+        # The manifest is written last, after every file and index was read back, and its key is
+        # the hash of these bytes. An existing one means the release is complete and verified:
+        # reuse it without downloading its files again. Retention deletes a manifest before its
+        # files, so one never outlives them. A differing manifest still fails.
+        previous = strict_json(existing)
+        if ({p: e["sha256"] for p, e in previous["files"].items()} != identity["files"]
+                or previous["dependencies"] != dependencies):
+            raise ValueError("Existing group manifest differs")
+        pointer = {"key": key, "bytes": len(existing), "sha256": digest(existing), "release": release,
+                   "published_at": previous["published_at"], "dependencies": dependencies}
+        return pointer if stage_only else activate(s3, bucket, {group: pointer}, expected)
     def upload_file(item):
         path, data = item
         return path, immutable(s3, bucket, prefix + "files/" + path, data,
@@ -361,19 +375,12 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
         indexes[first] = immutable(s3, bucket, prefix + "indexes/" + digest(data) + ".json",
                                    data, "application/json")
         indexes[first]["last"] = max(entries)
-    key = prefix + "manifest.json"
-    existing, _ = read(s3, bucket, key)
     manifest = {"schema_version": 2, "group": group, "release": release, "files": files,
                 "indexes": indexes,
                 "dependencies": dependencies, "coverage": spec.get("coverage", {}),
                 "dq": quality, "reconcile": counts,
                 "published_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 "code_sha": code_sha or git_commit(), "hash_algorithm": "sha256-exact-bytes"}
-    if existing is not None:
-        previous = strict_json(existing)
-        if previous["files"] != files or previous["dependencies"] != dependencies:
-            raise ValueError("Existing group manifest differs")
-        manifest = previous
     pointer = immutable(s3, bucket, key, encoded(manifest), "application/json")
     pointer["release"] = release
     pointer["published_at"] = manifest["published_at"]

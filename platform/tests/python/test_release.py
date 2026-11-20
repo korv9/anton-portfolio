@@ -519,3 +519,14 @@ def test_the_remainder_group_leaves_paths_another_group_owns(exports):
     assert list(files) == ["parliament/news.json"]
     with pytest.raises(ValueError, match="owned by both"):
         r.publish(s3, "bucket", "news", exports, spec("jobs/market.json", "parliament/news.json"))
+
+
+def test_an_unchanged_release_is_reused_without_reading_its_files(exports):
+    s3 = S3()
+    first = r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
+    s3.reads.clear()
+    assert r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json")) == first
+    assert not any("/files/" in key for key in s3.reads)
+    write(exports, "jobs/market.json", b'{"data":[9]}')
+    changed = r.publish(s3, "bucket", "jobs", exports, spec("jobs/market.json"))
+    assert changed["groups"]["jobs"]["release"] != first["groups"]["jobs"]["release"]
