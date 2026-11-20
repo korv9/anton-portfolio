@@ -45,7 +45,7 @@ select
         {% endfor %}
         case when c.visits = 0 and c.service_points <> 0 then 'visits: 0 with staffed service points' end,
         case when c.service_points = 0 and c.visits <> 0 then 'service_points: 0 with visits' end
-    ], x -> x is not null) as set_to_missing
+    ], lambda x: x is not null) as set_to_missing
 from complete as c
 left join population as p on p.municipality_code = c.municipality_code and p.year = c.year
 left join population as p_before on p_before.municipality_code = c.municipality_code and p_before.year = c.year - 1
