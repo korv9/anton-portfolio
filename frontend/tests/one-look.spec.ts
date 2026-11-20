@@ -25,6 +25,7 @@ const ROUTES = [
   '#homie',
   '#replik',
   '#lag-ankomst',
+  '#publiken',
   '#sweden-valfard',
 ]
 

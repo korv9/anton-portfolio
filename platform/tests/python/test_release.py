@@ -142,6 +142,13 @@ def test_atomic_bundle_and_forward_reverse_dependencies(exports):
     assert s3.objects[r.CURRENT]["Body"] == r.encoded(initial)
     with pytest.raises(ValueError, match="Path owned"):
         r.publish(s3, "bucket", "other", exports, spec("jobs/market.json"))
+    with pytest.raises(ValueError, match="Incompatible"):
+        r.activate(s3, "bucket", {}, retired=("jobs",))
+    left = r.activate(s3, "bucket", {}, retired=("news",))
+    assert list(left["groups"]) == ["jobs"]
+    assert all(route["group"] == "jobs" for route in left["routes"])
+    with pytest.raises(ValueError, match="not active"):
+        r.activate(s3, "bucket", {}, retired=("news",))
 
 
 def test_optional_files_and_catalog_materialization(exports):

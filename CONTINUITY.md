@@ -4,25 +4,31 @@ The handover for the next session, nothing older. Decisions: `docs/decisions/DEC
 status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not append history.
 
 ## Now
+- 2026-11-19 [CODE] Branch `korv9/outdoor` (worktree `tmp/wt-outdoor`, not pushed): new subject
+  `dooh` (renamed from `outdoor` on the owner's word), Labs page `#publiken`, pre-registration
+  committed before the fit (ec7633e8, file keeps the name `outdoor`). Release `dooh` 012301bf
+  (code 23453a78, 2026-11-20) is active in R2; the `outdoor` group was retired from the manifest 2026-11-19 with the new
+  `release.py retire`. Raw pushed, fact-book PDFs kept local. The new-station model missed the
+  pre-registered 25 % (23.7 %): label `not_better_than_median`. No `PROJECTS.md` entry yet.
+  Prediction 3 (audience at opening, pre-registered in cb978935): Region Stockholm's
+  planning-area projection 2025–2035 (`rs_prognos`, workbook local-only, sums pushed) grows the
+  1 km catchments; the "New stations" view has a Today / At opening slicer; released. No per-station
+  boardings after 2022 exist (series discontinued 2026).
 - 2026-11-17 [CODE] PR #270 (`korv9/jobs-archive-tls`) merged: repairs refresh-jobs (Telia chain for
   data.arbetsformedlingen.se, failing since 2026-11-13; running month in the market export, since
   2026-11-01), refresh-welfare and build-warehouse (validator import under `-m`, since 2026-11-03;
   SCB test table TAB2216 without a domain, 2026-11-15). After merge, dispatch refresh-jobs and
   refresh-welfare on `main`; the jobs group's last release is 2026-10-31, so `market-weekly.json`
   and the weekly card wait for it. Close #221, #222, #229, #241 and #265 when the runs pass.
-- 2026-11-17 [CODE] PR #271 (`korv9/python-deps`) merged: pandas, boto3, setuptools and
-  sentence-transformers with recompiled locks; replaces Dependabot #213, #214, #216, #219.
 - 2026-11-17 [TOOL] Dependabot held: #212 duckdb 2.0 (storage format shared through R2, needs a
   migration), #220 TypeScript 7 (knip 5.88.1 peer). #224, #254, #263, #264, #211 pass apart from
   the Workers Builds preview.
-- 2026-11-17 [CODE] PR #248 (`korv9/bucket-hygiene`) merged.
-- 2026-11-17 [CODE] PR #273 (`korv9/allegora-prod-timing`) merged: Allegora in production, 1.52 s to
-  draft, 4.3 s to the checked answer (median, 8 questions).
 
 ## Uncommitted elsewhere
 - 2026-11-17 [TOOL] Main checkout (old branch `korv9/allegora-stream`): `.claude/launch.json`,
   `.impeccable/`, journal `2026-11-17.jsonl` and private diary pages; the 11-17 journal entries are
-  in no PR yet. Switch it to `main` once these PRs are merged.
+  in no PR yet. Switch it to `main` once these PRs are merged. 2026-11-19: its
+  `.claude/launch.json` also gained the `outdoor` preview entry (port 5191).
 
 ## Open
 - 2026-11-17 [TOOL] `job_cluster_candidate` has never run: no workflow trains it on a runner, and
