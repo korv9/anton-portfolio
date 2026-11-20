@@ -6,7 +6,8 @@
  * a page other than the homepage, or be a section of the homepage that exists, and open
  * without a script error.
  */
-import { test, expect, type Page } from './test'
+import type { Page } from '@playwright/test'
+import { test, expect } from './test'
 
 // Sections of the homepage a link may point at; any other address is a page of its own.
 const HOME = '#start'

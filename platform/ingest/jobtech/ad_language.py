@@ -101,8 +101,7 @@ def dictionary_sha(terms_sha: str, subterms_raw: bytes) -> str:
 
 
 def legacy_fields() -> dict[str, tuple[str, str | None]]:
-    sys.path.insert(0, str(REPO / "platform/lib"))
-    from rawstore import fetch, session
+    from portfolio.storage.rawstore import fetch, session
 
     path = fetch(session(), "jobtech", "taxonomy/occupation-name-legacy.json", TAXONOMY, max_age_days=30)
     out = {}

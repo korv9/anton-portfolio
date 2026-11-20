@@ -6,10 +6,9 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import release as r
-import retention
+from portfolio.publish import release as r
+from portfolio.publish import retention
 from test_release import S3, exports, no_local_dbt_results, spec, write  # noqa: F401 (fixtures)
 
 START = datetime(2026, 10, 1, tzinfo=timezone.utc)

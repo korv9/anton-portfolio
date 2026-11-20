@@ -1,8 +1,8 @@
-"""Snapshot the GitHub facts the platform page shows: status/github.json.
+"""Snapshot GitHub facts for the site: status/github.json. No page reads it at present.
 
-The page (frontend/src/tech/github.ts) used to ask the GitHub API itself, about 35 unsigned
-requests a view against a limit of 60 an hour per address, so visitors saw 403s. This script
-asks once with the workflow's token and writes what the page reads:
+A page that asked the GitHub API itself made about 35 unsigned requests a view against a limit
+of 60 an hour per address, so visitors saw 403s. This script asks once with the workflow's
+token and writes:
 
   workflows       every workflow under .github/workflows with its 14 newest runs
   scheduled_runs  the scheduled runs of the last 30 days (at most 100, newest first) and the total
@@ -20,15 +20,10 @@ from __future__ import annotations
 import base64
 import json
 import os
-import sys
 import urllib.request
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-
-from common import PUBLIC  # noqa: E402
+from portfolio.core.config import PUBLIC  # noqa: E402
 
 KEY = "status/github.json"
 LOCAL = PUBLIC / KEY
@@ -38,7 +33,8 @@ DAYS = 30
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
 RUN_FIELDS = ("id", "name", "status", "conclusion", "event", "created_at", "run_started_at",
               "updated_at", "html_url", "head_sha", "head_branch")
-ISSUE_FIELDS = ("number", "title", "html_url", "body", "created_at", "closed_at")
+# No body: an issue text can hold anything pasted into it, and this file is public.
+ISSUE_FIELDS = ("number", "title", "html_url", "created_at", "closed_at")
 
 
 def api(path: str):
@@ -87,7 +83,7 @@ def snapshot(now: datetime) -> dict:
 def publish(body: bytes) -> None:
     if os.environ.get("GITHUB_ACTIONS") != "true" or not all(os.environ.get(k) for k in CREDENTIALS):
         return
-    from upload import client
+    from portfolio.storage.upload import client
     s3, bucket = client()
     s3.put_object(Bucket=bucket, Key=KEY, Body=body, ContentType="application/json",
                   CacheControl="no-cache, max-age=0")

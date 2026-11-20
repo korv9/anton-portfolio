@@ -10,7 +10,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest/taxes"))
 import taxes_ingest as taxes
-import rawstore
+from portfolio.storage import rawstore
 import pxweb
 import history_ingest as history
 import studies_ingest as studies

@@ -43,7 +43,7 @@ frontend/public/data/parquet/welfare/
 .projectatlas/
 
 # Idea Lineage: the private journal and every generated view stay local; only the public
-# journal is committed (docs/idea-lineage.md).
+# journal is committed (docs/platform/idea-lineage.md).
 .idea-lineage/*
 !.idea-lineage/public/
 frontend/public/data/status/
@@ -52,3 +52,10 @@ frontend/public/data/job-assistant/
 
 # pip install -e . metadata
 *.egg-info/
+
+# Local tool caches and per-machine editor config
+.ruff_cache/
+.import_linter_cache/
+.arena/
+.impeccable/
+.claude/launch.json

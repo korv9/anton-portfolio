@@ -134,7 +134,7 @@ JobStreams [API-schema](https://jobstream.api.jobtechdev.se/swagger.json) beskri
 Textshards, metadata, källreferenser och checksummor behålls; resume hämtar inte
 färdiga arkiv igen. Sätt `true` för att också behålla ZIP-filerna.
 
-[Metod och återkörning för de publicerade klustringarna](../../docs/public-clustering-method.md)
+[Metod och återkörning för de publicerade klustringarna](../../docs/research/clustering/method.md)
 beskriver centrering per verk/författare, HDBSCAN-inställningar, utvärdering och caching.
 
 ```powershell

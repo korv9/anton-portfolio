@@ -20,9 +20,9 @@ import './parties.css'
 
 export type Marker =
   'circle' | 'square' | 'diamond' | 'triangle' | 'triangle-down'
-export type LineStyle = 'solid' | 'dashed' | 'dotted'
+type LineStyle = 'solid' | 'dashed' | 'dotted'
 
-export type PartyIdentity = {
+type PartyIdentity = {
   code: string
   name: string
   nameEn: string
@@ -41,7 +41,7 @@ export type PartyIdentity = {
 
 const logo = (code: string) => `logos/parties/${code}.webp`
 
-export const PARTY_IDENTITY: Record<string, PartyIdentity> = {
+const PARTY_IDENTITY: Record<string, PartyIdentity> = {
   S: {
     code: 'S',
     name: 'Socialdemokraterna',

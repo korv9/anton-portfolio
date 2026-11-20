@@ -1,0 +1,198 @@
+name: Check the Airflow job ads flow
+
+# Manual, and on a push that changes the stack or the flow. Starts infra/airflow/docker-compose.yml on a runner, lets Airflow schedule
+# job_ads_near_realtime every ten minutes for a while, restarts the stack to show that the metadata
+# persists, and keeps the evidence as an artifact (docs/products/jobs/job-ads-airflow.md). It reads the job
+# assistant's store and the current cluster model's reference vectors from the bucket's public address,
+# so it needs no secrets, and writes nothing back: JOB_ADS_PUBLISH stays local, so the files are checked
+# but not uploaded, and nothing is deployed.
+#
+# With publish (manual, from main only: the R2 secrets are in the anton-portfolio environment), Airflow
+# is this flow's scheduler for the run: every ten-minute run uploads its validated job-assistant
+# release to R2, and the ad store goes back to R2 at the end, so the hourly refresh continues from
+# Airflow's cursor. It requires the repository variable JOB_ADS_SCHEDULER=airflow, which makes the
+# hourly refresh stand down, so the store and the release never have two writers. A runner job lasts
+# at most six hours: near real time by polling for a window.
+#
+# Windows chain into operation around the clock on free runners until an always-on host exists
+# (docs/products/jobs/job-ads-airflow.md): each publishing window queues the next, a five-hour schedule is the
+# backup, and the concurrency group holds the next window until the one before has pushed the store,
+# so two never write at once. Without JOB_ADS_SCHEDULER=airflow nothing is queued and a scheduled run
+# is skipped; removing the variable turns the chain off.
+
+on:
+  schedule:
+    - cron: '23 */5 * * *'
+  push:
+    paths:
+      - infra/airflow/**
+      - platform/job_assistant/realtime.py
+      - .github/workflows/airflow-job-ads-check.yml
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: Minutes Airflow schedules before the restart
+        default: '25'
+      publish:
+        description: Upload each run's release and the ad store to R2 (main only; needs JOB_ADS_SCHEDULER=airflow)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  # A publishing window queues the next one (workflow_dispatch), see "Queue the next window".
+  actions: write
+
+# Publishing windows queue one behind another; checks without publishing run on their own.
+concurrency:
+  group: ${{ (inputs.publish || github.event_name == 'schedule') && 'job-ads-airflow-publish' || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  airflow:
+    if: github.event_name != 'schedule' || vars.JOB_ADS_SCHEDULER == 'airflow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    # An empty name runs the job without an environment, so pushes on branches need no secrets.
+    environment: ${{ (inputs.publish || github.event_name == 'schedule') && 'anton-portfolio' || '' }}
+    env:
+      # The r2.dev address: the custom domain's bot protection answers runners with 403.
+      PUBLIC: https://pub-9867b18896ba49e4a0b4a3d2f39c0385.r2.dev/
+      # A window: build, 230 minutes, restart and store push. A 270-minute window was stopped after
+      # four hours by a runner shutdown (run 41748877006), so windows stay shorter.
+      MINUTES: ${{ inputs.minutes || (github.event_name == 'schedule' && '230') || '25' }}
+      COMPOSE: docker compose -f infra/airflow/docker-compose.yml
+      EVIDENCE: ${{ github.workspace }}/tmp/airflow-evidence
+      PUBLISH: ${{ (inputs.publish || github.event_name == 'schedule') && 'r2' || 'local' }}
+    steps:
+      - name: Refuse a second writer
+        if: (inputs.publish || github.event_name == 'schedule') && vars.JOB_ADS_SCHEDULER != 'airflow'
+        run: |
+          echo "::error::Set the repository variable JOB_ADS_SCHEDULER=airflow first; otherwise the hourly refresh also writes the store and the release."
+          exit 1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # GitHub starts scheduled runs late or not at all (on 2026-11-04 two of the slots between 00:23
+      # and 13:23 UTC never ran), so each publishing window queues the next at its start. The
+      # concurrency group holds it until this one has pushed the store, even if this one fails or is
+      # cancelled; the cron schedule stays as a backup. Removing JOB_ADS_SCHEDULER ends the chain.
+      - name: Queue the next window
+        if: (inputs.publish || github.event_name == 'schedule') && vars.JOB_ADS_SCHEDULER == 'airflow' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run airflow-job-ads-check.yml --repo "$GITHUB_REPOSITORY" --ref main -f publish=true -f minutes=230
+      - name: Restore the ad store and the current model's reference vectors
+        run: |
+          run=$(python3 -c "import json; print(json.load(open('ml/jobs/registry.json'))['current'])")
+          for key in raw/job_assistant/ads.json raw/job_assistant/state.json raw/job_assistant/runs.jsonl                      features/job_clusters/reference-$run.npz; do
+            curl -fsS --create-dirs -o "warehouse/$key" "${PUBLIC%/}/warehouse/$key"
+          done
+          # What the last window pushed with the store: the embedding cache (only new or changed texts
+          # are embedded), the neuron ledger (the daily cap counts every window of the day), the stage
+          # state with its matches, and the run log the page's latency median reads. Pushed together
+          # under realtime.py's lock, so they agree; one missing (a first window) starts empty.
+          for name in vectors.sqlite ledger.jsonl pipeline.json matches.json realtime_runs.jsonl; do
+            curl -fsS -o "warehouse/raw/job_assistant/$name" "${PUBLIC%/}/warehouse/raw/job_assistant/$name" || echo "::notice::no $name in R2 yet; starting without it"
+          done
+          # The cluster model's CPU embedding cache, keyed as ml/jobs/registry.cache_path keys it; under
+          # another key (a promoted model) nothing is found and the first analyse embeds cold.
+          cache=$(python3 - <<'PY'
+          import hashlib, json, re
+          r = json.load(open("ml/jobs/registry.json"))
+          e = next(h for h in reversed(r["history"]) if h.get("run_id") == r["current"] and h.get("model"))
+          rep = re.search(r"^REPRESENTATION = '([^']+)'", open("ml/jobs/embeddings.py").read(), re.M).group(1)
+          print("embeddings-" + hashlib.sha256(f"{e['model']}@{e.get('revision') or 'default'}:{rep}".encode()).hexdigest()[:16] + ".parquet")
+          PY
+          )
+          curl -fsS --create-dirs -o "warehouse/ml/jobs/$cache" "${PUBLIC%/}/warehouse/raw/job_assistant/$cache" || echo "::notice::no $cache in R2 yet; the first analyse embeds cold"
+      - name: Build and start Airflow
+        env:
+          R2_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCOUNT_ID || '' }}
+          R2_ACCESS_KEY_ID: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_ACCESS_KEY_ID || '' }}
+          R2_SECRET_ACCESS_KEY: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID) || '' }}
+          R2_BUCKET: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.R2_BUCKET || '' }}
+          R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+          # Workers AI for the embeddings and explanations, as the hourly refresh has them
+          # (docs/products/jobs/job-assistant.md, Secrets); without them every ad is matched without similarity.
+          CLOUDFLARE_API_TOKEN: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_AI_TOKEN || secrets.CLOUDFLARE_API_TOKEN) || '' }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ (inputs.publish || github.event_name == 'schedule') && (secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID) || '' }}
+        run: |
+          printf 'AIRFLOW_UID=%s\nAIRFLOW_JWT_SECRET=%s\nJOB_ADS_PUBLISH=%s\n' "$(id -u)" "$(openssl rand -hex 32)" "$PUBLISH" > infra/airflow/.env
+          if [ "$PUBLISH" = r2 ]; then
+            printf 'R2_ACCOUNT_ID=%s\nR2_ACCESS_KEY_ID=%s\nR2_SECRET_ACCESS_KEY=%s\nR2_BUCKET=%s\nR2_PUBLIC_BASE=%s\n' \
+              "$R2_ACCOUNT_ID" "$R2_ACCESS_KEY_ID" "$R2_SECRET_ACCESS_KEY" "$R2_BUCKET" "$R2_PUBLIC_BASE" >> infra/airflow/.env
+            printf 'CLOUDFLARE_API_TOKEN=%s\nCLOUDFLARE_ACCOUNT_ID=%s\n' "$CLOUDFLARE_API_TOKEN" "$CLOUDFLARE_ACCOUNT_ID" >> infra/airflow/.env
+          fi
+          $COMPOSE build
+          $COMPOSE up -d
+      - name: Unpause the DAG and let Airflow schedule it
+        # When publishing, platform/job_assistant/sync.py brings the owner's profile records up to date
+        # every ten minutes, as the hourly refresh does before it matches: a requested approval becomes
+        # the next version, a new CV a new draft. The owner token reaches only that process (exec -e),
+        # never the Airflow tasks, dbt or the exports.
+        env:
+          JOB_ASSIST_TOKEN: ${{ (inputs.publish || github.event_name == 'schedule') && secrets.JOB_ASSIST_TOKEN || '' }}
+        run: |
+          until $COMPOSE exec -T airflow-scheduler airflow dags list 2>/dev/null | grep -q job_ads_near_realtime; do sleep 10; done
+          $COMPOSE exec -T airflow-scheduler airflow dags unpause job_ads_near_realtime
+          end=$(( $(date +%s) + MINUTES * 60 ))
+          while [ "$(date +%s)" -lt "$end" ]; do
+            if [ -n "$JOB_ASSIST_TOKEN" ]; then
+              $COMPOSE exec -T -e JOB_ASSIST_TOKEN -w /opt/portfolio airflow-scheduler                 sh -c '"$PORTFOLIO_PYTHON" platform/job_assistant/sync.py' || echo "::warning::Job assistant profile sync failed; matching uses the newest version already stored."
+            fi
+            left=$(( end - $(date +%s) ))
+            if [ "$left" -gt 600 ]; then sleep 600; elif [ "$left" -gt 0 ]; then sleep "$left"; fi
+          done
+      - name: Restart the stack; the metadata is on the airflow-db volume
+        run: |
+          mkdir -p "$EVIDENCE"
+          $COMPOSE exec -T airflow-scheduler airflow dags list-runs job_ads_near_realtime -o json > "$EVIDENCE/runs-before.json"
+          docker stats --no-stream > "$EVIDENCE/docker-stats.txt"
+          $COMPOSE down
+          $COMPOSE up -d
+          # Wait for one more scheduled run to finish after the restart.
+          n=$(python3 -c "import json,sys; print(len(json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-before.json")
+          for i in $(seq 1 90); do
+            $COMPOSE exec -T airflow-scheduler airflow dags list-runs job_ads_near_realtime -o json > "$EVIDENCE/runs-after.json" 2>/dev/null || true
+            python3 - "$EVIDENCE/runs-after.json" "$n" <<'EOF' && break
+          import json, sys
+          runs = json.load(open(sys.argv[1]))
+          done = [r for r in runs if r["state"] in ("success", "failed")]
+          sys.exit(0 if len(done) > int(sys.argv[2]) else 1)
+          EOF
+            sleep 20
+          done
+      - name: Collect the evidence
+        if: always()
+        run: |
+          mkdir -p "$EVIDENCE"
+          for id in $(python3 -c "import json,sys; print(' '.join(r['run_id'] for r in json.load(open(sys.argv[1]))))" "$EVIDENCE/runs-after.json"); do
+            name=$(echo "tasks-$id.json" | tr ':+' '__')
+            $COMPOSE exec -T airflow-scheduler airflow tasks states-for-dag-run job_ads_near_realtime "$id" -o json > "$EVIDENCE/$name" || true
+          done
+          cp warehouse/raw/job_assistant/pipeline.json warehouse/raw/job_assistant/realtime_runs.jsonl "$EVIDENCE/" || true
+          $COMPOSE logs --no-color > "$EVIDENCE/compose.log" 2>&1 || true
+          python3 infra/airflow/check_runs.py "$EVIDENCE" | tee "$EVIDENCE/check.txt"
+      # Before `down -v`: the hourly refresh restores this store and continues from its cursor.
+      - name: Store the ad store in R2
+        if: always() && (inputs.publish || github.event_name == 'schedule')
+        run: |
+          # Pause first, then push under realtime.py's lock, so the store is never pushed while a stage
+          # writes it (a stage that starts between two checks of a lock file would race the upload).
+          $COMPOSE exec -T airflow-scheduler airflow dags pause job_ads_near_realtime || true
+          # Wait for a running stage to release the lock, then push once: a real push failure fails here.
+          for i in $(seq 1 90); do
+            [ -e warehouse/raw/job_assistant.lock.tmp ] || break
+            sleep 10
+          done
+          $COMPOSE exec -T -w /opt/portfolio airflow-scheduler sh -c '"$PORTFOLIO_PYTHON" platform/job_assistant/realtime.py push'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: airflow-evidence
+          path: tmp/airflow-evidence
+          retention-days: 14
+      - name: Stop Airflow
+        if: always()
+        run: $COMPOSE down -v

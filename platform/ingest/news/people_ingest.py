@@ -18,13 +18,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-from rawstore import RAW, session  # noqa: E402
+from portfolio.storage.rawstore import RAW, session  # noqa: E402
 
 URL = "https://data.riksdagen.se/personlista/?utformat=json&rdlstatus=samtliga&sz=10000"
 OUT = RAW / "news" / "people.json"

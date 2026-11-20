@@ -47,7 +47,7 @@ function Row({ c, inner }: { c: Criterion; inner?: boolean }) {
       <td className="num">{c.any_of ? '' : value(c.champion)}</td>
       <td>
         {passed(c.passed)}
-        {c.note && <small> {c.note}</small>}
+        {c.note && <small lang="en"> {c.note}</small>}
       </td>
     </tr>
   )
@@ -145,7 +145,9 @@ export default function RunQuality({ file }: { file: RunFile }) {
       <h4>{l('Limitations', 'Begränsningar')}</h4>
       <ul className="cx-limits">
         {file.run.limitations.map((t) => (
-          <li key={t}>{t}</li>
+          <li key={t} lang="en">
+            {t}
+          </li>
         ))}
       </ul>
       <h4>{l('Against the champion', 'Mot championen')}</h4>

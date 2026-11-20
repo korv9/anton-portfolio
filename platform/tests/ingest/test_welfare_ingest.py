@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ingest" / "fk"))
 import ess_ingest
 import fk_ingest
 import pxweb
-import rawstore
+from portfolio.storage import rawstore
 
 META = {"variables": [
     {"code": "Region", "values": ["00", "01", "03"], "elimination": True},

@@ -5,7 +5,7 @@ export type Locale = 'en' | 'sv'
 const storageKey = 'anton-portfolio-language'
 
 /** English unless the address (?lang=sv) or the reader's last choice says Swedish. */
-export function initialLocale(): Locale {
+function initialLocale(): Locale {
   if (typeof location === 'undefined') return 'en'
   let saved: string | null = new URLSearchParams(location.search).get('lang')
   try {

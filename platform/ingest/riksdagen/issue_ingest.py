@@ -12,9 +12,38 @@ import re
 import sqlite3
 import zipfile
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 
-from ingest import CATALOG, FIELDS, PlainText, discover, download
+from vote_ingest import fetch as download
+
+CATALOG = 'https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/'
+FIELDS = ['dok_id', 'dok_rm', 'dok_nummer', 'dok_datum', 'avsnittsrubrik',
+          'kammaraktivitet', 'anforande_nummer', 'talare', 'parti',
+          'anforandetext', 'intressent_id', 'rel_dok_id', 'replik']
+
+
+class PlainText(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+
+    def handle_data(self, data):
+        self.parts.append(data)
+
+    def handle_endtag(self, tag):
+        if tag in ('p', 'div'):
+            self.parts.append('\n')
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'br':
+            self.parts.append('\n')
+
+
+def discover(html):
+    return sorted(set(re.findall(
+        r'https://data\.riksdagen\.se/dataset/anforande/anforande-\d+\.json\.zip', html)))
+
 
 KINDS = {
     'ärendedebatt',

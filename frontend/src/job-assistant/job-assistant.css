@@ -1,5 +1,6 @@
-/* Arbetsförmedla (#jobs), the desk: ivory on charcoal through the shared tokens. A top bar with
-   the title in the signature's gradient, list tabs with counts and compact filters; the list and
+/* Arbetsförmedla (#jobs), the desk: ivory on charcoal through the shared tokens. One top row:
+   the title in the signature's gradient, smaller than on the reading pages so the list and the ad
+   start high, and a compact search; list tabs with counts and compact filters; the list and
    the open ad below (job-assistant-desk.css). Labels are small caps in the site's meta face. */
 .ja {
   padding-block: 0 var(--sp-section);
@@ -21,22 +22,41 @@
   color: var(--color-ink);
 }
 
+.ja-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+  padding-block: var(--sp-5) var(--sp-3);
+}
+/* From 1024 px the site's tools (About, GitHub, Svenska) are fixed at the top right
+   (site/project-rail.css), so the row starts just below them. */
+@media (min-width: 1024px) {
+  .ja-top {
+    padding-top: 5.5rem;
+  }
+}
+.project-shell #main .ja .page-head-title {
+  padding-block: 0;
+  font-size: clamp(1.8rem, 4vw, 3rem);
+}
 .ja-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--sp-3) var(--sp-5);
-  padding-block: var(--sp-5) var(--sp-4);
+  justify-content: flex-end;
+  gap: var(--sp-2) var(--sp-4);
 }
 .ja-search-wrap {
-  flex: 1 1 18rem;
+  flex: 0 1 17rem;
   min-width: 0;
 }
 .ja-search {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 44px;
+  min-height: 40px;
   padding-inline: var(--sp-3);
   border-radius: var(--radius);
   background: var(--color-surface);
@@ -49,7 +69,7 @@
 .project-shell .ja-search input {
   flex: 1;
   min-width: 0;
-  min-height: 42px;
+  min-height: 38px;
   border: 0;
   background: transparent;
   color: var(--color-ink);
@@ -77,7 +97,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-3);
-  padding-block: var(--sp-3);
+  padding-block: var(--sp-2);
   border-bottom: 1px solid var(--line);
 }
 .ja-lists nav {
@@ -148,6 +168,7 @@
 }
 
 @media (pointer: coarse) {
+  .ja-search,
   .ja-tab,
   .ja-filters select,
   .ja-filters summary {
@@ -155,6 +176,17 @@
   }
 }
 @media (max-width: 760px) {
+  .ja-top {
+    padding-top: var(--sp-3);
+  }
+  .ja-bar,
+  .ja-search-wrap {
+    flex: 1 1 100%;
+    justify-content: flex-start;
+  }
+  .ja-search-wrap {
+    max-width: 20rem;
+  }
   .ja-filters {
     margin-inline-start: 0;
   }

@@ -12,12 +12,26 @@ test(
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
       'Cluster visuals',
     )
-    // The sentence demo leads; the old per-project sections are gone from this page.
-    await expect(page.locator('#cv-place')).toBeVisible()
+    // The sentence demo lives on Replik; the old per-project sections are gone from this page.
+    await expect(page.locator('#cv-place')).toHaveCount(0)
     await expect(page.locator('.cv .cv-section')).toHaveCount(0)
     const tiles = page.locator('.cv-tile')
     await expect(tiles).toHaveCount(7)
     await expect(tiles.first()).toHaveAttribute('id', 'cv-map-jobs-detail')
+    // Only models whose gate passed are listed, each with its verdict.
+    const models = page.locator('#cv-models .model-card')
+    await expect(models.first()).toBeAttached()
+    await expect(page.locator('#cv-models .model-verdict.is-held')).toHaveCount(
+      0,
+    )
+    // The atlas reads its counts from meta.json and lists links between corpora.
+    const meta = await (await page.request.get('/data/atlas/meta.json')).json()
+    const shared = page.locator('#cv-atlas')
+    await expect(shared.locator('.cx-question')).toContainText(
+      meta.passages.toLocaleString('en-GB'),
+    )
+    await expect(shared.locator('canvas')).toHaveCount(1)
+    await expect(shared.locator('table').first()).toBeAttached()
     // Maps far down the page have not asked for their data yet.
     await expect(page.locator('#cv-map-debates-legacy canvas')).toHaveCount(0)
     await expect(
@@ -85,7 +99,8 @@ test(
         `${data.clusters} clusters`,
       )
     }
-    // The hero map keeps its named debate subjects.
+    // The sentence demo on Replik keeps its named debate subjects.
+    await page.goto('/#replik')
     const place = page.locator('#cv-place')
     await place.scrollIntoViewIfNeeded()
     await expect(place.locator('canvas')).toBeVisible()

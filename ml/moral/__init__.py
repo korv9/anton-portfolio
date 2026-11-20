@@ -1,4 +1,4 @@
-"""Philosophy track 1 (docs/philosophy-moral-preregistration.md): shared paths and the bge-m3 call.
+"""Philosophy track 1 (docs/research/preregistrations/philosophy-moral-preregistration.md): shared paths and the bge-m3 call.
 
 Raw source files live under warehouse/raw/philosophy_moral (with rawstore's _manifest.jsonl), the
 derived tables under warehouse/features/philosophy/moral; warehouse_store.py carries only the features
@@ -28,7 +28,7 @@ def embed(ids: list[str], texts: list[str], name: str, agent: str) -> np.ndarray
     import workers_ai
 
     run = FEATURES / "vectors" / name
-    # Stored vectors for exactly these ids (pulled from R2 in cluster-jobs.yml) need no call.
+    # Stored vectors for exactly these ids (pulled from R2 in heavy-compute.yml) need no call.
     if ((run / "vectors.npy").is_file() and (run / "ids.json").is_file()
             and json.loads((run / "ids.json").read_text(encoding="utf-8")) == [str(i) for i in ids]):
         return np.load(run / "vectors.npy")

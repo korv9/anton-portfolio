@@ -11,9 +11,8 @@ import pytest
 from botocore.exceptions import ClientError
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "publish"))
 
-import warehouse_store as ws  # noqa: E402
+from portfolio.storage import warehouse_store as ws  # noqa: E402
 
 
 class Bucket:
@@ -95,7 +94,7 @@ def store(tmp_path, monkeypatch):
 def test_round_trip_restores_the_warehouse_and_raw_files(store):
     s3, db, raw = store
     original = db.read_bytes()
-    files, sent, _ = ws.push_tree(s3, "b", "raw")
+    files, sent, *_ = ws.push_tree(s3, "b", "raw")
     manifest = ws.push_db(s3, "b", {"raw": files})
     assert (files, sent) == (2, 2)
     assert manifest["rows_per_schema"] == {"gold": 5}
@@ -140,7 +139,7 @@ def test_nothing_stored_yet_is_not_an_error(store):
 
 def test_ml_outputs_are_stored_under_their_own_prefix_and_come_back(store, tmp_path):
     s3, _, _ = store
-    files, sent, _ = ws.push_tree(s3, "b", "features")
+    files, sent, *_ = ws.push_tree(s3, "b", "features")
     assert (files, sent) == (1, 1)
     assert ws.FEATURES_PREFIX + "concepts/run.json" in s3.objects
     assert not any(k.startswith(ws.RAW_PREFIX) for k in s3.objects)
@@ -202,6 +201,25 @@ def test_third_party_text_kept_local_is_never_pushed(store):
     assert ws.push_tree(s3, "b", "raw", "philosophy_moral")[:2] == (0, 0)
     assert not any("philosophy_moral" in key for key in s3.objects)
     assert ws.RAW_PREFIX + "scb/a.json" in s3.objects
+
+
+def test_job_ad_answers_with_contact_details_are_never_pushed(store):
+    """JobStream and JobSearch answers as served carry recruiters' e-mails and phone numbers; only the
+    redacted ad store, the cursor and the fetch log go to the public bucket."""
+    s3, _, raw = store
+    for path in ("job_assistant/raw/stream-2026-10-23T1400.json.gz", "job_assistant/raw/search-2026-08-25-1.json",
+                 "job_assistant/ads.json", "job_assistant/state.json", "job_assistant/_manifest.jsonl",
+                 "jobtech/stream/raw/2026-10-06T0600.json.gz", "jobtech/stream/state.json",
+                 "jobtech/stream/ads/2026-10-06T0600.parquet"):
+        (raw / path).parent.mkdir(parents=True, exist_ok=True)
+        (raw / path).write_text("x")
+    ws.push_tree(s3, "b", "raw")
+    ws.push_tree(s3, "b", "raw", "job_assistant")
+    ws.push_tree(s3, "b", "raw", "jobtech/stream")
+    assert not any("/raw/" in key.removeprefix(ws.RAW_PREFIX) for key in s3.objects)
+    for kept in ("job_assistant/ads.json", "job_assistant/state.json", "job_assistant/_manifest.jsonl",
+                 "jobtech/stream/state.json", "jobtech/stream/ads/2026-10-06T0600.parquet"):
+        assert ws.RAW_PREFIX + kept in s3.objects
 
 
 def test_a_full_features_push_leaves_the_text_sample_behind(store, tmp_path):
@@ -286,7 +304,7 @@ def test_complete_history_survives_a_fresh_runner_round_trip(store, tmp_path, mo
     import sys
     sys.path.insert(0, str(ROOT / "ingest/taxes"))
     import taxes_ingest as taxes
-    import rawstore
+    from portfolio.storage import rawstore
 
     s3, _, raw = store
     monkeypatch.setattr(rawstore, "RAW", raw)
@@ -327,3 +345,102 @@ def test_a_whole_tree_pull_skips_the_on_demand_corpus_but_a_named_pull_fetches_i
     assert not (raw / "jobtech/cluster-corpus/2025/part.parquet").exists()
     assert ws.pull_tree(s3, "b", "raw", "jobtech/cluster-corpus") == 1
     assert (raw / "jobtech/cluster-corpus/2025/part.parquet").exists()
+
+
+def test_a_push_never_overwrites_a_remote_file_changed_since_the_pull(store, tmp_path):
+    """A long build pulls features, a cluster job pushes newer ones, then the build pushes: the
+    build's unchanged copy is not uploaded over the newer one, and a copy it changed is refused."""
+    import hashlib
+    s3, _, _ = store
+    run = tmp_path / "features/concepts/run.json"
+    key = ws.FEATURES_PREFIX + "concepts/run.json"
+    ws.push_tree(s3, "b", "features")
+    run.unlink()
+    ws.pull_tree(s3, "b", "features")
+    newer = b'{"model": "newer"}'
+    s3.objects[key] = (newer, {"sha256": hashlib.sha256(newer).hexdigest()})
+
+    assert ws.push_tree(s3, "b", "features")[1] == 0
+    assert s3.objects[key][0] == newer
+
+    run.write_text('{"model": "local"}')
+    assert ws.push_tree(s3, "b", "features")[3] == [key]
+    assert s3.objects[key][0] == newer
+
+    ws.pull_tree(s3, "b", "features")  # after a fresh pull the local copy may go up again
+    run.write_text('{"model": "local"}')
+    assert ws.push_tree(s3, "b", "features")[1] == 1
+
+
+def test_an_interrupted_push_or_pull_still_records_what_moved(store, monkeypatch):
+    """An upload failing halfway keeps the ledger of the files that did go up, so the next push does
+    not take its own uploads for another writer's."""
+    s3, _, raw = store
+    upload = s3.upload_file
+
+    def flaky(filename, bucket, key, ExtraArgs=None):
+        if key.endswith("_manifest.jsonl"):
+            raise OSError("connection reset")
+        upload(filename, bucket, key, ExtraArgs)
+
+    monkeypatch.setattr(s3, "upload_file", flaky)
+    with pytest.raises(OSError):
+        ws.push_tree(s3, "b", "raw")
+    assert ws.RAW_PREFIX + "scb/a.json" in ws.read_pulled(ws.resolved_path(raw))
+    monkeypatch.setattr(s3, "upload_file", upload)
+    ws.push_tree(s3, "b", "raw")
+
+    ws.pulled_path(ws.resolved_path(raw)).unlink()
+    download = s3.download_file
+
+    def broken(bucket, key, filename):
+        if key.endswith("_manifest.jsonl"):
+            raise OSError("connection reset")
+        download(bucket, key, filename)
+
+    monkeypatch.setattr(s3, "download_file", broken)
+    (raw / "scb/a.json").unlink()
+    (raw / "scb/_manifest.jsonl").unlink()
+    with pytest.raises(OSError):
+        ws.pull_tree(s3, "b", "raw")
+    assert ws.RAW_PREFIX + "scb/a.json" in ws.read_pulled(ws.resolved_path(raw))
+    # The failed download does not vouch for a local copy that never arrived.
+    assert ws.RAW_PREFIX + "scb/_manifest.jsonl" not in ws.read_pulled(ws.resolved_path(raw))
+
+
+def test_a_torn_ledger_costs_the_protection_not_the_push(store, capsys):
+    s3, _, raw = store
+    ws.pulled_path(ws.resolved_path(raw)).write_text('{"warehouse/raw/scb/a.js')
+    assert ws.push_tree(s3, "b", "raw")[1] == 2
+    assert "ledger" in capsys.readouterr().err
+    assert ws.RAW_PREFIX + "scb/a.json" in ws.read_pulled(ws.resolved_path(raw))
+
+
+def test_a_conflict_still_stores_the_other_trees_and_the_warehouse_then_fails(store, tmp_path, monkeypatch):
+    """`push --all` (build-warehouse.yml) keeps going past a refused file and exits non-zero at the end."""
+    import hashlib
+    s3, _, raw = store
+    monkeypatch.setattr(ws, "CLUSTER_LAB", tmp_path / "cluster_lab")
+    key = ws.FEATURES_PREFIX + "concepts/run.json"
+    ws.push_tree(s3, "b", "features")
+    newer = b'{"model": "newer"}'
+    s3.objects[key] = (newer, {"sha256": hashlib.sha256(newer).hexdigest()})
+    (tmp_path / "features/concepts/run.json").write_text('{"model": "local"}')
+    (raw / "scb/b.json").write_text("{}")
+    monkeypatch.setattr("portfolio.storage.upload.client", lambda: (s3, "b"))
+    monkeypatch.setattr(sys, "argv", ["warehouse_store.py", "push"])
+    with pytest.raises(SystemExit, match=r"changed in the bucket since.*concepts/run\.json"):
+        ws.main()
+    assert s3.objects[key][0] == newer
+    assert ws.RAW_PREFIX + "scb/b.json" in s3.objects and ws.DB_KEY in s3.objects
+
+
+def test_a_pull_leaves_the_local_only_answers_in_the_bucket(store):
+    """Raw job-ad answers already in the bucket from before are not fetched onto runners."""
+    s3, _, raw = store
+    s3.objects[ws.RAW_PREFIX + "job_assistant/raw/stream-1.json.gz"] = (b"contacts", {})
+    s3.objects[ws.RAW_PREFIX + "job_assistant/ads.json"] = (b"[]", {})
+    ws.pull_tree(s3, "b", "raw")
+    ws.pull_tree(s3, "b", "raw", "job_assistant")
+    assert (raw / "job_assistant/ads.json").is_file()
+    assert not (raw / "job_assistant/raw").exists()

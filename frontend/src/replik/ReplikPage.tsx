@@ -3,9 +3,9 @@
  * each a chart from a committed file with a legend only (compute.ts); method folds away at the
  * foot. Every party gets the same chart, size and ink; nothing ranks the parties.
  */
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { currentLocale, l } from '../i18n'
-import { fetchJson } from '../dataSource'
+import { LoadNote, loaded, useJson } from '../useJson'
 import { ProjectSection } from '../ui/Project'
 import PageHead, { Legend, Method, type Kpi } from '../ui/PageHead'
 import MultiLineChart from '../charts/MultiLineChart'
@@ -39,20 +39,11 @@ import {
 } from './compute'
 import './replik.css'
 
-function useJson<T>(path: string): T | null {
-  const [value, setValue] = useState<T | null>(null)
-  useEffect(() => {
-    let live = true
-    fetchJson<T>(path).then(
-      (v) => live && setValue(v),
-      (e: Error) => console.warn(e.message),
-    )
-    return () => {
-      live = false
-    }
-  }, [path])
-  return value
-}
+/**
+ * Above this share of the top value a heat cell takes dark text. No threshold alone gives both
+ * text colours 4.5:1 on the ramp: mixes between 36 % and 52 % fail either way, so the ramp skips them.
+ */
+const DARK_FROM = 0.4
 
 const locale = () => (currentLocale() === 'sv' ? 'sv-SE' : 'en-GB')
 const num = (v: number, digits = 0) =>
@@ -96,7 +87,9 @@ function EraSection({ eras }: { eras: Eras | null }) {
           style={{ ['--cols' as string]: cols.length }}
         >
           <div role="row" className="rk-heat-row">
-            <span role="columnheader" />
+            <span role="columnheader" className="rk-heat-col">
+              {l('Topic', 'Ämne')}
+            </span>
             {cols.map((e) => (
               <span role="columnheader" key={e.name} className="rk-heat-col">
                 {e.name}
@@ -110,13 +103,14 @@ function EraSection({ eras }: { eras: Eras | null }) {
               </span>
               {cells[i].map((v, j) => {
                 const t = v / max
+                const dark = t > DARK_FROM
                 return (
                   <span
                     role="cell"
                     key={j}
-                    className={`rk-heat-cell${t > 0.55 ? ' is-dark' : ''}`}
+                    className={`rk-heat-cell${dark ? ' is-dark' : ''}`}
                     style={{
-                      background: `color-mix(in srgb, var(--ink) ${Math.round(t * 88)}%, var(--page))`,
+                      background: `color-mix(in srgb, var(--ink) ${Math.round(dark ? 52 + ((t - DARK_FROM) / (1 - DARK_FROM)) * 36 : t * 88)}%, var(--page))`,
                     }}
                     title={`${label.get(id)}, ${cols[j].name}: ${sh(v)}`}
                   >
@@ -554,16 +548,24 @@ function NowSection({
 }
 
 export default function ReplikPage() {
-  const topics = useJson<DebateTopics>('clusters/debate-topics.json')
-  const eras = useJson<Eras>('clusters/riksdag-eras.json')
-  const sessions = useJson<Sessions>('parliament/sessions.json')
-  const talk = useJson<TalkVote>('clusters/talk-vote.json')
-  const polar = useJson<Polar>('ml/polarization.json')
-  const ai = useJson<PartyYear>('ai-act/politics/party-year.json')
-  const aiSummary = useJson<{ last_date: string }>(
-    'ai-act/politics/summary.json',
-  )
-  const story = useJson<Story>('politics/parliament/story.json')
+  const files = {
+    topics: useJson<DebateTopics>('clusters/debate-topics.json'),
+    eras: useJson<Eras>('clusters/riksdag-eras.json'),
+    sessions: useJson<Sessions>('parliament/sessions.json'),
+    talk: useJson<TalkVote>('clusters/talk-vote.json'),
+    polar: useJson<Polar>('ml/polarization.json'),
+    ai: useJson<PartyYear>('ai-act/politics/party-year.json'),
+    aiSummary: useJson<{ last_date: string }>('ai-act/politics/summary.json'),
+    story: useJson<Story>('politics/parliament/story.json'),
+  }
+  const topics = loaded(files.topics)
+  const eras = loaded(files.eras)
+  const sessions = loaded(files.sessions)
+  const talk = loaded(files.talk)
+  const polar = loaded(files.polar)
+  const ai = loaded(files.ai)
+  const aiSummary = loaded(files.aiSummary)
+  const story = loaded(files.story)
   const debates = story?.leader_debates
   const kpis: Kpi[] = []
   if (debates?.length)
@@ -604,6 +606,7 @@ export default function ReplikPage() {
         )}
         kpis={kpis}
       />
+      <LoadNote files={Object.values(files)} />
       <EraSection eras={eras} />
       <PartySection topics={topics} />
       <AgendaSection topics={topics} />

@@ -36,7 +36,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--commit")
     ap.add_argument("--pr")
     ap.add_argument("--file", action="append", default=[])
-    ap.add_argument("--public", action="store_true", help="publishable; default is private")
+    ap.add_argument("--private", action="store_true",
+                    help="keep out of the committed public journal; the default is public")
+    ap.add_argument("--by-owner", action="store_true",
+                    help="the owner decided this in conversation (source.kind user)")
     for field in EXPERIMENT_FIELDS:
         ap.add_argument(f"--{field}")
     for rel in RELATIONS:
@@ -53,11 +56,11 @@ def main(argv: list[str] | None = None) -> int:
         "importance": args.importance,
         "status": args.status or ("open" if args.type == "question" else "active"),
         "certainty": args.certainty, "open_questions": args.open_question,
-        "visibility": "public" if args.public else "private",
+        "visibility": "private" if args.private else "public",
         "relations": {r: getattr(args, f"rel_{r}") for r in RELATIONS if getattr(args, f"rel_{r}")},
         "implementation": {k: v for k, v in {"commit": args.commit, "pr": args.pr,
                                               "files": args.file}.items() if v},
-        "source": {"kind": "manual", "session_date": created[:10]},
+        "source": {"kind": "user" if args.by_owner else "manual", "session_date": created[:10]},
         **{f: getattr(args, f) for f in EXPERIMENT_FIELDS},
     }
     event = {k: v for k, v in event.items() if v not in (None, [], {})}

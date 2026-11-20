@@ -1,6 +1,6 @@
 /**
  * Ask the eval questions (configs/workers_ai/eval_questions.yaml) through the same path as the
- * Fråga lagen page, to choose the model behind /api/answer (docs/workers-ai.md).
+ * Fråga lagen page, to choose the model behind /api/answer (docs/products/allegora/workers-ai.md).
  *
  *   node --experimental-strip-types platform/publish/workers_ai/eval_answer.ts \
  *     run --model @cf/openai/gpt-oss-20b [--options '{"reasoning_effort":"low"}'] [--label low]  *     [--max-neurons 1500] [--limit 1]
@@ -8,8 +8,7 @@
  *     examples --model <chosen> --ids sfs:0,sfs:1,ai-act-sv:12,ai-act-en:12,...
  *
  * In --ids, <corpus>:<n> is the n-th eval question (from 0); for ai-act-en its question_en is asked.
- * --questions picks another question file (eval_questions_platform.yaml for Ask the platform) and
- * --agent the name in the ledger (default law-eval).
+ * --questions picks another question file and --agent the name in the ledger (default law-eval).
  *
  * The question is embedded and answered by worker/index.ts itself (its fetch handler, system
  * prompt and quote check), with env.AI.run sent to the Workers AI REST endpoint and env.ASSETS
@@ -166,7 +165,9 @@ async function post(ai: Env['AI'], path: string, body: unknown) {
     method: 'POST',
     body: JSON.stringify(body),
   })
-  const response = await worker.fetch(request, { AI: ai, ASSETS: assets })
+  // The Worker fails closed without a limiter; this local evaluation has no quota to protect.
+  const RATE_LIMITER = { limit: async () => ({ success: true }) }
+  const response = await worker.fetch(request, { AI: ai, ASSETS: assets, RATE_LIMITER })
   return { status: response.status, body: (await response.json()) as Record<string, unknown> }
 }
 

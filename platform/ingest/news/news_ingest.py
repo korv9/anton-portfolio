@@ -39,9 +39,7 @@ from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-from rawstore import RAW, session  # noqa: E402
+from portfolio.storage.rawstore import RAW, session  # noqa: E402
 
 OUT = RAW / "news"
 PREFIX = "raw/news/"
@@ -154,8 +152,7 @@ def bucket():
     if not all(os.environ.get(n) for n in names):
         print("::warning::No R2 credentials: the news archive stays local this run", flush=True)
         return None
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "publish"))
-    from upload import client  # noqa: E402
+    from portfolio.storage.upload import client  # noqa: E402
     return client()
 
 

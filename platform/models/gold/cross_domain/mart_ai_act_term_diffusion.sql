@@ -1,7 +1,7 @@
 {{ config(tags=['ai_act_diffusion']) }}
 -- Corpus × term list × term × language × month: documents that use one of the AI Act's own terms, all
 -- documents, the share and a three-month rolling share (sums over the window), for the AI Act
--- diffusion clock (docs/ai-act-diffusion-preregistration.md). The terms are the kept rows of
+-- diffusion clock (docs/research/preregistrations/ai-act-diffusion-preregistration.md). The terms are the kept rows of
 -- seeds/cross_domain/ai_act_terms.csv: term_list primary as pre-registered, amended as its
 -- 2026-10-22 amendment re-reviewed them (amended_decision). The two lists are side by side,
 -- never merged. Only whole months: a corpus's first and last month count

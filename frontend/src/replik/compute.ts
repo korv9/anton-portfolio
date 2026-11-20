@@ -16,7 +16,7 @@ export type DebateTopics = {
   bge_m3: { topics: { cluster: number; jaccard: number; rho_yearly: number }[] }
   shares: { rows: ShareRow[] }
 }
-export type Share = {
+type Share = {
   period: string
   value: number
   low: number
@@ -33,7 +33,7 @@ const share = (r: ShareRow): Share => ({
 })
 
 /** The topic ids with no model-made name: they get neutral labels, never a number. */
-export const unnamed = (d: DebateTopics) =>
+const unnamed = (d: DebateTopics) =>
   d.clusters.filter((c) => !c.name[0]).map((c) => c.id)
 
 /** A topic's [en, sv] name; an unnamed group is described, not numbered. */
@@ -85,25 +85,6 @@ export function partialYears(series: Share[]) {
   )
 }
 
-/** R1: the topic's peak year, its range in the years before, and the last full year. */
-export function peak(series: Share[]) {
-  const partial = partialYears(series)
-  const full = series.filter((s) => !partial.has(s.period))
-  if (full.length < 3) return null
-  const top = full.reduce((a, b) => (b.value > a.value ? b : a))
-  const before = full.filter((s) => s.period < top.period)
-  if (!before.length) return null
-  const values = before.map((s) => s.value)
-  return {
-    top,
-    from: before[0].period,
-    to: before.at(-1)!.period,
-    min: Math.min(...values),
-    max: Math.max(...values),
-    last: full.at(-1)!,
-  }
-}
-
 /** One party's topic profile in a decade: the five largest topics and its most distinctive one. */
 export function profile(d: DebateTopics, decade: string, party: string) {
   const rows = d.shares.rows.filter(
@@ -128,24 +109,6 @@ export function profile(d: DebateTopics, decade: string, party: string) {
     if (!best || ratio > best.ratio) best = { id: r[3], value: r[4], ratio }
   }
   return { top, distinctive: best, passages: mine[0][7] }
-}
-
-/** R2: the party that led a topic in one decade, against every other party's range. */
-export function decadeLead(d: DebateTopics, decade: string, id: number) {
-  const rows = PARTIES.flatMap((p) => {
-    const s = byDecade(d, p, id).find((x) => x.period === decade)
-    return s ? [{ party: p, ...s }] : []
-  }).sort((a, b) => b.value - a.value)
-  if (rows.length < 3) return null
-  const rest = rows.slice(1).map((r) => r.value)
-  return {
-    rows,
-    lead: rows[0],
-    second: rows[1],
-    min: Math.min(...rest),
-    max: Math.max(...rest),
-    overlap: rows[1].high >= rows[0].low,
-  }
 }
 
 // ---------------------------------------------------------------- clusters/riksdag-eras.json
@@ -207,32 +170,6 @@ export type Sessions = {
 export const record = (d: Sessions, party: string) =>
   d.party_record.filter((r) => r.party === party)
 
-/** R5: the party outside government that voted with it most in the latest session. */
-export function closestOutsider(d: Sessions) {
-  const last = d.sessions.at(-1)?.session
-  const outside = d.party_record.filter(
-    (r) => r.session === last && r.role !== 'government',
-  )
-  if (!outside.length) return null
-  const now = outside.reduce((a, b) =>
-    b.with_government_pct > a.with_government_pct ? b : a,
-  )
-  const rows = record(d, now.party)
-  const before = rows[rows.indexOf(now) - 1]
-  const opposition = rows.filter((r) => r.role === 'opposition')
-  if (!before || !opposition.length) return null
-  const values = opposition.map((r) => r.with_government_pct)
-  return {
-    now,
-    before,
-    from: opposition[0].session,
-    to: opposition.at(-1)!.session,
-    min: Math.min(...values),
-    max: Math.max(...values),
-    lastVote: d.sessions.at(-1)!.last_vote,
-  }
-}
-
 // ---------------------------------------------------------------- clusters/talk-vote.json
 
 export type TalkVote = {
@@ -278,19 +215,6 @@ export function governments(d: Polar) {
   }))
 }
 
-/** R4: the change of government after which the same-debate AUC rose the most. */
-export function biggestStep(d: Polar) {
-  const blocks = governments(d).filter((b) => b.values.length >= 3)
-  let best: [(typeof blocks)[number], (typeof blocks)[number]] | null = null
-  for (let i = 1; i < blocks.length; i++)
-    if (
-      !best ||
-      blocks[i].mean - blocks[i - 1].mean > best[1].mean - best[0].mean
-    )
-      best = [blocks[i - 1], blocks[i]]
-  return best
-}
-
 // ---------------------------------------------------------------- ai-act/politics/*
 
 export type PartyYear = {
@@ -311,16 +235,6 @@ export function aiByYear(d: PartyYear, party?: string) {
   return [...by]
     .sort((a, b) => a[0] - b[0])
     .map(([year, [ai, n]]) => ({ year, value: n ? (100 * ai) / n : 0, n }))
-}
-
-/** Each party's AI share (in percent) over the years from `from` on. */
-export function aiSince(d: PartyYear, from: number) {
-  return PARTIES.map((party) => {
-    const rows = d.filter((r) => r.party === party && r.year >= from)
-    const ai = rows.reduce((a, r) => a + r.ai_speeches, 0)
-    const n = rows.reduce((a, r) => a + r.speeches, 0)
-    return { party, value: n ? (100 * ai) / n : 0 }
-  })
 }
 
 // ---------------------------------------------------------------- politics/parliament/story.json

@@ -1,5 +1,4 @@
-/** Controls shared by the politics themes: a select and number formats. */
-import { l } from '../i18n'
+/** Controls shared by the politics themes: a select. */
 
 export function Select({
   label,
@@ -25,13 +24,3 @@ export function Select({
     </label>
   )
 }
-
-const nf = (digits: number) =>
-  new Intl.NumberFormat(l('en-GB', 'sv-SE'), {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  })
-export const num = (value: number, digits = 0) => nf(digits).format(value)
-export const pct = (value: number, digits = 1) => `${num(value, digits)} %`
-export const signed = (value: number, digits = 0) =>
-  `${value > 0 ? '+' : value < 0 ? '−' : '±'}${num(Math.abs(value), digits)}`

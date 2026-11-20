@@ -1,6 +1,6 @@
 version: 2
 
-# The job assistant (docs/job-assistant.md). platform/job_assistant/ads.py keeps the current
+# The job assistant (docs/products/jobs/job-assistant.md). platform/job_assistant/ads.py keeps the current
 # Data/IT ads from JobTech (JobSearch once, then JobStream every hour) and rank.py matches them
 # with the owner's approved CV profile. Both write JSON under warehouse/raw/job_assistant, with
 # every fetched answer in the source's _manifest.jsonl.

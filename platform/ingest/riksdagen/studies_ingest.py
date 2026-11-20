@@ -28,16 +28,13 @@ import html
 import io
 import json
 import re
-import sys
 import time
 import urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from requests import HTTPError  # noqa: E402
 
 SOURCE = "riksdagen"

@@ -241,6 +241,7 @@ export default function Futures({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={l(
         `Share of the Riksdag’s future-oriented speeches that use each theme, ${years[0]}–${years[years.length - 1]}.`,
         `Andel av riksdagens framtidsinriktade anföranden som använder varje tema, ${years[0]}–${years[years.length - 1]}.`,
@@ -375,7 +376,7 @@ export default function Futures({ route }: { route: Route }) {
               const [t, y] = key.split('|')
               set({ tema: t, ar: y })
             }}
-            label={l('3D view of the matrix', '3D-vy av matrisen')}
+            label={l('3D view of the themes by year', '3D-vy av teman per år')}
             fallback={
               <FutureMatrix
                 themes={themes}

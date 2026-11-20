@@ -35,7 +35,9 @@ INVERSE = {
 
 EXPERIMENT_FIELDS = ["question", "hypothesis", "method", "result", "interpretation", "limitations"]
 IMPLEMENTATION_FIELDS = ["commit", "pr", "files", "route", "artifact", "run", "dataset"]
-SOURCE_KINDS = ["assistant_output", "manual", "import"]
+# "user": the owner said it in the conversation and the answer restated it, so it is the
+# owner's decision, not the assistant's proposal.
+SOURCE_KINDS = ["assistant_output", "manual", "import", "user"]
 
 ALLOWED_KEYS = {
     "id", "created_at", "occurred_on", "type", "title", "summary", "reason", "projects", "tags",

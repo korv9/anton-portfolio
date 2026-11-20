@@ -14,15 +14,11 @@ leave it, cited to ESS ERIC. Writes warehouse/raw/ess/<round>/<datafile>.csv.gz.
 from __future__ import annotations
 
 import argparse
-import sys
 import time
-from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-from rawstore import session, store  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage.rawstore import session, store  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 API = "https://api.nsd.no/graphql"
 SOURCE = "ess"

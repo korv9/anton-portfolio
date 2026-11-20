@@ -15,8 +15,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-import common
-import delivery
+from portfolio.core.io import write_bytes_retrying
+from portfolio.storage import delivery
 from parties import normalise
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -89,7 +89,7 @@ def write(cards):
         manifest.append({'session': session, 'count': len(rows), 'path': part})
     for old in DISCOVERY.glob('speeches-*.json'):
         old.unlink()
-    common.write_bytes_retrying(DISCOVERY / 'index.json', (json.dumps(manifest) + "\n").encode('utf-8'))
+    write_bytes_retrying(DISCOVERY / 'index.json', (json.dumps(manifest) + "\n").encode('utf-8'))
     print(f'Wrote {len(cards)} speech cards in {len(manifest)} Parquet parts; full text loaded on selection.')
 
 

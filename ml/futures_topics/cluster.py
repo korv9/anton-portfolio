@@ -1,5 +1,5 @@
 """SWEDEN E topic pilot: embed the pre-registered sample, sweep UMAP + HDBSCAN, select, test
-stability and the structure null, as fixed in docs/sweden-futures-topics-preregistration.md.
+stability and the structure null, as fixed in docs/research/preregistrations/sweden-futures-topics-preregistration.md.
 
     python -m ml.futures_topics.cluster          # resumes from the checkpoints under OUT/run
 

@@ -69,6 +69,13 @@ export default function AdDetail({
           {place && ` · ${place}`}
         </p>
 
+        <AdText
+          id={ad.id}
+          published={published}
+          opened={opened}
+          source={source}
+        />
+
         {skills.length > 0 && (
           <section aria-labelledby="ja-asks">
             <h3 id="ja-asks">
@@ -111,13 +118,6 @@ export default function AdDetail({
             )}
           </section>
         )}
-
-        <AdText
-          id={ad.id}
-          published={published}
-          opened={opened}
-          source={source}
-        />
       </div>
 
       <aside className="ja-facts" aria-label={l('Quick facts', 'Snabbfakta')}>
@@ -132,7 +132,7 @@ export default function AdDetail({
           {(ad.employment_type || ad.working_hours) && (
             <div>
               <dt className="ja-label">{l('Employment', 'Anställning')}</dt>
-              <dd>
+              <dd lang="sv">
                 {[ad.employment_type, ad.working_hours]
                   .filter(Boolean)
                   .join(', ')}

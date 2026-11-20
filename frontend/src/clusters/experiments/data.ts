@@ -8,7 +8,7 @@ import { l } from '../../i18n'
 export type Status = 'candidate' | 'champion' | 'rejected'
 type Dict = Record<string, unknown>
 
-export type RunSummary = {
+type RunSummary = {
   run_id: string
   status: Status
   label: string
@@ -59,7 +59,7 @@ export type Acceptance = {
   criteria_sha256: string
   champion_run_id: string | null
 }
-export type Dominance = {
+type Dominance = {
   weighted_top_share?: number
   ami?: number
   null_top_share_p95?: number
@@ -146,7 +146,7 @@ export function loadRun(id: string): Promise<RunFile> {
   return pending
 }
 
-export const DOMAIN_NAMES: Record<string, () => string> = {
+const DOMAIN_NAMES: Record<string, () => string> = {
   philosophy: () => l('Philosophy', 'Filosofi'),
   symbolic: () => l('Symbols', 'Symboler'),
   jobs: () => l('Job ads', 'Jobbannonser'),

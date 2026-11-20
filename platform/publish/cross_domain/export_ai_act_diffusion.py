@@ -5,7 +5,7 @@
 Reads gold.mart_ai_act_term_diffusion, gold.mart_ai_act_timeline, seeds.ai_act_terms and
 seeds.ai_act_term_precision and writes frontend/public/data/ai-act/diffusion.json: per corpus its
 whole months and monthly rows per term, and per corpus, term and milestone the adoption lag with
-its placebo p, all as docs/ai-act-diffusion-preregistration.md fixes. The primary (pre-registered)
+its placebo p, all as docs/research/preregistrations/ai-act-diffusion-preregistration.md fixes. The primary (pre-registered)
 and the amended term list are reported side by side, never one in place of the other. The corpora
 are never pooled. Descriptive only.
 """
@@ -34,7 +34,7 @@ DEPARTURES = [
     "the Swedish text are compressed with separate PCA fits, so their cosines are not comparable.",
     "Riksdagen has not yet published the 2026/27 speech archive; the Riksdag lane ends with the "
     "2025/26 archive (last speech 13 August 2026), so its last whole month is July 2026.",
-    "Amendment of 2026-10-22 (docs/ai-act-diffusion-preregistration.md): review had dropped ai-system, "
+    "Amendment of 2026-10-22 (docs/research/preregistrations/ai-act-diffusion-preregistration.md): review had dropped ai-system, "
     "ai-modell and the sandbox terms as general_language, a reason meant for common phrases with uses "
     "outside AI. Re-reviewed against the reason definitions, with every token allowed four letters of "
     "inflection and a precision check of up to 50 matched speeches per re-admitted term (kept at 0.8 or "
@@ -214,7 +214,7 @@ def build(con) -> dict:
             **{tl: diagnostics([x for x in all_lags if x["term_list"] == tl]) for tl in LISTS},
         },
         "method": {
-            "preregistration": "docs/ai-act-diffusion-preregistration.md",
+            "preregistration": "docs/research/preregistrations/ai-act-diffusion-preregistration.md",
             "terms": "Weighted log-odds (informative Dirichlet prior) of Act n-grams against SFS, top 60 reviewed; "
                      "platform/seeds/cross_domain/ai_act_terms.csv lists every dropped term and its reason.",
             "adoption": f"First month from the milestone month whose 3-month rolling share is above the "

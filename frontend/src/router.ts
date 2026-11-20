@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 export type Page =
   | 'home'
   | 'projects'
+  | 'labs'
   | 'sweden'
   | 'drugcomb'
   | 'thesis'
@@ -39,7 +40,7 @@ export type Route = {
 /** The feed of charts that replaced the withdrawn observatories. */
 export const MEANING = '#what-does-it-even-mean'
 
-export const REDIRECTS: Record<string, string> = {
+const REDIRECTS: Record<string, string> = {
   '#jobb-utforska': MEANING,
   // The Wellbeing Observatory's addresses from before the SWEDEN platform took #sweden.
   '#sweden-work': MEANING,
@@ -105,13 +106,15 @@ export const REDIRECTS: Record<string, string> = {
   '#raw-data': MEANING,
   // When does a law arrive? (the AI Act diffusion clock) under its English name.
   '#ai-act-clock': '#lag-ankomst',
+  // The sentence demo left Cluster Visuals; it lives on Replik.
+  '#cv-place': '#replik',
 }
 
 /** Older address families and the theme they lead to, checked after the exact list. */
 const PREFIX_REDIRECTS: [string, string][] = [
   ['#quality-', '#projects'],
   ['#data-model-', '#projects'],
-  // The SWEDEN 3D atlas is offline (docs/roadmap.md); its addresses lead to the hub.
+  // The SWEDEN 3D atlas is offline (docs/sweden/atlas.md); its addresses lead to the hub.
   ['#sweden-atlas', '#sweden'],
   // The withdrawn observatories: politics, jobs, Job Intelligence, wellbeing, the AI Act
   // and the statute book, with every tab, deep dive and older address of theirs.
@@ -135,7 +138,7 @@ const PREFIX_REDIRECTS: [string, string][] = [
 ]
 
 /** Where an address leads now, if it has moved. */
-export function redirectOf(path: string): string | undefined {
+function redirectOf(path: string): string | undefined {
   return (
     REDIRECTS[path] ??
     PREFIX_REDIRECTS.find(([prefix]) => path.startsWith(prefix))?.[1]
@@ -147,7 +150,7 @@ export function redirectOf(path: string): string | undefined {
  * the start page: edge to edge, no breadcrumb or topic rows.
  */
 /** The SWEDEN research platform on one page: its top and a section per product and Connections. */
-export const SWEDEN_PATHS = [
+const SWEDEN_PATHS = [
   '#sweden',
   '#sweden-matning',
   '#sweden-arbete',
@@ -167,7 +170,7 @@ export const SYMBOLIC_TABS = [
   '#symbolic-findings',
   '#symbolic-experiments',
 ]
-export const CONCEPT_TABS = [
+const CONCEPT_TABS = [
   '#concept-journey',
   '#concepts-profiles',
   '#concept-constellation',
@@ -198,11 +201,12 @@ export function sameReport(a: string, b: string) {
   return REPORTS.some((tabs) => tabs.includes(a) && tabs.includes(b))
 }
 
-export function pageOf(path: string): Page {
+function pageOf(path: string): Page {
   // The projects hub and the addresses of its sections (#projects-jobs, #platform-health,
   // #tech-er).
   if (path === '#projects' || /^#(projects|platform|tech)-/.test(path))
     return 'projects'
+  if (path === '#labs') return 'labs'
   if (path.startsWith('#drugcomb')) return 'drugcomb'
   if (path === '#thesis') return 'thesis'
   if (path === '#homie') return 'homie'
@@ -212,7 +216,7 @@ export function pageOf(path: string): Page {
     return 'clusters'
   if (path === MEANING) return 'meaning'
   if (path === '#fraga-lagen') return 'lawqa'
-  // The job assistant (docs/job-assistant.md); #jobb and #job- still lead to the feed.
+  // The job assistant (docs/products/jobs/job-assistant.md); #jobb and #job- still lead to the feed.
   if (path === '#jobs') return 'jobs'
   if (path === '#replik') return 'replik'
   if (path === '#lag-ankomst') return 'aiclock'
@@ -232,12 +236,13 @@ export function parseHash(raw: string): Route {
   return { hash, path, params: new URLSearchParams(query), page: pageOf(path) }
 }
 
+/** @public Imported by the archived compliance and company pages. */
 export function companyHref(id: string) {
   return '/companies/' + encodeURIComponent(id)
 }
 
 /** Company profiles (`/companies/<id>`) belonged to Job Intelligence; they lead to the feed. */
-export function parseLocation(pathname: string, hash: string): Route {
+function parseLocation(pathname: string, hash: string): Route {
   return parseHash(pathname.startsWith('/companies/') ? MEANING : hash)
 }
 

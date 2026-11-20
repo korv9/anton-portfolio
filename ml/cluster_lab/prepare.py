@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import time
 
-from .io import ROOT, atomic_json, now, read_json
+from ml.experiments.io import ROOT, atomic_json, now, read_json
 
 
 def jobs(spec,config,checkpoint=lambda:None):
@@ -69,8 +69,7 @@ def jobs(spec,config,checkpoint=lambda:None):
         import json
         import hashlib
         import gzip
-        sys.path.insert(0,str(ROOT/'platform/lib'))
-        import rawstore
+        from portfolio.storage import rawstore
         folder=output/'active-snapshot'
         folder.mkdir(parents=True,exist_ok=True)
         state_path=folder/'state.json'

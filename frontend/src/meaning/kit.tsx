@@ -62,7 +62,7 @@ export const PALETTE = [
   'var(--mean-s6)',
 ]
 /** Sequential ramp ends for heatmaps: mix between them with color-mix. */
-export const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
+const SEQ = ['var(--mean-seq-lo)', 'var(--mean-seq-hi)'] as const
 export const seq = (t: number) =>
   `color-mix(in oklab, ${SEQ[1]} ${Math.round(Math.max(0, Math.min(1, t)) * 100)}%, ${SEQ[0]})`
 /** The fill for a number written on a `seq(t)` cell: near-black on a light cell, near-white on
@@ -70,7 +70,6 @@ export const seq = (t: number) =>
 export const cellInk = (t: number) => ({
   fill: `oklch(from ${seq(t)} clamp(0.2, (0.6 - l) * 1000, 0.97) 0 0)`,
 })
-export const color = (i: number) => PALETTE[i % PALETTE.length]
 /** Grey for every mark but the focal one: for more categories than the palette can tell apart. */
 export const OTHER = 'var(--mean-other)'
 export const focal = (on: boolean) => (on ? PALETTE[0] : OTHER)
@@ -90,10 +89,10 @@ const cache = new Map<string, Promise<unknown>>()
 const settled = new Map<string, unknown>()
 
 /** A dataset past its `valid_until` date; the post that reads it leaves the feed. */
-export class Expired extends Error {}
+class Expired extends Error {}
 
 /** Whether a dataset carries a `valid_until` date that has passed. */
-export const expired = (v: unknown) =>
+const expired = (v: unknown) =>
   typeof v === 'object' &&
   v !== null &&
   'valid_until' in v &&

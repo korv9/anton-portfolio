@@ -111,26 +111,22 @@ test(
 )
 
 test(
-  'the introduction describes production work and the roles sought, with contact under it',
+  'the introduction names the role and the roles sought, with contact under it',
   { tag: '@mobile' },
   async ({ page }) => {
     await page.goto('/#om-mig')
-    await expect(page.locator('.home-about-text').first()).toContainText(
-      'I love exploring data in creative ways',
+    const about = page.locator('#om-mig .home-about-text')
+    await expect(about).toHaveCount(3)
+    await expect(about.first()).toContainText(
+      'a junior developer with internship experience as a data engineer',
     )
     // The old contact paragraph is gone; the email and links follow the About paragraphs.
     await expect(page.locator('.home-contact-intro')).toHaveCount(0)
     expect(
-      await page
-        .locator('.home-about-text')
-        .last()
-        .evaluate((el) => el.nextElementSibling?.className),
+      await about.last().evaluate((el) => el.nextElementSibling?.className),
     ).toBe('home-contact')
-    await expect(page.locator('.home-about-text').nth(1)).toContainText(
-      'delivering in production',
-    )
-    await expect(page.locator('.home-about-text').nth(1)).toContainText(
-      'roles in software development, data and AI',
+    await expect(about.last()).toContainText(
+      'roles in data, AI and software engineering',
     )
   },
 )

@@ -12,9 +12,8 @@ import sys
 from pathlib import Path
 
 PLATFORM = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(PLATFORM / "lib"))
 sys.path.insert(0, str(PLATFORM / "ingest/riksdagen"))
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from studies_ingest import preparation_request  # noqa: E402
 
 

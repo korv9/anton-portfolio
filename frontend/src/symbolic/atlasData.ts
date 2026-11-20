@@ -3,7 +3,7 @@
  * site; the points and the symbol profiles are Parquet on object storage, read through the
  * delivery manifest (dataSource.ts, parquet.ts), never by a hard-coded URL.
  */
-import { fetchData } from '../dataSource'
+import { fetchJson } from '../dataSource'
 import { l } from '../i18n'
 import { readParquet as readPart } from '../parquet'
 import type {
@@ -31,11 +31,7 @@ function readParquet(path: string) {
   return pending
 }
 
-async function json<T>(path: string): Promise<T> {
-  const response = await fetchData(path)
-  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`)
-  return response.json()
-}
+const json = fetchJson
 
 // Parquet integers can arrive as BigInt; the page wants plain numbers.
 const n = (v: unknown) => (typeof v === 'bigint' ? Number(v) : (v as number))

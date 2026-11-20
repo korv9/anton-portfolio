@@ -18,15 +18,11 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import sys
 import urllib.parse
 import zipfile
 from datetime import date
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 SOURCE = "riksdagen"
 API = "https://data.riksdagen.se"

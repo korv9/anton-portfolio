@@ -1,7 +1,7 @@
 /**
  * The reader's marks (saved, applied, closed), one localStorage key per ad, so they survive
  * sessions on this device for anyone. With the owner token and a working owner store, the store's
- * statuses are read on load and win, and each change is written there too (docs/job-assistant.md).
+ * statuses are read on load and win, and each change is written there too (docs/products/jobs/job-assistant.md).
  */
 import { FROM_STORE, MINE, type Mine, type Review } from './model.ts'
 

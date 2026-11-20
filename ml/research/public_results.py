@@ -15,7 +15,7 @@ import yaml
 from ml.cluster_lab import datasets, evaluate, layouts
 from ml.cluster_lab.config import DEFAULTS, merge
 from ml.cluster_lab.export import export
-from ml.cluster_lab.io import atomic_json, digest, file_hash, read_json
+from ml.experiments.io import atomic_json, digest, file_hash, read_json
 from ml.cluster_lab.public_research import Subsample
 from ml.cluster_lab.registry import Registry
 from ml.cluster_lab.sweep import Runner

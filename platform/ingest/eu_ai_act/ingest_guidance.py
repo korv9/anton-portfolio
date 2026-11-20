@@ -15,9 +15,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "lib"))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 from sources import GUIDANCE  # noqa: E402
 

@@ -26,7 +26,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
-from mlkit import data, metrics, splits
+from mlkit import data, metrics, provenance, splits
 
 HOLDOUT_SESSION = "2025/26"
 MODEL = "KB/bert-base-swedish-cased"
@@ -117,6 +117,7 @@ def run(job_dir: Path, device: str, cached: dict, force: bool,
     inputs = {"rows": len(rows), "labels": len(labels), "epochs": EPOCHS,
               "model": MODEL if transformers else None, "holdout": HOLDOUT_SESSION,
               "gate": "paired"}
+    inputs = provenance.stamp(inputs, __file__, rows)
     key = hashlib.sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()[:16]
     if not force and key in cached:
         print(f"  cached, skipping ({cached[key].parent.name})", flush=True)

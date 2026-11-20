@@ -1,6 +1,6 @@
 version: 2
 
-# Philosophy track 1 (docs/philosophy-moral-preregistration.md), written by ml/moral/ into the
+# Philosophy track 1 (docs/research/preregistrations/philosophy-moral-preregistration.md), written by ml/moral/ into the
 # features folder philosophy/moral, which warehouse_store.py keeps in R2. Figures, ids and labels
 # only: no MFRC comment, ETHICS scenario or speech text is read here.
 #   MFRC, CC BY 4.0 (huggingface.co/datasets/USC-MOLA-Lab/MFRC, revision ddc21d2f)

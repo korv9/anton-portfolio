@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { fetchJson } from '../dataSource'
 import { WARM_TONES } from '../home/backdropGeometry'
 import { loadDebateMap } from './debateData'
@@ -42,8 +43,6 @@ const philosophy = (view: 'baseline' | 'author_centered') => async () => ({
 })
 const triples = (path: string) => () =>
   fetchJson<{ points: Xyc[] }>(path).then((d) => ({ points: d.points }))
-const objects = (points: { x: number; y: number; c: number }[]) =>
-  points.map((p): Xyc => [p.x, p.y, p.c])
 
 /** In the README's order: most striking first. */
 export const DATASETS: Dataset[] = [
@@ -61,7 +60,7 @@ export const DATASETS: Dataset[] = [
       'UMAP · an earlier, unvalidated topic model',
       'UMAP · en tidigare, ovaliderad ämnesmodell',
     ),
-    load: () => loadDebateMap().then((m) => ({ points: objects(m.points) })),
+    load: () => loadDebateMap().then((points) => ({ points })),
   },
   {
     key: 'symbolic-detail',
@@ -121,10 +120,8 @@ export const DATASETS: Dataset[] = [
   },
 ]
 
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
-
 /** Points, clusters and method: the one line under a map's title. */
-export function caption(set: Dataset, data: Data) {
+function caption(set: Dataset, data: Data) {
   const n = data.points.length
   return [
     data.total && data.total !== n
@@ -162,7 +159,7 @@ const NOISE = onPage(WARM_TONES[4], 0.35)
  * around their centre measured against the map's size), at most `keep` remain, and every cluster
  * is thinned to `cap` points by even sampling so dense ones stay a texture, not a solid shape.
  */
-export function clearest(points: Xyc[], keep = 16, cap = 700) {
+function clearest(points: Xyc[], keep = 16, cap = 700) {
   const groups = new Map<number, Xyc[]>()
   for (const p of points)
     if (p[2] >= 0) (groups.get(p[2]) ?? groups.set(p[2], []).get(p[2])!).push(p)
@@ -195,7 +192,7 @@ export function clearest(points: Xyc[], keep = 16, cap = 700) {
 }
 
 /** Draws one map; returns how many points landed inside the frame. */
-export function drawMap(canvas: HTMLCanvasElement, data: Data) {
+function drawMap(canvas: HTMLCanvasElement, data: Data) {
   const w = canvas.clientWidth
   const h = canvas.clientHeight
   const dpr = Math.min(window.devicePixelRatio || 1, 2)

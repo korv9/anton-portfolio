@@ -4,9 +4,9 @@ import type { Page, Route } from '../router'
 export type Bilingual = { sv: string; en: string }
 const t = (sv: string, en: string): Bilingual => ({ sv, en })
 
-export type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
+type ProjectStatus = 'live' | 'experimental' | 'in-progress' | 'study'
 
-export type ProjectEntry = {
+type ProjectEntry = {
   id: string
   title: Bilingual
   /** A few words under the title in menus: the kind of work. */
@@ -144,13 +144,13 @@ export const PROJECTS: ProjectEntry[] = [
         'Do symbolic contexts recur across stories and traditions?',
       ),
     },
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/symbolic-atlas.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/symbolic-atlas.md',
     pages: ['symbolic'],
   },
   {
     id: 'thesis',
-    title: t('IT Incident Clustering', 'IT Incident Clustering'),
-    descriptor: t('NLP, fallstudie hos Fora AB', 'NLP, case study at Fora AB'),
+    title: t('ITSM Clustering', 'ITSM Clustering'),
+    descriptor: t('NLP, fallstudie hos Avtalat', 'NLP, case study at Avtalat'),
     summary: t(
       'Anton grupperade liknande IT-supportärenden för att ge IT-teamet ett underlag för utredning av återkommande fel.',
       'I grouped similar IT support tickets to help the IT team investigate recurring faults.',
@@ -160,12 +160,12 @@ export const PROJECTS: ProjectEntry[] = [
       'How can the IT team find recurring faults among thousands of individual support tickets?',
     ),
     built: t(
-      'Datakvalitetsanalys av 21 633 incidentposter och ett NLP-flöde i Azure Databricks. Den rensade korpusen hade 19 847 unika incidenter; den valda klustringen använde 16 811.',
-      'Data quality analysis of 21,633 incident records and an NLP pipeline in Azure Databricks. The cleaned corpus had 19,847 unique incidents; the selected clustering run used 16,811.',
+      'Datakvalitetsmätning av 21 633 incidentärenden och ett NLP-flöde i Azure Databricks. Efter filtrering anonymiserades 19 847 unika incidenter; den slutliga klustringen använde 16 811.',
+      'Data quality measurement of 21,633 incident tickets and an NLP pipeline in Azure Databricks. After filtering, 19,847 unique incidents were anonymised; the final clustering run used 16,811.',
     ),
     result: t(
-      '121 grupper av liknande ärenden, varav 72 saknade befintlig problemkoppling. De är granskningskandidater, inte bevisade rotorsaker. Källärendena är privata.',
-      '121 groups of similar tickets, of which 72 lacked an existing problem link. They are review candidates, not proven root causes. Source tickets are private.',
+      '121 grupper av liknande ärenden, varav 72 saknade problemkoppling: kandidater att granska, inte bevisade rotorsaker. Två metodfynd: platshållare från anonymiseringen kan skapa falska kluster, och en ordlista med 70 interna systemnamn höjde andelen problemkopplade ärenden i det bästa klustret med 16 procentenheter utan att modellen ändrades.',
+      '121 groups of similar tickets, 72 with no existing problem link: candidates for review, not proven root causes. Two findings on method: anonymisation placeholders can create false clusters, and a 70-term glossary of internal system names raised the share of problem-linked tickets in the best cluster by 16 percentage points without changing the model.',
     ),
     tech: [
       'Python',
@@ -212,7 +212,7 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     research: true,
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/philosophy-atlas.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/philosophy-atlas.md',
     pages: ['philosophy'],
   },
   {
@@ -246,37 +246,37 @@ export const PROJECTS: ProjectEntry[] = [
     category: 'ai',
     status: 'experimental',
     research: true,
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/concept-constellation.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/labs/concept-constellation.md',
     pages: ['concepts'],
   },
   {
     id: 'ask-the-law',
     title: t('Allegora', 'Allegora'),
     descriptor: t(
-      'Workers AI, sökning med kontrollerade citat',
-      'Workers AI, search with checked quotes',
+      'Claude och Vertex AI, sökning med kontrollerade citat',
+      'Claude and Vertex AI, search with checked quotes',
     ),
     summary: t(
-      'Frågor över ett urval av svenska lagar och EU:s AI-förordning: svaret kontrolleras ord för ord mot lagtexten och berättas sedan som en allegori med sensmoral.',
-      'Questions over a selection of Swedish statutes and the EU AI Act: the answer is checked word for word against the legal text, then retold as an allegory with a moral.',
+      'Frågor om svensk lag, besvarade ur alla lagar och förordningar som gäller, och om EU:s AI-förordning. Svaret kontrolleras ord för ord mot lagtexten och berättas sedan som en fabel med sensmoral.',
+      'Questions about Swedish law, answered from every law and ordinance in force, and about the EU AI Act. The answer is checked word for word against the legal text, then retold as a fable with a moral.',
     ),
     question: t(
-      'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, på en gratisplan?',
-      'Can a language model answer questions on legal text without inventing quotes, on a free plan?',
+      'Kan en språkmodell svara på frågor om lagtext utan att hitta på citat, och snabbt nog att samtala med?',
+      'Can a language model answer questions on legal text without inventing quotes, and fast enough to hold a conversation?',
     ),
     built: t(
-      'Paragrafer inbäddade offline med bge-m3 och komprimerade till int8; sökningen körs i webbläsaren. En Cloudflare Worker bäddar in frågan, kontrollerar att de skickade paragraferna är publicerad lagtext och låter en modell svara med citat.',
-      'Paragraphs embedded offline with bge-m3 and compressed to int8; the search runs in the browser. A Cloudflare Worker embeds the question, checks that the passages sent are published legal text, and has a model answer with quotes.',
+      'De 1 767 lagar och 3 045 förordningar som gäller, delade per paragraf och inbäddade med Vertex AI. En tjänst på Cloud Run hittar de åtta närmaste paragraferna, från högst fyra lagar. En Cloudflare Worker låter Claude svara ur dem och skickar svaret som utkast medan det skrivs.',
+      'The 1,767 laws and 3,045 ordinances in force, split by paragraph and embedded with Vertex AI. A Cloud Run service finds the eight nearest paragraphs, from at most four laws. A Cloudflare Worker has Claude answer from them and sends the answer as a draft while it is written.',
     ),
     result: t(
-      'Varje citat i ett svar kontrolleras mot sin paragraf innan svaret visas. Ett svar som inte klarar kontrollen visas inte, bara de hittade paragraferna.',
-      'Every quote in an answer is checked against its paragraph before the answer is shown. An answer that fails the check is withheld, and only the paragraphs found are shown.',
+      'Varje citat kontrolleras mot sin paragraf innan svaret får sitt ✓, och fabeln skrivs först efter kontrollen. Ett svar som inte klarar kontrollen tas bort, och bara de hittade paragraferna visas.',
+      'Every quote is checked against its paragraph before the answer gets its ✓, and the fable is written only after the check. An answer that fails the check is removed, and only the paragraphs found are shown.',
     ),
     tech: [
-      'Cloudflare Workers AI',
-      'Gemma 4',
-      'bge-m3',
-      'PCA + int8',
+      'Claude Sonnet 5.5',
+      'Vertex AI',
+      'Cloud Run',
+      'Cloudflare Workers',
       'TypeScript',
       'React',
       'Python',
@@ -284,7 +284,7 @@ export const PROJECTS: ProjectEntry[] = [
     href: '#fraga-lagen',
     category: 'ai',
     status: 'experimental',
-    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/workers-ai.md',
+    code: 'https://github.com/korv9/anton-portfolio/blob/main/docs/products/allegora/allegora-gcp.md',
     pages: ['lawqa'],
   },
   {
@@ -389,28 +389,40 @@ export const PROJECTS: ProjectEntry[] = [
   },
 ]
 
+/** The rail's groups by project id (site/ProjectRail.tsx); homie and platform are not listed. */
 export const PROJECT_GROUPS = [
+  {
+    label: 'Selected projects',
+    ids: ['ask-the-law', 'thesis', 'replik'],
+  },
   {
     label: 'Labs',
     ids: [
-      'symbolic-atlas',
-      'philosophy-atlas',
-      'concept-constellation',
-      'ask-the-law',
       'drugcomb',
-      'replik',
+      'philosophy-atlas',
+      'symbolic-atlas',
+      'concept-constellation',
       'ai-act-clock',
     ],
   },
-  { label: 'Engineering', ids: ['thesis', 'homie', 'platform'] },
 ]
 
-/** Public project listings; the thesis remains available through Education and its URL. */
-export const LISTED_PROJECTS = ['Engineering', 'Labs'].flatMap((label) =>
-  PROJECT_GROUPS.find((group) => group.label === label)!
-    .ids.filter((id) => id !== 'thesis')
-    .map((id) => PROJECTS.find((project) => project.id === id)!),
-)
+/**
+ * The page theme (`data-workspace`, site/editorial.css) of each project, kept apart from the
+ * menu groups so regrouping the rail does not restyle a page. Pages not listed are 'tool'.
+ */
+export const PROJECT_WORKSPACE: Record<string, 'labs' | 'engineering'> = {
+  'symbolic-atlas': 'labs',
+  'philosophy-atlas': 'labs',
+  'concept-constellation': 'labs',
+  'ask-the-law': 'labs',
+  drugcomb: 'labs',
+  replik: 'labs',
+  'ai-act-clock': 'labs',
+  thesis: 'engineering',
+  homie: 'engineering',
+  platform: 'engineering',
+}
 
 /** The project a route belongs to, if any. */
 export function projectForRoute(

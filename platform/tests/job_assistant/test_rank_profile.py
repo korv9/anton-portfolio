@@ -80,3 +80,12 @@ def test_no_approved_profile_empties_the_store(store, profile, monkeypatch):  # 
     data = saved(store)
     assert data["profile"] is None and data["matches"] == []
     assert data["note"]["skipped"] == {"reason": "no approved profile", "status": 200, "at": data["note"]["at"]}
+
+
+def test_the_public_profile_without_corrections_or_file_name_is_matched(store, profile, monkeypatch):  # noqa: F811
+    """The Worker answers a run without the owner token with publicProfile: no corrections, no file name."""
+    public = {k: v for k, v in profile.items() if k != "corrections"}
+    public["cv"] = {k: v for k, v in profile["cv"].items() if k != "filename"}
+    assert run_main(monkeypatch, Answer(200, {"approved": public, "versions": []})) == 0
+    data = saved(store)
+    assert data["profile"]["version"] == profile["version"] and data["matches"]

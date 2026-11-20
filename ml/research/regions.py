@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-from ml.cluster_lab.io import atomic_json, file_hash, read_json
+from ml.experiments.io import atomic_json, file_hash, read_json
 
 
 def bootstrap_ari(fit,space,reference,rng,rounds):

@@ -87,7 +87,7 @@ export const today = (now = new Date()) =>
   new Intl.DateTimeFormat('sv-SE', { timeZone: 'Europe/Stockholm' }).format(now)
 
 /** Whether a row is in a list tab. */
-export function inList(r: Row, list: List) {
+function inList(r: Row, list: List) {
   if (list === 'all') return true
   if (list === 'good')
     return r.match?.class === 'strong' || r.match?.class === 'possible'
@@ -111,7 +111,7 @@ function passes(r: Row, f: Facet, q: Query): boolean {
 }
 
 /** Free text over the title, employer, occupation and the skills the ad names. */
-export function haystack(r: Row) {
+function haystack(r: Row) {
   return [
     r.ad.headline,
     r.ad.employer,

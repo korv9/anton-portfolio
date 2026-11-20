@@ -45,7 +45,7 @@ def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
             return None, {"reason": f"profile route unreachable: {type(error).__name__}", "status": None,
                           "keep": True, "error": False}
         code = response.status_code
-        # 503: the Worker has no D1 binding yet (docs/job-assistant.md, What the owner applies). The
+        # 503: the Worker has no D1 binding yet (docs/products/jobs/job-assistant.md, What the owner applies). The
         # Worker never answers 403, so a 403 is from something in front of it.
         if code in (403, 404, 503):
             return None, {"reason": f"profile route answered {code}", "status": code, "keep": True, "error": False}
@@ -58,6 +58,9 @@ def approved_profile(path: Path | None) -> tuple[dict | None, dict]:
                           "keep": True, "error": True}
         if not profile:
             return None, {"reason": "no approved profile", "status": code, "keep": False, "error": False}
+        # Without the owner token the Worker drops the owner's correction notes and the file name
+        # (worker/jobs.ts, publicProfile); matching needs neither, so the schema check sees none.
+        profile = {"corrections": [], **profile}
     if profile.get("status") != "approved" or problems(profile):
         raise SystemExit("the profile is not an approved, valid schema v1 profile")
     return profile, {"reason": "approved", "status": 200, "keep": False, "error": False}
@@ -106,7 +109,9 @@ def run(profile: dict | None, http=None, now: datetime | None = None, why: dict 
     explained = sum(1 for r in rows.values() if (r.get("explanation") or {}).get("at", "")[:10] == today)
     note["explained"] = 0
     for row in ranked:
-        if row["class"] not in LISTED or row.get("explanation"):
+        made = row.get("explanation") or {}
+        # A verified explanation stands; an unverified one is tried again on a later day, within the cap.
+        if row["class"] not in LISTED or made.get("status") == "verified" or made.get("at", "")[:10] == today:
             continue
         try:
             result = ai.explain(row, ads[row["id"]], http, explained, now)

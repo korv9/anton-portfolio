@@ -4,11 +4,12 @@
  * SWEDEN_PATHS) scrolls to its section. A product whose data cannot be read shows its question
  * and an EmptyState, never sample findings.
  */
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
 import { fetchJson } from '../dataSource'
 import { count } from '../format'
 import PageHead, { type Kpi } from '../ui/PageHead'
+import { scrollToElement } from '../ui/scrollTo'
 import type { Route } from '../router'
 import { SWEDEN_PRODUCTS } from './products'
 import { sectionId } from './template'
@@ -37,7 +38,11 @@ const noteInput = (e: Event) => {
  * address) leaves the page where it is.
  */
 function useScrollToSection(path: string) {
+  // A chapter chosen on the page glides; the page opened on a chapter jumps.
+  const last = useRef<string | null>(null)
   useEffect(() => {
+    const glide = last.current !== null && last.current !== path
+    last.current = path
     const product = SWEDEN_PRODUCTS.find((p) => p.href === path)
     if (!product) return
     const own = document.getElementById(sectionId(product))
@@ -63,7 +68,7 @@ function useScrollToSection(path: string) {
       if (Math.abs(offset) < 4) held += 1
       else {
         held = 0
-        section.scrollIntoView({ behavior: 'instant' })
+        scrollToElement(section, { glide })
       }
       if (held >= 4) stop()
     }, 250)
@@ -133,7 +138,7 @@ export default function SwedenPage({ route }: { route: Route }) {
   return (
     <article className="sweden sw-one">
       <PageHead
-        title="SWEDEN"
+        title="SWEDEN Lab"
         sentence={l(
           'Six questions about Sweden, answered with public data.',
           'Sex frågor om Sverige, besvarade med öppna data.',

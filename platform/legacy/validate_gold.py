@@ -15,8 +15,11 @@ from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import delivery
-from common import GOLD, ROOT, portable_sha, read_json, sha_of
+from portfolio.storage import delivery
+from portfolio.core.config import PUBLIC, ROOT
+from portfolio.core.io import portable_sha, read_json, sha_of
+
+GOLD = PUBLIC / "gold"
 
 
 def read(path):

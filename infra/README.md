@@ -1,6 +1,6 @@
 # Infrastructure as code
 
-Two Terraform stacks describe what [docs/deploy.md](../docs/deploy.md) used to set by hand.
+Two Terraform stacks describe what [docs/platform/deploy.md](../docs/platform/deploy.md) used to set by hand.
 Both keep their state in the private R2 bucket `anton-portfolio-tfstate`, under their own key.
 
 | Stack | Manages | Left outside Terraform |
@@ -13,7 +13,8 @@ requests that touch `infra/`. Applying is a manual run of that workflow from `ma
 
 ## Bootstrap, once
 
-The owner does these steps by hand, in this order.
+An administrator of the Cloudflare account and the GitHub repository does these steps by hand,
+in this order.
 
 1. **State bucket.** Create it once, outside Terraform:
 
@@ -66,7 +67,8 @@ The owner does these steps by hand, in this order.
    value of `TF_WORKER_DOMAIN_IDS` (and of `worker_domain_ids` in a local `terraform.tfvars`).
 
 7. **First plan.** Open a pull request that touches `infra/` (or run the workflow without
-   `apply`) and read both plans in the job summary. A local run works the same way:
+   `apply`) and read the change counts in the job summary. The repository is public, so CI
+   keeps the plan itself out of its logs; read it with a local run:
 
    ```sh
    export AWS_ACCESS_KEY_ID=… AWS_SECRET_ACCESS_KEY=…   # step 3

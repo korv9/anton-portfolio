@@ -16,7 +16,7 @@ const VALIDITY_ORDER: ValidityStatus[] = [
   'supported',
 ]
 
-export type Cell = {
+type Cell = {
   status: QualityStatus
   measured: number
   pass: number
@@ -49,22 +49,6 @@ export function cellOf(checks: QualityCheck[]): Cell | null {
     MEASURED_ORDER.find((s) => checks.some((c) => c.status === s)) ??
     (cell.notMeasured ? 'not_measured' : 'not_applicable')
   return { status, ...cell }
-}
-
-export function matrix(
-  checks: QualityCheck[],
-  products: string[],
-  dimensions: string[],
-): Record<string, Record<string, Cell | null>> {
-  const out: Record<string, Record<string, Cell | null>> = {}
-  for (const p of products) {
-    out[p] = {}
-    for (const d of dimensions)
-      out[p][d] = cellOf(
-        checks.filter((c) => c.product_id === p && c.dimension === d),
-      )
-  }
-  return out
 }
 
 /** The weakest validity status among a product's analyses, or null when it has none. */

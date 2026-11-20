@@ -1,4 +1,4 @@
-import type { SearchProfile } from '../../src/job-intelligence/profile.ts'
+import type { SearchProfile } from '../../src/lib/job-intelligence/profile.ts'
 export function fixtureProfile():SearchProfile {
   const evidence={source_ref:'Synthetic CV page 1',quote:'Synthetic qualification evidence: Python, SQL and data pipelines.'}
   return {schema_version:1,source:{kind:'candidate_supplied_cv',sha256:'e'.repeat(64)},

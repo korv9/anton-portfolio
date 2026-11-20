@@ -52,3 +52,29 @@ def test_manual_subjects_and_subjects_without_ingestion_are_not_checked():
     assert "manual" not in found and "built_only" not in found
     assert heartbeat.duration("36h").total_seconds() == 36 * 3600
     assert heartbeat.duration("8d").days == 8
+
+
+def test_the_active_release_is_compared_for_every_subject_with_an_sla():
+    subjects = {"built": {"sla": {"fresh_within": "8d"}, "group": "weekly", "steps": INGEST[1:]},
+                "fed": {"sla": {"fresh_within": "36h"}, "group": "daily", "steps": INGEST},
+                "hand": {"sla": {"fresh_within": "none"}, "group": "weekly", "steps": INGEST[1:]},
+                "unlisted": {"sla": {"fresh_within": "8d"}, "group": "absent", "steps": INGEST[1:]}}
+    ingested = status(fed={"outcome": "success", "recorded_at": "2026-10-22T04:40:00+00:00"})
+    current = {"groups": {"weekly": {"published_at": "2026-10-10T00:00:00+00:00"},
+                          "daily": {"published_at": "2026-10-19T00:00:00+00:00"}}}
+    found = heartbeat.stale(subjects, ingested, NOW, current)
+    assert set(found) == {"built", "fed", "unlisted"}
+    assert "2026-10-10" in found["built"] and "8d" in found["built"]
+    assert "2026-10-19" in found["fed"] and found["unlisted"] == "group absent has no active release"
+    current["groups"]["weekly"]["published_at"] = "2026-10-20T00:00:00+00:00"
+    current["groups"]["daily"]["published_at"] = "2026-10-22T04:50:00+00:00"
+    assert set(heartbeat.stale(subjects, ingested, NOW, current)) == {"unlisted"}
+    assert heartbeat.stale(subjects, ingested, NOW) == {}  # no manifest: ingestion only
+
+
+def test_the_subjects_the_audit_named_are_checked():
+    import yaml
+    declared = yaml.safe_load((ROOT / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]
+    found = heartbeat.stale(declared, status(), NOW, {"groups": {}})
+    assert {"clusters", "politics", "concepts", "cross_domain"} <= set(found)
+    assert not {n for n, s in declared.items() if s["sla"]["fresh_within"] == "none"} & set(found)

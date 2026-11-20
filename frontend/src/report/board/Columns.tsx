@@ -4,15 +4,12 @@
  * (stacked) when they add up to a whole. Negative values hang below the zero line. A party
  * series takes the party's colour; anything else is one neutral hue. Every column has a hit
  * target the height of the plot and a tooltip with its value.
- *
- * ColumnMultiples draws one small chart per series on a shared scale, the columns version of
- * several lines over time, so no one has to tell overlapping lines apart.
  */
 import type { KeyboardEvent } from 'react'
 import { identity, partyName } from '../../parties/identity'
 import { useSize } from '../motion'
 
-export type ColumnSeries = {
+type ColumnSeries = {
   key: string
   label: string
   party?: string
@@ -278,50 +275,5 @@ export default function Columns({
         )}
       </div>
     </>
-  )
-}
-
-/** One small column chart per series, on a shared scale. */
-export function ColumnMultiples({
-  categories,
-  series,
-  format,
-  label,
-  height = 120,
-}: {
-  categories: string[]
-  series: ColumnSeries[]
-  format: (v: number) => string
-  label: string
-  height?: number
-}) {
-  const all = series.flatMap((s) => s.values.map((v) => v ?? 0))
-  const hi = niceTop(Math.max(0, ...all))
-  const least = Math.min(0, ...all)
-  const lo = least < 0 ? -niceTop(-least) : 0
-  return (
-    <ol className="column-multiples" aria-label={label}>
-      {series.map((s) => (
-        <li key={s.key}>
-          <p>
-            {s.party && (
-              <i
-                style={{ background: identity(s.party).color }}
-                aria-hidden="true"
-              />
-            )}
-            {s.label}
-          </p>
-          <Columns
-            categories={categories}
-            series={[s]}
-            format={format}
-            label={`${label}: ${s.label}`}
-            height={height}
-            domain={[Math.min(0, lo), hi]}
-          />
-        </li>
-      ))}
-    </ol>
   )
 }

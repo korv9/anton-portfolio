@@ -33,9 +33,8 @@ import requests
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "platform" / "lib"))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 SOURCE = "sfs"
 API = "https://data.riksdagen.se"

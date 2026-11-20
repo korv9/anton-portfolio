@@ -225,3 +225,59 @@ def test_why_walks_back_and_history_is_chronological():
     hist = query.history("concept-constellation", store.read_events())
     assert [e["id"] for e in hist][-1] == decision["id"]
     assert query.search("translator centring", store.read_events())[0][1]["id"] == idea["id"]
+
+
+def test_a_journal_line_without_created_at_is_named_not_a_bare_key_error(home):
+    path = home / "private/journal/2026-10-07.jsonl"
+    path.parent.mkdir(parents=True)
+    path.write_text(json.dumps({"id": "idea-2026-10-07-001", "type": "idea", "title": "Old"}) + "\n",
+                    encoding="utf-8")
+    with pytest.raises(ValueError, match=r"2026-10-07\.jsonl:1: created_at missing"):
+        store.read_events()
+
+
+def test_events_are_public_by_default_and_an_owner_label_marks_the_source(home):
+    text = ("Beslut (Anton): Symbolic Atlas blir ett experiment, inte ett flaggskepp.\n"
+            "Decision: Keep MiniLM for the published Symbolic Atlas because it is 4 points behind at a tenth of the cost.\n")
+    events, _ = extract.build(text, [], DAY, AT)
+    store.append(events)
+    assert [e["visibility"] for e in events] == ["public", "public"]
+    assert [e["source"]["kind"] for e in events] == ["user", "assistant_output"]
+    assert list((home / "public/journal").glob("*.jsonl")) and not (home / "private/journal").exists()
+
+
+def test_root_decisions_pages_hold_public_decisions_only_and_track_progress(home, monkeypatch):
+    import public_views
+
+    monkeypatch.setattr(public_views, "ROOT", home / "root")
+    monkeypatch.setattr(public_views, "DOCS", home / "root/docs/idea-lineage")
+    store.append([
+        event(id="decision-2026-10-07-001", type="decision", visibility="public", tags=["data"],
+              reason="the source has no licence", implementation={"commit": "abc1234"}),
+        event(id="decision-2026-10-07-002", type="decision", title="Private choice", visibility="private"),
+        event(id="implementation-2026-10-07-001", type="implementation", title="Shipped",
+              visibility="public", relations={"implements": ["decision-2026-10-07-001"]},
+              implementation={"run": "41051018576"}),
+    ])
+    public_views.build_root()
+    public_views.build_docs()
+    decisions = (home / "root/docs/decisions/DECISIONS.md").read_text(encoding="utf-8")
+    assert "Private choice" not in decisions
+    assert "Why: the source has no licence" in decisions
+    assert "decided → implemented: commit abc1234 → verified: 41051018576" in decisions
+    assert "decision-2026-10-07-001" in (home / "root/docs/decisions/DATA_DECISIONS.md").read_text(encoding="utf-8")
+    assert (home / "root/docs/idea-lineage/symbolic-atlas.md").exists()
+    assert "Private choice" not in (home / "root/docs/idea-lineage/symbolic-atlas.md").read_text(encoding="utf-8")
+
+
+def test_extract_reads_stdin_as_utf8_whatever_the_console_code_page(home):
+    import os
+    import subprocess
+
+    # cp1252 is the Windows pipe default that once turned "strömmas" into "strÃ¶mmas".
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    title = "Allegoras svar strömmas och får ✓ efter kontrollen."
+    done = subprocess.run([sys.executable, str(ROOT / "platform/idea_lineage/extract.py"), "--mode", "auto"],
+                          input=f"Beslut (Anton): {title}\n".encode("utf-8"), capture_output=True, env=env)
+    assert done.returncode == 0, done.stderr
+    assert [e["title"] for e in store.read_events()] == [title]

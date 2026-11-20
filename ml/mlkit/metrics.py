@@ -85,18 +85,32 @@ def permutation_test(
     predicted: np.ndarray,
     iterations: int = 1000,
     seed: int = 0,
+    groups: np.ndarray | None = None,
 ) -> dict:
     """How often does shuffled truth reach the observed score?
 
     Without this a classifier separating eight parties looks impressive at any AUC above a
     half, when the achievable floor depends on class balance and sample size.
+
+    With `groups`, whole groups swap labels and each group needs one label. Without them single
+    rows are shuffled, which treats correlated rows as independent and pins p to its floor,
+    1 / (iterations + 1). A shuffle inside a group would be no test: it changes nothing when the
+    group has one label.
     """
     rng = np.random.default_rng(seed)
     observed = float(metric(truth, predicted))
     shuffled = truth.copy()
+    if groups is not None:
+        _, first, position = np.unique(groups, return_index=True, return_inverse=True)
+        unit_labels = truth[first]
+        if not (unit_labels[position] == truth).all():
+            raise ValueError("permutation_test: a group holds more than one label")
     null = []
     for _ in range(iterations):
-        rng.shuffle(shuffled)
+        if groups is None:
+            rng.shuffle(shuffled)
+        else:
+            shuffled = rng.permutation(unit_labels)[position]
         try:
             null.append(metric(shuffled, predicted))
         except ValueError:
@@ -109,6 +123,7 @@ def permutation_test(
         "null_mean": float(null_array.mean()) if len(null_array) else None,
         "p_value": p_value,
         "iterations": len(null_array),
+        "floor": 1 / (1 + len(null_array)),
     }
 
 

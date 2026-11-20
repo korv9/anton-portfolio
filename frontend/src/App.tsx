@@ -8,12 +8,13 @@ import { CvViewerProvider } from './site/CvViewer'
 import HomePage from './home/HomePage'
 import DebateBackdrop from './home/DebateBackdrop'
 import ProjectStructure from './projects/ProjectStructure'
-import { PROJECT_GROUPS, projectForRoute } from './projects/projectRegistry'
+import { PROJECT_WORKSPACE, projectForRoute } from './projects/projectRegistry'
 import { PageBoundary } from './site/PageBoundary'
 import './site/editorial.css'
 
 // Everything but the start page loads on navigation, so the start page ships none of it.
 const ProjectsHub = lazy(() => import('./hub/ProjectsHub'))
+const LabsPage = lazy(() => import('./hub/LabsPage'))
 const SwedenPage = lazy(() => import('./sweden/SwedenPage'))
 const SymbolicAtlasPage = lazy(() => import('./symbolic/SymbolicAtlasPage'))
 const PhilosophyAtlasPage = lazy(
@@ -41,13 +42,23 @@ const HomiePage = lazy(() =>
 export default function App() {
   const route = useRoute()
   const [language, setLanguage] = useState<Locale>(currentLocale)
+  const toggleHadFocus = useRef(false)
   useEffect(() => {
-    const update = () => setLanguage(currentLocale())
+    const update = () => {
+      toggleHadFocus.current = Boolean(
+        document.activeElement?.matches('.language-toggle'),
+      )
+      setLanguage(currentLocale())
+    }
     window.addEventListener('localechange', update)
     return () => window.removeEventListener('localechange', update)
   }, [])
   useEffect(() => {
     document.documentElement.lang = language
+    // <main> is keyed on the language, so a toggle inside it was replaced and focus fell to body.
+    if (toggleHadFocus.current && document.activeElement === document.body)
+      document.querySelector<HTMLElement>('main .language-toggle')?.focus()
+    toggleHadFocus.current = false
   }, [language])
   // Each page names itself in the tab and the history: "<page> | Anton Ernstsson".
   useEffect(() => {
@@ -67,7 +78,9 @@ export default function App() {
     if (route.page === 'projects' && route.path !== '#projects') return
     // A tab of a report opens where the reader stands, like a tab.
     if (sameReport(from, route.path)) return
-    requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: 'auto' }))
+    requestAnimationFrame(() =>
+      window.scrollTo({ top: 0, behavior: 'instant' }),
+    )
   }, [route.path, route.page])
 
   const { page, path } = route
@@ -75,9 +88,7 @@ export default function App() {
   const workspace =
     page === 'sweden'
       ? 'sweden'
-      : (PROJECT_GROUPS.find((group) =>
-          group.ids.includes(project?.id ?? ''),
-        )?.label.toLowerCase() ?? 'tool')
+      : (PROJECT_WORKSPACE[project?.id ?? ''] ?? 'tool')
   return (
     <CvViewerProvider>
       <div
@@ -85,7 +96,15 @@ export default function App() {
         data-workspace={page === 'home' ? undefined : workspace}
       >
         {page === 'home' && <DebateBackdrop playIntro />}
-        <a className="skip-link" href="#main">
+        <a
+          className="skip-link"
+          href="#main"
+          // The hash belongs to the router: as a plain link this would leave for the start page.
+          onClick={(event) => {
+            event.preventDefault()
+            document.getElementById('main')?.focus()
+          }}
+        >
           {l('Skip to content', 'Hoppa till innehåll')}
         </a>
         {/* The start page has no header: it opens on the name alone. Project pages sit beside
@@ -111,6 +130,7 @@ export default function App() {
               >
                 {page === 'home' && <HomePage path={path} />}
                 {page === 'projects' && <ProjectsHub />}
+                {page === 'labs' && <LabsPage />}
                 {page === 'sweden' && <SwedenPage route={route} />}
                 {page === 'symbolic' && <SymbolicAtlasPage route={route} />}
                 {page === 'clusters' && <ClusterVisualsPage />}

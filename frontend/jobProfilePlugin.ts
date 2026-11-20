@@ -2,7 +2,7 @@ import { readFileSync, realpathSync } from 'node:fs'
 import { resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin } from 'vite'
-import { parseProfile } from './src/job-intelligence/profile.ts'
+import { parseProfile } from './src/lib/job-intelligence/profile.ts'
 
 export const PROFILE_PATH = '/__local/job-intelligence-profile'
 export function localProfileAllowed(

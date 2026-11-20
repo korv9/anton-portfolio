@@ -76,7 +76,7 @@ def test_failing_candidate_is_rejected(tmp_path):
     reg = Registry('debates', tmp_path)
     reg.register(champ, 'champion')
     reg.register(worse, 'candidate')
-    report = accept.check(worse, champ, rules, sha)
+    report = accept.check(worse, champ, rules, sha, {'party': {'gain': 0.05, 'spread': 0.01}})
     assert not report['passed'] and report['failed'] == ['party not more aligned']
     assert reg.decide(worse['run_id'], report) == 'rejected'
     with pytest.raises(ValueError):

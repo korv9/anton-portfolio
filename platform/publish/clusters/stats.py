@@ -33,7 +33,7 @@ from portfolio.core.config import CLUSTER_LAB, DATABASE, PUBLIC, ROOT
 from portfolio.core.config import FEATURES as FEATURE_ROOT
 sys.path.insert(0, str(ROOT))
 from ml.cluster_lab.evaluate import silhouette as lab_silhouette  # noqa: E402
-from ml.cluster_lab.io import atomic_json, atomic_parquet, digest  # noqa: E402
+from ml.experiments.io import atomic_json, atomic_parquet, digest  # noqa: E402
 from ml.cluster_lab.registry import Registry  # noqa: E402
 from ml.research.regions import bootstrap_ari as region_bootstrap_ari  # noqa: E402
 

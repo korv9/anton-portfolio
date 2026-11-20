@@ -24,7 +24,7 @@ Choose an unused port and a unique output directory for concurrent work.
 For production acceptance, use `manifests/current.json` and omit the override:
 the test then requires the deployed site's real configuration to match. The production site
 does not read R2 releases today: it serves the committed data
-([storage-and-serving.md](../../docs/storage-and-serving.md)).
+([storage-and-serving.md](../../docs/platform/storage-and-serving.md)).
 Set `E2E_LIVE_DELIVERY=1` to run the
 shared UI tests against the site's configured live delivery instead of the
 committed snapshots.

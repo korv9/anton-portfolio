@@ -30,9 +30,8 @@ from portfolio.core import db, io
 from portfolio.core.config import DATABASE, PUBLIC, ROOT
 from portfolio.publish.catalog import register
 OUT = PUBLIC / "sweden/measurement"
-sys.path.insert(0, str(ROOT / "platform/lib"))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 GEO = ["national", "county", "municipality", "subarea"]
 

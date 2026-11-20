@@ -6,7 +6,7 @@
     python -m ml.moral.mfrc ci       # adds 95 % bootstrap intervals to agreement.parquet (no refit)
 
 Every choice (gold label, split, C grid, threshold grid, ceiling, eMFD scoring) is fixed in
-docs/philosophy-moral-preregistration.md. No comment text is written outside RAW.
+docs/research/preregistrations/philosophy-moral-preregistration.md. No comment text is written outside RAW.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from ml.moral import FEATURES, FOUNDATIONS, RAW, REPO, embed
+from ml.moral import FEATURES, FOUNDATIONS, RAW, embed
 from ml.moral.stats import SEED, alpha_binary, f1, rank
 
 MFRC_REV = "ddc21d2f03e156732fd1ba95a51c4c29f07975be"
@@ -38,8 +38,7 @@ EMFD = {"care": "care_p", "fairness": "fairness_p", "loyalty": "loyalty_p", "aut
 
 
 def fetch() -> None:
-    sys.path.insert(0, str(REPO / "platform/lib"))
-    import rawstore
+    from portfolio.storage import rawstore
     http = rawstore.session()
     for relative, url in SOURCES.items():
         print(rawstore.fetch(http, "philosophy_moral", relative, url))

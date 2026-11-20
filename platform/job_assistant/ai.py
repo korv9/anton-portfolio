@@ -29,7 +29,7 @@ from ads import store_dir  # noqa: E402
 AGENT = "job-assistant"
 CAP = 1500  # neurons per UTC day for this project, of the 10,000 the account shares
 EXPLAIN_MODEL = "@cf/google/gemma-4-26b-a4b-it"
-# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/workers-ai.md).
+# Neurons per token, fitted to the measured 30.2 neurons for 2,341 in and 331 out (docs/products/allegora/workers-ai.md).
 GEMMA_IN, GEMMA_OUT = 9091 / 1e6, 27273 / 1e6
 EXPLAIN_PER_DAY = 12
 TEXT_CHARS = 1500
@@ -120,6 +120,19 @@ def fold(text: str) -> str:
     return " ".join(text.replace("“", '"').replace("”", '"').split()).casefold()
 
 
+def unquote_labels(answer: str, sources: list[str], facts: str) -> str:
+    """Drop the quote marks around the rules' own labels ("applied ai", "place given"), which the model
+    quotes from the facts it was given; they are not words from the ad or the CV. Each sentence must
+    still quote the ad or the CV to pass verified()."""
+    answer = answer.replace("“", '"').replace("”", '"')
+    pool, known = [fold(s) for s in sources], fold(facts)
+
+    def label(m: re.Match) -> str:
+        q = fold(m.group(1))
+        return m.group(1) if q in known and not any(q in s for s in pool) else m.group(0)
+    return re.sub(r'"([^"]{3,})"', label, answer)
+
+
 def verified(answer: str, sources: list[str]) -> list[str] | None:
     """The answer's quotes when every sentence has one and every one is found in a source; else None."""
     answer = answer.replace("“", '"').replace("”", '"')
@@ -145,10 +158,9 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
     estimate = (len(SYSTEM) + len(prompt)) // 3 * GEMMA_IN + 300 * GEMMA_OUT
     if spent() + estimate > CAP:
         return None
-    url = (f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}"
-           f"/ai/run/{EXPLAIN_MODEL}")
+    # Not workers_ai.post: one attempt, so a timeout is ledgered at its estimate and re-raised as is.
     try:
-        response = http.post(url, timeout=120, json={
+        response = http.post(workers_ai.run_url(EXPLAIN_MODEL), timeout=120, json={
             "messages": [{"role": "system", "content": SYSTEM}, {"role": "user", "content": prompt}],
             "max_tokens": 300, "temperature": 0.1, "chat_template_kwargs": {"enable_thinking": False}})
     except OSError:
@@ -170,6 +182,7 @@ def explain(match: dict, ad: dict, http, explained_today: int, now: datetime | N
                              model=EXPLAIN_MODEL, tokens_out=tokens_out)
     sources = [ad.get("description") or "", ad.get("headline") or ""] + [
         q["quote"] for j in match["skills"] for q in j["cv_quotes"]]
+    text = unquote_labels(text, sources, prompt)
     quotes = verified(text, sources)
     # Every made explanation counts toward EXPLAIN_PER_DAY, checked or not.
     at = (now or datetime.now(timezone.utc)).isoformat(timespec="seconds")

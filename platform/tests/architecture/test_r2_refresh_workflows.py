@@ -17,9 +17,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from data_workflows import REUSABLE, workflow  # noqa: E402
 
 REFRESHERS = {"refresh-jobs.yml": "jobs", "refresh-news.yml": "news",
-              "refresh-welfare.yml": "public-data", "refresh-diva.yml": "diva",
+              "refresh-welfare.yml": "public-data",
               "refresh-job-analysis.yml": "jobs-analysis", "refresh-job-assistant.yml": "job-assistant"}
-WORKFLOWS = [*REFRESHERS, "publish-r2.yml", "build-warehouse.yml", "cluster-jobs.yml"]
+WORKFLOWS = [*REFRESHERS, "ops-publish-r2.yml", "build-warehouse.yml", "heavy-compute.yml"]
 CREDENTIALS = ("R2_ACCOUNT_ID", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET")
 SHA = "a" * 40
 
@@ -66,7 +66,7 @@ def bash():
 def run_script(tmp_path, script, **overrides):
     """Run actual Bash control flow; Python/pip/npm boundaries use offline stubs."""
     tmp_path.mkdir(parents=True, exist_ok=True)
-    (tmp_path / "frontend/public/data/diva").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "frontend/public/data").mkdir(parents=True, exist_ok=True)
     (tmp_path / "frontend/public/data/catalog.json").write_text('{"files": []}')
     output = tmp_path / "output"
     output.write_text("")
@@ -88,18 +88,18 @@ python() {
   printf '%s\t' "$@" >> "$EVENT_LOG"; printf '\n' >> "$EVENT_LOG"
   case "$*" in
     *summarize_news.py*) return "$SUMMARY_EXIT" ;;
-    *release.py\ current*)
+    *portfolio.publish.release\ current*)
       if [ "$CURRENT_EXIT" != 0 ]; then return "$CURRENT_EXIT"; fi
       if [ -n "$EXISTING_SOURCE_GROUP" ] && [[ " $* " == *" --group $EXISTING_SOURCE_GROUP "* ]] && [[ " $* " == *" --manifest-key manifests/pipeline-smoke.json "* ]]; then
         printf '{"release":"%064d"}\n' 2
       elif [ -n "$EXISTING_GROUP" ] && [[ " $* " == *" --group $EXISTING_GROUP "* ]]; then
         printf '{"release":"%064d"}\n' 1
       else printf '{"release":null}\n'; fi ;;
-    *release.py*publish*)
+    *portfolio.publish.release*publish*)
       if [ -n "$FAIL_GROUP" ] && [[ " $* " == *" --group $FAIL_GROUP "* ]]; then return 1; fi
       if [ "$BROKEN_RECEIPT" = 1 ]; then printf 'invalid receipt\n'; return 0; fi
       printf '{"release":"%064d"}\n' 0 ;;
-    *release.py*materialize*) if [ "$FAIL_MATERIALIZE" = 1 ]; then return 1; fi ;;
+    *portfolio.publish.release*materialize*) if [ "$FAIL_MATERIALIZE" = 1 ]; then return 1; fi ;;
     *validate*) return "$CHECK_EXIT" ;;
   esac
 }
@@ -157,34 +157,33 @@ def test_credentials_reject_each_missing_or_whitespace_value(tmp_path, filename)
 
 
 def test_weekly_retention_is_a_dry_run_unless_the_owner_opts_in(tmp_path):
-    (step,) = [s for s in steps("build-warehouse.yml") if "retention.py" in s.get("run", "")]
+    (step,) = [s for s in steps("build-warehouse.yml") if "portfolio.publish.retention" in s.get("run", "")]
     assert "--apply" not in step["run"]
-    assert step["env"] == {"APPLY": "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"}
+    assert step["env"]["APPLY"] == "${{ vars.RETENTION_APPLY == 'true' && '--apply' || '' }}"
     for apply in ("", "--apply"):
         summary = tmp_path / f"summary{apply}"
         result, calls, _ = run_script(tmp_path / f"run{apply}", step["run"], APPLY=apply,
                                       GITHUB_STEP_SUMMARY=str(summary))
         assert result.returncode == 0, result.stderr
-        ((*_, last),) = [call for call in calls if "platform/publish/retention.py" in call]
+        ((*_, last),) = [call for call in calls if "portfolio.publish.retention" in call]
         assert (last == "--apply") == bool(apply)
         assert "### Release retention" in summary.read_text()
 
 
 def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
-    filename = "publish-r2.yml"
-    staged = commands(filename, "platform/publish/release.py", "publish")
-    activated = commands(filename, "platform/publish/release.py", "activate")
+    filename = "ops-publish-r2.yml"
+    staged = commands(filename, "portfolio.publish.release", "publish")
+    activated = commands(filename, "portfolio.publish.release", "activate")
     assert staged and len(activated) == 1, "bootstrap must stage groups then activate one snapshot"
     assert all("--stage-only" in argv and "--code-sha" in argv for _, _, argv in staged)
-    # Execute publication control flow, including dynamic loops and optional DiVA selection.
-    scripts = [step["run"] for step in steps(filename) if "release.py" in step.get("run", "")]
+    # Execute publication control flow, including dynamic loops.
+    scripts = [step["run"] for step in steps(filename) if "portfolio.publish.release" in step.get("run", "")]
     result, calls, _ = run_script(tmp_path, "\n".join(scripts))
     assert result.returncode == 0, result.stderr
     pubs = [call for call in calls if "publish" in call]
     acts = [call for call in calls if "activate" in call]
     groups = {option(call, "--group") for call in pubs}
     assert {"baseline", "jobs", "jobs-analysis", "news", "public-data"} == groups
-    assert "diva" not in groups, "bootstrap must not invent a DiVA group without published files"
     assert len(acts) == 1 and calls.index(acts[0]) > max(calls.index(call) for call in pubs)
     assert all(option(call, "--code-sha") == SHA for call in pubs)
     assert all("--prefer-active" in call for call in calls if "materialize" in call)
@@ -209,10 +208,6 @@ def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
     result, calls, _ = run_script(tmp_path, "\n".join(scripts), CURRENT_EXIT="1")
     assert result.returncode != 0
     assert not any("publish" in call or "activate" in call for call in calls)
-    (tmp_path / "frontend/public/data/diva/clusters.json").write_text('{"clusters":[],"points":[]}')
-    result, calls, _ = run_script(tmp_path, "\n".join(scripts))
-    assert result.returncode == 0, result.stderr
-    assert any("publish" in call and option(call, "--group") == "diva" for call in calls)
     result, calls, _ = run_script(tmp_path, "\n".join(scripts), FAIL_GROUP="public-data")
     assert result.returncode != 0, "a failed staged group must stop bootstrap"
     assert not any("activate" in call for call in calls), "failed stage must not activate a partial bootstrap"
@@ -223,18 +218,16 @@ def test_initial_bootstrap_stages_groups_then_activates_once(tmp_path):
 
 
 def test_publication_specs_have_disjoint_real_file_owners():
-    sys.path.insert(0, str(ROOT / "platform/publish"))
-    import release
+    from portfolio.publish import release
     public = ROOT / "frontend/public/data"
     owners = {}
-    for group in ("baseline", "jobs", "jobs-analysis", "news", "public-data", "diva", "sweden"):
+    for group in ("baseline", "jobs", "jobs-analysis", "news", "public-data", "sweden"):
         spec = json.loads((ROOT / f"configs/delivery/{group}.json").read_text())
         for path in release.selected(public, spec):
             assert path not in owners, f"{path} belongs to both {owners.get(path)} and {group}"
             owners[path] = group
     assert owners["jobs/market.json"] == "jobs"
     assert owners["parliament/news.json"] == "news"
-    assert owners["diva/clusters.json"] == "diva"
     assert owners["sweden/measurement/summary.json"] == "sweden"
     assert owners["gold/marts/jobs.json"] == "jobs-analysis"
 
@@ -242,8 +235,11 @@ def test_publication_specs_have_disjoint_real_file_owners():
 def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failure(tmp_path, monkeypatch, capsys):
     sys.path.insert(0, str(ROOT / "platform/tests/python"))
     from test_release import S3, spec, write
-    import release
+    from portfolio.publish import dq_gate
+    from portfolio.publish import release
 
+    # A local dbt build in platform/target must not count as part of this fixture's release.
+    monkeypatch.setattr(dq_gate, "TARGET", tmp_path / "dbt-target")
     s3 = S3()
     monkeypatch.setattr(release, "client", lambda: (s3, "fixture-bucket"))
     pointers = {}
@@ -282,26 +278,11 @@ def test_release_cli_staging_uses_one_activation_and_preserves_snapshot_on_failu
     assert s3.puts == before and s3.objects[release.CURRENT]["Body"] == previous
 
 
-def test_configured_diva_contract_rejects_phantom_cluster_links_before_upload(tmp_path, monkeypatch):
-    sys.path.insert(0, str(ROOT / "platform/tests/python"))
-    from test_release import S3, write
-    import release
-
-    write(tmp_path, "diva/clusters.json", b'{"clusters":[{"id":0}],"points":[{"x":0,"y":0,"c":99}]}')
-    spec = json.loads((ROOT / "configs/delivery/diva.json").read_text())
-    monkeypatch.chdir(ROOT)
-    s3 = S3()
-    with pytest.raises((ValueError, subprocess.CalledProcessError)):
-        release.publish(s3, "fixture-bucket", "diva", tmp_path, spec, code_sha=SHA)
-    assert not s3.puts and release.CURRENT not in s3.objects
-
-
 @pytest.mark.parametrize("breakage", [None, "empty", "malformed", "missing"])
 def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch, breakage):
     """The tracked exports pass; an emptied, malformed or absent gated file stops prepare."""
     import jsonschema
-    sys.path.insert(0, str(ROOT / "platform/publish"))
-    import release
+    from portfolio.publish import release
 
     shutil.copytree(ROOT / "frontend/public/data/sweden", tmp_path / "sweden")
     shutil.copytree(ROOT / "frontend/public/data/clusters", tmp_path / "clusters")
@@ -326,7 +307,7 @@ def test_configured_sweden_contract_gates_tracked_exports(tmp_path, monkeypatch,
 
 def test_cluster_jobs_accepts_only_known_trees_and_never_pushes_a_failed_raw_rebuild():
     """The corpus rebuild writes the raw tree, so a failed run must not overwrite stored files."""
-    text = (ROOT / ".github/workflows/cluster-jobs.yml").read_text(encoding="utf-8")
+    text = (ROOT / ".github/workflows/heavy-compute.yml").read_text(encoding="utf-8")
     assert '[ "$TREE" != features ] && [ "$TREE" != raw ]' in text
     assert 'if [ "$TREE" = raw ]; then echo "Run failed: raw files are not pushed."; exit 0; fi' in text
     config = yaml.safe_load((ROOT / "configs/cluster_lab/jobs_corpus.yaml").read_text(encoding="utf-8"))

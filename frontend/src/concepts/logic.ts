@@ -20,7 +20,7 @@ export function conceptFromPath(path: string): string | null {
   return path.slice('#concept-'.length) || null
 }
 
-export type Placed = {
+type Placed = {
   id: string
   family: string
   angle: number
@@ -104,8 +104,9 @@ export function relationsOf(
     }))
 }
 
+// The page's language from the document: i18n.ts does not load under the plain Node unit tests.
 export const pct = (v: number, digits = 0) =>
-  `${(v * 100).toFixed(digits).replace('.', ',')} %`
+  `${(v * 100).toFixed(digits).replace('.', globalThis.document?.documentElement.lang === 'sv' ? ',' : '.')} %`
 
 /**
  * The concepts the Concept Journey opens with: first the four that lead one corpus each, with

@@ -36,6 +36,7 @@ import clustering  # noqa: E402
 import embeddings  # noqa: E402
 import evaluation  # noqa: E402
 import staleness  # noqa: E402
+import vectors as text_vectors  # noqa: E402
 
 ROOT = HERE.parents[2]
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
@@ -101,7 +102,7 @@ def main(if_stale: bool = False) -> int:
         return 0
     started = datetime.now(timezone.utc)
     print(f"Embedding {len(ids)} contexts with {embeddings.MODEL} …", flush=True)
-    vectors = embeddings.embed([r[1] for r in rows])
+    vectors = text_vectors.embed([r[1] for r in rows], embeddings.MODEL)
     FEATURES.mkdir(parents=True, exist_ok=True)
     embeddings.write(FEATURES / "occurrence_embeddings.parquet", ids, vectors)
     print("UMAP and HDBSCAN …", flush=True)

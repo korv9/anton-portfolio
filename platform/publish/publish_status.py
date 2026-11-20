@@ -4,14 +4,9 @@ The committed welfare/run.json only changes when data does. This copy is replace
 scheduled run, uncached, so the status page can show when the pipeline last checked the
 sources even on days when nothing moved.
 """
-import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-
-from common import PUBLIC  # noqa: E402
-from upload import client  # noqa: E402
+from portfolio.core.config import PUBLIC  # noqa: E402
+from portfolio.storage.upload import client  # noqa: E402
 
 KEY = "status/welfare-run.json"
 

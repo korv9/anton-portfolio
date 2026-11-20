@@ -1,5 +1,5 @@
 /* The desk's motion, one system: state changes the reader caused settle quickly with the same
-   exponential ease-out, using opacity, transform and the details' block size only. Nothing moves
+   exponential ease-out, using opacity and transform only. Nothing moves
    on first paint: every entrance waits for .ja[data-moved], set on the first open, list change,
    filter or mark. Reduced motion turns it all off (and tokens.css shortens any left over). */
 .ja {
@@ -58,25 +58,6 @@
   animation: ja-fade 200ms var(--ja-ease);
 }
 
-/* "Read the whole ad" opens to its height; the chevron turns. Browsers without
-   ::details-content open at once. */
-.ja-whole {
-  interpolate-size: allow-keywords;
-}
-.ja-whole::details-content {
-  block-size: 0;
-  overflow: hidden;
-  transition:
-    block-size 300ms var(--ja-ease),
-    content-visibility 300ms allow-discrete;
-}
-.ja-whole[open]::details-content {
-  block-size: auto;
-}
-.ja-whole summary svg {
-  transition: transform 200ms var(--ja-ease);
-}
-
 /* On a phone the ad slides in from the right, and the list comes back from the left. */
 @media (max-width: 760px) {
   .ja[data-moved] .ja-desk[data-open='true'] .ja-detail {
@@ -94,11 +75,5 @@
   .ja * {
     animation: none !important;
     transition: none !important;
-  }
-}
-/* Its own rule: a browser that does not know ::details-content drops only this one. */
-@media (prefers-reduced-motion: reduce) {
-  .ja-whole::details-content {
-    transition: none;
   }
 }

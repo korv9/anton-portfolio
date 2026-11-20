@@ -11,18 +11,12 @@ from pathlib import Path
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+from portfolio.core.io import write_json
+
 FIELDS = ['observation_id', 'published_at', 'title', 'description', 'occupation_group',
           'occupation_code', 'occupation_field', 'occupation_field_id', 'employer',
           'municipality', 'region', 'employment_type', 'source', 'ingested_at', 'country']
 SCHEMA = pa.schema([(k, pa.string()) for k in FIELDS])
-
-
-def atomic_json(path, value):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix('.tmp')
-    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding='utf-8')
-    temporary.replace(path)
 
 
 def first(value):
@@ -76,7 +70,7 @@ def import_archive_all(path, name, directory, source_uri=None, batch_size=20000,
             temporary.replace(folder / shard)
             state['shards'].append(shard)
         state.update(lines=lines, status='running')
-        atomic_json(state_path, state)
+        write_json(state_path, state, indent=2, newline=False, atomic=True)
         block.clear()
         print(f'{name}: {lines:,} source lines checkpointed ({time.monotonic()-started:.0f}s)', flush=True)
 
@@ -101,10 +95,10 @@ def import_archive_all(path, name, directory, source_uri=None, batch_size=20000,
         if not state['shards']:
             raise ValueError('Archive contains no advertisements')
         state.update(status='completed', completed_at=datetime.now(timezone.utc).isoformat())
-        atomic_json(state_path, state)
+        write_json(state_path, state, indent=2, newline=False, atomic=True)
         return state
     except BaseException as error:
         # Uncheckpointed rows are replayed; previously committed shards stay valid.
         state.update(status='interrupted' if isinstance(error, KeyboardInterrupt) else 'failed', error=str(error))
-        atomic_json(state_path, state)
+        write_json(state_path, state, indent=2, newline=False, atomic=True)
         raise

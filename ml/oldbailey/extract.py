@@ -2,7 +2,7 @@
 
     python -m ml.oldbailey.extract [--split sample] [--max-neurons 6000] [--limit N] [--dry-run]
 
-Prompt, model settings and the daily budget are fixed in docs/oldbailey-extraction-preregistration.md.
+Prompt, model settings and the daily budget are fixed in docs/research/preregistrations/oldbailey-extraction-preregistration.md.
 One call per trial, no retries on content. Each answer is appended to
 warehouse/features/oldbailey/gemma-<split>.jsonl as {trial_id, offence, verdict, punishment,
 tokens_in, tokens_out, neurons}: the parsed labels (None for a missing or unknown label), not the

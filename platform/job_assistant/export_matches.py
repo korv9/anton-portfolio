@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from publish.job_content import EMAIL, PHONE  # noqa: E402
+from publish.job_content import EMAIL, PHONE, redact_names  # noqa: E402
 
 CLASSES = ("strong", "possible", "stretch", "outside")
 
@@ -78,10 +78,12 @@ def open_ids(ads: dict) -> set[str]:
 
 
 def contacts(name: str, texts: dict) -> list[str]:
-    """An e-mail address or phone number left in a published text, by ad id."""
+    """An e-mail address, phone number or marked contact name left in a published text, by ad id."""
     return [f"{name}: {kind} in ad {key}" for key, t in texts.items()
             for kind, pattern in (("an e-mail address", EMAIL), ("a phone number", PHONE))
-            if re.search(pattern, t.get("description") or "")]
+            if re.search(pattern, t.get("description") or "")] + [
+        f"{name}: a contact name in ad {key}" for key, t in texts.items()
+        if redact_names(t.get("description") or "")[1]]
 
 
 def remaining_problems(texts: dict, remaining: dict, ads: dict) -> list[str]:

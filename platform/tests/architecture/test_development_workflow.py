@@ -45,7 +45,7 @@ def test_quick_checks_never_start_browser_build_or_live_delivery():
         run = subprocess.run(['node', 'scripts/verify.mjs', mode, '--plan'],
                              cwd=ROOT, capture_output=True, text=True, check=True)
         return json.loads(run.stdout)
-    assert plan('quick') == ['check', 'format:check', 'test:unit']
+    assert plan('quick') == ['check', 'format:check', 'test:unit', 'knip']
     full = plan('full')
     assert full.count('build') == 1
     assert {'python-tests', 'test:e2e', 'test:security:built'} <= set(full)
@@ -62,6 +62,14 @@ def test_low_disk_fails_before_any_checks_start(monkeypatch, tmp_path):
     with pytest.raises(RuntimeError, match='no files were removed'):
         module.check('full', tmp_path)
     assert list(tmp_path.iterdir()) == []
+
+
+def test_full_fails_before_the_build_when_its_path_tools_are_missing(monkeypatch, tmp_path):
+    module = script('preflight')
+    monkeypatch.setattr(module.shutil, 'disk_usage', lambda _: SimpleNamespace(free=1 << 40))
+    monkeypatch.setattr(module.shutil, 'which', lambda name: None if name == 'dbt' else name)
+    with pytest.raises(RuntimeError, match='dbt is unavailable'):
+        module.check('full', tmp_path)
 
 
 def test_source_checkout_keeps_worker_and_verification_line_endings_portable():

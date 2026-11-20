@@ -65,8 +65,10 @@ def cluster(space: np.ndarray, spec: dict, seed: int) -> np.ndarray:
 
 
 def evaluate_candidate(vectors: np.ndarray, pipeline: dict, seeds: list[int], confounders: dict,
-                       groups_for_centring=None) -> tuple[np.ndarray, np.ndarray, dict]:
-    """Returns (labels of the first seed, clustered space of the first seed, metrics)."""
+                       groups_for_centring=None, keep_labelings: list | None = None
+                       ) -> tuple[np.ndarray, np.ndarray, dict]:
+    """Returns (labels of the first seed, clustered space of the first seed, metrics). Every seed's
+    labels go into `keep_labelings`, for `accept.common_rows`."""
     rep = represent(vectors, pipeline['representation']['kind'], groups_for_centring)
     labelings, first_space = [], None
     for seed in seeds:
@@ -74,6 +76,8 @@ def evaluate_candidate(vectors: np.ndarray, pipeline: dict, seeds: list[int], co
         labelings.append(cluster(space, pipeline['clustering'], seed))
         if first_space is None:
             first_space = space
+    if keep_labelings is not None:
+        keep_labelings.extend(labelings)
     labels = labelings[0]
     metrics = ev.structure(labels)
     metrics['seed_stability'] = ev.seed_stability(labelings)

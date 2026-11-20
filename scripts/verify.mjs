@@ -12,10 +12,20 @@ import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const mode = process.argv[2]
-const quick = ['check', 'format:check', 'test:unit']
+const quick = ['check', 'format:check', 'test:unit', 'knip']
 const plans = {
   quick,
-  full: [...quick, 'build', 'python-tests', 'test:security:built', 'test:e2e'],
+  // Everything here but knip also runs in ci.yml; none of these steps needs a secret.
+  full: [
+    ...quick,
+    'build',
+    'wrangler-dry-run',
+    'lint-imports',
+    'python-tests',
+    'dbt-compile',
+    'test:security:built',
+    'test:e2e',
+  ],
   delivery: ['data:check', 'pipeline-dry-run', 'politics:check'],
 }
 if (!(mode in plans)) {
@@ -38,7 +48,7 @@ if (preflight.error) throw preflight.error
 if (preflight.status !== 0) process.exit(preflight.status ?? 1)
 
 if (mode === 'full') {
-  const { chromium } = await import('playwright')
+  const { chromium } = await import('@playwright/test')
   const executable =
     process.env.PLAYWRIGHT_CHROMIUM_PATH ?? chromium.executablePath()
   if (!existsSync(executable)) {
@@ -59,27 +69,44 @@ if (!npmCli)
 const logs = join(root, 'tmp/checks', `${Date.now()}-${process.pid}`)
 mkdirSync(logs, { recursive: true })
 for (const step of plans[mode]) {
-  const command =
-    step === 'python-tests'
-      ? [
-          python,
-          [
-            '-m',
-            'pytest',
-            'platform/tests',
-            '-q',
-            `--basetemp=${join(logs, 'pytest')}`,
-          ],
-        ]
-      : step === 'pipeline-dry-run'
-        ? [python, ['platform/pipeline.py', 'run', '--all', '--dry-run']]
-        : [process.execPath, [npmCli, 'run', step]]
+  const command = {
+    'python-tests': [
+      python,
+      [
+        '-m',
+        'pytest',
+        'platform/tests',
+        '-q',
+        `--basetemp=${join(logs, 'pytest')}`,
+      ],
+    ],
+    'pipeline-dry-run': [
+      python,
+      ['platform/pipeline.py', 'run', '--all', '--dry-run'],
+    ],
+    'wrangler-dry-run': [
+      process.execPath,
+      ['node_modules/wrangler/bin/wrangler.js', 'deploy', '--dry-run'],
+    ],
+    'lint-imports': ['lint-imports', []],
+    'dbt-compile': ['dbt', ['compile', '--profiles-dir', '.']],
+  }[step] ?? [process.execPath, [npmCli, 'run', step]]
+  // As in CI, dbt compiles against an empty warehouse of its own, not the local one.
+  const dbt = step === 'dbt-compile'
+  if (dbt) mkdirSync(join(logs, 'raw'))
   const file = join(logs, `${step.replaceAll(':', '-')}.log`)
   const descriptor = openSync(file, 'w')
   const started = Date.now()
   const result = spawnSync(command[0], command[1], {
-    cwd: root,
-    env: process.env,
+    cwd: dbt ? join(root, 'platform') : root,
+    env: dbt
+      ? {
+          ...process.env,
+          DBT_SEND_ANONYMOUS_USAGE_STATS: 'false',
+          PORTFOLIO_DB: join(logs, 'ci.duckdb'),
+          PORTFOLIO_RAW: join(logs, 'raw'),
+        }
+      : process.env,
     stdio: ['ignore', descriptor, descriptor],
   })
   closeSync(descriptor)

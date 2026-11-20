@@ -2,7 +2,7 @@ version: 2
 
 # Bronze for the welfare subject: files fetched by platform/ingest/{scb,fohm,fk,ess,kolada},
 # read in place by dbt-duckdb. Each source directory has a _manifest.jsonl recording URL,
-# fetch time and SHA-256 per file; nothing is read here that is not recorded there.
+# fetch time and SHA-256 per file. The globs below do not check that manifest.
 
 sources:
   - name: scb

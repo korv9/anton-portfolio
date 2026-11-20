@@ -1,23 +1,18 @@
 """portfolio.core reproduces what the scripts did by hand, byte for byte, so moving a script onto it
 changes no published file."""
+import hashlib
 import json
-import sys
-from pathlib import Path
 
 import pytest
 
 from portfolio.core import config, db, io
-
-sys.path.insert(0, str(config.PLATFORM / "lib"))
-import common  # noqa: E402  (the helpers being replaced; removed in the last step)
 
 PAYLOAD = {"name": "Malmö", "values": [1, 2.5, None], "nested": {"ö": "ä"}}
 
 
 def test_root_is_the_checkout_whatever_the_depth():
     assert (config.ROOT / "platform/pipeline.yml").is_file()
-    assert config.ROOT == common.ROOT
-    assert config.PUBLIC == common.PUBLIC
+    assert config.PUBLIC == config.ROOT / "frontend/public/data"
 
 
 def test_paths_keep_the_scripts_defaults_and_their_overrides(monkeypatch, tmp_path):
@@ -31,17 +26,15 @@ def test_root_override_for_an_install_outside_the_checkout(monkeypatch, tmp_path
     assert config._repository() == tmp_path.resolve()
 
 
-def test_compact_json_matches_common_write_json(tmp_path):
-    old = common.write_json(tmp_path / "old.json", PAYLOAD).read_bytes()
+def test_compact_json_without_a_newline(tmp_path):
+    # What the welfare, parliament, taxes and sfs exports write, as platform/lib/common.py did.
     new = io.write_json(tmp_path / "new.json", PAYLOAD, newline=False).read_bytes()
-    assert new == old
+    assert new == json.dumps(PAYLOAD, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 
 
-def test_indented_json_matches_common_write_json(tmp_path):
-    # Same bytes on Linux; on Windows common.write_json wrote CRLF, which io no longer does.
-    old = common.write_json(tmp_path / "old.json", PAYLOAD, indent=2).read_bytes()
+def test_indented_json_ends_in_one_lf_newline(tmp_path):
     new = io.write_json(tmp_path / "new.json", PAYLOAD, indent=2).read_bytes()
-    assert new == old.replace(b"\r\n", b"\n") and b"\r" not in new
+    assert new == (json.dumps(PAYLOAD, ensure_ascii=False, indent=2) + "\n").encode("utf-8")
 
 
 def test_export_json_matches_the_exports_dump(tmp_path):
@@ -50,12 +43,13 @@ def test_export_json_matches_the_exports_dump(tmp_path):
     assert io.write_json(tmp_path / "x.json", PAYLOAD).read_text(encoding="utf-8") == dumped
 
 
-def test_hashes_and_reading_match_common(tmp_path):
+def test_hashes_and_reading(tmp_path):
     path = tmp_path / "crlf.json"
-    path.write_bytes(b'\xef\xbb\xbf{"a": 1}\r\n')
-    assert io.read_json(path) == common.read_json(path) == {"a": 1}
-    assert io.portable_sha(path) == common.portable_sha(path)
-    assert io.raw_sha(path) == common.raw_sha(path)
+    raw = b'\xef\xbb\xbf{"a": 1}\r\n'
+    path.write_bytes(raw)
+    assert io.read_json(path) == {"a": 1}
+    assert io.portable_sha(path) == hashlib.sha256(raw.replace(b"\r\n", b"\n")).hexdigest()
+    assert io.raw_sha(path) == hashlib.sha256(raw).hexdigest()
     assert io.unwrap({"data": [1]}) == [1]
 
 

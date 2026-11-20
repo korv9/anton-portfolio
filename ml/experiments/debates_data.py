@@ -16,7 +16,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import digest
+from ml.experiments.io import digest
 from . import embed, splits
 from .registry import EXPERIMENTS, LOCAL
 

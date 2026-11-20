@@ -4,7 +4,8 @@
 
 For every task in the run that finished and passed its gate, the aggregate output is written
 to frontend/public/data/ml/<task>.json. A task that failed its gate, or ran only partly, is
-refused and named. The model register (ml/models.json) is rebuilt from the committed cards
+refused and named. A task whose card says its gate failed loses any file an earlier run
+published. The model register (ml/models.json) is rebuilt from the committed cards
 every time, so the site shows each model's current verdict, passed or not, with a link to
 its card.
 
@@ -39,6 +40,8 @@ def _polarization(job_dir: Path, result: dict) -> dict:
             "governing_parties": row["governing_parties"],
             "passages": row["passages"],
             "permutation_p": row["permutation_p"],
+            "auc_low": row.get("low"),
+            "auc_high": row.get("high"),
         })
     return {
         "sessions": sessions,
@@ -51,7 +54,17 @@ def _polarization(job_dir: Path, result: dict) -> dict:
     }
 
 
-PAYLOADS = {"polarization": _polarization}
+def _government_defeat(job_dir: Path, result: dict) -> dict:
+    detail = json.loads((job_dir / "detail.json").read_text(encoding="utf-8"))
+    return {
+        "sessions": [{**row, "auc": round(row["auc"], 4)} for row in detail["per_session"]],
+        "baseline": result["best_baseline"],
+        "terms": detail["terms"],
+        "permutation_p": detail["permutation"]["p_value"],
+    }
+
+
+PAYLOADS = {"polarization": _polarization, "government_defeat": _government_defeat}
 
 
 def read_card(path: Path) -> dict:
@@ -59,7 +72,7 @@ def read_card(path: Path) -> dict:
     text = path.read_text(encoding="utf-8")
     title = text.splitlines()[0].lstrip("# ").strip()
     header = re.search(r"Task `([^`]+)` · run `([^`]+)` · gate \*\*(\w+)\*\*", text)
-    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| ([\d.]+) \| ([^|]+) \|$", text, re.M)
+    rows = re.findall(r"^\| ([^|]+) \| ([^|]+) \| (-?[\d.]+) \| ([^|]+) \|$", text, re.M)
     results = [{"model": m.strip(), "metric": k.strip(), "value": float(v),
                 "interval": i.strip() if i.strip() != "—" else None}
                for m, k, v, i in rows if m.strip() != "Model"]
@@ -110,7 +123,11 @@ def main() -> None:
 
     register = [read_card(path) for path in sorted(CARDS.glob("*.md"))]
     for entry in register:
-        entry["published"] = (OUT / f"{entry['task']}.json").is_file()
+        published = OUT / f"{entry['task']}.json"
+        if not entry["gate_passed"] and published.is_file():
+            published.unlink()  # a file from an earlier passed run must not outlive a failed verdict
+            print(f"  {entry['task']}: gate not passed, removed its published file")
+        entry["published"] = published.is_file()
     write(OUT / "models.json", register)
     print(f"register: {len(register)} models; promoted {promoted or 'nothing'}")
 

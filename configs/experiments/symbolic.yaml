@@ -1,5 +1,5 @@
 # Acceptance criteria for a Symbol Lab candidate, fixed on 2026-10-29 before any final evaluation
-# ran (docs/cluster-experiments.md). Champion: the published v4 pipeline refitted on the evaluation side.
+# ran (docs/research/clustering/method.md). Champion: the published v4 pipeline refitted on the evaluation side.
 frozen_at: '2026-10-29'
 split_groups: [document_id]
 criteria:

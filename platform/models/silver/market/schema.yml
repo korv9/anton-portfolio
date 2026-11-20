@@ -7,3 +7,20 @@ models:
       - unique_combination:
           arguments:
             columns: [latest_year]
+
+unit_tests:
+  - name: market_period_skips_months_without_rows
+    description: >
+      The last month is the latest month with rows before the current one. A month with no rows
+      (the stream counts October 2026 from the 7th, so not at all) is skipped, and a month that
+      has not ended is never chosen.
+    model: int_market_periods
+    given:
+      - input: ref('stg_market_ads')
+        rows:
+          - {month: '2020-08-01', ads: 1}
+          - {month: '2020-09-01', ads: 1}
+          - {month: '2999-01-01', ads: 1}
+    expect:
+      rows:
+        - {latest_year: 2020, last_month_of_latest_year: 9}

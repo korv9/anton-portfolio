@@ -1,10 +1,11 @@
 /**
- * The job assistant's data (docs/job-assistant.md): the released files job-assistant/*.json,
+ * The job assistant's data (docs/products/jobs/job-assistant.md): the released files job-assistant/*.json,
  * read through the delivery manifest, and the owner's records at /api/jobs/*, read and written
  * only with the owner token, kept on this device until the owner forgets it.
  */
 import { fetchJson } from '../dataSource'
 import type { Delivered, Optional, Records } from './model'
+import type { MarketFiles } from './market-figures'
 
 export * from './model'
 
@@ -55,7 +56,7 @@ export async function loadRecords(): Promise<Records> {
   }
 }
 
-// localStorage: the owner pastes the token once per device (docs/job-assistant.md, Security of
+// localStorage: the owner pastes the token once per device (docs/products/jobs/job-assistant.md, Security of
 // writes); it is sent only to this site's /api/jobs/ routes and removed by "Forget the token".
 const TOKEN_KEY = 'job-assistant-owner-token'
 // Where storage is blocked (some private windows) the token lasts for this page only.
@@ -92,6 +93,41 @@ export async function write(
   const result = await response.json().catch(() => ({}))
   if (!response.ok) throw new Error(result.error ?? `HTTP ${response.status}`)
   return result
+}
+
+const MARKET: Record<keyof MarketFiles, string> = {
+  weekly: 'jobs/market-weekly.json',
+  market: 'jobs/market.json',
+  week: 'jobs/ads-week.json',
+  month: 'jobs/ads-month.json',
+  year: 'jobs/ads-year.json',
+  skills: 'jobs/skill-trends.json',
+  terms: 'jobs/rising-terms.json',
+  employers: 'jobs/employer-top.json',
+  closing: 'job-assistant/time-to-close.json',
+}
+let market: Promise<{
+  files: MarketFiles
+  missing: (keyof MarketFiles)[]
+}> | null = null
+/**
+ * The market tab's files, fetched once, when the tab first opens. A file that fails is left out
+ * and named in `missing`, so its cards are not drawn.
+ */
+export function loadMarket() {
+  const keys = Object.keys(MARKET) as (keyof MarketFiles)[]
+  market ??= Promise.allSettled(keys.map((k) => fetchJson(MARKET[k]))).then(
+    (results) => ({
+      files: Object.fromEntries(
+        keys.flatMap((k, i) => {
+          const r = results[i]
+          return r.status === 'fulfilled' ? [[k, r.value]] : []
+        }),
+      ) as MarketFiles,
+      missing: keys.filter((_, i) => results[i].status === 'rejected'),
+    }),
+  )
+  return market
 }
 
 type Texts = Delivered['texts']['texts']

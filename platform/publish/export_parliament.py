@@ -27,16 +27,15 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import duckdb  # noqa: E402
 
-from common import PUBLIC, ROOT, write_json  # noqa: E402
+from portfolio.core.config import PUBLIC, ROOT
+from portfolio.core.io import write_json  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RAW = Path(os.environ.get("PORTFOLIO_RAW", ROOT / "warehouse/raw"))
@@ -279,8 +278,8 @@ def main() -> None:
         "results": elections,
         "note": "SCB for 1973-2022, Valmyndigheten for later elections. Ny demokrati's votes in "
                 "1991 and 1994 are inside OTHER in SCB's tables; its seats are shown.",
-    })
-    write_json(OUT / "polls.json", {"party_names": PARTY_NAMES, "polls": polls})
+    }, newline=False)
+    write_json(OUT / "polls.json", {"party_names": PARTY_NAMES, "polls": polls}, newline=False)
 
     sessions = records(connection, """
         select session, start_year, first_vote, last_vote, roll_calls, election_year,
@@ -298,7 +297,7 @@ def main() -> None:
     write_json(OUT / "sessions.json", {
         "sessions": sessions, "party_record": record, "party_pairs": pairs,
         "government_record": government_record,
-    })
+    }, newline=False)
 
     issues = records(connection, """
         select issue_key, issue_name_sv, issue_name_en, summary_sv, expenditure_areas,
@@ -416,7 +415,7 @@ def main() -> None:
                              "series": [{"year": r["year"], "value": r["value"]}
                                         for r in welfare_by_key[indicator]]}
                             for indicator in issue["welfare_indicators"] if welfare_by_key.get(indicator)]
-    write_json(OUT / "studies.json", studies_page(connection))
+    write_json(OUT / "studies.json", studies_page(connection), newline=False)
 
     write_json(OUT / "issues.json", {
         "issues": issues,
@@ -429,7 +428,7 @@ def main() -> None:
             "budget": "Outturn (Statskontoret) of the expenditure areas the issue's committees decide.",
             "welfare": "Descriptive: read side by side, not as an effect of decisions.",
         },
-    })
+    }, newline=False)
 
     ROLL_CALLS.parent.mkdir(parents=True, exist_ok=True)
     connection.execute(f"""

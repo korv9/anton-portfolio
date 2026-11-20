@@ -74,9 +74,13 @@ def read_events() -> list[dict]:
             for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
                 if line.strip():
                     try:
-                        events.append(json.loads(line))
+                        event = json.loads(line)
                     except json.JSONDecodeError as exc:
                         raise ValueError(f"{path}:{n}: {exc}") from exc
+                    # Lines are never edited by the tools, so name the line for a manual fix.
+                    if not isinstance(event.get("created_at"), str):
+                        raise ValueError(f"{path}:{n}: created_at missing")
+                    events.append(event)
     return sorted(events, key=lambda e: e["created_at"])  # stable: journal order breaks ties
 
 

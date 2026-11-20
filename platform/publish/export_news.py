@@ -9,10 +9,9 @@ topics, how many items named each party in the last 30 days, and each source's l
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from pathlib import Path
 
 from portfolio.core import db, io
-from portfolio.core.config import DATABASE, PUBLIC, ROOT
+from portfolio.core.config import DATABASE, PUBLIC
 
 OUT = PUBLIC / "parliament/news.json"
 MAX_ITEMS = 600
@@ -32,7 +31,7 @@ def main() -> None:
             select item_id, source, title, summary, url, published_at, parties, topics
             from gold.fct_news_item
             where is_political and published_at >= now() - interval {DAYS} day
-              and published_at <= now() + interval 1 day
+              and published_at <= now()  -- a future-dated item fails the delivery check
             order by published_at desc limit {MAX_ITEMS}""").fetchall():
         if summary and len(summary) > SUMMARY_LIMIT:
             summary = summary[:SUMMARY_LIMIT].rsplit(" ", 1)[0] + " …"
@@ -52,8 +51,8 @@ def main() -> None:
     for source, last_fetch, last_success, last_status, last_error, fetches, failed in \
             connection.execute("select * from gold.mart_news_fetch_status order by 1").fetchall():
         status[source] = {**SOURCES.get(source, {"name": source, "url": None}),
-                          "last_fetch": last_fetch and last_fetch.isoformat(),
-                          "last_success": last_success and last_success.isoformat(),
+                          "last_fetch": last_fetch and last_fetch.astimezone(timezone.utc).isoformat(),
+                          "last_success": last_success and last_success.astimezone(timezone.utc).isoformat(),
                           "last_status": last_status, "last_error": last_error,
                           "fetches": fetches, "failed_fetches": failed}
     io.write_json(OUT, {

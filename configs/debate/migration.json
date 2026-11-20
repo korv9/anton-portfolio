@@ -1,0 +1,9 @@
+{
+  "topic": "migration",
+  "label": "Migration och integration",
+  "from": "2022-09-26",
+  "to": "2026-08-13",
+  "debate_kinds": ["ärendedebatt", "aktuell debatt"],
+  "title_include": "migration|asyl|invandr|integration|medborgarskap|uppehållstillstånd",
+  "title_exclude": "aborträtt"
+}

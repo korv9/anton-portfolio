@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import json
 import re
-import sys
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -21,8 +20,7 @@ PUBLIC = ROOT / "frontend/public/data"
 GOLD = PUBLIC / "gold/tables"
 CACHE = ROOT / "ml/.cache"
 
-sys.path.insert(0, str(ROOT / "platform/lib"))
-import delivery  # noqa: E402
+from portfolio.storage import delivery  # noqa: E402
 
 
 def gold(name: str):

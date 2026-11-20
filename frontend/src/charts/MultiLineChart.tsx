@@ -8,9 +8,9 @@ import { MarkerShape, spreadLabels } from './marks'
  * Categorical series colours: the --series tokens (tokens.css), in fixed order and never
  * cycled; a sixth series is not drawn.
  */
-export const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
+const SERIES_COLORS = [1, 2, 3, 4, 5].map((n) => `var(--series-${n})`)
 
-export type SeriesPoint = {
+type SeriesPoint = {
   /** Period start, ISO date; the x position. */
   date: string
   /** Period label shown in the tooltip ('2024-03', '2021-2024', 'ESS11 (2023-2024)'). */
@@ -20,7 +20,7 @@ export type SeriesPoint = {
   high?: number | null
   breakBefore?: boolean
 }
-export type Series = {
+type Series = {
   key: string
   name: string
   points: SeriesPoint[]
@@ -138,43 +138,46 @@ export default function MultiLineChart({
 
   return (
     <figure className="multi-chart" ref={container}>
-      <ul className="chart-legend" aria-label={l('Series', 'Serier')}>
-        {series.map((s) => (
-          <li key={s.key}>
-            {s.party ? (
-              <svg
-                className="legend-line"
-                width="28"
-                height="12"
-                aria-hidden="true"
-              >
-                <line
-                  x1="1"
-                  x2="27"
-                  y1="6"
-                  y2="6"
-                  stroke={paint(s.key)}
-                  strokeWidth="2"
-                  strokeDasharray={partyDash(s.party)}
+      {/* One series is named by the chart's title; a legend would repeat it. */}
+      {series.length > 1 && (
+        <ul className="chart-legend" aria-label={l('Series', 'Serier')}>
+          {series.map((s) => (
+            <li key={s.key}>
+              {s.party ? (
+                <svg
+                  className="legend-line"
+                  width="28"
+                  height="12"
+                  aria-hidden="true"
+                >
+                  <line
+                    x1="1"
+                    x2="27"
+                    y1="6"
+                    y2="6"
+                    stroke={paint(s.key)}
+                    strokeWidth="2"
+                    strokeDasharray={partyDash(s.party)}
+                  />
+                  <MarkerShape
+                    shape={identity(s.party).marker}
+                    x={14}
+                    y={6}
+                    size={3.5}
+                    fill={paint(s.key)}
+                  />
+                </svg>
+              ) : (
+                <span
+                  className="legend-swatch"
+                  style={{ background: paint(s.key) }}
                 />
-                <MarkerShape
-                  shape={identity(s.party).marker}
-                  x={14}
-                  y={6}
-                  size={3.5}
-                  fill={paint(s.key)}
-                />
-              </svg>
-            ) : (
-              <span
-                className="legend-swatch"
-                style={{ background: paint(s.key) }}
-              />
-            )}
-            {s.name}
-          </li>
-        ))}
-      </ul>
+              )}
+              {s.name}
+            </li>
+          ))}
+        </ul>
+      )}
       <div className="chart-wrap">
         <svg
           ref={svg}

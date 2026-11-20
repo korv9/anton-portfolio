@@ -12,6 +12,37 @@
   display: block;
   cursor: crosshair;
 }
+.atlas-occurrences {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+.atlas-occurrences button {
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border: 1px solid var(--stage-line, currentColor);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.atlas-occurrences button[aria-pressed='true'] {
+  background: var(--ink);
+  color: var(--page);
+}
+.atlas-occurrences button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.atlas-occurrences small {
+  color: inherit;
+  opacity: 0.75;
+}
 .atlas-status {
   margin: 0;
   color: var(--stage-muted);

@@ -8,6 +8,11 @@ models:
         data_tests: [unique, not_null]
       - name: source_url
         data_tests: [not_null]
+      - name: rel_dok_id
+        description: The document debated (e.g. HC01SfU18, a committee report); empty outside ärendedebatter.
+      - name: speech_number
+        description: Riksdagen's anforande_nummer, the speech's place in its protocol.
+        data_tests: [not_null]
       - name: archive_hash
         description: SHA-256 of the archive as fetched (warehouse/raw/riksdagen/_manifest.jsonl).
         data_tests: [not_null]

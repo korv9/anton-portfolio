@@ -117,7 +117,7 @@ type Groups = {
     run_id: string | null
   }
 }
-/** The pre-registered Three Swedens tests (docs/sweden-three-spaces-preregistration.md). */
+/** The pre-registered Three Swedens tests (docs/research/preregistrations/sweden-three-spaces-preregistration.md). */
 type Spaces = {
   diagnostics: {
     n: number
@@ -351,6 +351,7 @@ export default function Similarity({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={
         view === 'map'
           ? l(

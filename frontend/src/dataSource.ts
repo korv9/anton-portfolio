@@ -1,7 +1,7 @@
 ﻿import { assertJsonResponse } from './jsonResponse'
 
 /** Logical dataset paths share one pinned delivery snapshot for the page lifetime. */
-export type DeliveryFormat = 'json' | 'parquet' | 'shard'
+type DeliveryFormat = 'json' | 'parquet' | 'shard'
 type Entry = { key: string; sha256: string; bytes: number }
 type Pointer = Entry & {
   release: string
@@ -234,6 +234,7 @@ export async function objectStorageUrl(path: string): Promise<string> {
   return delivery.bases.shard + clean
 }
 
+/** @public Read by the r2-delivery e2e test through a dynamic import. */
 export async function deliveryState() {
   const delivery = await load()
   return {
@@ -245,7 +246,10 @@ export async function deliveryState() {
   }
 }
 
-/** Reload clears every component cache together; the current page never adopts half a release. */
+/**
+ * Reload clears every component cache together; the current page never adopts half a release.
+ * @public Also called by the r2-delivery e2e test through a dynamic import.
+ */
 export async function refreshDelivery(): Promise<boolean> {
   const delivery = await load()
   if (!delivery.manifestUrl) return false

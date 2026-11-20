@@ -16,5 +16,10 @@
 /data/*
   Cache-Control: public, max-age=300, must-revalidate
 
+# `!` drops the /data/* value first: Cloudflare joins matching rules, and no-store must stand alone.
 /data/compliance/release.json
+  ! Cache-Control
   Cache-Control: no-store
+
+/favicon.svg
+  Cache-Control: public, max-age=86400

@@ -12,11 +12,10 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 ROOT = Path(__file__).resolve().parents[3]
-sys.path.insert(0, str(ROOT / "platform/lib"))
 sys.path.insert(0, str(ROOT / "platform/ingest/taxes"))
 
 import duckdb  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 import taxes_ingest as taxes  # noqa: E402
 
 

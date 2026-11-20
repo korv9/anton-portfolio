@@ -1,4 +1,4 @@
-"""Read-only semantic checks for jobs, news and DiVA before dataset publication."""
+"""Read-only semantic checks for jobs and news before dataset publication."""
 from __future__ import annotations
 
 import argparse
@@ -9,8 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from common import read_json  # noqa: E402
+from portfolio.core.io import read_json  # noqa: E402
 
 LOCAL = ZoneInfo("Europe/Stockholm")
 
@@ -239,18 +238,6 @@ def news(data, summary, now):
     return result
 
 
-def diva(data):
-    finite(data)
-    unique(data["clusters"], "id", "diva.clusters")
-    ids = {cluster["id"] for cluster in data["clusters"]}
-    require(all(type(i) is int and i >= 0 for i in ids), "diva.clusters: invalid cluster id")
-    for point in data["points"]:
-        require(all(type(point[axis]) in (int, float) and math.isfinite(point[axis]) for axis in ("x", "y")),
-                "diva.points: invalid coordinates")
-        require(type(point["c"]) is int and point["c"] in ids, "diva.points: unknown cluster")
-    return {"warnings": ["DiVA points have no record identifier; point uniqueness cannot be verified"]}
-
-
 def validate_delivery(group, root, stream_state=None, now=None):
     now = now or datetime.now(timezone.utc)
     root = Path(root)
@@ -262,14 +249,12 @@ def validate_delivery(group, root, stream_state=None, now=None):
         summary_path = root / "parliament/news-summaries.json"
         summary = read_json(summary_path) if summary_path.exists() else None
         return news(read_json(root / "parliament/news.json"), summary, now)
-    if group == "diva":
-        return diva(read_json(root / "diva/clusters.json"))
     raise ValueError(f"Unknown group: {group}")
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--group", choices=("jobs", "news", "diva"), required=True)
+    parser.add_argument("--group", choices=("jobs", "news"), required=True)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--stream-state", type=Path)
     args = parser.parse_args()

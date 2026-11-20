@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ml.cluster_lab.io import atomic_json, atomic_parquet, digest, now, read_json
+from ml.experiments.io import atomic_json, atomic_parquet, digest, now, read_json
 from ml.jobs.prepare import TEXT_VERSION, semantic_text
 from .embed import text_hash
 from .registry import EXPERIMENTS, LOCAL

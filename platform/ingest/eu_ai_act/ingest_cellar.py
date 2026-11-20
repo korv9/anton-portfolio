@@ -17,7 +17,7 @@
    recorded as unavailable rather than failing the run.
 
 Every file has its provenance line (URL, headers, time, SHA-256) in
-warehouse/raw/eu_ai_act/_manifest.jsonl (lib/rawstore.py). Requests are spaced out.
+warehouse/raw/eu_ai_act/_manifest.jsonl (src/portfolio/storage/rawstore.py). Requests are spaced out.
 """
 from __future__ import annotations
 
@@ -26,10 +26,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "lib"))
 sys.path.insert(0, str(ROOT))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from legal import cellar  # noqa: E402
 
 from sources import CELEX, CONSOLIDATED_PREFIX, LANGUAGES  # noqa: E402

@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT / "platform/ingest"))
 sys.path.insert(0, str(ROOT / "platform/ingest/taxes"))
 import require_parliament as taxes  # noqa: E402
 from studies_ingest import preparation_request  # noqa: E402
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 
 def fixtures(raw):

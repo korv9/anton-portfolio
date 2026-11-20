@@ -5,7 +5,7 @@
 Riksdagen publishes one archive per riksmöte (`anforande-201617.json.zip`, one JSON file per
 speech). The list of archives is read from Riksdagen's open-data page and each archive is
 stored as served under warehouse/raw/riksdagen/speeches/, with its provenance line in
-warehouse/raw/riksdagen/_manifest.jsonl (lib/rawstore.py). A refetch that returns the same
+warehouse/raw/riksdagen/_manifest.jsonl (src/portfolio/storage/rawstore.py). A refetch that returns the same
 bytes rewrites nothing. Nothing is parsed here: bronze reads the archives
 (models/bronze/ai_politics/stg_riksdag_speeches.py).
 
@@ -17,16 +17,15 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 
 CATALOG = "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/anforanden/"
-ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{6})\.json\.zip")
+# Session codes have six digits (201617), except 1999/2000, which has eight (19992000).
+ARCHIVE = re.compile(r"https://data\.riksdagen\.se/dataset/anforande/anforande-(\d{8}|\d{6})\.json\.zip")
 SOURCE = "riksdagen"
 PAUSE = 3.0
+CLOSED_DAYS = 90
 
 
 def archives(html: str, first: str) -> list[tuple[str, str]]:
@@ -47,10 +46,12 @@ def main() -> int:
     if not found:
         raise SystemExit("No speech archives found on Riksdagen's open-data page")
     failed = []
+    newest = found[-1][0]
     for code, url in found:
         try:
+            # A closed riksmöte rarely changes: checked again each quarter, the current one daily.
             rawstore.fetch(http, SOURCE, f"speeches/anforande-{code}.json.zip", url, pause=PAUSE,
-                           timeout=600)
+                           timeout=(10, 600), max_age_days=1 if code == newest else CLOSED_DAYS)
             print(f"  {code[:4]}/{code[4:]}: stored", flush=True)
         except Exception as error:  # one failing session should not stop the others
             failed.append(f"{code}: {error}")

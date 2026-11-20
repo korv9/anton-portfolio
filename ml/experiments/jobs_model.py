@@ -21,7 +21,7 @@ from pathlib import Path
 import joblib
 import numpy as np
 
-from ml.cluster_lab.io import atomic_json, file_hash, now, read_json
+from ml.experiments.io import atomic_json, file_hash, now, read_json
 from ml.jobs.embeddings import REPRESENTATION, encode_text_batch
 from . import embed as cache
 from .fit import cluster, normalise

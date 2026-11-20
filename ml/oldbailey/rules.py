@@ -3,7 +3,7 @@
     python -m ml.oldbailey.rules [--split dev]
 
 The rules are ordered regular expressions per category, written from the category definitions
-(docs/oldbailey-extraction-preregistration.md) and checked on the development split only. An
+(docs/research/preregistrations/oldbailey-extraction-preregistration.md) and checked on the development split only. An
 unmatched trial gets the majority class, taken from the trials outside the sample and dev split.
 Prints accuracy per field on the chosen split.
 """

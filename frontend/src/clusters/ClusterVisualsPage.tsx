@@ -1,10 +1,11 @@
 /**
- * Cluster visuals: the sentence demo on the party-leader debate map, then every clustering
- * dataset as a large map (ClusterGallery), with the method notes folded away at the bottom.
+ * Cluster visuals: every clustering dataset as a large map (ClusterGallery), with the method
+ * notes folded away at the bottom. The sentence demo lives on Replik (#cv-place redirects there).
  * MAPS and ProjectMaps keep the interactive maps for the project reports and the UMAP gallery.
  */
 import { useEffect, useRef, useState } from 'react'
 import { l } from '../i18n'
+import { count as num } from '../format'
 import { fetchJson } from '../dataSource'
 import {
   loadAtlasPoints,
@@ -14,11 +15,12 @@ import {
 import ClusterScatter, { type ClusterPoint, unnamed } from './ClusterScatter'
 import ClusterLab from './ClusterLab'
 import './clusters.css'
-import SentencePlacer from './SentencePlacer'
 import ClusterGallery, { DATASETS } from './ClusterGallery'
 import PageHead from '../ui/PageHead'
 import { useRoute } from '../router'
 import Experiments, { EXPERIMENTS } from './experiments/Experiments'
+import GatedModels from './GatedModels'
+import Atlas from './Atlas'
 
 export type Loaded = {
   points: ClusterPoint[]
@@ -37,7 +39,6 @@ export type MapSpec = {
   variants: Variant[]
 }
 
-const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
 const pct = (share: number) =>
   `${(share * 100).toLocaleString(l('en-GB', 'sv-SE'), { maximumFractionDigits: 1 })} %`
 const cut = (text: string, n = 110) =>
@@ -517,15 +518,16 @@ export default function ClusterVisualsPage() {
 }
 
 function Gallery() {
-  const maps = MAPS()
-  const debates = maps.find((spec) => spec.id === 'research-debates')!
-  const [run, setRun] = useState<DebateRun | null>(null)
+  const [run, setRun] = useState<DebateRun | 'error' | null>(null)
   useEffect(() => {
     fetchJson<DebateRun>('cluster-research/debate-topics.json').then(
       setRun,
-      () => {},
+      () => setRun('error'),
     )
   }, [])
+  // The row keeps its size while the file loads; a failed file drops these KPIs.
+  const shown = (value: (r: DebateRun) => string) =>
+    run && run !== 'error' ? value(run) : '–'
   // The local lab reads a dev-server export; it is asked for only when the address names it.
   const lab =
     import.meta.env.DEV && /[?&]lab(_|=|&|$)/.test(window.location.hash)
@@ -539,27 +541,28 @@ function Gallery() {
         )}
         kpis={[
           { label: l('Maps', 'Kartor'), value: num(DATASETS.length) },
-          ...(run
-            ? [
+          ...(run === 'error'
+            ? []
+            : [
                 {
                   label: l('Debate passages', 'Debattpassager'),
-                  value: num(run.observations),
+                  value: shown((r) => num(r.observations)),
                 },
                 {
                   label: l('Debate subjects', 'Debattämnen'),
-                  value: num(run.clusters),
+                  value: shown((r) => num(r.clusters)),
                 },
                 {
                   label: l('Passages in no subject', 'Passager utan ämne'),
-                  value: pct(run.noise_share),
+                  value: shown((r) => pct(r.noise_share)),
                 },
-              ]
-            : []),
+              ]),
         ]}
       />
-      <SentencePlacer spec={debates} />
       <ClusterGallery />
+      <Atlas />
       <Experiments all={false} />
+      <GatedModels />
       {lab && <ClusterLab />}
     </div>
   )

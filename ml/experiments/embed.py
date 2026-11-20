@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import atomic_json, digest
+from ml.experiments.io import atomic_json, digest
 from .registry import EXPERIMENTS
 
 ROOT = EXPERIMENTS / 'embeddings'

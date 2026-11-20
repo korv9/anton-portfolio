@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 
 from pxweb import download_table  # noqa: E402
-from rawstore import session  # noqa: E402
+from portfolio.storage.rawstore import session  # noqa: E402
 
 API = "https://api.scb.se/OV0104/v1/doris/sv/ssd"
 SOURCE = "scb"

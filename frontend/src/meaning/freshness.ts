@@ -18,7 +18,7 @@ export const SUBJECTS: Record<string, [subject: string, hours: number]> = {
   'ai-act': ['ai_act', 8 * 24],
 }
 
-export type Entry = {
+type Entry = {
   outcome?: string
   started_at?: string
   recorded_at?: string

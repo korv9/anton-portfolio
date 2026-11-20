@@ -9,7 +9,7 @@ Text variants, each its own embedding cache (text version):
 - sentence: the matching sentence only;
 - masked: the context with the matched alias replaced by [SYMBOL] (transforms.mask_symbol).
 A cleaning variant was not added: `boilerplate` finds no residual Gutenberg text, illustration tags
-or encoding loss in the sample (docs/cluster-experiments-symbolic.md).
+or encoding loss in the sample (docs/research/clustering/symbolic.md).
 """
 from __future__ import annotations
 

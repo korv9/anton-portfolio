@@ -1,6 +1,4 @@
 [
- "parquet/fact_member_vote/session=2024-25/part-0.parquet",
- "parquet/fact_member_vote/session=2025-26/part-0.parquet",
  "politics/decisions/2024-25/00419725-4314-4903-BCB7-A9B056752B1B.json",
  "politics/decisions/2024-25/005527AC-9967-4999-8728-5DF4319C5F19.json",
  "politics/decisions/2024-25/02968533-D3C3-42D4-9B76-F7FC23E68AD7.json",

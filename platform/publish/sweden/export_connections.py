@@ -196,7 +196,7 @@ def main() -> int:
     from export_similarity import FEATURES
 
     label = {f: (en, unit) for f, (en, _, unit) in FEATURES.items()}
-    spec = f"pre-registered in docs/sweden-connections-preregistration.md (commit {PREREGISTERED}) before it was computed"
+    spec = f"pre-registered in docs/research/preregistrations/sweden-connections-preregistration.md (commit {PREREGISTERED}) before it was computed"
     relationships = [gradient(con, year, label),
                      pre.neighbour_comparison(con, year, list(FEATURES), REPLICATION) | {"specification": spec},
                      pre.change_model(con) | {"specification": spec}]

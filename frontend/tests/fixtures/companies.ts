@@ -1,5 +1,5 @@
 /** Synthetic identities live in tests only. */
-import type { CompanyData } from '../../src/companies/model.ts'
+import type { CompanyData } from '../../src/lib/companies/model.ts'
 export function fixtureCompanies(): CompanyData {
   const stamp=new Date().toISOString()
   const number='9990000003'

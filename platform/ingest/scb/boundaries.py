@@ -6,12 +6,7 @@ provenance line; platform/publish/sweden/export_similarity.py reads the municipa
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-from rawstore import fetch, session  # noqa: E402
+from portfolio.storage.rawstore import fetch, session  # noqa: E402
 
 URL = "https://scb.se/contentassets/3443fea3fa6640f7a57ea15d9a372d33/shape_svenska_260225.zip"
 

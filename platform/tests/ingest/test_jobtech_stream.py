@@ -93,3 +93,17 @@ def test_an_answer_cut_off_in_transit_is_fetched_again_not_stored(dirs, monkeypa
     items = st.fetch_window(http, datetime(2026, 11, 2), datetime(2026, 11, 2, 6))
     assert items == [{"id": "1"}]
     assert stored == [b'[{"id": "1"}]']
+
+
+def test_a_rerun_after_a_crash_before_the_state_write_keeps_the_ads_already_stored(dirs, monkeypatch):
+    """The ads file of a window is written before state.json. If the run stops between the two,
+    the next run asks again from the same start, with a later end, and finds only the ads it has
+    not seen: the file must gain them, not be replaced by them."""
+    stream, market = dirs
+    run([[ad("a", "2026-11-02")]], "2026-11-02T23:00", monkeypatch)
+    state = (stream / "state.json").read_text()
+    run([[ad("b", "2026-11-02")]], "2026-11-03T02:00", monkeypatch)
+    (stream / "state.json").write_text(state)  # as if the run stopped before writing it
+    run([[ad("b", "2026-11-02"), ad("c", "2026-11-02")]], "2026-11-03T04:00", monkeypatch)
+    manifest = json.loads((market / "manifest_stream.json").read_text())
+    assert manifest["ads"] == 3

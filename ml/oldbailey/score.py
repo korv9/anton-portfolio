@@ -2,7 +2,7 @@
 
     python -m ml.oldbailey.score
 
-Scores are fixed in docs/oldbailey-extraction-preregistration.md: accuracy and macro-F1 with
+Scores are fixed in docs/research/preregistrations/oldbailey-extraction-preregistration.md: accuracy and macro-F1 with
 bootstrap intervals, the paired gemma-minus-keyword difference, accuracy per period, confusion
 matrices and invalid answers. Reads trials.parquet and counts.json (ml.oldbailey.trials) and
 gemma-sample.jsonl (ml.oldbailey.extract), and refuses to export until every sampled trial has an
@@ -98,7 +98,7 @@ def build(trials: pd.DataFrame, gemma: pd.DataFrame, counts: dict) -> dict:
         "name": "oldbailey-extraction",
         "title": "Reading the Old Bailey: model labels against the clerks' tags",
         "method": {
-            "preregistration": "docs/oldbailey-extraction-preregistration.md",
+            "preregistration": "docs/research/preregistrations/oldbailey-extraction-preregistration.md",
             "source": {"name": "Old Bailey Online XML Data, version 7.2", "file": ZIP.name,
                        "doi": "10.15131/shef.data.4775434.v2", "licence": "CC BY-NC 4.0",
                        "attribution": "Old Bailey Online (University of Sheffield, University of "

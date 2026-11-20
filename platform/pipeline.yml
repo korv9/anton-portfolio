@@ -1,5 +1,5 @@
 # Every subject, from source to site. Read by platform/pipeline.py; nothing else defines a
-# step sequence, a dbt selector or a raw path list. docs/pipeline.md describes how it runs.
+# step sequence, a dbt selector or a raw path list. docs/platform/pipeline.md describes how it runs.
 #
 # A subject is an ordered list of steps. Each step has one phase key:
 #   ingest   a command that fetches or prepares inputs
@@ -19,7 +19,10 @@
 # prune (raw pushes delete remote files that are gone locally), target (dbt target folder when it
 # differs from the subject name), manual (left out of --all, and not required by its group),
 # sources (raw folders whose fetch log is kept outside R2 by the ingest itself, for the
-# ingestion status in status/ingestion.json; the first segments of `raw` count already).
+# ingestion status in status/ingestion.json; the first segments of `raw` count already),
+# lane (the parallel ingest job of build-warehouse.yml that runs its ingest steps; subjects that
+# write the same raw source share one, see platform/pipeline_lanes.py), ingest_timeout (minutes
+# for its lane's ingest step, default 70).
 #
 # Every subject also declares, without changing what the code does:
 #   sla    {fresh_within: <n>h | <n>d | none}: how old its last successful ingestion in
@@ -35,7 +38,7 @@
 # A group is published once, after every subject in it has succeeded.
 
 definitions:
-  data_catalog: &data_catalog python platform/publish/build_catalog.py
+  data_catalog: &data_catalog python -m portfolio.publish.catalog
   data_check: &data_check
     - python platform/legacy/validate_gold.py
     - python platform/legacy/validate_budget_context.py
@@ -53,40 +56,36 @@ groups:
       - *data_catalog
       - *data_check
       - python platform/publish/validate_public_data.py
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group public-data --root frontend/public/data --spec configs/delivery/public-data.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/public-data.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group public-data --root frontend/public/data --spec configs/delivery/public-data.json --code-sha {sha}
       - python platform/publish/publish_status.py
   jobs:
     publish:
       - python platform/publish/validate_refresh_delivery.py --group jobs --root frontend/public/data --stream-state warehouse/raw/jobtech/stream/state.json
-      - python platform/publish/release.py publish --group jobs --root frontend/public/data --spec configs/delivery/jobs.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group jobs --root frontend/public/data --spec configs/delivery/jobs.json --code-sha {sha}
   news:
     publish:
-      - python platform/publish/release.py publish --group news --root frontend/public/data --spec configs/delivery/news.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group news --root frontend/public/data --spec configs/delivery/news.json --code-sha {sha}
   jobs-analysis:
     publish:
       - *data_catalog
       - *data_check
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
-  diva:
-    publish:
-      - python platform/publish/validate_refresh_delivery.py --group diva --root frontend/public/data
-      - python platform/publish/release.py publish --group diva --root frontend/public/data --spec configs/delivery/diva.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/jobs-analysis.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group jobs-analysis --root frontend/public/data --spec configs/delivery/jobs-analysis.json --code-sha {sha}
   job-assistant:
     publish:
       - python platform/job_assistant/export.py --check frontend/public/data
-      - python platform/publish/release.py publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group job-assistant --root frontend/public/data --spec configs/delivery/job-assistant.json --code-sha {sha}
   # SWEDEN publishes on its own, so a failed SWEDEN source never holds back the baseline.
   sweden:
     publish:
-      - python platform/publish/release.py publish --group sweden --root frontend/public/data --spec configs/delivery/sweden.json --code-sha {sha}
+      - python -m portfolio.publish.release publish --group sweden --root frontend/public/data --spec configs/delivery/sweden.json --code-sha {sha}
   baseline:
     publish:
       - *data_catalog
       - *data_check
-      - python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/baseline.json --catalog frontend/public/data/catalog.json
-      - python platform/publish/release.py publish --group baseline --root frontend/public/data --spec configs/delivery/baseline.json --code-sha {sha}
+      - python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/baseline.json --catalog frontend/public/data/catalog.json
+      - python -m portfolio.publish.release publish --group baseline --root frontend/public/data --spec configs/delivery/baseline.json --code-sha {sha}
 
 subjects:
   welfare:
@@ -94,6 +93,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     raw: [scb, fohm, fk, ess, kolada]
     prune: true
     steps:
@@ -110,6 +110,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
     prune: true
@@ -127,8 +128,9 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
+    lane: public
     needs: [parliament]
-    raw: [oecd, skatteverket]
+    raw: [oecd, skatteverket, scb/hut]
     prune: true
     steps:
       # Rejects partial or unverified parliament inputs before dbt can build on them.
@@ -142,6 +144,7 @@ subjects:
     sla: {fresh_within: 36h}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: jobs
+    lane: jobtech
     raw: [jobtech/market, jobtech/stream, jobtech/_manifest.jsonl]
     steps:
       - ingest: python platform/ingest/jobtech/ingest_market.py
@@ -158,7 +161,7 @@ subjects:
     sources: [news]
     steps:
       # The last approved summary first, so a failed summary step keeps it.
-      - ingest: python platform/publish/release.py materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
+      - ingest: python -m portfolio.publish.release materialize --root frontend/public/data --spec configs/delivery/news.json --catalog frontend/public/data/catalog.json --prefer-active
         when_env: R2_BUCKET
       - ingest: python platform/ingest/news/news_ingest.py --sync --months 3
       - ingest: python platform/ingest/news/people_ingest.py
@@ -170,7 +173,7 @@ subjects:
         ok_exit: [2]
 
   politics:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -197,7 +200,7 @@ subjects:
   # vote, citation, reservation, speech/motion/proposition link, law mention/provision, budget
   # frame, job and UMAP facts) and marts/budget-report, jobs, debate, rfc-drift and overview.
   # dbt builds the other nine and the vote marts (models/gold/politics, export_politics.py),
-  # and defines the model's metrics and relationships (docs/gold-semantic-model.md).
+  # and defines the model's metrics and relationships (docs/platform/gold-semantic-model.md).
   legacy:
     schedule: manual
     sla: {fresh_within: none}
@@ -215,26 +218,28 @@ subjects:
       - export: *data_catalog
 
   ai_act:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: ai_act
     raw: [eu_ai_act]
     steps:
       - ingest: python platform/ingest/eu_ai_act/run.py
       - dbt: {select: [tag:ai_act], freshness: true}
       - export: python platform/publish/eu_ai_act/export_ai_act.py
 
-  # The laws behind "Fråga lagen" (docs/workers-ai.md). The export writes the passages that
+  # The laws behind "Fråga lagen" (docs/products/allegora/workers-ai.md). The export writes the passages that
   # platform/nlp/workers_ai.py embeds; the embedding and compression run by hand within the quota.
   # With SFS_ALL set it also fetches the whole statute book (about 11,600 texts, a few hours the
   # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
   # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: sfs
     raw: [sfs]
     steps:
       - ingest: python platform/ingest/sfs/ingest.py
@@ -248,12 +253,13 @@ subjects:
   # philosophy, Riksdag and job-ad models; they run in the concepts subject, once all of them
   # are built.
   ai_politics:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: public
     needs: [ai_act]
-    raw: [riksdagen/speeches]
+    raw: [riksdagen/speeches, riksdagen/_manifest.jsonl]
     features: [ai_politics]
     steps:
       - ingest: python platform/ingest/riksdagen/ingest_speeches.py
@@ -272,10 +278,11 @@ subjects:
       - export: python platform/publish/ai_politics/export_ai_politics.py
 
   symbolic:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: symbolic
     raw: [symbolic]
     features: [symbolic]
     steps:
@@ -290,10 +297,11 @@ subjects:
       - export: python platform/publish/symbolic/export_symbolic.py
 
   philosophy:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: philosophy
     raw: [philosophy]
     features: [philosophy]
     steps:
@@ -314,10 +322,13 @@ subjects:
       - export: python platform/publish/philosophy/export_philosophy.py
 
   job_ai_governance:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
+    lane: jobtech
+    # The first run counts every JobTech archive (about 90 minutes); later runs skip unchanged ones.
+    ingest_timeout: 120
     raw: [jobtech/governance]
     steps:
       - ingest: python platform/ingest/jobtech/ingest_governance_terms.py
@@ -325,7 +336,7 @@ subjects:
       - export: python platform/publish/job_ai_governance/export_job_ai_governance.py
 
   concepts:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -340,7 +351,7 @@ subjects:
       - export: python platform/publish/concepts/export_concepts.py
 
   cross_domain:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -350,9 +361,9 @@ subjects:
       - dbt: {select: [tag:cross_domain], exclude: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_governance_timeline.py
 
-  # The AI Act diffusion clock (docs/ai-act-diffusion-preregistration.md). The term counts are
+  # The AI Act diffusion clock (docs/research/preregistrations/ai-act-diffusion-preregistration.md). The term counts are
   # made by hand: speeches locally with `python -m ml.ai_act.diffusion speeches`, the 2.79M ads in
-  # cluster-jobs.yml (module `ml.ai_act.diffusion ads`, path ai_act/diffusion). This builds the
+  # heavy-compute.yml (module `ml.ai_act.diffusion ads`, path ai_act/diffusion). This builds the
   # mart and the export from the stored counts.
   ai_act_diffusion:
     schedule: manual
@@ -366,14 +377,14 @@ subjects:
       - dbt: {select: [tag:ai_act_diffusion]}
       - export: python platform/publish/cross_domain/export_ai_act_diffusion.py
 
-  # Philosophy track 1 (docs/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
+  # Philosophy track 1 (docs/research/preregistrations/philosophy-moral-preregistration.md). The tagger, the Riksdag sample,
   # the Swedish check and the ETHICS answers are made by hand with python -m ml.moral.{mfrc,riksdag,
   # ethics} (Workers AI within the free quota); riksdag score runs locally too, since the passage
   # sample is text and never leaves the machine. This builds the marts and the export from the
   # stored figures each week, without a model call. No raw folder: the MFRC, eMFD and ETHICS files
   # stay on the machine (LOCAL_ONLY in warehouse_store.py); only figures and vectors are stored.
   philosophy_moral:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -388,10 +399,11 @@ subjects:
   # D: KB's library statistics (CC0) and Biblioteksdatabasen.
   # Its gold joins the welfare panel, tax rates and election results built earlier in the run.
   sweden:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: mirror, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: sweden
     needs: [welfare, parliament, taxes]
     raw: [catalogue, geography, kb]
     features: [sweden/similarity]
@@ -408,10 +420,12 @@ subjects:
   # SWEDEN B: language in every JobTech archive since 2006. Counts only; an unchanged archive
   # is skipped, so after the first run a week costs the newest quarter.
   sweden_language:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
-    write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
+    write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: jobtech
+    raw: [jobtech/taxonomy]
     features: [sweden/ad_language]
     steps:
       # At most three new archives a run: the backfill since 2006 spreads over the first runs
@@ -423,10 +437,11 @@ subjects:
   # SWEDEN E: future-oriented language in every Riksdag session since 1993/94. Counts only; an
   # unchanged session is skipped.
   sweden_futures:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
+    lane: sweden_futures
     features: [sweden/futures, sweden/futures_theses, sweden/futures_theses_detail]
     steps:
       - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12
@@ -448,7 +463,7 @@ subjects:
   # trajectories, labour_market and ml.three_swedens read sweden/similarity (sweden). session_maps reads the
   # committed politics/parliament/sessions/*/umap.json, which no subject here writes.
   clusters:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
@@ -481,10 +496,11 @@ subjects:
         marker: clusters/three-swedens/run/metrics.json
       - dbt: {select: [tag:clusters]}
       - export: python platform/publish/clusters/export.py
+      - export: python platform/publish/clusters/debate_backdrop.py
       - export: python platform/publish/clusters/three_swedens.py
 
   quality:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -497,19 +513,9 @@ subjects:
       # Structural checks (gate: true in quality_registry.yml) fail the subject, after its report is written.
       - export: python platform/quality/evaluate.py --dbt-results platform/target/quality/run_results.json --gate
 
-  diva:
-    schedule: manual
-    sla: {fresh_within: none}
-    write: {raw: {merge: [path]}, delivery: versioned}
-    group: diva
-    manual: true
-    raw: [diva]
-    steps:
-      - ingest: python platform/ingest/diva/harvest.py --from ${DIVA_FROM:-2023-01} --to ${DIVA_TO:-2025-12}
-      - export: python platform/publish/diva_clusters.py
-
-  # The IT report: run_history_pipeline.py picks the published archive years and passes them
-  # to dbt as vars, so its dbt build (target/jobs) stays inside the script.
+  # The IT report: run_history_pipeline.py imports every published archive from 2020 (the current
+  # year's quarters), then the market subject's stored JobStream answers after the last archive,
+  # and passes the covered months to dbt as vars, so its dbt build (target/jobs) stays inside the script.
   jobs_analysis:
     schedule: manual
     sla: {fresh_within: none}
@@ -520,8 +526,14 @@ subjects:
       - ingest: python platform/ingest/jobtech/run_history_pipeline.py
       # Not dbt: rewrites the gold job tables and marts/jobs.json in Python from the CSVs above.
       - export: python platform/legacy/build_gold.py
+      # jobs/ads-{week,month,year}.json and jobs/skill-trends.json from the history database.
+      - export: python platform/publish/export_job_history.py
+      # jobs/rising-terms.json: terms and counts only, never ad text.
+      - export: python platform/nlp/rising_terms.py
+      # jobs/employer-top.json: names and ad counts only, legal entities only (export_employer_top.py).
+      - export: python platform/publish/export_employer_top.py
 
-  # The job assistant (docs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
+  # The job assistant (docs/products/jobs/job-assistant.md): Data/IT ads from JobStream on an hourly schedule, with
   # changes and removals, kept under warehouse/raw/job_assistant and published as their own group.
   # GitHub starts scheduled runs late or drops them: from 2026-10-23 to 10-25 these runs began 2.4 to
   # 5.7 hours apart, and the hourly data heartbeat's runs were as sparse, so the SLA is 8h, not 1h.
@@ -530,6 +542,7 @@ subjects:
     sla: {fresh_within: 8h}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: job-assistant
+    lane: job_assistant
     raw: [job_assistant]
     steps:
       # platform/job_assistant/sync.py turns a new CV upload into a draft and stores an approved
@@ -539,7 +552,7 @@ subjects:
       # Matches the ads with the approved profile from the Worker into the raw match store, which
       # dbt reads next. A 200 without a profile empties the store; a route it cannot read keeps the
       # last matches (or writes an empty store) with the reason; both exit 0. An unexpected answer or
-      # an invalid profile exits 1, allowed so the ads are still published (docs/job-assistant.md).
+      # an invalid profile exits 1, allowed so the ads are still published (docs/products/jobs/job-assistant.md).
       - ingest: python platform/job_assistant/rank.py
         secrets: [CLOUDFLARE_API_TOKEN]
         ok_exit: [1]

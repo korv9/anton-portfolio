@@ -1,4 +1,4 @@
-"""Job-ad clustering experiments and their MLOps lifecycle (docs/cluster-experiments-jobs.md).
+"""Job-ad clustering experiments and their MLOps lifecycle (docs/research/clustering/jobs.md).
 
     python -m ml.experiments.jobs prepare [--hold-out-newest 0.15]   versioned, cleaned, deduplicated snapshot
     python -m ml.experiments.jobs select   [--deadline-minutes N]    selection side, seeds 0-2, checkpointed
@@ -21,7 +21,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ml.cluster_lab.io import atomic_json, read_json
+from ml.experiments.io import atomic_json, read_json
 from . import export as public
 from . import jobs_data, jobs_model, jobs_mlops
 from . import jobs_experiments as ex

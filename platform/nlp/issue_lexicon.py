@@ -31,8 +31,7 @@ from pathlib import Path
 import snowballstemmer
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "platform/lib"))
-import delivery  # noqa: E402
+from portfolio.storage import delivery  # noqa: E402
 
 PUBLIC = ROOT / "frontend/public/data"
 INDEX = "politics/parliament/debate-stats/index.json"

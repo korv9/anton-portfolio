@@ -1,5 +1,5 @@
 # Acceptance criteria for a job-ad clustering candidate, fixed on 2026-10-29 before any final
-# evaluation ran (docs/cluster-experiments.md, docs/job-clusters-mlops.md). Employers and texts are
+# evaluation ran (docs/research/clustering/method.md, docs/job-clusters-mlops.md). Employers and texts are
 # kept apart between selection and evaluation; the champion is the current pipeline refitted the
 # same way. The MLOps retrain reuses these criteria for every later candidate.
 frozen_at: '2026-10-29'

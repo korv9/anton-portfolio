@@ -10,12 +10,7 @@ attribution wherever the files are shared.
 """
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
-
-from rawstore import fetch, session  # noqa: E402
+from portfolio.storage.rawstore import fetch, session  # noqa: E402
 
 SOURCE = "oldbailey"
 URL = "https://ndownloader.figshare.com/files/7979134"

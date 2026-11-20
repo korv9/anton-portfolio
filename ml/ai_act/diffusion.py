@@ -5,7 +5,7 @@
     python -m ml.ai_act.diffusion ads --archives 2025 --sample 20000   # a quick local check
 
 The terms are the kept rows of platform/seeds/cross_domain/ai_act_terms.csv, Swedish and English,
-matched as docs/ai-act-diffusion-preregistration.md fixes, and the amended list of its 2026-10-22
+matched as docs/research/preregistrations/ai-act-diffusion-preregistration.md fixes, and the amended list of its 2026-10-22
 amendment, counted beside it with every token inflected. A document is one speech (its full
 text) or one ad (headline and description, duplicate ad ids counted once). Nothing but counts is
 kept. Under $PORTFOLIO_FEATURES/ai_act/diffusion/, per source (speeches, or ads_<archive>):

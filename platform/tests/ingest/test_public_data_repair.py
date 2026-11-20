@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 import requests
-import rawstore
+from portfolio.storage import rawstore
 import studies_ingest as studies
 
 import yaml

@@ -38,6 +38,10 @@
 .rail-group {
   margin-top: 38px;
 }
+/* The labs, shown under Labs while one of them is open. */
+.rail-sub {
+  padding-left: var(--sp-3);
+}
 .rail-link {
   position: relative;
   display: block;
@@ -49,7 +53,7 @@
   letter-spacing: -0.02em;
   text-transform: uppercase;
   text-decoration: none;
-  color: #77736a;
+  color: #9b968c;
   transition: color 0.24s;
 }
 .rail-overview {
@@ -218,11 +222,14 @@
     letter-spacing: 0.16em;
     text-transform: uppercase;
   }
-  .rail-tools a {
+  .rail-tools :is(a, button) {
     color: #9b968c;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
     text-decoration: none;
   }
-  .rail-tools a:hover {
+  .rail-tools :is(a, button):hover {
     color: #f4f1e8;
   }
 

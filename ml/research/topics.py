@@ -26,7 +26,7 @@ import yaml
 
 from ml.cluster_lab import datasets, evaluate, layouts, representations
 from ml.cluster_lab.config import DEFAULTS, merge
-from ml.cluster_lab.io import ROOT, atomic_json, digest, file_hash, now, read_json
+from ml.experiments.io import ROOT, atomic_json, digest, file_hash, now, read_json
 from ml.cluster_lab.public_research import snapshot
 from ml.research.prepare_public_profiles import clean
 

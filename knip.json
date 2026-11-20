@@ -1,0 +1,11 @@
+{
+  "entry": [
+    "frontend/tests/**/*.{ts,spec.ts}",
+    "frontend/*.config.ts",
+    "worker/*.ts",
+    "scripts/*.mjs"
+  ],
+  "project": ["frontend/src/**/*.{ts,tsx}"],
+  "ignore": ["frontend/src/vite-env.d.ts"],
+  "ignoreBinaries": ["python"]
+}

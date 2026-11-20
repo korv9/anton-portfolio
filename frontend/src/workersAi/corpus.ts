@@ -1,6 +1,6 @@
 /**
  * The Workers AI demos' data and endpoints: a corpus export (pca.json, vectors.bin, meta.json under
- * data/workers-ai/<corpus>/, docs/workers-ai.md) loaded once per page, and the Worker's
+ * data/workers-ai/<corpus>/, docs/products/allegora/workers-ai.md) loaded once per page, and the Worker's
  * /api/embed and /api/answer. A failed call says why, so the page can fall back on its examples.
  */
 import { fetchData } from '../dataSource'
@@ -23,7 +23,7 @@ const loaded = new Map<string, Promise<Corpus<unknown>>>()
 
 /**
  * A large export lists its items and vectors as parts, in order, each its own file. A passage
- * can have a `path` too (Ask the platform's source file), so a part is told apart by its count.
+ * can have a `path` too, so a part is told apart by its count.
  */
 type Part = { path: string; start: number; count: number }
 const isParts = (list: unknown): list is Part[] =>
@@ -77,8 +77,11 @@ export function nearest<Item>(c: Corpus<Item>, vector: number[], k: number) {
   }))
 }
 
-/** Why the Worker gave no answer: the day's AI quota, a failed call, too many requests, or no Worker. */
-export type Reason = 'quota' | 'error' | 'busy' | 'offline'
+/**
+ * Why the Worker gave no answer: the day's AI quota, a failed call, too many requests, no Worker,
+ * or Allegora's daily allowance spent by the visitor ('limit') or by the whole site ('site').
+ */
+type Reason = 'quota' | 'error' | 'busy' | 'offline' | 'limit' | 'site'
 export class Unavailable extends Error {
   reason: Reason
   constructor(reason: Reason) {
@@ -115,6 +118,15 @@ export const fallback = (reason: Reason, examples = true) =>
           'The model did not answer. Try again in a moment.',
           'Modellen svarade inte. Försök igen om en stund.',
         ),
+    // Allegora's daily allowance (worker/quota.ts), said plainly.
+    limit: l(
+      "Sorry, Anton can't afford to provide more tokens today.",
+      'Tyvärr, Anton har inte råd med fler tokens i dag.',
+    ),
+    site: l(
+      "Sorry, Anton can't afford to provide more tokens today.",
+      'Tyvärr, Anton har inte råd med fler tokens i dag.',
+    ),
     offline: examples
       ? l(
           'The AI service is not reachable here, so only the examples work.',
@@ -135,9 +147,18 @@ async function call<T>(path: string, body: unknown): Promise<T> {
     throw new Unavailable('offline')
   }
   if (response.ok) return response.json()
+  return refuse(response)
+}
+
+/** A response that is not ok, as the reason the page shows. */
+export async function refuse(response: Response): Promise<never> {
   if (response.status === 503) {
     const { reason } = await response.json().catch(() => ({}))
     throw new Unavailable(reason === 'quota' ? 'quota' : 'error')
+  }
+  if (response.status === 429) {
+    const { reason } = await response.json().catch(() => ({}))
+    if (reason === 'limit' || reason === 'site') throw new Unavailable(reason)
   }
   throw new Unavailable(
     response.status === 429
@@ -152,7 +173,15 @@ export const embed = (text: string) =>
   call<{ vector: number[] }>('embed', { text }).then((r) => r.vector)
 
 export type Passage = { id: string; text: string }
-export type Answer =
+/** A passage the Worker's search found (corpus 'sfs-all'), with its law and similarity. */
+export type Found = Passage & {
+  title: string
+  url: string
+  law: string
+  kind?: string
+  score: number
+}
+export type Answer = (
   | {
       status: 'verified'
       /** The law corpora: the checked answer retold as a moral allegory, when the retelling held. */
@@ -162,6 +191,9 @@ export type Answer =
       model: string
     }
   | { status: 'unverified' | 'no_answer'; passages: Passage[] }
+) & {
+  hits?: Found[]
+}
 
 export const answer = (question: string, corpus: string, passages: Passage[]) =>
   call<Answer>('answer', { question, corpus, passages })

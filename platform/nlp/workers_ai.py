@@ -40,8 +40,7 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-from common import ROOT, load_env  # noqa: E402
+from portfolio.core.config import ROOT, load_env  # noqa: E402
 
 MODEL = "@cf/baai/bge-m3"
 TOKENIZER = "BAAI/bge-m3"
@@ -121,9 +120,13 @@ class QuotaExhausted(Exception):
     pass
 
 
+def run_url(model: str) -> str:
+    return f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}/ai/run/{model}"
+
+
 def post(session, model: str, payload: dict) -> dict:
     """One REST call to `model`, retried on network errors, 429 and 5xx. Returns Cloudflare's result."""
-    url = f"https://api.cloudflare.com/client/v4/accounts/{os.environ['CLOUDFLARE_ACCOUNT_ID'].strip()}/ai/run/{model}"
+    url = run_url(model)
     for attempt in range(6):
         try:
             response = session.post(url, json=payload, timeout=120)

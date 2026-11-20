@@ -7,7 +7,7 @@ inside their run; `cluster_key` names a group as `<run_id>:<cluster>`.
 """
 from __future__ import annotations
 
-from ml.cluster_lab.io import digest
+from ml.experiments.io import digest
 
 DOMAINS = ('philosophy', 'symbolic', 'jobs', 'debates')
 STATUSES = ('candidate', 'champion', 'rejected')

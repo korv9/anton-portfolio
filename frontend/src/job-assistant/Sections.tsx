@@ -1,11 +1,13 @@
 /**
  * The How it works tab: the method, what the ads ask for against the CV (only when there is
- * demand to show), the scheduled runs and the owner's tools (only with the token or ?owner).
+ * demand to show), what the CV lacks (only when a match has a gap), the scheduled runs and the owner's tools (only with the token or ?owner).
  */
 import { l } from '../i18n'
+import RankBars from '../charts/RankBars'
 import Owner from './Owner'
 import type { Delivered, Records } from './data'
-import { cvLevelLabel } from './labels'
+import { skillGaps } from './gaps'
+import { clock, cvLevelLabel } from './labels'
 
 type Props = {
   data: Delivered
@@ -16,7 +18,6 @@ type Props = {
   onOwner: (owner: boolean) => void
   onRecords: (r: Records) => void
 }
-const LEVELS = ['practical', 'education_or_project', 'listed']
 
 export default function Sections({
   data,
@@ -28,6 +29,7 @@ export default function Sections({
   onRecords,
 }: Props) {
   const top = data.demand.skills.slice(0, 15)
+  const gaps = skillGaps(data.matches.matches)
 
   return (
     <div className="ja-sections">
@@ -66,7 +68,7 @@ export default function Sections({
             'Data: JobTech, Arbetsförmedlingen open data (CC0). Not affiliated with Arbetsförmedlingen. ',
             'Data: JobTech, Arbetsförmedlingens öppna data (CC0). Inte knuten till Arbetsförmedlingen. ',
           )}
-          <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/job-assistant.md">
+          <a href="https://github.com/korv9/anton-portfolio/blob/main/docs/products/jobs/job-assistant.md">
             {l('Method and code on GitHub', 'Metod och kod på GitHub')}
           </a>
         </p>
@@ -80,43 +82,60 @@ export default function Sections({
               'Vad annonserna frågar efter, mot cv:t',
             )}
           </h2>
-          {top.length > 0 && (
-            <div className="ja-table-wrap">
-              <table className="ja-table ja-demand">
-                <caption className="ja-muted">
-                  {l(
-                    'The skills named most often in the matched ads.',
-                    'De kompetenser som nämns oftast i de matchade annonserna.',
-                  )}
-                </caption>
-                <thead>
-                  <tr>
-                    <th scope="col">{l('Skill', 'Kompetens')}</th>
-                    <th scope="col" className="num">
-                      {l('Ads naming it', 'Annonser')}
-                    </th>
-                    <th scope="col" className="num">
-                      {l('As a requirement', 'Som krav')}
-                    </th>
-                    <th scope="col">{l('In the CV', 'I cv:t')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {top.map((s) => (
-                    <tr
-                      key={s.skill}
-                      data-gap={!LEVELS.slice(0, 2).includes(s.cv_level ?? '')}
-                    >
-                      <th scope="row">{s.skill}</th>
-                      <td className="num">{s.ads_naming}</td>
-                      <td className="num">{s.ads_required}</td>
-                      <td>{cvLevelLabel(s.cv_level)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <p className="ja-muted">
+            {l(
+              'The skills named most often in the matched ads.',
+              'De kompetenser som nämns oftast i de matchade annonserna.',
+            )}
+          </p>
+          <div className="ja-skill-bars">
+            <RankBars
+              label={l(
+                'Matched ads naming each skill, with how many require it and the CV level',
+                'Matchade annonser som nämner varje kompetens, med hur många som kräver den och nivån i cv:t',
+              )}
+              rows={top.map((s) => ({
+                key: s.skill,
+                label: s.skill,
+                value: s.ads_naming,
+                note: l(
+                  `${s.ads_required} as a requirement · ${cvLevelLabel(s.cv_level)}`,
+                  `${s.ads_required} som krav · ${cvLevelLabel(s.cv_level)}`,
+                ),
+              }))}
+              format={(v) => String(v)}
+            />
+          </div>
+        </section>
+      )}
+
+      {gaps.length > 0 && (
+        <section aria-labelledby="ja-gaps">
+          <h2 id="ja-gaps">{l('What the CV lacks', 'Vad cv:t saknar')}</h2>
+          <p className="ja-muted">
+            {l(
+              'Skills the good, possible and stretch matches name that the CV shows neither in work nor in education or a project. First the skills that are the only gap in an ad.',
+              'Kompetenser som de bra, möjliga och utmanande matchningarna nämner och som cv:t varken visar i arbete eller i utbildning eller projekt. Först de kompetenser som är det enda som saknas i en annons.',
+            )}
+          </p>
+          <div className="ja-gap-bars">
+            <RankBars
+              label={l(
+                'Ads lacking each skill, with how many are good or possible and how many lack only it',
+                'Annonser där varje kompetens saknas, med hur många som är bra eller möjliga och hur många där bara den saknas',
+              )}
+              rows={gaps.map((g) => ({
+                key: g.skill,
+                label: g.skill,
+                value: g.ads,
+                note: l(
+                  `${g.listed} good or possible · ${g.only} the only gap`,
+                  `${g.listed} bra eller möjliga · ${g.only} enda som saknas`,
+                ),
+              }))}
+              format={(v) => String(v)}
+            />
+          </div>
         </section>
       )}
 
@@ -127,6 +146,7 @@ export default function Sections({
             'Schemalagda körningar, senaste sju dagarna',
           )}
         </h2>
+        <Freshness ads={data.ads} />
         <div className="ja-table-wrap">
           <table className="ja-table">
             <thead>
@@ -163,5 +183,40 @@ export default function Sections({
         />
       )}
     </div>
+  )
+}
+
+/** The last successful fetch and publication, and the measured delay from the source's change time. */
+function Freshness({ ads }: { ads: Delivered['ads'] }) {
+  const fetch = ads.pipeline?.last_fetch
+  const median = ads.pipeline?.latency_minutes.median
+  const runs = ads.pipeline?.last_day
+  const day = new Intl.DateTimeFormat('sv-SE', {
+    timeZone: 'Europe/Stockholm',
+  }).format(new Date())
+  return (
+    <p className="ja-freshness">
+      {fetch && (
+        <>
+          {l('Last fetch', 'Senaste hämtning')}{' '}
+          <time dateTime={fetch.at}>{clock(fetch.at, day)}</time>.{' '}
+        </>
+      )}
+      {l('Last publication', 'Senaste publicering')}{' '}
+      <time dateTime={ads.generated_at}>{clock(ads.generated_at, day)}</time>.
+      {median != null &&
+        ' ' +
+          l(
+            `Median delay from an ad's change at the source to publication, last day: ${Math.round(median)} min (near real time by polling every ten minutes).`,
+            `Mediantid från att en annons ändras hos källan till publicering, senaste dygnet: ${Math.round(median)} min (nära realtid genom polling var tionde minut).`,
+          )}
+      {runs &&
+        runs.runs + runs.failed > 0 &&
+        ' ' +
+          l(
+            `Last day: ${runs.runs} runs, ${runs.failed} failed stages, ${runs.changes} changes${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s a run` : ''}, ${Math.round(runs.workers_ai_neurons)} Workers AI neurons.`,
+            `Senaste dygnet: ${runs.runs} körningar, ${runs.failed} misslyckade steg, ${runs.changes} ändringar${runs.run_seconds_median != null ? `, ${Math.round(runs.run_seconds_median)} s per körning` : ''}, ${Math.round(runs.workers_ai_neurons)} neurons i Workers AI.`,
+          )}
+    </p>
   )
 }

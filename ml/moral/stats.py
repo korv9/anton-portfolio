@@ -1,4 +1,4 @@
-"""Agreement statistics and nulls for docs/philosophy-moral-preregistration.md, numpy only."""
+"""Agreement statistics and nulls for docs/research/preregistrations/philosophy-moral-preregistration.md, numpy only."""
 from __future__ import annotations
 
 import hashlib

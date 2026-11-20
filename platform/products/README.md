@@ -6,8 +6,8 @@ them.
 | Path | What it is |
 | --- | --- |
 | `catalog.json` | Eight product entries: question, maturity, skills, source and report entry points. `platform/legacy/build_products.py` publishes it to `frontend/public/data/products/catalog.json` and `validate_products.py` checks it. The site's menu and project pages come from `frontend/src/projects/projectRegistry.ts`. |
-| `drugcomb/pipeline/` | The pinned upstream DrugComb pipeline, with its own [README](drugcomb/pipeline/README.md) and Python environment. `drugcomb/source.json` records the source revision. |
-| `homie/` | The Homie API's pinned [README](homie/README.md) and OpenAPI contract. An engineering case study; its analytics are synthetic stubs. |
+| `drugcomb/pipeline/` | The pinned upstream DrugComb pipeline, with its own [README](drugcomb/pipeline/README.md) and Python environment. `drugcomb/source.json` records the source revision. The README describes the upstream repository: its `legacy/` and `reports/` paths are not copied here. |
+| `homie/` | The Homie API's pinned [README](homie/README.md) and OpenAPI contract. An engineering case study; its analytics are synthetic stubs. The README describes the upstream repository: files it names, such as `app/analytics/queries.py` and `tests/test_contract.py`, are not here. |
 | `thesis/private/` | The degree project's source material. Ignored by Git and never published. The site shows approved aggregates only: no employer raw data and no incident text (`frontend/src/products/CaseStudies.tsx`). |
 
 Synthetic previews and private thesis data are not treated as public observations.

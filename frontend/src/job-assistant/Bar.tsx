@@ -83,7 +83,9 @@ export function Notes({ data, now }: { data: Delivered; now: Date }) {
         `Kunde inte läsa ${missing.join(' och ')} just nu. Annonslistan fungerar ändå; ladda om senare för att försöka igen.`,
       ),
     kept && l(...keptNote(kept)),
+    // Only when nothing is matched: with matches on the page no setup copy shows.
     !data.matches.profile &&
+      data.matches.matches.length === 0 &&
       !data.missing.includes('matches') &&
       l(
         ...unmatchedNote(

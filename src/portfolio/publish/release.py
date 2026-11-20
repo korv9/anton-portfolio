@@ -25,6 +25,16 @@ EXTENSIONS = {".json", ".parquet", ".csv", ".svg", ".png", ".webp"}
 PUBLIC_TYPES = {**CONTENT_TYPES, ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp"}
 
 
+def public_data_validator():
+    """validate and CONTRACTS from platform/publish/validate_public_data.py, loaded by path:
+    under python -m portfolio.publish.release that folder is not on sys.path (since 6c8e5b94)."""
+    import importlib.util
+    source = Path(__file__).resolve().parents[3] / "platform/publish/validate_public_data.py"
+    spec = importlib.util.spec_from_file_location("validate_public_data", source)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.validate, module.CONTRACTS
+
 def encoded(value) -> bytes:
     return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
                        allow_nan=False) + "\n").encode()
@@ -178,7 +188,7 @@ def check_references(source: str, value, paths: set[str]):
                 check_references(source, item, paths)
 
 
-def prepare(root: Path, spec: dict, group: str):
+def prepare(root: Path, spec: dict, group: str, others=frozenset()):
     """Freeze approved bytes before checks and any network writes."""
     if spec.get("schema_version") != 2:
         raise ValueError("Publication spec must have schema_version 2")
@@ -186,6 +196,10 @@ def prepare(root: Path, spec: dict, group: str):
     if any(p.lower() in PRIVATE_ROOT for p in root.parts):
         raise ValueError("Staging root must contain public exports only")
     paths = set(selected(root, spec))
+    if spec.get("remainder"):
+        # The catch-all group (baseline) leaves every path another active group owns, so a
+        # new group publishes without an exclude here. Other specs still refuse an overlap.
+        paths -= others
     if not paths:
         raise ValueError("A publication group must have files")
     payloads = {}
@@ -211,7 +225,7 @@ def prepare(root: Path, spec: dict, group: str):
         payloads[relative] = data
     # Existing public-data checks cover row counts, columns and successful dbt tests.
     if group == "public-data":
-        from validate_public_data import validate, CONTRACTS
+        validate, CONTRACTS = public_data_validator()
         required = {f"{subject}/{item}.json" for subject, items in CONTRACTS.items() for item in items}
         if not required <= paths:
             raise ValueError("public-data must publish all welfare/parliament/taxes contracts")
@@ -298,13 +312,20 @@ def publish(s3, bucket: str, group: str, root: Path, spec: dict, code_sha=None, 
     name(group)
     current_data, _ = read(s3, bucket, CURRENT)
     expected = {group: strict_json(current_data)["groups"].get(group, {}).get("release") if current_data else None}
+    active_rows = {}
+    others = set()
+    if current_data and spec.get("remainder"):
+        for other, pointer in strict_json(current_data)["groups"].items():
+            if other != group:
+                others.update(group_manifest(s3, bucket, pointer)["files"])
     if current_data and group in strict_json(current_data)["groups"]:
         previous = group_manifest(s3, bucket, strict_json(current_data)["groups"][group])
         for path in spec.get("optional_files", []):
             if path in previous["files"] and not (root / path).is_file():
                 raise ValueError(f"Previously published optional file must be materialized: {path}")
-    payloads = prepare(root, spec, group)
-    quality, counts = gate(group, payloads)  # Blocks before any upload.
+        active_rows = previous.get("reconcile", {}).get("rows", {})
+    payloads = prepare(root, spec, group, others)
+    quality, counts = gate(group, payloads, active_rows, spec.get("count_rows"))  # Blocks before any upload.
     dependencies = spec.get("dependencies", {})
     for dependency, version in dependencies.items():
         name(dependency)

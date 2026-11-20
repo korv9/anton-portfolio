@@ -395,6 +395,7 @@ export default function Belonging({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={l(
         `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Points: public libraries, Biblioteksdatabasen.`,
         `${l(MEASURES[measure].en, MEASURES[measure].sv)}, ${year}. Punkter: folkbibliotek, Biblioteksdatabasen.`,

@@ -2,7 +2,7 @@ name: Export proof
 
 # By hand: build and export the named subjects on two refs against the same stored warehouse and
 # raw files, and fail unless every file they write is the same (scripts/export_proof.py,
-# docs/package.md step 3). Reads R2, publishes and commits nothing.
+# docs/platform/package.md step 3). Reads R2, publishes and commits nothing.
 #
 #     gh workflow run export-proof.yml --ref main -f head=<branch> -f subjects="welfare taxes"
 
@@ -39,10 +39,6 @@ jobs:
       PORTFOLIO_DB: ${{ github.workspace }}/warehouse/portfolio.duckdb
       PORTFOLIO_RAW: ${{ github.workspace }}/warehouse/raw
       PORTFOLIO_FEATURES: ${{ github.workspace }}/warehouse/features
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       BASE: ${{ inputs.base }}
       HEAD: ${{ inputs.head }}
@@ -56,11 +52,23 @@ jobs:
       - run: cp scripts/export_proof.py "$RUNNER_TEMP/export_proof.py"
       - name: Set up and restore the subjects' raw and feature files
         uses: ./.github/actions/data-setup
+        # The R2 keys go only to the steps that read the bucket. Before and After run the code of
+        # a branch named in the form, so they never see the keys.
+        env:
+        R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+        R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: ${{ inputs.subjects }}
       - name: Fetch the stored warehouse and keep a clean copy
+        env:
+        R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+        R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
+        R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: |
-          python platform/publish/warehouse_store.py pull --only db
+          python -m portfolio.storage.warehouse_store pull --only db
           cp "$PORTFOLIO_DB" "$RUNNER_TEMP/clean.duckdb"
       # Unquoted $SUBJECTS on purpose: one argument per subject.
       - name: Before

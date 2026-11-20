@@ -335,3 +335,50 @@ test('CV upload accepts PDF and DOCX only and serves the file back', async () =>
 test('without D1 the routes say so and write nothing', async () => {
   assert.equal((await call(env(null), 'reviews')).status, 503)
 })
+
+/** A chunked body with no Content-Length that never ends, and how many bytes were pulled from it. */
+function endless() {
+  const sent = { bytes: 0 }
+  const chunk = new Uint8Array(64_000).fill(0x20)
+  const body = new ReadableStream<Uint8Array>({
+    pull(c) {
+      sent.bytes += chunk.length
+      c.enqueue(chunk)
+    },
+  })
+  return { body, sent }
+}
+
+test(
+  'an undeclared body is cut off at the limit, not read to the end',
+  { timeout: 5000 },
+  async () => {
+    const e = env()
+    for (const [path, method, type] of [
+      ['reviews/31626862', 'PUT', 'application/json'],
+      ['cv', 'POST', 'application/pdf'],
+    ]) {
+      const { body, sent } = endless()
+      const r = await call(e, path, {
+        method,
+        body,
+        token: TOKEN,
+        headers: { 'Content-Type': type },
+        duplex: 'half',
+      } as RequestInit)
+      assert.equal(r.status, 400)
+      assert.ok(sent.bytes < 2_000_000 + 200_000)
+    }
+    const { body, sent } = endless()
+    const r = await worker.fetch(
+      new Request('https://site.test/api/embed', {
+        method: 'POST',
+        body,
+        duplex: 'half',
+      } as RequestInit),
+      e,
+    )
+    assert.equal(r.status, 400)
+    assert.ok(sent.bytes < 400_000)
+  },
+)

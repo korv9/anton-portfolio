@@ -249,6 +249,26 @@
   background: var(--cv-butter);
   font-size: var(--fs-sm);
 }
+/* The sizes of the examples and of the map with its legend, kept before their data arrives. */
+.cv-place-examples {
+  min-height: 115px;
+}
+.cv-status.cv-place-wait {
+  min-height: 530px;
+}
+@media (min-width: 700px) {
+  .cv-place-examples {
+    min-height: 66px;
+  }
+  .cv-status.cv-place-wait {
+    min-height: 580px;
+  }
+}
+@media (min-width: 1000px) {
+  .cv-status.cv-place-wait {
+    min-height: 517px;
+  }
+}
 .cv-place-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -357,6 +377,10 @@
 }
 .cv-tile .cv-specs {
   margin-top: 0.2rem;
+}
+/* The caption's line arrives with the data; its place is kept. */
+.cv-tile figcaption {
+  min-height: 5.5rem;
 }
 
 /* The method notes, folded away under the maps. */

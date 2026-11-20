@@ -3,8 +3,11 @@ import assert from 'node:assert/strict'
 import { fixtureProfile } from '../fixtures/job-profile.ts'
 import { fixtureCompanies } from '../fixtures/companies.ts'
 import { fixtureWorkspace } from '../fixtures/job-intelligence.ts'
-import { parseProfile } from '../../src/job-intelligence/profile.ts'
-import { rankJob, rankCandidates } from '../../src/job-intelligence/ranking.ts'
+import { parseProfile } from '../../src/lib/job-intelligence/profile.ts'
+import {
+  rankJob,
+  rankCandidates,
+} from '../../src/lib/job-intelligence/ranking.ts'
 import { localProfileAllowed } from '../../jobProfilePlugin.ts'
 
 test('junior data jobs outrank senior hard requirements without fabricated professional years', () => {

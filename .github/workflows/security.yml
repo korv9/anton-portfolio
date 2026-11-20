@@ -29,7 +29,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: npm audit --audit-level=moderate
+      - run: node scripts/npm_audit.mjs
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: '3.12'
@@ -80,3 +80,22 @@ jobs:
             args+=(--log-opts="$BASE_SHA..$HEAD_SHA")
           fi
           "$RUNNER_TEMP/gitleaks-bin/gitleaks" git --redact --no-banner "${args[@]}" .
+
+  # A failed run on main opens (or comments on) an issue; a successful one closes it.
+  alert:
+    needs: [dependencies, secrets]
+    if: ${{ !cancelled() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/failure-issue
+        with:
+          result: ${{ contains(needs.*.result, 'failure') && 'failure' || 'success' }}

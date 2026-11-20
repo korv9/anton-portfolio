@@ -9,14 +9,14 @@ import { useQuality } from './data'
 import type { QualityData, QualityStatus, ValidityStatus } from './types'
 import './quality.css'
 
-export const STATUS_TEXT: Record<QualityStatus, [string, string]> = {
+const STATUS_TEXT: Record<QualityStatus, [string, string]> = {
   pass: ['pass', 'godkänd'],
   warning: ['warning', 'varning'],
   fail: ['fail', 'underkänd'],
   not_measured: ['not measured', 'ej mätt'],
   not_applicable: ['not applicable', 'ej tillämpligt'],
 }
-export const VALIDITY_TEXT: Record<ValidityStatus, [string, string]> = {
+const VALIDITY_TEXT: Record<ValidityStatus, [string, string]> = {
   supported: ['supported', 'stöds'],
   warning: ['warning', 'varning'],
   insufficient_evidence: ['insufficient evidence', 'otillräckligt underlag'],
@@ -36,7 +36,7 @@ const GLYPH: Record<QualityStatus | ValidityStatus, string> = {
 }
 
 /** The glyph alone (decorative); always paired with text by the caller. */
-export function Glyph({ status }: { status: QualityStatus | ValidityStatus }) {
+function Glyph({ status }: { status: QualityStatus | ValidityStatus }) {
   const g = GLYPH[status]
   return (
     <svg
@@ -53,7 +53,7 @@ export function Glyph({ status }: { status: QualityStatus | ValidityStatus }) {
   )
 }
 
-export function StatusMark({
+function StatusMark({
   status,
   validity = false,
 }: {
@@ -91,7 +91,7 @@ export function ProductQuality({
   )
 }
 
-export function ProductQualityView({
+function ProductQualityView({
   data,
   product,
   id,

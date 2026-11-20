@@ -199,23 +199,6 @@ def test_known_id_in_old_summary_still_needs_original_period(headlines, summary)
         validation.news(headlines, summary, NOW)
 
 
-def test_diva_export_shape_has_cluster_ids_but_no_point_ids():
-    data = {"clusters": [{"id": 0, "size": 2}],
-            "points": [{"x": 0.2, "y": -0.7, "c": 0, "t": "Test thesis"}]}
-    assert "no record identifier" in validation.diva(data)["warnings"][0]
-
-
-@pytest.mark.parametrize("data", [
-    {"clusters": [{"id": 0}, {"id": 0}], "points": []},
-    {"clusters": [{"id": 0}], "points": [{"x": float("inf"), "y": 0, "c": 0}]},
-    {"clusters": [{"id": 0}], "points": [{"x": "0.1", "y": 0, "c": 0}]},
-    {"clusters": [{"id": 0}], "points": [{"x": 0.1, "y": 0, "c": 3}]},
-])
-def test_diva_rejects_invalid_coordinates_and_cluster_ids(data):
-    with pytest.raises(ValueError):
-        validation.diva(data)
-
-
 def write(root, path, data):
     target = root / path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -243,6 +226,6 @@ def test_news_without_optional_summary_is_publishable(tmp_path, headlines):
 
 
 def test_cli_failure_for_missing_delivery_has_json_status(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr(sys, "argv", ["validate", "--group", "diva", "--root", str(tmp_path)])
+    monkeypatch.setattr(sys, "argv", ["validate", "--group", "news", "--root", str(tmp_path)])
     assert validation.main() == 1
     assert json.loads(capsys.readouterr().out)["status"] == "failed"

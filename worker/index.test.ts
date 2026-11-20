@@ -4,23 +4,18 @@
  */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import worker, {
+import worker, { type Env } from './index.ts'
+import {
   ALLEGORY_SYSTEM,
   canonical,
   checkQuotes,
   fold,
-  PLATFORM_SYSTEM,
   textHash,
-  type Env,
-} from './index.ts'
+} from './quotes.ts'
 
 const LAW = {
   id: 'sfs-1982-80-1',
   text: 'Lagen gäller arbetstagare i allmän och enskild tjänst.',
-}
-const DOC = {
-  id: 'docs/pipeline.md#subjects',
-  text: 'Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13.',
 }
 // The longest passage the Worker accepts; one character more is refused before any AI call.
 const LONG = { id: 'sfs-1962-700-1-1', text: 'a'.repeat(5000) }
@@ -42,13 +37,11 @@ async function env(
     [`/data/workers-ai/sfs/verify/${await shardOf(LONG.id)}.json`]: {
       [LONG.id]: await textHash(LONG.text),
     },
-    [`/data/workers-ai/platform/verify/${await shardOf(DOC.id)}.json`]: {
-      [DOC.id]: await textHash(DOC.text),
-    },
   }
   const calls: unknown[] = []
   return {
     calls,
+    RATE_LIMITER: { limit: async () => ({ success: true }) },
     AI: {
       run: async (model, input) => {
         calls.push({ model, input })
@@ -130,7 +123,7 @@ test('quotes: a quote written before its [[id]] is turned around and checked', (
 
 test('quotes: Markdown marks are ignored on both sides, the words are not', () => {
   const table = {
-    id: 'docs/taxes.md#checks',
+    id: 'docs/platform/taxes.md#checks',
     text: '| Part | Source |\n|---|---|\n| Tax on a **salary** | OECD `Taxing Wages` |',
   }
   const q = (quote: string) =>
@@ -220,6 +213,16 @@ test('answer: passages must be published ids with verbatim text', async () => {
   assert.equal(edited.status, 400)
   const unknown = await worker.fetch(ask([{ ...LAW, id: 'sfs-0-0' }]), e)
   assert.equal(unknown.status, 400)
+  const retired = await worker.fetch(
+    post('/api/answer', {
+      question: 'Vem?',
+      corpus: 'platform',
+      passages: [LAW],
+    }),
+    e,
+  )
+  assert.equal(retired.status, 400)
+  assert.equal((await worker.fetch(post('/api/answer', []), e)).status, 400)
   assert.equal(e.calls.length, 0)
   // Folded white space and quote styles still match the published hash.
   const spaced = await worker.fetch(
@@ -276,33 +279,9 @@ test('answer: verified, unverified, no answer and 503', async () => {
   )
   assert.equal(down.status, 503)
   assert.deepEqual(await down.json(), { reason: 'error' })
-})
-
-test('answer: the platform corpus has its own prompt, quote check and 503 on a spent quota', async () => {
-  const asked = (passages = [DOC]) =>
-    post('/api/answer', {
-      question: 'When does the weekly build run?',
-      corpus: 'platform',
-      passages,
-    })
-  const e = await env({
-    response: 'On Saturdays [[docs/pipeline.md#subjects]]"Saturday 21:13".',
-  })
-  const verified = await (await worker.fetch(asked(), e)).json()
-  assert.equal(verified.status, 'verified')
-  const [{ input }] = e.calls as {
-    input: { messages: { content: string }[] }
-  }[]
-  assert.equal(input.messages[0].content, PLATFORM_SYSTEM)
-  // A law passage is not a platform passage.
-  assert.equal((await worker.fetch(asked([LAW]), await env())).status, 400)
   const spent = await worker.fetch(
-    asked(),
-    await env(
-      new Error(
-        '4006: you have used up your daily free allocation of 10,000 neurons',
-      ),
-    ),
+    ask(),
+    await env(new Error('4006: daily free allocation of neurons used up')),
   )
   assert.equal(spent.status, 503)
   assert.deepEqual(await spent.json(), { reason: 'quota' })
@@ -364,4 +343,150 @@ test('answer: the checked law answer is retold as a moral allegory, and the answ
   const none = await env([{ response: 'NO_ANSWER' }])
   await worker.fetch(ask(), none)
   assert.equal(none.calls.length, 1)
+})
+
+test('AI routes refuse foreign origins and fail closed without the limiter', async () => {
+  const e = await env({ data: [[0.1]] })
+  const from = (origin?: string) =>
+    new Request('https://site.test/api/embed', {
+      method: 'POST',
+      headers: origin ? { Origin: origin } : {},
+      body: JSON.stringify({ text: 'hej' }),
+    })
+  const foreign = await worker.fetch(from('https://evil.test'), e)
+  assert.equal(foreign.status, 403)
+  assert.equal(e.calls.length, 0)
+  assert.equal((await worker.fetch(from('https://site.test'), e)).status, 200)
+  assert.equal((await worker.fetch(from(), e)).status, 200)
+  const { RATE_LIMITER: _, ...unbound } = e
+  assert.equal(
+    (await worker.fetch(from('https://site.test'), unbound)).status,
+    503,
+  )
+  assert.equal(e.calls.length, 2)
+})
+
+test('answer: sfs-all takes its passages from the search service, unchecked against lists', async () => {
+  const e = await env({ response: `Ja [[${LAW.id}]]"${LAW.text}"` })
+  const sent: { url: string; key: string | null; body: unknown }[] = []
+  const real = globalThis.fetch
+  globalThis.fetch = (async (url: string, init: RequestInit) => {
+    sent.push({
+      url,
+      key: new Headers(init.headers).get('X-Allegora-Key'),
+      body: JSON.parse(String(init.body)),
+    })
+    return Response.json({
+      hits: [
+        {
+          ...LAW,
+          title: 'LAS 1 §',
+          url: 'https://x.test',
+          law: '1982:80',
+          kind: 'lag',
+          score: 0.8,
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    const off = await worker.fetch(
+      post('/api/answer', { question: 'Vem gäller lagen?', corpus: 'sfs-all' }),
+      e,
+    )
+    assert.equal(off.status, 503, 'no service configured')
+    const kv = new Map<string, string>()
+    Object.assign(e, {
+      QUOTA: {
+        get: async (k: string) => kv.get(k) ?? null,
+        put: async (k: string, v: string) => void kv.set(k, v),
+      },
+      ALLEGORA_SEARCH_URL: 'https://search.test',
+      ALLEGORA_SEARCH_KEY: 'k',
+    })
+    const r = await worker.fetch(
+      post('/api/answer', {
+        question: 'Vem gäller lagen?',
+        corpus: 'sfs-all',
+        passages: [{ id: 'x', text: 'forged' }],
+      }),
+      e,
+    )
+    const body = (await r.json()) as {
+      status: string
+      hits: { id: string; title: string }[]
+    }
+    assert.equal(body.status, 'verified')
+    assert.deepEqual(
+      body.hits.map((h) => [h.id, h.title]),
+      [[LAW.id, 'LAS 1 §']],
+    )
+    assert.deepEqual(sent, [
+      {
+        url: 'https://search.test/search',
+        key: 'k',
+        body: { question: 'Vem gäller lagen?', k: 8 },
+      },
+    ])
+  } finally {
+    globalThis.fetch = real
+  }
+})
+
+test('quota: PER_VISITOR questions a visitor a day, then 429; a new day starts over', async () => {
+  const { take, PER_VISITOR } = await import('./quota.ts')
+  const kv = new Map<string, string>()
+  const store = {
+    get: async (k: string) => kv.get(k) ?? null,
+    put: async (k: string, v: string) => void kv.set(k, v),
+  }
+  const day = new Date('2026-11-02T12:00:00Z')
+  for (let i = 0; i < PER_VISITOR; i++)
+    assert.equal((await take(store, '1.2.3.4', day)).ok, true)
+  assert.deepEqual(await take(store, '1.2.3.4', day), {
+    ok: false,
+    reason: 'limit',
+  })
+  assert.equal((await take(store, '5.6.7.8', day)).ok, true)
+  assert.equal(
+    (await take(store, '1.2.3.4', new Date('2026-11-03T00:00:01Z'))).ok,
+    true,
+  )
+  assert.ok(
+    ![...kv.keys()].some((k) => k.includes('1.2.3.4')),
+    'IPs are hashed',
+  )
+})
+
+test('answer: with the Claude key every corpus takes from the daily allowance before the call', async () => {
+  const real = globalThis.fetch
+  let claude = 0
+  globalThis.fetch = (async () => {
+    claude++
+    return Response.json({ content: [{ type: 'text', text: 'NO_ANSWER' }] })
+  }) as typeof fetch
+  try {
+    const e = await env()
+    Object.assign(e, { ANTHROPIC_API_KEY: 'test' })
+    assert.equal(
+      (await worker.fetch(ask(), e)).status,
+      503,
+      'no quota configured',
+    )
+    const kv = new Map<string, string>()
+    const day = new Date().toISOString().slice(0, 10)
+    kv.set(`q:${day}:total`, '200')
+    Object.assign(e, {
+      QUOTA: {
+        get: async (k: string) => kv.get(k) ?? null,
+        put: async (k: string, v: string) => void kv.set(k, v),
+      },
+    })
+    const spent = await worker.fetch(ask(), e)
+    assert.equal(spent.status, 429)
+    assert.deepEqual(await spent.json(), { reason: 'site' })
+    assert.equal(claude, 0, 'Claude is never called without an allowance')
+  } finally {
+    globalThis.fetch = real
+  }
 })

@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "term": {
+      "type": "object",
+      "required": ["term", "words", "recent_uses", "before_uses", "employers", "z"],
+      "additionalProperties": false,
+      "properties": {
+        "term": {"type": "string", "minLength": 1, "maxLength": 120},
+        "words": {"enum": [1, 2]},
+        "recent_uses": {"type": "integer", "minimum": 0},
+        "before_uses": {"type": "integer", "minimum": 0},
+        "employers": {"type": "integer", "minimum": 10},
+        "z": {"type": "number"}
+      }
+    },
+    "month": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "window": {
+      "type": "object", "required": ["from", "to"], "additionalProperties": false,
+      "properties": {"from": {"$ref": "#/$defs/month"}, "to": {"$ref": "#/$defs/month"}}
+    }
+  },
+  "type": "object",
+  "required": ["schema_version", "generated_at", "source", "model", "recent", "before", "rules", "method", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "generated_at": {"type": "string", "minLength": 10},
+    "source": {"type": "string", "minLength": 1},
+    "model": {"type": "string", "minLength": 1},
+    "recent": {"$ref": "#/$defs/window"},
+    "before": {"$ref": "#/$defs/window"},
+    "rules": {"type": "object"},
+    "method": {"type": "string", "minLength": 1},
+    "rows": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["role_family", "recent_ads", "before_ads", "totals", "candidates", "dropped", "rising", "falling"],
+        "additionalProperties": false,
+        "properties": {
+          "role_family": {"type": "string", "minLength": 1},
+          "recent_ads": {"type": "integer", "minimum": 0},
+          "before_ads": {"type": "integer", "minimum": 0},
+          "totals": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+          "candidates": {"type": "integer", "minimum": 0},
+          "dropped": {"type": "object", "additionalProperties": {"type": "integer", "minimum": 0}},
+          "rising": {"type": "array", "maxItems": 30, "items": {"$ref": "#/$defs/term"}},
+          "falling": {"type": "array", "maxItems": 30, "items": {"$ref": "#/$defs/term"}}
+        }
+      }
+    }
+  }
+}

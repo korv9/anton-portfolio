@@ -4,6 +4,7 @@
  */
 import { useEffect, useMemo, useState } from 'react'
 import { l } from '../i18n'
+import { count } from '../format'
 import { fetchJson } from '../dataSource'
 import MultiLineChart from '../charts/MultiLineChart'
 import RankBars from '../charts/RankBars'
@@ -76,15 +77,15 @@ export type Trends = {
     jump?: Jump | null
   } | null
 }
-export type Cells = { rows: [string, string, number, number, number][] }
-export type Examples = { rows: string[][] }
+type Cells = { rows: [string, string, number, number, number][] }
+type Examples = { rows: string[][] }
 
 export const BASE = 'sweden/futures/'
 // DiVA years whose rise in the future share gets a scope note while the per-word counts
 // (academic.jump) are absent.
 const UNEXPLAINED = [2024, 2025]
 export const pct = (v: number) => `${(v * 100).toFixed(1)} %`
-export const num = (n: number) => n.toLocaleString(l('en-GB', 'sv-SE'))
+export const num = count
 export const name = (t: { label_en: string; label_sv: string }) =>
   l(t.label_en, t.label_sv)
 

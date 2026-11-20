@@ -72,3 +72,15 @@ test('Replik picks a decade for the party profiles', async ({ page }) => {
     page.locator('#replik-parties .rk-party', { hasText: 'Sweden Democrats' }),
   ).toContainText('Not in the Riksdag')
 })
+
+test('a file that cannot be read leaves a note instead of a silent gap', async ({
+  page,
+}) => {
+  await page.route('**/riksdag-eras.json', (route) =>
+    route.fulfill({ status: 404 }),
+  )
+  await page.goto('/#replik')
+  await expect(page.getByText('Some data could not be loaded')).toBeVisible()
+  await expect(page.locator('#replik-eras')).toHaveCount(0)
+  await expect(page.locator('#replik-votes h2')).toBeVisible()
+})

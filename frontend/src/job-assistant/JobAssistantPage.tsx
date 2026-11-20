@@ -1,7 +1,7 @@
 /**
  * #jobs, the desk: every open Data/IT ad from JobTech with its fit against the approved CV
- * profile (docs/job-assistant.md). A top bar (title, search, last update), list tabs with counts
- * and compact filters, the list on the left and the open ad on the right; under 760 px the ad
+ * profile (docs/products/jobs/job-assistant.md). One top row (title, a compact search, last update), list tabs
+ * with counts and compact filters, the list ("Ads") on the left and the open ad on the right; under 760 px the ad
  * replaces the list with a back button. The search, filters, list, tab and open ad live in the
  * address, so a link shares the view and the back button closes an ad. Marks (saved, applied,
  * closed) are kept on this device, and in the owner store with the owner token.
@@ -12,12 +12,14 @@ import { setHashParams, type Route } from '../router'
 import AdDetail from './AdDetail'
 import PageHead from '../ui/PageHead'
 import Bar, { Notes } from './Bar'
-import Filters from './Filters'
+import Filters, { type Tab } from './Filters'
+import Market, { MARKET_VIEW } from './Market'
 import JobList from './JobList'
 import Sections from './Sections'
 import { useJobData } from './useJobData'
 import { https, ownerToken, recordsNote, rows as joinRows } from './data'
 import {
+  daysBetween,
   facetCounts,
   listCounts,
   parseQuery,
@@ -31,6 +33,7 @@ import './job-assistant.css'
 import './job-assistant-desk.css'
 import './job-assistant-motion.css'
 import './job-assistant-sections.css'
+import { scrollToElement } from '../ui/scrollTo'
 
 const PAGE = 50
 const narrow = () => matchMedia('(max-width: 760px)').matches
@@ -64,7 +67,8 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     () => parseQuery(route.params, all, defaultList),
     [route.params, all, defaultList],
   )
-  const about = route.params.get('tab') === 'about'
+  const tabParam = route.params.get('tab')
+  const tab: Tab = tabParam === 'about' || tabParam === 'market' ? tabParam : ''
   const adId = route.params.get('ad')
   const shown = useMemo(() => searchRows(all, query), [all, query])
   const lists = useMemo(() => listCounts(all, query), [all, query])
@@ -72,7 +76,14 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   const qKey = queryParams(new URLSearchParams(), query).toString()
   const limit = more.key === qKey ? more.n : PAGE
   const opened = adId ? all.find((r) => r.ad.id === adId) : undefined
-  const selected = opened ?? (adId ? undefined : shown[0])
+  // The list runs nearest deadline first, so the first row can be an ad whose date has passed.
+  const selected =
+    opened ??
+    (adId
+      ? undefined
+      : (shown.find(
+          (r) => (daysBetween(day, r.ad.application_deadline) ?? 0) >= 0,
+        ) ?? shown[0]))
 
   const go = (params: URLSearchParams, push = false) =>
     setHashParams(route.path, params, push)
@@ -80,6 +91,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
     setMoved(true)
     const p = queryParams(route.params, q, defaultList)
     p.delete('tab')
+    for (const k of Object.keys(MARKET_VIEW)) p.delete(k)
     if (q.list !== query.list) p.delete('ad')
     go(p, push)
   }
@@ -103,9 +115,9 @@ export default function JobAssistantPage({ route }: { route: Route }) {
       go(p)
     }
   }
-  const showAbout = () => {
+  const showTab = (t: Tab) => {
     const p = new URLSearchParams(route.params)
-    p.set('tab', 'about')
+    p.set('tab', t)
     p.delete('ad')
     go(p, true)
   }
@@ -113,7 +125,7 @@ export default function JobAssistantPage({ route }: { route: Route }) {
   // An opened ad on a phone: its back button is where the reader lands, below the site header.
   useEffect(() => {
     if (!adId || !narrow()) return
-    document.querySelector('.ja-detail')?.scrollIntoView({ block: 'start' })
+    scrollToElement(document.querySelector('.ja-detail'))
     document
       .querySelector<HTMLElement>('.ja-back')
       ?.focus({ preventScroll: true })
@@ -144,19 +156,15 @@ export default function JobAssistantPage({ route }: { route: Route }) {
 
   return (
     <div className="ja ds-container" data-moved={moved || undefined}>
-      <PageHead
-        title="Arbetsförmedla"
-        sentence={l(
-          'Every open Data/IT job ad, compared with my CV.',
-          'Varje öppen Data/IT-annons, jämförd med mitt CV.',
-        )}
-      />
-      <Bar
-        data={data}
-        q={query.q}
-        onSearch={(q) => setQuery({ ...query, q })}
-        day={day}
-      />
+      <div className="ja-top">
+        <PageHead title="Arbetsförmedla" />
+        <Bar
+          data={data}
+          q={query.q}
+          onSearch={(q) => setQuery({ ...query, q })}
+          day={day}
+        />
+      </div>
       {data && <Notes data={data} now={now} />}
       {owner && records.problem && (
         <p className="ja-notes" role="status">
@@ -188,10 +196,12 @@ export default function JobAssistantPage({ route }: { route: Route }) {
             onQuery={setQuery}
             lists={lists}
             counts={counts}
-            about={about}
-            onAbout={showAbout}
+            tab={tab}
+            onTab={showTab}
           />
-          {about ? (
+          {tab === 'market' ? (
+            <Market route={route} data={data} />
+          ) : tab === 'about' ? (
             <Sections
               data={data}
               owner={owner}

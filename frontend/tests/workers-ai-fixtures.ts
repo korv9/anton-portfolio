@@ -1,5 +1,5 @@
 /**
- * Small Workers AI exports for the e2e tests, in the contract's format (docs/workers-ai.md):
+ * Small Workers AI exports for the e2e tests, in the contract's format (docs/products/allegora/workers-ai.md):
  * 1024-dimensional vectors projected onto 4 PCA dimensions, int8 passage vectors, meta.json and
  * examples.json. Debate passages sit on two groups of the published debate map, so a placed
  * sentence lands among real coordinates. Routes are mocked; nothing here is published.
@@ -74,31 +74,6 @@ const lawItems = Array.from({ length: 10 }, (_, i) => ({
   vector: row(i < 5 ? 0 : 1, i),
 }))
 
-// Ask the platform: passages with their file, commit and graph nodes; the first names a gold
-// model of the published graph, so the answer draws its path.
-const platformItems = Array.from({ length: 10 }, (_, i) => ({
-  id: i === 0 ? 'dbt:fct_election' : `docs/pipeline.md#fixture-${i}`,
-  title:
-    i === 0
-      ? 'fct_election (platform/models/gold/parliament/schema.yml)'
-      : `docs/pipeline.md › Fixture ${i}`,
-  url: `https://github.com/korv9/anton-portfolio/blob/abc1234/${i === 0 ? 'platform/models/gold/parliament/schema.yml' : 'docs/pipeline.md'}`,
-  text: `Fixture platform passage ${i}.`,
-  path:
-    i === 0 ? 'platform/models/gold/parliament/schema.yml' : 'docs/pipeline.md',
-  commit: 'abc1234',
-  nodes: i === 0 ? ['dbt:fct_election'] : [],
-  vector: row(i < 5 ? 0 : 1, i),
-}))
-export const PLATFORM = platformItems
-const platformAnswer = {
-  status: 'verified',
-  answer: `From the election model [[${platformItems[0].id}]]"Fixture platform passage 0."`,
-  quotes: [{ id: platformItems[0].id, quote: 'Fixture platform passage 0.' }],
-  model: ANSWER_MODEL,
-}
-export const PLATFORM_ANSWER = platformAnswer
-
 function corpus(corpus: string, items: { vector: number[] }[], extra = {}) {
   return {
     'pca.json': pca,
@@ -156,22 +131,6 @@ export const FILES: Record<string, Record<string, unknown>> = {
             quotes: [{ id: lawItems[0].id, quote: 'Fixture paragraph 1.' }],
             model: ANSWER_MODEL,
           },
-        },
-      ],
-    },
-  },
-  platform: {
-    ...corpus('platform', platformItems),
-    'examples.json': {
-      model: ANSWER_MODEL,
-      created: '2026-10-22T20:57:00Z',
-      examples: [
-        {
-          question: 'Fixture platform question?',
-          vector: unit(0),
-          passages: platformItems.slice(0, 8).map((i) => i.id),
-          status: 'verified',
-          answer: platformAnswer,
         },
       ],
     },
@@ -241,3 +200,42 @@ export async function serveExports(page: Page, requested: string[] = []) {
 }
 
 export const vectorNear = unit
+
+/** A /api/ask stream as worker/ask.ts writes it; a list without result stops mid-draft. */
+export const sse = (events: [string, unknown][]) =>
+  events
+    .map(([name, data]) => `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`)
+    .join('')
+
+const HITS = LAW.slice(0, 8).map(({ id, title, url, text, law }, i) => ({
+  id,
+  title,
+  url,
+  text,
+  law,
+  kind: 'lag',
+  score: 0.9 - i / 100,
+}))
+export const CHECKED = `Det gäller [[${LAW[0].id}]]"Fixture paragraph 1."`
+export const VERIFIED: [string, unknown][] = [
+  ['hits', { query: 'q', hits: HITS }],
+  ['delta', { text: 'Det gäller ' }],
+  ['delta', { text: `[[${LAW[0].id}]]"Fixture paragraph 1."` }],
+  [
+    'result',
+    {
+      status: 'verified',
+      answer: CHECKED,
+      quotes: [{ id: LAW[0].id, quote: 'Fixture paragraph 1.' }],
+      model: 'claude-sonnet-5-5',
+    },
+  ],
+  [
+    'fable',
+    {
+      allegory:
+        'En räv och en hare arbetade i samma verkstad.\nSensmoral: regeln gäller alla.',
+    },
+  ],
+  ['done', {}],
+]

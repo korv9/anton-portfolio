@@ -6,6 +6,7 @@
  */
 import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
+import { fixed as num } from '../format'
 import { fetchData } from '../dataSource'
 import CalibrationScatter from './CalibrationScatter'
 import { Empty } from '../report/board/Board'
@@ -246,12 +247,6 @@ const DEEPER = (): DeeperLink[] => [
   },
 ]
 
-const nf = () => l('en-GB', 'sv-SE')
-const num = (n: number, digits = 0) =>
-  n.toLocaleString(nf(), {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  })
 const pct = (share: number, digits = 1) => `${num(share * 100, digits)} %`
 
 export default function DrugCombReport({ route }: { route: Route }) {

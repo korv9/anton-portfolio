@@ -1,13 +1,29 @@
 /**
- * The site's Worker: static assets as before, plus two endpoints on Workers AI (docs/workers-ai.md).
- * POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer answers a question
- * from passages the browser found, after checking that every passage is verbatim published text
- * (law, or the platform's own documents) and that every quote in the answer is verbatim in its
- * passage. Visitor text is never logged
- * or stored. All vector search happens in the browser. /api/jobs/* is the job assistant's owner
- * records (worker/jobs.ts): public reads, token-protected writes and CV files.
+ * The site's Worker: static assets as before, plus two endpoints on Workers AI
+ * (docs/products/allegora/workers-ai.md). POST /api/embed embeds a visitor's sentence with bge-m3; POST /api/answer
+ * answers a question from passages the browser found, after checking that every passage is
+ * verbatim published law text and that every quote in the answer is verbatim in its passage.
+ * Visitor text is never logged or stored. Vector search happens in the browser, except for corpus
+ * 'sfs-all', every Swedish law and ordinance in force: there the Worker asks Allegora's search
+ * service on Cloud Run (platform/publish/allegora/search_service.py) for the passages, so they
+ * need no check. With ANTHROPIC_API_KEY the answers come from Claude (claude.ts) instead of Gemma.
+ * /api/jobs/* is the job assistant's owner records (worker/jobs.ts): public reads, token-protected
+ * writes and CV files.
  */
-import { jobs, type JobsEnv } from './jobs.ts'
+import { ask, search, warm } from './ask.ts'
+import { claude } from './claude.ts'
+import { jobs, readJson, reply, type JobsEnv } from './jobs.ts'
+import { take, type Kv } from './quota.ts'
+import {
+  ALLEGORY_SYSTEM,
+  canonical,
+  checkQuotes,
+  sha256,
+  SYSTEM,
+  textHash,
+  told,
+  type Passage,
+} from './quotes.ts'
 
 export type Env = JobsEnv & {
   AI: { run: (model: string, input: unknown) => Promise<unknown> }
@@ -15,60 +31,27 @@ export type Env = JobsEnv & {
   RATE_LIMITER?: {
     limit: (o: { key: string }) => Promise<{ success: boolean }>
   }
+  /** wrangler.toml var and Cloudflare secret: the search service and the key it checks. */
+  ALLEGORA_SEARCH_URL?: string
+  ALLEGORA_SEARCH_KEY?: string
+  /** Cloudflare secret: with it the answer and its fable come from Claude (claude.ts). */
+  ANTHROPIC_API_KEY?: string
+  /** Workers KV: Allegora's daily question counts (quota.ts). */
+  QUOTA?: Kv
 }
 
 export const EMBED_MODEL = '@cf/baai/bge-m3'
 export const ANSWER_MODEL = '@cf/google/gemma-4-26b-a4b-it'
-/** The answer model's reasoning setting (docs/workers-ai.md): tokens here are the cost per answer. */
+/** The answer model's reasoning setting (docs/products/allegora/workers-ai.md): tokens here are the cost per answer. */
 export const ANSWER_OPTIONS: Record<string, unknown> = {
   chat_template_kwargs: { enable_thinking: false },
 }
 export const MAX_TEXT = 500
 export const MAX_PASSAGES = 8
 export const MAX_PASSAGE = 5000
-const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'platform']
+const CORPORA = ['sfs', 'ai-act-sv', 'ai-act-en', 'sfs-all']
 
-// Python's str.isspace() set, so the folding matches platform/legal/parse.py exactly.
-const SPACE =
-  /[\t-\r\x1c-\x20\x85\xa0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000]+/g
-
-/** platform/legal/parse.py text_hash() folding: NFKC, one kind of space, straight quotes. */
-export function fold(text: string) {
-  const normal = text
-    .normalize('NFKC')
-    .replaceAll('\u00a0', ' ')
-    .replace(/[ \t\r\f\v]+/g, ' ')
-    .replace(/ ([,.;:)])/g, '$1')
-    .trim()
-  return normal
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201c\u201d]/g, '"')
-    .replace(SPACE, ' ')
-    .trim()
-}
-
-async function sha256(text: string) {
-  const digest = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(text),
-  )
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('')
-}
-
-/** The same hex digest as platform/legal/parse.py text_hash(). */
-export const textHash = (text: string) => sha256(fold(text))
-
-const json = (body: unknown, status = 200) =>
-  Response.json(body, {
-    status,
-    headers: {
-      'Cache-Control': 'no-store',
-      'X-Content-Type-Options': 'nosniff',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-    },
-  })
+const json = reply
 
 /** An AI call that failed: the daily neuron allocation is spent, or something else broke. */
 const unavailable = (error: unknown) =>
@@ -81,16 +64,7 @@ const unavailable = (error: unknown) =>
     503,
   )
 
-async function body(request: Request): Promise<Record<string, unknown> | null> {
-  const raw = await request.text()
-  if (raw.length > 64_000) return null
-  try {
-    const value = JSON.parse(raw)
-    return value && typeof value === 'object' ? value : null
-  } catch {
-    return null
-  }
-}
+const body = (request: Request) => readJson(request, 192_000)
 
 const sentence = (value: unknown) =>
   typeof value === 'string' && value.trim() && value.length <= MAX_TEXT
@@ -109,8 +83,6 @@ async function embed(request: Request, env: Env) {
     return unavailable(error)
   }
 }
-
-type Passage = { id: string; text: string }
 
 /** Every passage must be one of the corpus's published passages, word for word. */
 async function published(
@@ -144,70 +116,26 @@ async function published(
   return checks.every(Boolean)
 }
 
-const RULES = [
-  'Answer in the language of the question, in at most five sentences.',
-  'Support every claim with a verbatim quote from a passage, written as [[id]]"quote", where id is the passage id and the quote is copied character for character from that passage.',
-  'Never quote anything that is not in the passage with that id, and never use outside knowledge.',
-  'If the passages do not answer the question, reply with exactly NO_ANSWER and nothing else.',
-]
-export const SYSTEM = [
-  'You answer questions about law using only the numbered passages you are given.',
-  ...RULES,
-  'Example of the format: Lagen omfattar anställda [[sfs-1982-80-1]]"Lagen gäller arbetstagare i allmän och enskild tjänst".',
-].join(' ')
-/** Allegora's second step: the checked answer retold as a fable with a moral. */
-export const ALLEGORY_SYSTEM = [
-  'You are Allegora. You are given a question and an answer about the law that has been checked against the legal text.',
-  'Retell that answer as a short moral allegory, like a fable: three to six sentences about animals, craftspeople or a village, ending with one line that starts with "Moral:" ("Sensmoral:" in Swedish).',
-  'Write in the language of the question. Keep the meaning of the answer exactly: add no rule, exception, number or consequence it does not state.',
-  'Do not cite, quote or name paragraphs, and write no [[ ]] marks.',
-].join(' ')
-
-/** The platform corpus: the repository's documents, dbt models and data catalogue. */
-export const PLATFORM_SYSTEM = [
-  "You answer questions about how this data platform is built, using only the numbered passages you are given: the repository's documents, dbt model descriptions and data catalogue.",
-  ...RULES,
-  'Example of the format: The model is chosen by an evaluation [[docs/workers-ai.md#modellval]]"Kandidaterna kördes på de 20 evalfrågorna".',
-].join(' ')
-
-// [[id]] followed by its quote; a colon or white space between them is tolerated, and curly
-// quotes are already straight after fold(). An [[id]] without a quote is matched too, and fails.
-const QUOTE = /\[\[([^\]]+)\]\](?:\s*:?\s*"([^"]+)")?/g
-// A quote written just before an [[id]] that has no quote of its own is the same citation turned
-// around, "quote" [[id]]; it is rewritten as [[id]]"quote" and then checked like any other.
-const TURNED = /"([^"]+)"\s*\[\[([^\]]+)\]\](?!\s*:?\s*")/g
-
-/** The answer folded, with every citation in the [[id]]"quote" order. */
-export const canonical = (answer: string) =>
-  fold(answer).replace(TURNED, '[[$2]]"$1"')
-
-// Markdown marks (code ticks, bold, table bars) and line breaks are dropped on both sides before
-// the compare, so a quote that leaves out a table's | still matches; its words must not change.
-const plain = (text: string) =>
-  fold(text)
-    .replace(/[`*|]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .replace(/ ([,.;:)])/g, '$1')
-    .trim()
-
-/** Every citation in the answer, and whether its quote is verbatim in the passage it names. */
-export function checkQuotes(answer: string, passages: Passage[]) {
-  const texts = new Map(passages.map((p) => [p.id, plain(p.text)]))
-  return [...canonical(answer).matchAll(QUOTE)].map(([, id, quote]) => ({
-    id,
-    quote: quote ?? '',
-    verbatim:
-      quote != null &&
-      /\p{L}|\p{N}/u.test(plain(quote)) &&
-      (texts.get(id)?.includes(plain(quote)) ?? false),
-  }))
-}
-
 async function answer(request: Request, env: Env) {
   const input = await body(request)
   const question = sentence(input?.question)
   const corpus = String(input?.corpus)
-  const passages = input?.passages
+  // A paid call takes one question from the daily allowance before it is made: the Google Cloud
+  // search of every law in force (sfs-all), or Claude for any corpus once the Worker has its key.
+  const allowance = async () => {
+    if (!env.QUOTA) return json({ error: 'quota is not configured' }, 503)
+    const ip = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+    const taken = await take(env.QUOTA, ip)
+    return taken.ok ? null : json({ reason: taken.reason }, 429)
+  }
+  if (corpus === 'sfs-all' && question) {
+    const refused = await allowance()
+    if (refused) return refused
+  }
+  const hits =
+    corpus === 'sfs-all' && question ? await search(env, question) : undefined
+  if (hits === null) return json({ reason: 'error' }, 503)
+  const passages = hits ?? input?.passages
   if (
     !question ||
     !CORPORA.includes(corpus) ||
@@ -223,54 +151,73 @@ async function answer(request: Request, env: Env) {
   )
     return json({ error: 'question, corpus and passages [{id, text}]' }, 400)
   const found = (passages as Passage[]).map(({ id, text }) => ({ id, text }))
-  if (!(await published(request, env, corpus, found)))
+  if (!hits && !(await published(request, env, corpus, found)))
     return json({ error: 'passages must be published text' }, 400)
+  if (!hits && env.ANTHROPIC_API_KEY) {
+    const refused = await allowance()
+    if (refused) return refused
+  }
 
   let text: string
   let usage: unknown
+  let model: string
   try {
-    const out = (await env.AI.run(ANSWER_MODEL, {
-      messages: [
-        {
-          role: 'system',
-          content: corpus === 'platform' ? PLATFORM_SYSTEM : SYSTEM,
-        },
-        {
-          role: 'user',
-          content: `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
-        },
-      ],
-      max_tokens: 2048,
-      temperature: 0.1,
-      ...ANSWER_OPTIONS,
-    })) as {
-      response?: string
-      choices?: { message?: { content?: string } }[]
-      usage?: unknown
-    }
-    text = (out.response ?? out.choices?.[0]?.message?.content ?? '').trim()
-    usage = out.usage
+    ;({ text, usage, model } = await generate(
+      env,
+      SYSTEM,
+      `${found.map((p) => `[[${p.id}]]\n${p.text}`).join('\n\n')}\n\nQuestion: ${question}`,
+      { maxTokens: 2048, temperature: 0.1 },
+    ))
   } catch (error) {
     return unavailable(error)
   }
   const quotes = checkQuotes(text, found)
   // A refusal, or an answer that quotes nothing, has nothing to check.
   if (/^NO_ANSWER\W*$/.test(text) || !quotes.length)
-    return json({ status: 'no_answer', passages: found })
+    return json({ status: 'no_answer', passages: found, hits })
   // Generated in full, then checked: an answer with a quote that is not in its source is dropped.
   if (!quotes.every((q) => q.verbatim))
-    return json({ status: 'unverified', passages: found })
+    return json({ status: 'unverified', passages: found, hits })
   const checked = canonical(text)
-  const allegory =
-    corpus === 'platform' ? null : await retell(env, question, checked)
+  const allegory = await retell(env, question, checked)
   return json({
     status: 'verified',
     ...(allegory && { allegory }),
     answer: checked,
     quotes: quotes.map(({ id, quote }) => ({ id, quote })),
-    model: ANSWER_MODEL,
+    model,
     usage,
+    hits,
   })
+}
+
+/**
+ * One generation: Claude when the Worker has its key, otherwise Gemma on Workers AI. Claude
+ * takes no temperature.
+ */
+async function generate(
+  env: Env,
+  system: string,
+  user: string,
+  { maxTokens, temperature }: { maxTokens: number; temperature: number },
+) {
+  if (env.ANTHROPIC_API_KEY)
+    return claude(env.ANTHROPIC_API_KEY, system, user, maxTokens)
+  const out = (await env.AI.run(ANSWER_MODEL, {
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user },
+    ],
+    max_tokens: maxTokens,
+    temperature,
+    ...ANSWER_OPTIONS,
+  })) as {
+    response?: string
+    choices?: { message?: { content?: string } }[]
+    usage?: unknown
+  }
+  const text = (out.response ?? out.choices?.[0]?.message?.content ?? '').trim()
+  return { text, usage: out.usage, model: ANSWER_MODEL }
 }
 
 /**
@@ -278,32 +225,15 @@ async function answer(request: Request, env: Env) {
  * checked answer only, never from the passages; a failed or citing retelling leaves the answer.
  */
 async function retell(env: Env, question: string, checked: string) {
-  const plainAnswer = checked.replace(QUOTE, (_, _id, quote) =>
-    quote ? `"${quote}"` : '',
-  )
   try {
-    const out = (await env.AI.run(ANSWER_MODEL, {
-      messages: [
-        { role: 'system', content: ALLEGORY_SYSTEM },
-        {
-          role: 'user',
-          content: `Question: ${question}
+    const { text: story } = await generate(
+      env,
+      ALLEGORY_SYSTEM,
+      `Question: ${question}
 
-Checked answer: ${plainAnswer}`,
-        },
-      ],
-      max_tokens: 600,
-      temperature: 0.7,
-      ...ANSWER_OPTIONS,
-    })) as {
-      response?: string
-      choices?: { message?: { content?: string } }[]
-    }
-    const story = (
-      out.response ??
-      out.choices?.[0]?.message?.content ??
-      ''
-    ).trim()
+Checked answer: ${told(checked)}`,
+      { maxTokens: 600, temperature: 0.7 },
+    )
     return story && !story.includes('[[') ? story : null
   } catch {
     return null
@@ -337,14 +267,24 @@ export default {
         return json({ error: 'too many requests' }, 429)
       return jobs(request, env)
     }
-    const route = { '/api/embed': embed, '/api/answer': answer }[pathname]
+    const route = {
+      '/api/embed': embed,
+      '/api/answer': answer,
+      '/api/ask': ask,
+      '/api/warm': warm,
+    }[pathname]
     if (!route) return json({ error: 'not found' }, 404)
     if (request.method !== 'POST') return json({ error: 'POST only' }, 405)
-    if (env.RATE_LIMITER) {
-      const key = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
-      if (!(await env.RATE_LIMITER.limit({ key })).success)
-        return json({ error: 'too many requests' }, 429)
-    }
+    // As for job writes: the site's own origin, or no browser at all.
+    const origin = request.headers.get('Origin')
+    if (origin && origin !== new URL(request.url).origin)
+      return json({ error: 'forbidden origin' }, 403)
+    // Workers AI spends the account's neurons, so it is never served unlimited.
+    if (!env.RATE_LIMITER)
+      return json({ error: 'rate limiter is not configured' }, 503)
+    const key = request.headers.get('CF-Connecting-IP') ?? 'anonymous'
+    if (!(await env.RATE_LIMITER.limit({ key })).success)
+      return json({ error: 'too many requests' }, 429)
     return route(request, env)
   },
 }

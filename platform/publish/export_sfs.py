@@ -19,14 +19,13 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
 
 import duckdb  # noqa: E402
 
-from common import PUBLIC, ROOT, write_json  # noqa: E402
+from portfolio.core.config import PUBLIC, ROOT
+from portfolio.core.io import write_json  # noqa: E402
 
 DATABASE = Path(os.environ.get("PORTFOLIO_DB", ROOT / "warehouse/portfolio.duckdb"))
 RUN_RESULTS = ROOT / "platform/target/sfs/run_results.json"
@@ -120,7 +119,7 @@ def main() -> None:
         con.close()
     assert sum(k["documents"] for k in overview["kinds"]) == sum(
         p["documents"] for p in overview["parse"]), "kinds and parse statuses disagree"
-    write_json(OUT, overview)
+    write_json(OUT, overview, newline=False)
     print(f"Wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size:,} bytes)")
 
 

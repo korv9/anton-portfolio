@@ -1,5 +1,6 @@
 /**
- * The list tabs with their counts (good fit, saved, applied, closed, all), How it works, and a
+ * The list tabs with their counts (good fit, saved, applied, closed, all), the market tab, How it
+ * works, and a
  * Filters disclosure with place, role and seniority, each option with the ads it would leave.
  */
 import { l } from '../i18n'
@@ -54,18 +55,23 @@ type Props = {
   onQuery: (q: Query, push?: boolean) => void
   lists: Record<List, number>
   counts: Record<Facet, Map<string, number>>
-  /** The How it works tab is open, so no list is pressed. */
-  about: boolean
-  onAbout: () => void
+  /** The market or How it works tab is open, so no list is pressed. */
+  tab: Tab
+  onTab: (tab: Tab) => void
 }
+export type Tab = '' | 'market' | 'about'
+const TABS: [Exclude<Tab, ''>, [string, string]][] = [
+  ['market', ['Job market', 'Arbetsmarknaden']],
+  ['about', ['How it works', 'Så fungerar det']],
+]
 
 export default function Filters({
   query,
   onQuery,
   lists,
   counts,
-  about,
-  onAbout,
+  tab,
+  onTab,
 }: Props) {
   const set = (f: Facet, v: string) => onQuery({ ...query, [f]: v }, true)
   const active = FACETS.filter((f) => query[f] !== DEFAULT_QUERY[f]).length
@@ -77,7 +83,7 @@ export default function Filters({
             key={list}
             type="button"
             className="ja-tab"
-            aria-pressed={!about && query.list === list}
+            aria-pressed={!tab && query.list === list}
             onClick={() => onQuery({ ...query, list }, true)}
           >
             {l(...LIST_NAMES[list])}{' '}
@@ -86,16 +92,19 @@ export default function Filters({
             </span>
           </button>
         ))}
-        <button
-          type="button"
-          className="ja-tab"
-          aria-pressed={about}
-          onClick={onAbout}
-        >
-          {l('How it works', 'Så fungerar det')}
-        </button>
+        {TABS.map(([t, name]) => (
+          <button
+            key={t}
+            type="button"
+            className="ja-tab"
+            aria-pressed={tab === t}
+            onClick={() => onTab(t)}
+          >
+            {l(...name)}
+          </button>
+        ))}
       </nav>
-      {!about && (
+      {!tab && (
         <details className="ja-filters" open={active > 0 || undefined}>
           <summary className="ja-label">
             {l('Filters', 'Filter')}

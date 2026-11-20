@@ -225,6 +225,7 @@ export default function Measurement({ route }: { route: Route }) {
   const scene = (
     <Scene
       product={product}
+      defer={scene3d}
       line={l(
         'SCB tables reporting a year in each decade, at the chosen geography or finer. Count.',
         'SCB-tabeller som rapporterar ett år i varje decennium, på vald geografi eller finare. Antal.',

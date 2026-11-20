@@ -10,7 +10,7 @@ the previous run, in windows of at most six hours, so nothing between two runs i
 Under warehouse/raw/jobtech/:
 
     stream/raw/<window>.json.gz       each answer as served, with its provenance line
-                                      (lib/rawstore.py)
+                                      (src/portfolio/storage/rawstore.py)
     stream/ads/<window>.parquet       the ads first seen in that window, one row each: id,
                                       publication date and the cells it counts in
     stream/state.json                 the first complete day and the time fetched up to
@@ -44,10 +44,9 @@ from zoneinfo import ZoneInfo
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import rawstore  # noqa: E402
+from portfolio.storage import rawstore  # noqa: E402
 from ingest_market import ADS_COLUMNS, CONDITIONS_COLUMNS, cells, write  # noqa: E402
 
 STREAM_URL = "https://jobstream.api.jobtechdev.se/stream"
@@ -195,9 +194,12 @@ def main() -> None:
                and str(ad["id"]) not in seen]
         seen.update(r["id"] for r in new)
         if new:
-            pq.write_table(pa.Table.from_pylist(new, schema=AD_SCHEMA),
-                           STREAM / "ads" / f"{start:%Y-%m-%dT%H%M}.parquet",
-                           compression="zstd")
+            path = STREAM / "ads" / f"{start:%Y-%m-%dT%H%M}.parquet"
+            table = pa.Table.from_pylist(new, schema=AD_SCHEMA)
+            if path.exists():  # a rerun after a stop before the state write: add, never replace
+                table = pa.concat_tables([pq.read_table(path, schema=AD_SCHEMA), table])
+            pq.write_table(table, path.with_suffix(".tmp"), compression="zstd")
+            path.with_suffix(".tmp").replace(path)
         removed = sum(1 for ad in items if ad.get("removed"))
         print(f"{start:%Y-%m-%d %H:%M} to {end:%Y-%m-%d %H:%M}: {len(items):,} changes, "
               f"{len(new):,} new ads, {removed:,} removed", flush=True)

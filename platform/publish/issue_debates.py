@@ -24,9 +24,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "platform/lib"))
 sys.path.insert(0, str(ROOT / "platform/nlp"))
-import delivery  # noqa: E402
+from portfolio.storage import delivery  # noqa: E402
 from issue_lexicon import STEM, WORD, stems  # noqa: E402
 
 PUBLIC = ROOT / "frontend/public/data"

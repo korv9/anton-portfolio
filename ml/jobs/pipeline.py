@@ -195,6 +195,9 @@ def run(database: Path, directory: Path, config: Config, compare=False, sweep_ca
     folder.mkdir(parents=True, exist_ok=True)
     assignments = jobs[['job_id', 'cluster_id', 'cluster_probability', 'is_noise', 'umap_x', 'umap_y']].assign(run_id=run_id)
     assignments.to_parquet(folder / 'assignments.parquet', index=False)
+    # The text each ad was embedded from: the cache keeps every version of an ad, and promotion
+    # (registry.reference) must take the vector this run was fitted on.
+    jobs[['job_id', 'text_hash']].to_parquet(folder / 'inputs.parquet', index=False)
     profile_frame = sql_profiles(cluster_profiles).assign(run_id=run_id)
     profile_frame.to_parquet(folder / 'profiles.parquet', index=False)
     report = {'schema_version': 1, 'run_id': run_id, 'generated_at': datetime.now(timezone.utc).isoformat(),

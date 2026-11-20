@@ -9,8 +9,7 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "lib"))
-import common
+from portfolio.core.io import raw_sha, write_bytes_retrying
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / 'frontend/public/data/politics'
@@ -23,7 +22,7 @@ def read(path):
 
 def write(path, data):
     payload = json.dumps(data, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
-    common.write_bytes_retrying(path, payload)
+    write_bytes_retrying(path, payload)
 
 def mirror(source: Path, target: Path) -> int:
     """Copy a tree, skipping files already identical and retrying transient locks.
@@ -40,7 +39,7 @@ def mirror(source: Path, target: Path) -> int:
         destination = target / item.relative_to(source)
         if (destination.is_file()
                 and destination.stat().st_size == item.stat().st_size
-                and common.raw_sha(destination) == common.raw_sha(item)):
+                and raw_sha(destination) == raw_sha(item)):
             continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         for attempt in range(5):
@@ -160,7 +159,7 @@ def build(parliament, allegoria, local_corpus):
     write(OUT / 'overview.json', {'parliament': read(target / 'overview.json'), 'sessions': sessions,
                                  'law_pools': {pool: {'documents': sum(r['pool']==pool for r in law_index), 'provisions': sum(r['provisions'] for r in law_index if r['pool']==pool)} for pool in ['v1','v2']},
                                  'meaning_tests': {'passed': passed, 'total': total}, 'validated_vote_direction_pairs': 0})
-    files = [{'path': str(path.relative_to(OUT)).replace('\\','/'), 'bytes': path.stat().st_size, 'sha256': common.raw_sha(path)}
+    files = [{'path': str(path.relative_to(OUT)).replace('\\','/'), 'bytes': path.stat().st_size, 'sha256': raw_sha(path)}
              for path in sorted(OUT.rglob('*')) if path.is_file() and path.name != 'catalog.json']
     write(OUT / 'catalog.json', {'schema_version': 1, 'sources': [
         {'repository': 'https://github.com/korv9/partiledardebatt-analys', 'revision': subprocess.check_output(['git','-C',str(parliament),'rev-parse','HEAD'],text=True).strip()},

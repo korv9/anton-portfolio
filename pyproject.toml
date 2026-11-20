@@ -1,5 +1,5 @@
 # The data platform as one installable package (`pip install -e .`), so scripts import
-# `portfolio.*` instead of editing sys.path. Moved over step by step; see docs/package.md.
+# `portfolio.*` instead of editing sys.path. Moved over step by step; see docs/platform/package.md.
 [build-system]
 requires = ["setuptools>=69"]
 build-backend = "setuptools.build_meta"

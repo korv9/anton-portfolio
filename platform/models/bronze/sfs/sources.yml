@@ -31,7 +31,7 @@ sources:
           freshness:
             warn_after: {count: 8, period: day}
             error_after: {count: 16, period: day}
-        description: One line per fetch with URL, time, SHA-256 and size (lib/rawstore.py).
+        description: One line per fetch with URL, time, SHA-256 and size (src/portfolio/storage/rawstore.py).
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/sfs/_manifest.jsonl',

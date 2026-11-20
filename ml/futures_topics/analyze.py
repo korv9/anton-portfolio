@@ -27,10 +27,20 @@ from ml.futures_topics.cluster import centre, embeddings, sample_key
 from ml.futures_topics.sentences import FEATURES, REPO, RUN, SEED, YEARS
 
 sys.path.insert(0, str(REPO / "platform/nlp/symbolic"))
-sys.path.insert(0, str(REPO / "platform/publish"))
-from diva_clusters import STOP  # noqa: E402
 from rank_clusters import ctfidf  # noqa: E402
 
+# Swedish and English stop words, plus thesis boilerplate.
+STOP = set("""
+och att det som en på är av för med till den har de inte om ett han men var jag sig från vi så kan
+man när år säger hon under också efter eller nu sin där vid mot ska skulle kommer ut får finns vara
+hade alla andra mycket än här då sedan över bara in blir upp även vad få två vill ha många hur mer
+dem denna detta dessa dess deras vilka vilken vilket samt genom utan inom mellan både samt hos
+studien studie studiens uppsatsen uppsats arbetet arbete syftet syfte resultat resultaten metod
+undersöka undersöker undersökning visar visade analys analysen kvalitativ kvantitativ intervjuer
+the of and to in a is that for on with as are by this be was it from an at or which were their
+study thesis results result aim purpose method methods analysis based using used paper research
+findings show shows shown also can has have been between its into these this than more how
+""".split())
 ROUNDS = 999
 BOOT = 1000
 LAGS = range(-3, 4)
@@ -41,11 +51,11 @@ STOPS = sorted(STOP | set("herr fru talman ledamot ledamoten jag vi våra vår v
 SECURITY = re.compile(r"\b(?:säkerhet\w*|försvar\w*|hot|hotet|hoten|hotbild\w*|kris|krisen|kriser\w*|krisberedskap"
                       r"|krig\w*|beredskap\w*|terror\w*|militär\w*|nato|ryssland)\b", re.I)
 PAIR_COLUMNS = ["cluster", "r_lag0", "p_lag0", "best_lag", "r_best_lag", "p_best_lag", "r_by_lag"]
-# Departures from docs/sweden-futures-topics-preregistration.md ("Changes after registration").
+# Departures from docs/research/preregistrations/sweden-futures-topics-preregistration.md ("Changes after registration").
 DEVIATIONS = [
     {"date": "2026-10-22", "change": "storage",
      "reason": "The first UMAP fit ran out of memory on the laptop, so the clustering runs in "
-               ".github/workflows/cluster-jobs.yml and the sample and embedding shards are kept in "
+               ".github/workflows/heavy-compute.yml and the sample and embedding shards are kept in "
                "the R2 warehouse store under features/sweden/futures_topics/run/, never in a release."},
     {"date": "2026-10-22", "change": "compute",
      "reason": "The method is unchanged: UMAP on the full centred vectors with the registered grid on a "
@@ -187,7 +197,7 @@ def main() -> None:
     cells.assign(run_id=run_id).to_parquet(FEATURES / "cells.parquet", index=False)
     (FEATURES / "method.json").write_text(json.dumps({**meta, **{k: metrics[k] for k in (
         "sentences", "space", "selected", "stability", "null_shuffled_dimensions", "corpus_ami")},
-        "baseline": metrics["baseline"], "preregistration": "docs/sweden-futures-topics-preregistration.md",
+        "baseline": metrics["baseline"], "preregistration": "docs/research/preregistrations/sweden-futures-topics-preregistration.md",
         "deviations": DEVIATIONS}, indent=2, default=float) + "\n", encoding="utf-8")
     sheet = REPO / "tmp/topics-review.csv"
     sheet.parent.mkdir(exist_ok=True)

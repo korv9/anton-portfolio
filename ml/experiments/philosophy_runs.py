@@ -1,4 +1,4 @@
-"""Philosophy Lab `select` and `final` (docs/cluster-experiments-philosophy.md).
+"""Philosophy Lab `select` and `final` (docs/research/clustering/philosophy.md).
 
 select: on the selection side, seeds 0-2, every embedding variant (model x passage unit) and
 representation (raw, centred on the work) is reduced once per seed and clustered with a small
@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from ml.cluster_lab.io import atomic_json, digest, now
+from ml.experiments.io import atomic_json, digest, now
 from . import accept, contract
 from . import evaluate as ev
 from . import fit
@@ -39,7 +39,7 @@ def pipeline(model: str, unit: str, representation: str, clustering: dict) -> di
 # The published pipeline: MiniLM, the work-centred map the site shows by default (karta=author_centered),
 # UMAP 10-D n15 min_dist 0, HDBSCAN min_cluster_size 25, min_samples 8.
 CHAMPION = pipeline('minilm', 'passage', 'centred', {'method': 'hdbscan', 'min_cluster_size': 25, 'min_samples': 8})
-# Chosen after `select` (selection side only); reasons in docs/cluster-experiments-philosophy.md.
+# Chosen after `select` (selection side only); reasons in docs/research/clustering/philosophy.md.
 CANDIDATES: list[tuple[str, dict]] = [
     ('candidate: champion with HDBSCAN min_cluster_size 40',
      pipeline('minilm', 'passage', 'centred', {'method': 'hdbscan', 'min_cluster_size': 40, 'min_samples': 8})),
@@ -143,9 +143,18 @@ LIMITATIONS = [
 ]
 
 
-def judge(registry: Registry, champion: dict, candidate: dict, rules=None) -> str:
+def judge(registry: Registry, champion: dict, candidate: dict, rules=None, common=None) -> str:
     rules, sha = rules or accept.criteria(ph.DOMAIN)
-    return registry.decide(candidate['run_id'], accept.check(candidate, champion, rules, sha))
+    return registry.decide(candidate['run_id'], accept.check(candidate, champion, rules, sha, common))
+
+
+def common_with_champion(run: dict, champion: dict, works: np.ndarray) -> dict | None:
+    """Common-row comparison from the saved seed labels; None for runs fitted before they were kept."""
+    arrays = [np.load(ph.WORK / 'final' / f"{r['run_id']}.npz") for r in (run, champion)]
+    if not all('seed_labels' in a for a in arrays):
+        return None
+    mine, theirs = (list(a['seed_labels']) for a in arrays)
+    return accept.common_rows(mine, theirs, {'work': works})
 
 
 def final(deadline_minutes: float | None = None) -> dict:
@@ -163,11 +172,14 @@ def final(deadline_minutes: float | None = None) -> dict:
                 break
             vectors, embed_used = ph.vectors(sample, model, p['text']['unit'])
             with heavy(wait_seconds=3600), measure(ph.WORK) as used:
-                labels, space, metrics = fit.evaluate_candidate(vectors, p, EVALUATION_SEEDS, conf, groups)
+                labelings: list = []
+                labels, space, metrics = fit.evaluate_candidate(vectors, p, EVALUATION_SEEDS, conf, groups,
+                                                                keep_labelings=labelings)
             metrics['neighbour_share'] = neighbours(fit.represent(vectors, p['representation']['kind'], groups), conf)
             run = run_record(p, metrics, {'fit_five_seeds': used, 'embed': embed_used}, meta, len(sample), label,
                              LIMITATIONS)
             np.savez_compressed(ph.WORK / 'final' / f"{run['run_id']}.npz", labels=labels, space=space,
+                                seed_labels=np.stack(labelings),
                                 ids=sample['observation_id'].to_numpy().astype(str))
             store.put(k, run)
         runs[k] = store.get(k)
@@ -175,14 +187,17 @@ def final(deadline_minutes: float | None = None) -> dict:
     if champion is None:
         return runs
     registry.register(champion, 'champion', 'published pipeline refitted under protocol')
+    reports = {}
     for k, run in runs.items():
         if k == key(CHAMPION):
             continue
         entry = registry.register(run, 'candidate', 'chosen on the selection side')
         if entry['status'] == 'candidate' and 'acceptance' not in entry:
-            status = judge(registry, champion, run)
+            common = common_with_champion(run, champion, conf['work'])
+            status = judge(registry, champion, run, common=common)
             print(run['label'], status, flush=True)
-            # ponytail: the first passing candidate in CANDIDATES order is promoted; a later one stays a candidate.
-            if status == 'candidate' and registry.champion()['run_id'] == champion['run_id']:
-                registry.promote(run['run_id'], 'passed every frozen criterion on the evaluation side')
+            reports[k] = registry.load()['runs'][run['run_id']]['acceptance']
+    chosen = accept.pick(reports)
+    if chosen and registry.champion()['run_id'] == champion['run_id']:
+        registry.promote(runs[chosen]['run_id'], 'largest gain over seed spread among passed candidates')
     return runs

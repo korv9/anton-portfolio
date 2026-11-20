@@ -1,6 +1,6 @@
 /** Synthetic, test-only public projection; never copied into frontend/public. */
 import { createHash } from 'node:crypto'
-import type { Family, Payload } from '../../src/compliance/model.ts'
+import type { Family, Payload } from '../../src/lib/compliance/model.ts'
 
 export function fixturePayload(): Payload {
   const stamp = new Date().toISOString()

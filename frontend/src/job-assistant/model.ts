@@ -59,7 +59,7 @@ export type Ad = {
   expired: boolean
 }
 /** Where a CV quote comes from (platform/job_assistant); absent in files before it was added. */
-export const SOURCES = [
+const SOURCES = [
   'employment',
   'internship',
   'education',
@@ -67,7 +67,7 @@ export const SOURCES = [
   'skills_list',
   'summary',
 ] as const
-export type Source = (typeof SOURCES)[number]
+type Source = (typeof SOURCES)[number]
 export type Quote = {
   quote: string
   source?: Source
@@ -117,6 +117,20 @@ export type Delivered = {
   ads: {
     generated_at: string
     fetched_until: string | null
+    /** platform/job_assistant/export.py `pipeline`: absent in files written before it. */
+    pipeline?: {
+      flow: 'realtime' | 'hourly'
+      last_fetch: { at: string; fetched_until: string | null } | null
+      latency_minutes: { median: number | null; publications: number }
+      /** Absent in files written before it. */
+      last_day?: {
+        runs: number
+        failed: number
+        changes: number
+        run_seconds_median: number | null
+        workers_ai_neurons: number
+      }
+    }
     counts: { current: number; removed: number; duplicates: number }
     runs: { day: string; runs: number; runs_ok: number; runs_failed: number }[]
     ads: Ad[]
@@ -171,14 +185,7 @@ export function recordsNote(p: Records['problem']): [string, string] {
   ]
 }
 
-/** A link from the source data, only when it is an absolute https URL; anything else gets no link. */
-export function https(url: string | null | undefined) {
-  try {
-    return url && new URL(url).protocol === 'https:' ? url : undefined
-  } catch {
-    return undefined
-  }
-}
+export { https } from '../links.ts'
 
 export type Row = { ad: Ad; match?: Match; mine?: Mine }
 

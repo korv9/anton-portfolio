@@ -18,8 +18,9 @@ from pathlib import Path
 
 import psutil
 
-from ml.cluster_lab.io import atomic_json, read_json
-from .registry import ROOT, lock
+from ml.experiments.io import atomic_json, read_json
+from .io import lock
+from .registry import ROOT
 
 
 @contextmanager
