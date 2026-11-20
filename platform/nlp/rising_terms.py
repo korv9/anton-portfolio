@@ -64,7 +64,7 @@ with ads as (
     select employer, side, 1 as n, unnest(t) as term from lines
     union all
     select employer, side, 2 as n,
-        unnest(list_transform(range(1, len(t)), i -> t[i] || ' ' || t[i + 1])) as term
+        unnest(list_transform(range(1, len(t)), lambda i: t[i] || ' ' || t[i + 1])) as term
     from lines where len(t) > 1
 ), totals as (
     select side, n, count(*) as grams from grams group by all
@@ -77,8 +77,8 @@ with ads as (
 ), named as (
     -- A term word matches an employer-name word when they are equal or, both of three letters
     -- or more, one begins the other and they differ by at most two letters (car, cars).
-    select *, employer is not null and len(list_filter(string_split(term, ' '), w -> len(list_filter(
-        string_split(trim(employer), ' '), x -> x = w or (least(len(x), len(w)) >= 3
+    select *, employer is not null and len(list_filter(string_split(term, ' '), lambda w: len(list_filter(
+        string_split(trim(employer), ' '), lambda x: x = w or (least(len(x), len(w)) >= 3
             and abs(len(x) - len(w)) <= 2 and (starts_with(x, w) or starts_with(w, x))))) > 0)) > 0 as own
     from by_employer
 )

@@ -35,7 +35,7 @@ def main() -> None:
     for setting in ("memory_limit='1GB'", "threads=2", "preserve_insertion_order=false",
                     f"temp_directory='{spill.as_posix()}'"):
         con.execute(f"set {setting}")
-    print("memory_limit", con.execute("select current_setting('memory_limit')").fetchone()[0])
+    print("memory_limit", con.sql("select current_setting('memory_limit')").fetchall()[0][0])
     # published_at is an ISO string (VARCHAR) in the corpus, so its first seven characters are the month.
     con.sql(f"""create temp table ads as
         select observation_id, any_value(published_at)[:7] as month, any_value(municipality) as municipality,
@@ -50,7 +50,7 @@ def main() -> None:
                       from ads group by all order by all)
                 to '{(OUT / "occupation_month.parquet").as_posix()}' (format parquet)""")
     counts = dict(zip(["ads", "without_municipality", "first_month", "last_month"], con.sql(
-        "select count(*), count(*) - count(municipality), min(month), max(month) from ads").fetchone()))
+        "select count(*), count(*) - count(municipality), min(month), max(month) from ads").fetchall()[0]))
     counts["folders"] = list(FOLDERS)
     # Written last and atomically: a manifest means both aggregates are complete.
     stats.atomic_json(OUT / "manifest.json", counts)
