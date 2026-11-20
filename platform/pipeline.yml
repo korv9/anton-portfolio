@@ -177,7 +177,7 @@ subjects:
         ok_exit: [2]
 
   politics:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -222,7 +222,7 @@ subjects:
       - export: *data_catalog
 
   ai_act:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -239,7 +239,7 @@ subjects:
   # first time); int_sfs_documents and int_sfs_corpus_paragraphs build on it, no embeddings.
   # export_sfs.py writes the statute-book page's numbers (#lagboken) from fct_sfs_document.
   sfs:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -257,7 +257,7 @@ subjects:
   # philosophy, Riksdag and job-ad models; they run in the concepts subject, once all of them
   # are built.
   ai_politics:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -282,7 +282,7 @@ subjects:
       - export: python platform/publish/ai_politics/export_ai_politics.py
 
   symbolic:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -301,7 +301,7 @@ subjects:
       - export: python platform/publish/symbolic/export_symbolic.py
 
   philosophy:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -326,7 +326,7 @@ subjects:
       - export: python platform/publish/philosophy/export_philosophy.py
 
   job_ai_governance:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -340,7 +340,7 @@ subjects:
       - export: python platform/publish/job_ai_governance/export_job_ai_governance.py
 
   concepts:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -355,7 +355,7 @@ subjects:
       - export: python platform/publish/concepts/export_concepts.py
 
   cross_domain:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -388,7 +388,7 @@ subjects:
   # stored figures each week, without a model call. No raw folder: the MFRC, eMFD and ETHICS files
   # stay on the machine (LOCAL_ONLY in warehouse_store.py); only figures and vectors are stored.
   philosophy_moral:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: baseline
@@ -403,7 +403,7 @@ subjects:
   # D: KB's library statistics (CC0) and Biblioteksdatabasen.
   # Its gold joins the welfare panel, tax rates and election results built earlier in the run.
   sweden:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: mirror, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
@@ -446,7 +446,7 @@ subjects:
   # SWEDEN B: language in every JobTech archive since 2006. Counts only; an unchanged archive
   # is skipped, so after the first run a week costs the newest quarter.
   sweden_language:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {raw: {merge: [path]}, features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
@@ -463,7 +463,7 @@ subjects:
   # SWEDEN E: future-oriented language in every Riksdag session since 1993/94. Counts only; an
   # unchanged session is skipped.
   sweden_futures:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
@@ -489,7 +489,7 @@ subjects:
   # trajectories, labour_market and ml.three_swedens read sweden/similarity (sweden). session_maps reads the
   # committed politics/parliament/sessions/*/umap.json, which no subject here writes.
   clusters:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
@@ -526,7 +526,7 @@ subjects:
       - export: python platform/publish/clusters/three_swedens.py
 
   quality:
-    schedule: '13 21 * * 6'
+    schedule: '13 7 * * 6'
     sla: {fresh_within: 8d}
     write: {warehouse: overwrite, delivery: versioned}
     group: baseline

@@ -1,9 +1,10 @@
 """The weekly build's parallel ingest lanes (platform/pipeline_lanes.py): no two lanes write the
 same raw source, a lane stores what it fetched whatever happened, and a lane that failed or
-left no outcome stops its subjects in the build."""
+left no outcome leaves its subjects on their stored raw files in the build."""
 import argparse
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -60,22 +61,49 @@ def test_a_lane_without_an_outcome_or_with_an_error_fails_its_subjects(tmp_path)
     assert "d" not in outcome
 
 
-def test_the_build_skips_a_laned_ingest_and_stops_what_failed(tmp_path, monkeypatch):
+def test_a_failed_ingest_builds_on_stored_raw_and_a_mismatch_stops(tmp_path, monkeypatch, capsys):
+    """A source that fails leaves its subject on the raw files earlier runs stored: it still builds,
+    its dependants run, and the run passes with a warning. Raw files that differ from their fetch
+    log stop the subject and what needs it."""
     cli = load_cli()
     ran = []
-    monkeypatch.setattr(cli, "run_subject", lambda name, s, phases, ml, run: ran.append((name, sorted(phases))))
+
+    def run_subject(name, subject, phases, ml, run):
+        ran.append((name, sorted(phases)))
+        if name == "d" and "ingest" in phases:
+            raise RuntimeError("exit 1: python d.py")
+
+    monkeypatch.setattr(cli, "run_subject", run_subject)
     config = {"subjects": {
         "a": {"lane": "x", "steps": [{"ingest": "python a.py"}]},
         "b": {"lane": "x", "steps": [{"ingest": "python b.py"}]},
-        "c": {"needs": ["b"], "steps": [{"dbt": {"select": ["c"]}}]},
-        "d": {"steps": [{"ingest": "python d.py"}]},
+        "c": {"needs": ["b", "d"], "steps": [{"dbt": {"select": ["c"]}}]},
+        "d": {"steps": [{"ingest": "python d.py"}, {"dbt": {"select": ["d"]}}]},
+        "e": {"lane": "y", "steps": [{"ingest": "python e.py"}]},
+        "f": {"needs": ["e"], "steps": [{"dbt": {"select": ["f"]}}]},
     }, "groups": {}}
     (tmp_path / "ingest-x.json").write_text(json.dumps({"a": None, "b": "timeout"}))
-    args = argparse.Namespace(all=False, subjects=["a", "b", "c", "d"], only="ingest,dbt",
+    (tmp_path / "ingest-y.json").write_text(json.dumps({"e": f"{cli.MISMATCH}: e/x.json"}))
+    args = argparse.Namespace(all=False, subjects=["a", "b", "d", "c", "e", "f"], only="ingest,dbt",
                               full_refresh=False, dry_run=True, ml="missing", results=None,
                               ingest_results=str(tmp_path))
     assert cli.command_run(args, config) == 1
-    assert ran == [("a", ["dbt"]), ("d", ["dbt", "ingest"])]
+    assert ran == [("a", []), ("a", ["dbt"]), ("b", []), ("b", ["dbt"]),
+                   ("d", ["ingest"]), ("d", ["dbt"]), ("c", ["ingest"]), ("c", ["dbt"])]
+    out = capsys.readouterr().out
+    stale, failed = out.split("Built from stored raw files")[1].split("Failed:")
+    assert "b: ingest in lane x: timeout" in stale and "d: exit 1: python d.py" in stale
+    assert "e: ingest in lane y" in failed and "f: needs e" in failed and "c:" not in failed
+
+
+def test_a_source_that_fails_does_not_fail_the_run(monkeypatch):
+    cli = load_cli()
+    monkeypatch.setattr(cli, "run_subject", lambda name, s, phases, ml, run: (_ for _ in ()).throw(
+        RuntimeError("HTML page")) if "ingest" in phases else None)
+    config = {"subjects": {"a": {"steps": [{"ingest": "python a.py"}]}}, "groups": {}}
+    args = argparse.Namespace(all=False, subjects=["a"], only="ingest,dbt", full_refresh=False,
+                              dry_run=True, ml="missing", results=None, ingest_results=None)
+    assert cli.command_run(args, config) == 0
 
 
 def test_a_lane_writes_its_outcome(tmp_path, monkeypatch):
@@ -105,6 +133,13 @@ def test_a_lane_stores_what_it_fetched_even_after_a_timeout():
     assert any("--ingest-results tmp/lanes" in step.get("run", "") for step in build["steps"])
     for entry in pipeline_lanes.matrix(SUBJECTS):
         assert entry["job_timeout"] - entry["timeout"] >= 15, entry
+
+
+def test_the_plan_job_prints_the_matrix_without_the_portfolio_package():
+    """The plan job installs only PyYAML; -I keeps src/ and PYTHONPATH off the path, as there."""
+    script = Path(pipeline_lanes.__file__)
+    found = subprocess.run([sys.executable, "-I", str(script)], capture_output=True, text=True, check=True)
+    assert json.loads(found.stdout) == pipeline_lanes.matrix(SUBJECTS)
 
 
 class FakeS3:

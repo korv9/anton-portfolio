@@ -25,6 +25,7 @@ import os
 import re
 import shlex
 import subprocess
+import time
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -37,6 +38,7 @@ from portfolio.storage import rawstore  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import pipeline_lanes  # noqa: E402
+import pipeline_quality  # noqa: E402
 
 PLATFORM = Path(__file__).resolve().parent
 ROOT = PLATFORM.parent
@@ -182,7 +184,13 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
             if step["dbt"].get("freshness"):
                 # Warn-only: a stale or unreadable source is reported and never stops the build.
                 run(freshness_argv(step["dbt"], target), cwd=PLATFORM, ok_exit=(1, 2), hide=hide)
-            run(dbt_argv(step["dbt"], target), cwd=PLATFORM, hide=hide)
+            began = time.time()
+            try:
+                run(dbt_argv(step["dbt"], target), cwd=PLATFORM, hide=hide)
+            finally:  # passed or failed, the step's test results join the DQ history
+                if not run.dry_run:
+                    pipeline_quality.record_dq(FEATURES, name, PLATFORM / "target" / target,
+                                               seen[phase], began)
         elif phase == "ml":
             argv = ml_argv(step, ml)
             if argv:
@@ -221,6 +229,9 @@ def publish(config: dict, names: list[str], failed: dict, phases: set[str], run:
             failed[f"publish {group}"] = str(error)
 
 
+MISMATCH = "raw files differ from their fetch log"
+
+
 def command_run(args, config: dict) -> int:
     subjects = config["subjects"]
     names = [n for n, s in subjects.items() if not s.get("manual")] if args.all else args.subjects
@@ -235,7 +246,10 @@ def command_run(args, config: dict) -> int:
     # Publishing is opt-in outside Actions: a local run never moves an active release by accident.
     if not args.only and not args.dry_run and os.environ.get("GITHUB_ACTIONS") != "true":
         phases.discard("publish")
-    run, failed = Runner(args.dry_run), {}
+    # failed: the subject did not build, so `needs` and its group stop. stale: its ingest failed
+    # and it was built from the raw files earlier runs stored; the freshness SLA reports it when
+    # that lasts (docs/platform/pipeline.md, "A source that fails").
+    run, failed, stale = Runner(args.dry_run), {}, {}
     # Subjects a lane job already ingested (pipeline_lanes.py): their outcome, not a second ingest.
     laned = pipeline_lanes.read_results(Path(args.ingest_results), subjects) if args.ingest_results else {}
     for name in names:
@@ -243,32 +257,50 @@ def command_run(args, config: dict) -> int:
         if blocked := [n for n in subjects[name].get("needs", []) if n in failed]:
             failed[name] = f"needs {', '.join(blocked)}"
             continue
-        if laned.get(name):
-            failed[name] = laned[name]
+        if laned.get(name) and MISMATCH in laned[name]:
+            failed[name] = laned[name]  # what the lane stored is not what it logged: no build on it
             continue
+        if laned.get(name):
+            stale[name] = laned[name]
         own = {p for p in phases if p.split(":")[0] != "ingest"} if name in laned else phases
+        fetch = {p for p in own if p.split(":")[0] == "ingest"}
         now = datetime.now(timezone.utc)
         started = now.isoformat(timespec="seconds")
         # Each fetch-log line names the subject that wrote it (rawstore.lineage).
         os.environ["PORTFOLIO_SUBJECT"] = name
         try:
-            run_subject(name, subjects[name], own, args.ml, run)
+            run_subject(name, subjects[name], fetch, args.ml, run)
+        except RuntimeError as error:
+            stale[name] = str(error)
+        try:
+            run_subject(name, subjects[name], own - fetch, args.ml, run)
         except RuntimeError as error:
             failed[name] = str(error)
         if "ingest" in own and not run.dry_run and (
                 bad := rawstore.mismatched(subjects[name].get("raw", []), since=now.timestamp() - 1)):
-            failed.setdefault(name, f"raw files differ from their fetch log: {', '.join(bad[:3])}")
+            failed.setdefault(name, f"{MISMATCH}: {', '.join(bad[:3])}")
         if "ingest" in own and not run.dry_run and any("ingest" in s for s in subjects[name]["steps"]):
             try:
-                ingest_status.record(name, subjects[name], started, failed.get(name))
+                ingest_status.record(name, subjects[name], started, stale.get(name) or failed.get(name))
             except Exception as error:  # noqa: BLE001 - the status page must not fail a subject
                 print(f"::warning::ingestion status of {name} not recorded: {error}", flush=True)
+    if os.environ.get("GITHUB_RUN_ID") and not run.dry_run and phases & {"ingest", "dbt"}:
+        counts = {n: pipeline_quality.sensor(n, subjects[n].get("raw", [])) for n in names
+                  if subjects[n].get("raw")}
+        table = pipeline_quality.report(counts)
+        print("\nSensor: this run's fetches per subject (fetch logs)\n" + table, flush=True)
+        pipeline_quality.write_summary("### Sensor: this run's fetches\n\n" + table)
     if args.results:
-        pipeline_lanes.write_results(Path(args.results), names, failed)
+        pipeline_lanes.write_results(Path(args.results), names, {**stale, **failed})
     if "publish" in phases:
         publish(config, names, failed, phases, run)
     for path in dict.fromkeys(run.missing):
         failed[path] = "file not found"
+    if stale := {n: r for n, r in stale.items() if n not in failed}:
+        print("\nBuilt from stored raw files, as their ingest failed:")
+        for name, reason in stale.items():
+            print(f"  {name}: {reason}")
+            print(f"::warning::{name}: ingest failed, built from stored raw files: {reason}", flush=True)
     print("\n" + ("All succeeded." if not failed else "Failed:"))
     for name, reason in failed.items():
         print(f"  {name}: {reason}")
@@ -287,8 +319,12 @@ def command_store(args, config: dict) -> int:
             run(expand(f"{STORE} status"))
         return 0
     chosen = [subjects[n] for n in args.subjects]
+    # Each subject's DQ history (pipeline_quality.py) is stored with its feature files.
+    history = [f"{pipeline_quality.DQ}/{n}" for n in args.subjects
+               if args.action == "push" and any("dbt" in step for step in subjects[n]["steps"])]
     for tree in ("raw", "features"):
-        paths = list(dict.fromkeys(p for s in chosen for p in s.get(tree, [])))
+        paths = list(dict.fromkeys([p for s in chosen for p in s.get(tree, [])]
+                                   + (history if tree == "features" else [])))
         if not paths or args.only not in (None, tree):
             continue
         prune = args.action == "push" and tree == "raw" and all(s.get("prune") for s in chosen)

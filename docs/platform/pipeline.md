@@ -86,9 +86,9 @@ before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
 
 ## Subjects
 
-Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13, which runs
-`pipeline.py run --all` after its parallel ingest lanes; it is early enough to finish before the daily runs queue behind it on
-Sunday morning.
+Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 07:13, which runs
+`pipeline.py run --all` after its parallel ingest lanes. It starts after Saturday's daily runs and
+ends the same Swedish day, as the jobs gate requires the stream to cover all of yesterday.
 
 | Subject | Workflow | Schedule | Command | Group | Automatic |
 |---|---|---|---|---|---|
@@ -149,18 +149,26 @@ What stays in YAML is the handling of failure, which differs per workflow:
   publishes, so the next run starts from them even if validation fails.
 - `refresh-news.yml` installs the optional summary SDK when `ANTHROPIC_API_KEY` is set. The
   subject tolerates exit code 2 from the summary step and publishes the headlines alone.
-- `build-warehouse.yml` fetches in parallel lanes first (`pipeline.py lanes`,
-  `platform/pipeline_lanes.py`). Each lane is one job for the subjects that write the same raw
+- `build-warehouse.yml` fetches in parallel lanes first (`python platform/pipeline_lanes.py`
+  prints the matrix with only PyYAML installed). Each lane is one job for the subjects that write the same raw
   sources. Its ingest step stops before the job's timeout, and the lane then pushes its raw and
   feature files whatever happened, so a stalled source stops only its own lane and the next run
   resumes from what was stored. The build job then builds every subject from the stored files
   (`run --all --ingest-results tmp/lanes`). A subject whose lane failed or left no outcome
-  counts as failed. news and quality have no lane and ingest in the build job. The build stores
+  is built from the stored raw files (see "A source that fails" below). news and quality have no lane and ingest in the build job. The build stores
   the warehouse only if every subject built, then exports and publishes each group whose
   subjects all came through. The quality
   subject ends with the structural gate, after the store. Last, `src/portfolio/publish/retention.py`
   plans the deletion of superseded releases, and deletes them only when the repository
   variable `RETENTION_APPLY` is `true` (docs/platform/r2-delivery-contract.md).
+- A source that fails: when a subject's ingest fails (an HTML error page, a timeout, a
+  lane that was cancelled), the subject is built from the raw files that earlier runs stored
+  and validated. Its dependants still run, and its group still publishes. The run prints a
+  `::warning::` and lists the subject under "Built from stored raw files"; the ingestion status
+  records the error, and the group's `sla.fresh_within` raises the stale-data alarm if the
+  source stays down. The run fails only when a subject does not build (dbt tests, an export, a
+  publish), or when raw files differ from their fetch log: data that is not what was fetched
+  is never built on.
 - `ops-publish-r2.yml` is the bootstrap: it stages every group and activates them together. It
   is not a subject and is run by hand.
 - `heavy-compute.yml` runs model fits and clustering sweeps that need more memory than a
@@ -192,6 +200,17 @@ An answer is checked before it replaces the stored copy (`src/portfolio/storage/
 - not a fraction of the stored size.
 
 After a subject's ingest, a file written in the run whose bytes differ from its own log line fails the subject. `stg_raw_fetch_log` (quality) reads every source's log into the warehouse.
+
+After the ingest, the build prints a sensor table per subject from the fetch logs, for its own run
+(`run_id`): files whose bytes changed, files the server answered 304 for, files refetched
+unchanged, and failed requests. The table also goes to the step summary
+(`platform/pipeline_quality.py`). Nothing is skipped on it. The warehouse is rebuilt from the raw
+files every run, so every dbt test runs against every subject each time, and a release whose files
+are unchanged uploads nothing (`portfolio.publish.release`).
+
+Every dbt step writes its test results, passed or failed, to
+`features/quality/dq_results/<subject>/<run>-<attempt>-<step>.jsonl`, stored with the feature files.
+`stg_dq_results` (quality) reads that history into the warehouse: one row per test per run.
 
 Each subject declares `sla: {fresh_within: ...}` and, per layer it writes, the `write` mode its
 code uses (header of `platform/pipeline.yml`; `platform/tests/architecture/test_pipeline_spec.py`
@@ -278,11 +297,22 @@ bucket's `r2.dev` address.
 ## Adding a subject
 
 1. Add its entry to `platform/pipeline.yml`: steps in order, `group`, `schedule`, `sla`, `write`,
-   and `raw` or `features` if it stores files in R2.
-2. Give its files to a group in `configs/delivery/`, or leave them to `baseline`.
-3. `python platform/pipeline.py run <subject> --dry-run`, then run it.
+   and `raw` or `features` if it stores files in R2. A subject that fetches gets a `lane`: its
+   own name, or the lane of the subjects that write the same raw source
+   (`test_pipeline_lanes.py` fails if two lanes write one source).
+2. Fetch through `src/portfolio/storage/rawstore.py` (`fetch` or `store`). That gives the fetch
+   log with lineage, the refetch only of what changed, the answer checks and the hash check.
+3. Give its files to a group in `configs/delivery/`, or leave them to `baseline`.
+4. `python platform/pipeline.py run <subject> --dry-run`, then run it.
 
 No workflow changes: the weekly run picks up every subject that is not marked `manual`.
+
+What then protects it, without more code:
+- A source that stalls stops only its lane, and what the lane fetched is stored.
+- A source that fails leaves the subject on its stored raw files, with a warning, and the SLA
+  alarm fires if it lasts.
+- Its dbt tests stop its export and its group's publication, and they join the DQ history.
+- The release gate and the reconciliation against the active release run before any upload.
 
 ## Formation seeds
 

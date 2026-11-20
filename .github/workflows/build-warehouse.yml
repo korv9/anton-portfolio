@@ -13,10 +13,11 @@ name: Build, store and publish the warehouse
 #     python -m portfolio.storage.warehouse_store pull
 
 on:
-  # Saturday evening: the run must be done before the daily
-  # refreshes queue behind it on Sunday morning (they share the data-refresh lock).
+  # Saturday 07:13 UTC, after that morning's daily refreshes (they share the data-refresh
+  # lock). The run takes about three hours and must end on the Swedish day it started: the
+  # jobs gate wants yesterday fully covered by the stream fetched at the start.
   schedule:
-    - cron: '13 21 * * 6'
+    - cron: '13 7 * * 6'
   workflow_dispatch:
     inputs:
       full_refresh:
@@ -59,7 +60,9 @@ jobs:
       - id: lanes
         run: |
           pip install --quiet pyyaml
-          echo "lanes=$(python platform/pipeline.py lanes)" >> "$GITHUB_OUTPUT"
+          # On its own line so a failure stops the job: inside echo it left an empty matrix.
+          lanes=$(python platform/pipeline_lanes.py)
+          echo "lanes=$lanes" >> "$GITHUB_OUTPUT"
 
   # One job per lane, in parallel. A source that stalls stops only its own lane, and the lane
   # stores what it fetched even when its ingest failed or timed out, so the next run resumes:

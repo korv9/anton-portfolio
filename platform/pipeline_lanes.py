@@ -62,3 +62,12 @@ def read_results(directory: Path, subjects: dict) -> dict[str, str | None]:
             else:
                 outcome[name] = None
     return outcome
+
+
+if __name__ == "__main__":
+    # The workflow's plan job has only PyYAML installed, so this prints the matrix without
+    # importing pipeline.py (which needs the portfolio package and its dependencies).
+    import yaml
+
+    spec = yaml.safe_load((Path(__file__).parent / "pipeline.yml").read_text(encoding="utf-8"))
+    print(json.dumps(matrix(spec["subjects"])))
