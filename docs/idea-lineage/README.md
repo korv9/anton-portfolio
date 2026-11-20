@@ -11,7 +11,6 @@ How the projects' ideas and decisions evolved, generated from the public journal
 - [Concept Constellation](concept-constellation.md)
 - [Dooh](dooh.md)
 - [Jobs](jobs.md)
-- [outdoor](outdoor.md)
 - [Philosophy Atlas](philosophy-atlas.md)
 - [Platform](platform.md)
 - [Politics](politics.md)
