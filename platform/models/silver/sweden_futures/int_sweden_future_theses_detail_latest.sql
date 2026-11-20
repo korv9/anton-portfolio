@@ -3,7 +3,7 @@
 -- subject area read from dc:type and the OAI setSpecs. A null year (deleted, or no Swedish
 -- abstract) leaves the record out of the mart.
 with latest as (
-    select *, list_filter(string_split(sets, '|'), s -> list_contains(
+    select *, list_filter(string_split(sets, '|'), lambda s: list_contains(
         ['AgricultureVeterinaryMedForestry', 'FineArt', 'HumanitiesTheology', 'LifeEarthScience',
          'Medicine', 'PhysicsChemistryMaths', 'SocialBehaviourLaw', 'Technology'], s)) as areas
     from {{ ref('stg_futures_theses_detail') }}

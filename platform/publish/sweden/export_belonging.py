@@ -88,7 +88,7 @@ def coverage_counts(con) -> tuple[dict, dict]:
     missing, by reason."""
     no_code, no_value = con.sql("""select count(*) filter (where municipality_code is null),
                                           count(*) filter (where municipality_code is not null and value is null)
-                                   from gold.fct_library_observation""").fetchone()
+                                   from gold.fct_library_observation""").fetchall()[0]
     left_out = {k: n for k, n in (("no municipality in Biblioteksdatabasen", no_code), ("no value", no_value)) if n}
     missing = Counter(r for (reasons,) in con.sql("""select set_to_missing from gold.fct_library_municipality_year
                                                      order by municipality_code, year""").fetchall() for r in reasons)

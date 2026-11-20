@@ -32,6 +32,7 @@ test('regrouping the menu keeps each page theme', () => {
       'concept-constellation': 'labs',
       'ask-the-law': 'labs',
       drugcomb: 'labs',
+      dooh: 'labs',
       platform: 'engineering',
       homie: 'engineering',
     },
