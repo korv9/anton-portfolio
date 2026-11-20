@@ -86,9 +86,9 @@ before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
 
 ## Subjects
 
-Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 21:13, which runs
-`pipeline.py run --all` after its parallel ingest lanes; it is early enough to finish before the daily runs queue behind it on
-Sunday morning.
+Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 07:13, which runs
+`pipeline.py run --all` after its parallel ingest lanes. It starts after Saturday's daily runs and
+ends the same Swedish day, as the jobs gate requires the stream to cover all of yesterday.
 
 | Subject | Workflow | Schedule | Command | Group | Automatic |
 |---|---|---|---|---|---|
