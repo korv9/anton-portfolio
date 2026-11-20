@@ -1,0 +1,58 @@
+version: 2
+
+# Bronze for the dooh subject (DOOH audience at Stockholm's metro stations). Files fetched by
+# platform/ingest/dooh/{sl_facts,gtfs_rail,scb_deso}.py, each source directory with a
+# _manifest.jsonl of URL, fetch time and SHA-256. The planned stations and the opening forecasts
+# are hand-compiled with a source URL per row: platform/seeds/dooh/.
+
+sources:
+  - name: sl_facts
+    description: >-
+      Region Stockholm, "Fakta om SL och länet" 2013–2022: metro boardings per station on an
+      average winter weekday, as read from each edition's PDF by sl_facts.py.
+    tables:
+      - name: parsed
+        description: One file per edition with the map's day values and the appendix bands.
+        meta:
+          external_location: >-
+            read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/sl_facts/parsed/*.json')
+
+  - name: sl_gtfs
+    description: >-
+      Trafiklab GTFS Regional, feed SE-sl (CC0), rail part (metro 401, rail 100, tram 900), as kept by
+      gtfs_rail.py from the Mobility Database copy mdb-3237.
+    meta:
+      external_location: >-
+        read_csv('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/sl_gtfs/rail/{name}.txt',
+        header = true, all_varchar = true)
+    tables:
+      - name: routes
+      - name: trips
+      - name: stop_times
+      - name: stops
+      - name: calendar
+      - name: calendar_dates
+      - name: feed_info
+
+  - name: scb_deso
+    description: SCB per DeSO 2025 in Stockholm County (CC0), PxWeb API v1.
+    meta:
+      external_location: >-
+        read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb_deso/{name}/part-*.json',
+        filename = true, maximum_object_size = 500000000)
+    tables:
+      - name: residents
+        description: FolkmDesoAldKon, residents of all ages per DeSO and year.
+      - name: employed
+        description: ArRegDesoStatusN, employed residents 15–74 per DeSO and year, by residence.
+
+  - name: rs_prognos
+    description: >-
+      Region Stockholm, Befolkningsprognos 2026, data för planområden: projected residents per
+      planning area and year 2025–2035, summed over age and sex by rs_prognos.py.
+    tables:
+      - name: residents
+        meta:
+          external_location: >-
+            read_csv('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/rs_prognos/residents.csv',
+            header = true, all_varchar = true)

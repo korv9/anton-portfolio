@@ -1,0 +1,215 @@
+/* The dooh page's marks (charts.tsx): one neutral ink, the focal accent for the point. */
+.od-heat {
+  margin: 0;
+  overflow-x: auto;
+}
+.od-heat-grid {
+  display: grid;
+  grid-template-columns: minmax(8rem, 11rem) repeat(24, minmax(0.7rem, 1fr));
+  min-width: 34rem;
+  font-size: var(--type-caption);
+  font-variant-numeric: tabular-nums;
+}
+.od-heat-row {
+  display: contents;
+}
+.od-heat-hour {
+  color: var(--color-ink-secondary);
+  padding-bottom: 0.2rem;
+}
+.od-heat-label {
+  overflow: hidden;
+  padding-right: var(--sp-2);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--color-ink-secondary);
+  line-height: 0.95rem;
+}
+.od-heat-cell {
+  height: 0.95rem;
+  border: 1px solid var(--color-canvas);
+  background: var(--color-chart-neutral);
+}
+.od-heat-cell.is-missing {
+  background: repeating-linear-gradient(
+    45deg,
+    transparent 0 2px,
+    var(--color-chart-muted) 2px 3px
+  );
+}
+.od-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  margin-top: var(--sp-2);
+  font-size: var(--type-caption);
+  color: var(--color-ink-secondary);
+}
+.od-key-ramp {
+  width: 6rem;
+  height: 0.7rem;
+  background: linear-gradient(
+    90deg,
+    rgb(226 223 214 / 0.12),
+    var(--color-chart-neutral)
+  );
+}
+.od-rows {
+  margin: 0;
+}
+.od-rows ol {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.od-rows li {
+  display: grid;
+  grid-template-columns: minmax(7rem, 14rem) minmax(0, 1fr) minmax(5.5rem, auto);
+  align-items: center;
+  gap: var(--sp-2);
+}
+.od-row-label,
+.od-row-value {
+  display: grid;
+  font-size: var(--type-label);
+  font-variant-numeric: tabular-nums;
+}
+.od-row-value {
+  text-align: right;
+}
+.od-rows small {
+  font-size: var(--type-caption);
+  color: var(--color-ink-secondary);
+}
+.od-track {
+  position: relative;
+  height: 1.1rem;
+  border-bottom: 1px solid var(--line);
+}
+.od-range,
+.od-point,
+.od-dot,
+.od-ring,
+.od-ref {
+  position: absolute;
+  top: 50%;
+}
+.od-range {
+  height: 0.3rem;
+  transform: translateY(-50%);
+  background: var(--color-chart-muted);
+}
+.od-point {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-accent-focal);
+}
+.od-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--color-chart-neutral);
+  opacity: 0.6;
+}
+.od-ring {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid var(--color-ink);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+.od-ref {
+  top: 0;
+  bottom: -1px;
+  border-left: 1px dashed var(--color-ink-secondary);
+}
+.od-axis {
+  position: relative;
+  height: 1.2rem;
+  margin: 0.2rem calc(5.5rem + var(--sp-2)) 0 calc(14rem + var(--sp-2));
+  font-size: var(--type-caption);
+  color: var(--color-ink-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.od-axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+.od-key-ref,
+.od-key-dot,
+.od-key-ring,
+.od-key-range {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+}
+.od-key-ref {
+  width: 0;
+  height: 0.9rem;
+  border-left: 1px dashed var(--color-ink-secondary);
+}
+.od-key-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: var(--color-chart-neutral);
+}
+.od-key-ring {
+  border: 2px solid var(--color-ink);
+  border-radius: 50%;
+}
+.od-key-range {
+  width: 1.4rem;
+  height: 0.3rem;
+  background: var(--color-chart-muted);
+}
+@media (max-width: 760px) {
+  .od-rows li {
+    grid-template-columns: minmax(0, 1fr) minmax(4.5rem, auto);
+  }
+  .od-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .od-axis {
+    margin: 0.2rem 0 0;
+  }
+}
+.od-lines {
+  margin: 0;
+}
+.od-lines svg {
+  width: 100%;
+  height: auto;
+}
+.od-grid {
+  stroke: var(--line);
+}
+.od-axis-text {
+  fill: var(--color-ink-secondary);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.od-line polyline {
+  fill: none;
+  stroke: var(--color-chart-muted);
+  stroke-width: 2;
+}
+.od-line text {
+  fill: var(--color-ink-secondary);
+  font-size: 12px;
+}
+.od-line.is-focal polyline {
+  stroke: var(--color-accent-focal);
+  stroke-width: 2.5;
+}
+.od-line.is-focal text {
+  fill: var(--color-ink);
+  font-weight: 600;
+}
