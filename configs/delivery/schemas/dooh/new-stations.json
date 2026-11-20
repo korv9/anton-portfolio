@@ -7,9 +7,31 @@
     "sensitivity_2019",
     "stations",
     "coefficients",
-    "features"
+    "features",
+    "at_opening"
   ],
   "properties": {
+    "at_opening": {
+      "type": "object",
+      "required": ["stations", "base_year", "last_year"],
+      "properties": {
+        "stations": {
+          "type": "array",
+          "minItems": 15,
+          "items": {
+            "type": "object",
+            "required": ["station", "branch", "planning_areas", "today", "median", "official"],
+            "properties": {
+              "median": {
+                "type": "object",
+                "required": ["year", "capped", "growth", "reach", "boardings", "interval80"],
+                "properties": {"growth": {"type": "number", "exclusiveMinimum": 0}}
+              }
+            }
+          }
+        }
+      }
+    },
     "check": {
       "type": "object",
       "required": [

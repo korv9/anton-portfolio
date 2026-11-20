@@ -4,37 +4,73 @@
  */
 import { l } from '../i18n'
 import { count, fixed } from '../format'
+import { Pick } from '../charts/feature/Feature'
 import { IntervalRows, YearRows } from './charts'
 import type { NewStations, Timing } from './types'
 import { SL, branchName, type Spec } from './views'
 
-export function newSpec(n: NewStations, median: number): Spec {
-  const rows = n.stations
-    .filter((p) => p.kind === 'new' && p.boardings !== undefined)
-    .sort((a, b) => b.boardings! - a.boardings!)
-    .map((p) => ({
-      key: p.station,
-      label: p.station,
-      note: branchName(p.branch),
-      value: p.boardings!,
-      low: p.interval80![0],
-      high: p.interval80![1],
-    }))
+export function newSpec(
+  n: NewStations,
+  median: number,
+  at: string,
+  set: (at: string) => void,
+): Spec {
+  const opening = at !== 'today'
+  const rows = n.at_opening.stations
+    .map((p) => {
+      const a = opening ? p.median : p.today
+      return {
+        key: p.station,
+        label: p.station,
+        note: opening
+          ? l(
+              `${branchName(p.branch)} · ${p.median.year}${p.median.capped ? '+' : ''} · ${count(a.reach)} residents within 1 km`,
+              `${branchName(p.branch)} · ${p.median.year}${p.median.capped ? '+' : ''} · ${count(a.reach)} boende inom 1 km`,
+            )
+          : l(
+              `${branchName(p.branch)} · ${count(a.reach)} residents within 1 km`,
+              `${branchName(p.branch)} · ${count(a.reach)} boende inom 1 km`,
+            ),
+        value: a.boardings,
+        low: a.interval80[0],
+        high: a.interval80[1],
+        p,
+      }
+    })
+    .sort((a, b) => b.value - a.value)
   const c = n.check
+  const last = n.at_opening.last_year
   const shared = n.stations
     .filter((p) => p.kind === 'interchange')
     .map((p) => p.station)
+  const caveat =
+    c.label === 'model'
+      ? ''
+      : l(
+          ': the model did not beat the median station as pre-registered',
+          ': modellen slog inte medianstationen enligt förregistreringen',
+        )
   return {
-    title:
-      c.label === 'model'
-        ? l(
-            'Predicted boardings per winter weekday at the planned stations, with 80 % intervals',
-            'Förutsagda påstigande per vintervardag vid de planerade stationerna, med 80 %-intervall',
-          )
-        : l(
-            'Predicted boardings at the planned stations, 80 % intervals: the model did not beat the median station as pre-registered',
-            'Förutsagda påstigande vid de planerade stationerna, 80 %-intervall: modellen slog inte medianstationen enligt förregistreringen',
-          ),
+    title: opening
+      ? l(
+          `Predicted boardings at the planned stations in their likely opening year, 80 % intervals${caveat}`,
+          `Förutsagda påstigande vid de planerade stationerna det år de troligen öppnar, 80 %-intervall${caveat}`,
+        )
+      : l(
+          `Predicted boardings at the planned stations among today's residents, 80 % intervals${caveat}`,
+          `Förutsagda påstigande vid de planerade stationerna bland dagens boende, 80 %-intervall${caveat}`,
+        ),
+    controls: (
+      <Pick
+        label={l('Audience', 'Publik')}
+        value={opening ? 'opening' : 'today'}
+        options={[
+          { value: 'opening', label: l('At opening', 'Vid öppning') },
+          { value: 'today', label: l('Today', 'I dag') },
+        ]}
+        onChange={set}
+      />
+    ),
     chart: (
       <IntervalRows
         rows={rows}
@@ -51,18 +87,38 @@ export function newSpec(n: NewStations, median: number): Spec {
           <tr>
             <th>{l('Station', 'Station')}</th>
             <th>{l('Branch', 'Sträcka')}</th>
-            <th>{l('Predicted', 'Förutsagt')}</th>
+            <th>{l('Opening year used', 'Öppningsår som används')}</th>
+            <th>
+              {l('Residents within 1 km, today', 'Boende inom 1 km, i dag')}
+            </th>
+            <th>{l('At opening', 'Vid öppning')}</th>
+            <th>{l('Boardings, today', 'Påstigande, i dag')}</th>
+            <th>{l('At opening', 'Vid öppning')}</th>
             <th>{l('80 % interval', '80 %-intervall')}</th>
+            <th>
+              {l('At official forecast year', 'Vid officiellt prognosår')}
+            </th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr key={r.key}>
-              <th scope="row">{r.label}</th>
-              <td>{r.note}</td>
-              <td>{count(r.value)}</td>
+          {rows.map(({ p }) => (
+            <tr key={p.station}>
+              <th scope="row">{p.station}</th>
+              <td>{branchName(p.branch)}</td>
               <td>
-                {count(r.low)}–{count(r.high)}
+                {p.median.year}
+                {p.median.capped ? '+' : ''}
+              </td>
+              <td>{count(p.today.reach)}</td>
+              <td>{count(p.median.reach)}</td>
+              <td>{count(p.today.boardings)}</td>
+              <td>{count(p.median.boardings)}</td>
+              <td>
+                {count(p.median.interval80[0])}–{count(p.median.interval80[1])}
+              </td>
+              <td>
+                {count(p.official.boardings)} ({p.official.year}
+                {p.official.capped ? '+' : ''})
               </td>
             </tr>
           ))}
@@ -85,13 +141,19 @@ export function newSpec(n: NewStations, median: number): Spec {
         </p>
         <p>
           {l(
-            `Residents are today's, not the housing planned around the stations, and a new station takes travellers from nearby ones. New platforms at existing stations are not predicted: ${shared.join(', ') || '–'}.`,
-            `De boende är dagens, inte de bostäder som planeras kring stationerna, och en ny station tar resenärer från stationer i närheten. Nya plattformar vid befintliga stationer förutsägs inte: ${shared.join(', ') || '–'}.`,
+            `At opening, also pre-registered: residents and employed residents within 1 km grow as Region Stockholm projects for the station's planning area, from ${n.at_opening.base_year} to the branch's median opening year in the Opening view, at most ${last} (marked ${last}+). The same model, not refitted, gives the boardings. Potential reach is the residents within 1 km: people who could pass, not people who see a screen. Inside Stockholm a planning area is a whole district, so a fast-growing corner gets its district's average, and jobs stay as today, since no official projection exists below the region.`,
+            `Vid öppning, också förregistrerat: boende och sysselsatta boende inom 1 km växer som Region Stockholm prognostiserar för stationens planområde, från ${n.at_opening.base_year} till sträckans medianår för öppning i vyn Öppning, högst ${last} (markerat ${last}+). Samma modell, inte omskattad, ger påstigandena. Tänkbar räckvidd är de boende inom 1 km: personer som kan passera, inte personer som ser en skärm. Inom Stockholms stad är ett planområde en hel stadsdel, så ett hörn som växer snabbt får stadsdelens snitt, och arbetsplatserna är dagens, eftersom ingen officiell prognos finns under regionnivå.`,
+          )}
+        </p>
+        <p>
+          {l(
+            `A new station takes travellers from nearby ones, and its audience grows for some years after opening; neither is modelled. New platforms at existing stations are not predicted: ${shared.join(', ') || '–'}.`,
+            `En ny station tar resenärer från stationer i närheten, och publiken växer några år efter öppningen; inget av det modelleras. Nya plattformar vid befintliga stationer förutsägs inte: ${shared.join(', ') || '–'}.`,
           )}
         </p>
       </>
     ),
-    source: `${SL}; SCB DeSO; Region Stockholm, Nya tunnelbanan`,
+    source: `${SL}; SCB DeSO; Region Stockholm, Befolkningsprognos 2026; Nya tunnelbanan`,
   }
 }
 

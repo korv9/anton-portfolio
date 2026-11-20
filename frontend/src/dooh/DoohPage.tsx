@@ -17,7 +17,7 @@ import { newSpec, openingSpec } from './predictions'
 import type { Dayparts, NewStations, Stations, Timing } from './types'
 import './dooh.css'
 
-const VIEW = { show: 'stations', measure: 'level' }
+const VIEW = { show: 'stations', measure: 'level', at: 'opening' }
 
 const SHOWS: [string, [string, string]][] = [
   ['stations', ['Stations', 'Stationer']],
@@ -53,7 +53,7 @@ export default function DoohPage({ route }: { route: Route }) {
       s && stationsSpec(s, view.measure, (m) => setView({ measure: m })),
     hours: s && d && hoursSpec(d, names),
     profiles: d && profilesSpec(d),
-    new: s && n && newSpec(n, median),
+    new: s && n && newSpec(n, median, view.at, (a) => setView({ at: a })),
     opening: t && openingSpec(t),
   }
   const shows = SHOWS.filter(([k]) => specs[k])
@@ -147,8 +147,8 @@ export default function DoohPage({ route }: { route: Route }) {
         </p>
         <p>
           {l(
-            'Sources: Region Stockholm, Fakta om SL och länet 2013–2022 (the 2013–2018 editions from the Internet Archive’s copies of sll.se); Trafiklab GTFS Regional for SL (CC0), read from the Mobility Database copy; SCB DeSO 2025 statistics and boundaries and retail areas (CC0); Region Stockholm and Trafikverket documents for the planned stations and every forecast. Both predictions were pre-registered before they were fitted.',
-            'Källor: Region Stockholm, Fakta om SL och länet 2013–2022 (utgåvorna 2013–2018 från Internet Archives kopior av sll.se); Trafiklab GTFS Regional för SL (CC0), läst från Mobility Databases kopia; SCB:s DeSO-statistik och gränser 2025 och handelsområden (CC0); Region Stockholms och Trafikverkets dokument för de planerade stationerna och varje prognos. Båda förutsägelserna förregistrerades innan de skattades.',
+            'Sources: Region Stockholm, Fakta om SL och länet 2013–2022 (the 2013–2018 editions from the Internet Archive’s copies of sll.se); Trafiklab GTFS Regional for SL (CC0), read from the Mobility Database copy; SCB DeSO 2025 statistics and boundaries and retail areas (CC0); Region Stockholm and Trafikverket documents for the planned stations and every forecast; Region Stockholm, Befolkningsprognos 2026 per planning area. All three predictions were pre-registered before they were computed. Region Stockholm’s last per-station count is the 2022 edition: the series ends in 2026, so no newer boardings exist.',
+            'Källor: Region Stockholm, Fakta om SL och länet 2013–2022 (utgåvorna 2013–2018 från Internet Archives kopior av sll.se); Trafiklab GTFS Regional för SL (CC0), läst från Mobility Databases kopia; SCB:s DeSO-statistik och gränser 2025 och handelsområden (CC0); Region Stockholms och Trafikverkets dokument för de planerade stationerna och varje prognos; Region Stockholm, Befolkningsprognos 2026 per planområde. Alla tre förutsägelserna förregistrerades innan de beräknades. Region Stockholms senaste räkning per station är utgåvan 2022: serien läggs ned 2026, så nyare påstigandedata finns inte.',
           )}
         </p>
       </Method>

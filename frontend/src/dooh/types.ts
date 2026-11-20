@@ -69,12 +69,33 @@ export type Planned = {
   interval80?: [number, number]
 }
 
+type Audience = {
+  /** Planning-area growth from 2025; 1 for today. */
+  growth: number
+  /** Residents within 1 km: the potential reach. */
+  reach: number
+  boardings: number
+  interval80: [number, number]
+}
+
+export type AtOpening = {
+  station: string
+  branch: string
+  planning_areas: string[]
+  today: Audience
+  /** Opening year: the median of the slip model, capped at the projection's last year. */
+  median: Audience & { year: number; capped: boolean }
+  /** Sensitivity: the latest official forecast as the opening year. */
+  official: Audience & { year: number; capped: boolean }
+}
+
 export type NewStations = {
   target_year: number
   check: Check
   sensitivity_2019: Check
   stations: Planned[]
   existing: { station_key: string; observed: number; loo: number }[]
+  at_opening: { base_year: number; last_year: number; stations: AtOpening[] }
 }
 
 type Range = {

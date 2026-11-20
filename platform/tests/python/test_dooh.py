@@ -23,6 +23,8 @@ sl_facts = load("dooh_sl_facts", "platform/ingest/dooh/sl_facts.py")
 sys.path.insert(0, str(ROOT / "platform/publish/dooh"))
 dayparts = load("dayparts", "platform/publish/dooh/dayparts.py")
 predict = load("predict", "platform/publish/dooh/predict.py")
+reach = load("reach", "platform/publish/dooh/reach.py")
+rs_prognos = load("dooh_rs_prognos", "platform/ingest/dooh/rs_prognos.py")
 
 
 def pdf(lines: list[str]):
@@ -73,3 +75,21 @@ def test_predictions_follow_the_preregistered_rules():
     never = predict.opening(2030.0, 2026.0, [(1.0, 1.0), (1.0, 2.0)], rng)
     assert never["after_2060"] == 1.0 and never["p50"] is None and never["p10"] is None
     assert predict.opening_point(2028, quarter=4) == 2028.875
+
+
+def test_audience_at_opening_follows_the_preregistered_rules():
+    reach.demo()
+
+
+def test_projection_sums_age_and_sex_per_area_and_year(tmp_path):
+    from openpyxl import Workbook
+    book = Workbook()
+    book.active.append(["note"])
+    sheet = book.create_sheet()
+    sheet.append(list(rs_prognos.HEADER))
+    for age, sex, value in (("A 0-4 år", "Kvinna", 1.5), ("A 0-4 år", "Man", 2.0), ("B 5-9 år", "Kvinna", 3.0)):
+        sheet.append(["PL-2308 Barkarby", "0123", "Järfälla", age, sex, "2030", value])
+    sheet.append([None] * 7)
+    path = tmp_path / "prognos.xlsx"
+    book.save(path)
+    assert rs_prognos.sums(path) == {("PL-2308", "Barkarby", "0123", "Järfälla", 2030): 6.5}

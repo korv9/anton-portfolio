@@ -433,12 +433,13 @@ subjects:
     sla: {fresh_within: none}
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: dooh
-    raw: [sl_facts, sl_gtfs, scb_deso]
+    raw: [sl_facts, sl_gtfs, scb_deso, rs_prognos]
     prune: true
     steps:
       - ingest: python platform/ingest/dooh/sl_facts.py
       - ingest: python platform/ingest/dooh/gtfs_rail.py
       - ingest: python platform/ingest/dooh/scb_deso.py
+      - ingest: python platform/ingest/dooh/rs_prognos.py
       - dbt: {select: [tag:dooh]}
       - export: python platform/publish/dooh/export_dooh.py
 

@@ -45,3 +45,14 @@ sources:
         description: FolkmDesoAldKon, residents of all ages per DeSO and year.
       - name: employed
         description: ArRegDesoStatusN, employed residents 15–74 per DeSO and year, by residence.
+
+  - name: rs_prognos
+    description: >-
+      Region Stockholm, Befolkningsprognos 2026, data för planområden: projected residents per
+      planning area and year 2025–2035, summed over age and sex by rs_prognos.py.
+    tables:
+      - name: residents
+        meta:
+          external_location: >-
+            read_csv('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/rs_prognos/residents.csv',
+            header = true, all_varchar = true)

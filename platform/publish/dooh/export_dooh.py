@@ -13,11 +13,14 @@ Writes frontend/public/data/dooh/:
 - `dayparts.json`: the hourly audience index per station (2019 bands, today's departures), and
   morning and afternoon shares of shopping and other locations.
 - `new-stations.json`: prediction 1, boardings at the planned stations with 80 % intervals, the
-  pre-registered check and its label.
+  pre-registered check and its label; and prediction 3 (`at_opening`), the same stations'
+  residents and boardings in their branch's likely opening year (reach.py).
 - `timing.json`: prediction 2, every official forecast per branch and the opening-year range.
 - `about.json`: sources, method, departures from the pre-registration and limits.
 
-The method is fixed in docs/research/preregistrations/outdoor-preregistration.md.
+The method is fixed in docs/research/preregistrations/outdoor-preregistration.md and
+dooh-future-reach-preregistration.md (prediction 3, Region Stockholm's planning-area projection
+in gold.fct_dooh_planning_area_year and seeds.dooh_planning_areas).
 """
 from __future__ import annotations
 
@@ -32,6 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import catchment  # noqa: E402
 import dayparts  # noqa: E402
 import predict  # noqa: E402
+import reach  # noqa: E402
 
 from portfolio.core import db  # noqa: E402
 from portfolio.core.config import DATABASE, PUBLIC, RAW, ROOT  # noqa: E402
@@ -164,7 +168,8 @@ def new_inventory(con, geo, stations: list[dict], target: dict, planned: list[di
             "existing": [{"station_key": s["station_key"], "observed": target[(s["station_key"], TRAIN_YEAR)],
                           "fitted": round(math.exp(float(X[i] @ beta)), -2),
                           "loo": round(math.exp(float(X[i] @ fitted[0][i])), -2)} for i, s in enumerate(stations)],
-            "shopping": {k: bool(v["shopping"]) for k, v in feats.items()}}
+            "shopping": {k: bool(v["shopping"]) for k, v in feats.items()},
+            "_fit": (X, y, fitted), "_planned_features": pfeats}
 
 
 def timing(con, now: date) -> dict:
@@ -194,6 +199,22 @@ def timing(con, now: date) -> dict:
             "undated": undated}
 
 
+def future(con, planned: list[dict], pfeats: dict, opening: dict, fit) -> dict:
+    """Prediction 3: the new stations' audience in their branch's likely opening year."""
+    links: dict[str, list[str]] = {}
+    for station, area in con.sql("select station, split_part(planning_area, ' ', 1) from seeds.dooh_planning_areas order by 1, 2").fetchall():
+        links.setdefault(station, []).append(area)
+    projection: dict[str, dict[int, float]] = {}
+    for code, year, residents in con.sql("select planning_area_code, year, residents from gold.fct_dooh_planning_area_year").fetchall():
+        projection.setdefault(code, {})[year] = residents
+    branches = {b["branch"]: b for b in opening["branches"]}
+    new = [p for p in planned if p["kind"] == "new"]
+    return {"preregistration": "docs/research/preregistrations/dooh-future-reach-preregistration.md",
+            "projection": "Region Stockholm, Befolkningsprognos 2026, data för planområden",
+            "base_year": reach.BASE_YEAR, "last_year": reach.LAST_YEAR,
+            "stations": reach.at_opening(new, pfeats, links, projection, branches, design, fit)}
+
+
 def main() -> int:
     con = db.warehouse(DATABASE)
     stations = rows(con, "select * from gold.dim_dooh_station order by station_name")
@@ -205,11 +226,14 @@ def main() -> int:
                             RAW / "scb_deso/retail_2020.geojson")
     inventory = new_inventory(con, geo, stations, target, planned)
     shopping = inventory.pop("shopping")
+    fit, pfeats = inventory.pop("_fit"), inventory.pop("_planned_features")
+    opening = timing(con, checked)
+    inventory["at_opening"] = future(con, planned, pfeats, opening, fit)
     write = lambda name, payload: write_json(OUT / name, payload)  # noqa: E731
     write("stations.json", audience(con, [{**s, "shopping": shopping[s["station_key"]]} for s in stations]))
     write("dayparts.json", daypart_view(con, stations, shopping))
     write("new-stations.json", inventory)
-    write("timing.json", timing(con, checked))
+    write("timing.json", opening)
     write("about.json", about(con))
     register([OUT / n for n in ("stations.json", "dayparts.json", "new-stations.json", "timing.json", "about.json")])
     print(f"dooh: {len(stations)} stations, {len(planned)} planned, label {inventory['check']['label']} "
@@ -227,7 +251,8 @@ def about(con) -> dict:
                        "Employed residents begin in 2020, so the 2019 sensitivity fit uses 2020's (deso_years in sensitivity_2019_deso_years).",
                        "The 2014 forecast for Hagastaden alone, and statements without a year, are not revisions of a branch's opening and are published as `undated` in timing.json."],
         "limits": ["boardings_not_people", "no_price_or_revenue", "winter_weekday_only", "series_ends_2022",
-                   "pandemic_2020_2021", "dayparts_shape_modelled", "residents_today_not_planned", "employed_by_residence"],
+                   "pandemic_2020_2021", "dayparts_shape_modelled", "employed_by_residence",
+                   "growth_by_planning_area", "jobs_as_today", "no_ramp_up"],
     }
 
 

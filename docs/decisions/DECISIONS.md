@@ -23,6 +23,8 @@ Each entry shows the steps on record: decided → implemented (a commit, PR or f
 
 - 2026-11-19 · Subjektet `outdoor` byter namn till `dooh`; sidan heter fortfarande "När kommer publiken fram?" på `#publiken`. (`decision-2026-11-19-001` · by Anton)
   decided (implementation not recorded)
+- 2026-11-19 · Planerade stationer ska visa publik och tänkbar räckvidd för det år de öppnar, inte bara för dagens boende. (`decision-2026-11-19-002` · by Anton)
+  decided (implementation not recorded)
 
 ## Jobs
 

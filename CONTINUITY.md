@@ -8,8 +8,13 @@ status and next steps: `PROJECTS.md`. Under 30 lines; replace lines, do not appe
   `dooh` (renamed from `outdoor` on the owner's word), Labs page `#publiken`, pre-registration
   committed before the fit (ec7633e8, file keeps the name `outdoor`). Release `dooh` 832b8a68 is
   active in R2; the `outdoor` group was retired from the manifest 2026-11-19 with the new
-  `release.py retire` (uncommitted). Raw pushed, fact-book PDFs kept local. The new-station model missed the
+  `release.py retire`. Raw pushed, fact-book PDFs kept local. The new-station model missed the
   pre-registered 25 % (23.7 %): label `not_better_than_median`. No `PROJECTS.md` entry yet.
+  Prediction 3 (audience at opening, pre-registered in cb978935): Region Stockholm's
+  planning-area projection 2025–2035 (`rs_prognos`, workbook local-only, sums pushed) grows the
+  1 km catchments; the "New stations" view has a Today / At opening slicer. Not yet released:
+  publish after the code is committed so the release records the right code_sha. No per-station
+  boardings after 2022 exist (series discontinued 2026).
 - 2026-11-17 [CODE] PR #270 (`korv9/jobs-archive-tls`) merged: repairs refresh-jobs (Telia chain for
   data.arbetsformedlingen.se, failing since 2026-11-13; running month in the market export, since
   2026-11-01), refresh-welfare and build-warehouse (validator import under `-m`, since 2026-11-03;

@@ -118,7 +118,52 @@ models:
       - name: deso_code
         data_tests: [not_null]
 
+  - name: fct_dooh_planning_area_year
+    description: Projected residents per linked planning area and year, Region Stockholm Prognos 2026.
+    config:
+      contract: {enforced: true}
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [planning_area_code, year]}
+    columns:
+      - name: planning_area_code
+        data_type: VARCHAR
+        description: 'Key: Region Stockholm''s planning area code, PL-NNNN.'
+        data_tests: [not_null]
+      - name: planning_area
+        data_type: VARCHAR
+        description: 'Attribute: the planning area''s name.'
+      - name: municipality_code
+        data_type: VARCHAR
+        description: 'Attribute: SCB municipality code.'
+      - name: year
+        data_type: INTEGER
+        description: 'Attribute: projection year; 2025 is the observed start.'
+        data_tests: [not_null, {between: {arguments: {min: 2025, max: 2035}}}]
+      - name: residents
+        data_type: DOUBLE
+        description: 'Measure, additive over areas: projected residents, all ages.'
+        data_tests: [not_null, {between: {arguments: {min: 1, max: 300000}}}]
+
 seeds:
+  - name: dooh_planning_areas
+    description: >-
+      Each new planned station's Region Stockholm planning area(s), linked by hand 2026-11-19
+      before the growth figures were read (dooh-future-reach-preregistration.md). Region
+      Stockholm publishes no planning-area boundaries; `reason` says why each link was made.
+    data_tests:
+      - unique_combination:
+          arguments: {columns: [station, planning_area]}
+    columns:
+      - name: station
+        data_tests:
+          - not_null
+          - relationships: {arguments: {to: ref('dooh_planned_stations'), field: station}}
+      - name: planning_area
+        data_tests: [not_null]
+      - name: reason
+        data_tests: [not_null]
+
   - name: dooh_planned_stations
     description: >-
       The 18 planned stations of Nya tunnelbanan (nyatunnelbanan.se/stationer), compiled by hand
