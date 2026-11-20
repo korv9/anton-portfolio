@@ -49,7 +49,9 @@ godkänd `parliament/news-summaries.json`. `public-data` omfattar välfärd,
 parlamentets sex publika kontrakt, skatter, deras Parquet och exporterade schemas.
 `sweden` äger `sweden/*` och `clusters/*`.
 `diva` och andra manuella grupper använder samma kontrakt. `baseline` kan hålla
-övriga godkända exporter. Varje grupps urval ligger i `configs/delivery/`.
+övriga godkända exporter. Dess spec har `"remainder": true`: den lämnar varje path som
+en annan aktiv grupp äger, så en ny grupp publiceras utan ett nytt `exclude` i
+baseline. Varje grupps urval ligger i `configs/delivery/`.
 
 Två grupper får aldrig äga samma logiska path. `files`, `include` och `exclude`
 ska uttrycka filägarskapet, inklusive index, shardfiler, alla Parquetdelar och

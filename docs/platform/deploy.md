@@ -121,7 +121,7 @@ change through Terraform, not the dashboard.
    or news. They run in the `anton-portfolio` environment, whose secrets
    hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
    comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
-   (embeddings, maps) are refreshed by *Build and store the warehouse*, weekly on Saturday at 21:13 UTC or by hand.
+   (embeddings, maps) are refreshed by *Build and store the warehouse*, weekly on Saturday at 07:13 UTC or by hand.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step
