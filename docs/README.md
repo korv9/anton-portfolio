@@ -59,6 +59,7 @@ The repository overview is in the [root README](../README.md). Folder guides:
 | [labs/concept-layer.md](products/labs/concept-layer.md) | The shared concept layer across four text corpora |
 | [labs/concept-constellation.md](products/labs/concept-constellation.md) | Concept Lab's exploring view |
 | [labs/concept-journey.md](products/labs/concept-journey.md) | Concept Lab's reading view |
+| [labs/dooh.md](products/labs/dooh.md) | When does the audience arrive? The DOOH audience at Stockholm's metro stations |
 
 DrugComb and the Homie API are documented beside their pinned sources in
 [platform/products/](../platform/products/README.md).
@@ -100,7 +101,8 @@ Pre-registrations (`research/preregistrations/`) are dated commitments and are n
 [moral foundations](research/preregistrations/philosophy-moral-preregistration.md),
 [SWEDEN connections](research/preregistrations/sweden-connections-preregistration.md),
 [futures topics](research/preregistrations/sweden-futures-topics-preregistration.md),
-[three spaces](research/preregistrations/sweden-three-spaces-preregistration.md).
+[three spaces](research/preregistrations/sweden-three-spaces-preregistration.md),
+[dooh](research/preregistrations/dooh-preregistration.md).
 The [2026-10-21 statistical research plan](research/preregistrations/sweden-statistical-research-plan.md)
 is kept beside them because the SWEDEN connections pre-registration cites it.
 

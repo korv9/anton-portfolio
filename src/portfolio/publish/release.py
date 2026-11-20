@@ -268,8 +268,9 @@ def file_indexes(files: dict):
             for start in range(0, len(paths), 100)}
 
 
-def activate(s3, bucket: str, replacements: dict, expected=None):
-    """Merge with current snapshot; CAS prevents another writer being lost."""
+def activate(s3, bucket: str, replacements: dict, expected=None, retired=()):
+    """Merge with current snapshot; CAS prevents another writer being lost.
+    Groups in `retired` leave the snapshot; their immutable releases stay in the bucket."""
     data, etag = read(s3, bucket, CURRENT)
     current = strict_json(data) if data is not None else {"schema_version": 2, "groups": {}}
     if current.get("schema_version") != 2:
@@ -277,7 +278,10 @@ def activate(s3, bucket: str, replacements: dict, expected=None):
     for group, release in (expected or {}).items():
         if current["groups"].get(group, {}).get("release") != release:
             raise ValueError(f"Concurrent writer changed group {group}; rebuild from current")
-    candidate = {**current["groups"], **replacements}
+    for group in retired:
+        if group not in current["groups"]:
+            raise ValueError(f"Group {group} is not active")
+    candidate = {g: p for g, p in {**current["groups"], **replacements}.items() if g not in retired}
     manifests = {g: group_manifest(s3, bucket, p) for g, p in candidate.items()}
     owners = {}
     routes = []
@@ -422,7 +426,9 @@ def main():
     undo.add_argument("--release", required=True)
     current = commands.add_parser("current", help="read the approved group manifest without publishing")
     current.add_argument("--group", required=True)
-    for command in (put, restore, bundle, undo, current):
+    drop = commands.add_parser("retire", help="remove a group from the active manifest")
+    drop.add_argument("--group", required=True)
+    for command in (put, restore, bundle, undo, current, drop):
         command.add_argument("--manifest-key", default=CURRENT,
                              help="active manifest key; use a separate manifests/smoke-NAME.json for drift tests")
     args = parser.parse_args()
@@ -452,6 +458,8 @@ def main():
         elif args.command == "activate":
             choices = dict(item.split("=", 1) for item in args.release)
             result = activate(s3, bucket, {g: release_pointer(s3, bucket, g, r) for g, r in choices.items()})
+        elif args.command == "retire":
+            result = activate(s3, bucket, {}, retired=(name(args.group),))
         else:
             result = rollback(s3, bucket, args.group, args.release)
         print(json.dumps(result))

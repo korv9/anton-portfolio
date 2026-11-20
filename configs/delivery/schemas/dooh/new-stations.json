@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "target_year",
+    "check",
+    "sensitivity_2019",
+    "stations",
+    "coefficients",
+    "features",
+    "at_opening"
+  ],
+  "properties": {
+    "at_opening": {
+      "type": "object",
+      "required": ["stations", "base_year", "last_year"],
+      "properties": {
+        "stations": {
+          "type": "array",
+          "minItems": 15,
+          "items": {
+            "type": "object",
+            "required": ["station", "branch", "planning_areas", "today", "median", "official"],
+            "properties": {
+              "median": {
+                "type": "object",
+                "required": ["year", "capped", "growth", "reach", "boardings", "interval80"],
+                "properties": {"growth": {"type": "number", "exclusiveMinimum": 0}}
+              }
+            }
+          }
+        }
+      }
+    },
+    "check": {
+      "type": "object",
+      "required": [
+        "label",
+        "coverage",
+        "loo_median_abs_log_error",
+        "null_median_abs_log_error"
+      ],
+      "properties": {
+        "label": {
+          "enum": [
+            "model",
+            "not_better_than_median"
+          ]
+        }
+      }
+    },
+    "stations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "station",
+          "branch",
+          "kind",
+          "source_url"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "new",
+              "interchange"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
