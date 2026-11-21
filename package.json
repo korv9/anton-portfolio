@@ -82,7 +82,7 @@
     "hyparquet": "^1.31.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "three": "0.169.0"
+    "three": "0.187.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
@@ -90,7 +90,7 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "@types/three": "0.169.0",
+    "@types/three": "0.187.0",
     "@vitejs/plugin-react": "^6.1.2",
     "knip": "^6.46.1",
     "prettier": "^3.9.10",
