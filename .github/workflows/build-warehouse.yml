@@ -179,6 +179,22 @@ jobs:
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY || secrets.R2_SECRET_ACCESS_KEY_ID }}
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         run: python platform/pipeline.py run --all --only ingest,dbt,ml --ml "$ML" --ingest-results tmp/lanes
+      # The columns each still-inferring bronze reader finds in the stored raw files, and the logged
+      # raw paths no bronze table reads (src/portfolio/storage/raw_contract.py): what to fix next.
+      - name: Report the raw schemas still inferred
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        continue-on-error: true
+        run: |
+          mkdir -p tmp/raw-schemas
+          python -m portfolio.storage.raw_contract > tmp/raw-schemas/raw-schemas.json
+      - name: Keep the raw schema report
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: raw-schemas
+          path: tmp/raw-schemas/
+          if-no-files-found: ignore
+          retention-days: 30
       # Only a complete build replaces the stored warehouse.
       - name: Store the warehouse, raw files and ML outputs in R2
         env:

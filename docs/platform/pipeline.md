@@ -199,6 +199,13 @@ An answer is checked before it replaces the stored copy (`src/portfolio/storage/
 - no HTML error page;
 - not a fraction of the stored size.
 
+Every stored payload is then read with the bronze reader of its path, the source table's
+`external_location` (`src/portfolio/storage/raw_contract.py`). A payload that reader cannot read
+is not written, and the stored copy is kept. The log line names the tables that read the file
+(`contract`). A reader with `columns =` checks the declared types; the readers listed in
+`INFERRED` still guess theirs from the data. The build uploads a `raw-schemas` report with
+the columns each of them finds now, and the logged paths no bronze table reads.
+
 After a subject's ingest, a file written in the run whose bytes differ from its own log line fails the subject. `stg_raw_fetch_log` (quality) reads every source's log into the warehouse.
 
 After the ingest, the build prints a sensor table per subject from the fetch logs, for its own run
