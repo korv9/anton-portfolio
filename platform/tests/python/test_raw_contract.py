@@ -1,5 +1,6 @@
 """Raw files are checked on write with the bronze reader of their path (raw_contract.py)."""
 import json
+import re
 
 import pytest
 
@@ -38,3 +39,11 @@ def test_declared_columns_reject_a_value_of_the_wrong_type(tmp_path):
 
 def test_a_path_no_bronze_table_reads_has_no_contract():
     assert raw_contract.check("nobody", "reads/this.json", b"{}") == []
+
+
+def test_no_reader_reserves_far_more_memory_than_its_files_need():
+    # DuckDB 2.0 allocates twice maximum_object_size per file it reads at once; 500 MB ran the
+    # welfare build out of memory on 12 GB. The raw files are under 10 MB (fk's gzip expands).
+    sizes = [int(size) for c in raw_contract.contracts()
+             for size in re.findall(r"maximum_object_size\s*=\s*(\d+)", c.expression)]
+    assert sizes and max(sizes) <= 256_000_000

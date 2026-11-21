@@ -131,3 +131,12 @@ def test_count_rows_checks_small_files_by_their_nested_items(target):
         g.gate("jobs-analysis", {**full, "jobs/rising-terms.json": terms(0)}, counts, count_rows)
     # Without count_rows the same files are too small to be checked.
     assert "drops" not in g.gate("jobs-analysis", {**full, "jobs/employer-top.json": top(2)}, {"jobs/employer-top.json": 20})[1]
+
+
+def test_a_subject_published_alone_needs_only_its_own_results(target, monkeypatch):
+    # run-subject.yml: the group's other subjects keep the active release's files, gated then.
+    results(target, "philosophy", ("test", "pass"))
+    monkeypatch.setenv("PORTFOLIO_PUBLISH_SUBJECTS", "philosophy")
+    assert g.dq("baseline")["status"] == "pass"
+    monkeypatch.setenv("PORTFOLIO_PUBLISH_SUBJECTS", "philosophy sfs")
+    assert g.dq("baseline")["not_run"] == ["sfs"]

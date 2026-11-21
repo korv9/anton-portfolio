@@ -15,10 +15,6 @@ sources:
       - name: fetches
         config:
           loaded_at_field: fetched_at
-          # Weekly (Saturday); warns at the subject's sla.fresh_within in platform/pipeline.yml.
-          freshness:
-            warn_after: {count: 8, period: day}
-            error_after: {count: 16, period: day}
         description: The Riksdagen fetch log (src/portfolio/storage/rawstore.py) with URL, time and SHA-256 per file.
         meta:
           external_location: >-

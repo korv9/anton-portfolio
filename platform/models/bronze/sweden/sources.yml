@@ -13,7 +13,7 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/catalogue/scb/tables-*.json',
-            filename = true, maximum_object_size = 200000000)
+            filename = true, maximum_object_size = 64000000)
       - name: scb_metadata
         description: json-stat2 metadata of every SCB table with a region variable, one file per table.
         meta:
@@ -24,4 +24,4 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/catalogue/kolada/kpi-*.json',
-            filename = true, maximum_object_size = 200000000)
+            filename = true, maximum_object_size = 64000000)

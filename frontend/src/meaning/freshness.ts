@@ -7,15 +7,14 @@ import { useEffect, useState } from 'react'
 
 /**
  * Post domain -> the pipeline subject that feeds it and its `sla.fresh_within` in hours, as in
- * platform/pipeline.yml. Domains without an ingesting subject (ml, platform) are left out.
+ * platform/pipeline.yml. Domains without a subject on a clock (ml, platform, and those run on
+ * demand: sweden, ai-act) are left out.
  */
 export const SUBJECTS: Record<string, [subject: string, hours: number]> = {
-  politics: ['parliament', 36],
-  welfare: ['welfare', 36],
-  taxes: ['taxes', 36],
+  politics: ['parliament', 35 * 24],
+  welfare: ['welfare', 35 * 24],
+  taxes: ['taxes', 35 * 24],
   jobs: ['market', 36],
-  sweden: ['sweden', 8 * 24],
-  'ai-act': ['ai_act', 8 * 24],
 }
 
 type Entry = {

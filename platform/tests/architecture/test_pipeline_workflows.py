@@ -25,7 +25,7 @@ REFRESHERS = {"refresh-jobs.yml": (["market"], "jobs"), "refresh-news.yml": (["n
               "refresh-welfare.yml": (["welfare", "parliament", "taxes"], "public-data"),
               "refresh-job-analysis.yml": (["jobs_analysis"], "jobs-analysis"),
               "refresh-job-assistant.yml": (["job_assistant"], "job-assistant")}
-DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "ops-publish-r2.yml"]
+DATA_WORKFLOWS = [*REFRESHERS, "build-warehouse.yml", "ops-publish-r2.yml", "run-subject.yml"]
 
 
 
@@ -102,8 +102,12 @@ def test_pipeline_schedules_match_the_workflow_crons():
         if config.get("manual"):
             assert config["schedule"] in ("manual", "every push"), subject
             continue
-        # A subject without manual: true runs in its refresh workflow or in the weekly --all.
-        name = runner.get(subject, "build-warehouse.yml")
+        # A subject on a clock runs in its refresh workflow; the others by hand (run-subject.yml)
+        # or in a full rebuild (build-warehouse.yml, which has no schedule).
+        if config["schedule"] == "on demand":
+            assert subject not in runner, f"{subject} has a refresh workflow, so it has its cron"
+            continue
+        name = runner[subject]
         assert config["schedule"] in crons[name], f"{subject}: {config['schedule']} is not a cron of {name}"
         used[name].add(config["schedule"])
     for name, schedule in crons.items():
@@ -309,3 +313,19 @@ def test_dry_run_names_a_module_that_does_not_exist():
     cli = load_cli()
     assert cli.missing_files([sys.executable, "-m", "portfolio.publish.release", "--help"], ROOT) == []
     assert cli.missing_files([sys.executable, "-m", "portfolio.publish.relase"], ROOT) == ["-m portfolio.publish.relase"]
+
+
+@pytest.mark.parametrize("filename", ["data-subject.yml", "refresh-welfare.yml", "build-warehouse.yml"])
+def test_the_active_releases_are_restored_before_any_subject_runs(filename):
+    """A group published from a run keeps its other subjects' files only if the root held them."""
+    all_steps = steps(filename)
+    restored = next(i for i, s in enumerate(all_steps) if "portfolio/publish/restore.py" in s.get("run", ""))
+    # The ingest lanes of build-warehouse.yml only fetch; they write no delivery file.
+    runs = [i for i, s in enumerate(all_steps) if "platform/pipeline.py run" in s.get("run", "")
+            and "--only ingest " not in s.get("run", "") + " "]
+    assert runs and restored < min(runs), filename
+
+
+def test_build_warehouse_runs_only_by_hand():
+    assert "schedule" not in workflow("build-warehouse.yml")[True]
+    assert "schedule" not in workflow("run-subject.yml")[True]

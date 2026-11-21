@@ -25,11 +25,22 @@ def test_export_waits_for_a_passing_dbt_build_and_later_subjects_still_run():
     assert result.stdout.count("not exporting") == 2, result.stdout
 
 
-def test_only_publish_keeps_the_group_completeness_check():
-    # public-data has welfare, parliament and taxes; one of them is not the whole group.
-    partial = cli("run", "welfare", "--only", "publish", "--dry-run")
-    assert partial.returncode == 1 and "portfolio.publish.release publish" not in partial.stdout
-    assert "publish public-data: parliament, taxes not in this run" in partial.stdout
-    whole = cli("run", "welfare", "parliament", "taxes", "--only", "publish", "--dry-run")
-    assert whole.returncode == 0, whole.stdout
-    assert "portfolio.publish.release publish --group public-data" in whole.stdout
+def test_one_subject_publishes_its_group_and_a_failed_one_does_not():
+    # public-data has welfare, parliament and taxes. The workflow restores the active releases
+    # first, so welfare alone publishes the group with the other two subjects' files as they are.
+    alone = cli("run", "welfare", "--only", "publish", "--dry-run")
+    assert alone.returncode == 0, alone.stdout
+    assert "portfolio.publish.release publish --group public-data" in alone.stdout
+    # A subject that failed in the run (here: its needs did) stops its group.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("orchestration_cli", ROOT / "platform/pipeline.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    failed = {"welfare": "ingest failed"}
+    module.publish(module.registry(), ["welfare", "parliament"], failed, {"publish"}, module.Runner(True))
+    assert failed["publish public-data"] == "welfare did not succeed"
+
+
+def test_with_needs_adds_what_a_subject_reads_in_pipeline_order():
+    result = cli("run", "parliament", "--with-needs", "--only", "publish", "--dry-run")
+    assert "Subjects with their needs: welfare parliament" in result.stdout, result.stdout

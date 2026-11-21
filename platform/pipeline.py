@@ -206,22 +206,27 @@ def run_subject(name: str, subject: dict, phases: set[str], ml: str, run: Runner
 
 
 def publish(config: dict, names: list[str], failed: dict, phases: set[str], run: Runner) -> None:
-    """Each group once, and only when all of its subjects came through this run."""
+    """Each group once, when every one of its subjects in this run came through.
+
+    Its other subjects keep the files of the active release: the workflow restores every active
+    release into frontend/public/data before the run (portfolio.publish.restore), and the run's
+    exports overwrite only their own files. So one subject can be built and published alone.
+    """
     subjects = config["subjects"]
     for group in dict.fromkeys(subjects[n]["group"] for n in names if "group" in subjects[n]):
-        members = [n for n, s in subjects.items()
-                   if s.get("group") == group and (n in names or not s.get("manual"))]
-        absent = [n for n in members if n not in names or n in failed]
+        absent = [n for n in names if subjects[n].get("group") == group and n in failed]
         print(f"\n== publish {group}", flush=True)
         if absent:
             print(f"  skipped: {', '.join(absent)} did not succeed in this run")
             # Nothing else reports it when publishing was the whole request.
             if phases == {"publish"}:
-                failed[f"publish {group}"] = f"{', '.join(absent)} not in this run"
+                failed[f"publish {group}"] = f"{', '.join(absent)} did not succeed"
             continue
         if not run.dry_run and not all(os.environ.get(k, "").strip() for k in CREDENTIALS):
             failed[f"publish {group}"] = "R2 credentials are not set"
             continue
+        # The release's dbt gate requires results only from these (portfolio.publish.dq_gate).
+        os.environ["PORTFOLIO_PUBLISH_SUBJECTS"] = " ".join(n for n in names if subjects[n].get("group") == group)
         try:
             for command in flat(config["groups"][group]["publish"]):
                 run(expand(command))
@@ -362,6 +367,8 @@ def main() -> int:
                          help="Every subject that is not marked manual")
         sub.add_argument("--dry-run", action="store_true",
                          help="Print every command and check that the files it names exist")
+        sub.add_argument("--with-needs", action="store_true",
+                         help="Add every subject the named ones need (also PORTFOLIO_WITH_NEEDS=1)")
         sub.set_defaults(action=name)
     for name in ("pull", "push"):
         commands.choices[name].add_argument("--only", choices=["raw", "features"])
@@ -375,6 +382,10 @@ def main() -> int:
     run.add_argument("--ingest-results", help="Folder of lane outcomes: lane subjects skip their ingest")
     args = parser.parse_args()
     config = registry()
+    # run-subject.yml: a subject built alone also builds what it needs (pipeline_lanes.with_needs).
+    if getattr(args, "subjects", None) and (args.with_needs or os.environ.get("PORTFOLIO_WITH_NEEDS") == "1"):
+        args.subjects = pipeline_lanes.with_needs(config["subjects"], args.subjects)
+        print("Subjects with their needs: " + " ".join(args.subjects), flush=True)
     if args.command == "list":
         return command_list(config)
     if args.command == "lanes":

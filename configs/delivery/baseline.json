@@ -16,8 +16,6 @@
     "**/*.html",
     "*.pdf",
     "**/*.pdf",
-    "*.bin",
-    "**/*.bin",
     "jobs/market.json",
     "welfare/*",
     "taxes/*",

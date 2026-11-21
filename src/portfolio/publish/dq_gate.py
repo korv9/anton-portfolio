@@ -4,7 +4,9 @@ The group's subjects come from platform/pipeline.yml (`group:`); each subject's 
 platform/target/<target>/run_results.json. A failing, erroring or skipped node blocks the release,
 as it blocks the export in pipeline.py. No results file means the gate did not run: that is
 recorded as not_run, never as a pass. When some of the group's subjects ran, a missing one blocks
-unless pipeline.yml marks it manual (left out of --all, so its absence is expected).
+unless pipeline.yml marks it manual (left out of --all, so its absence is expected). When
+pipeline.py publishes, PORTFOLIO_PUBLISH_SUBJECTS names the group's subjects of the run, and only
+those must have results: the others' files come unchanged from the active release.
 
 The row counts are also compared with the active release: losing a large share of a file's rows
 blocks the release, unless PORTFOLIO_ALLOW_ROW_DROP names the file (comma-separated logical paths).
@@ -80,7 +82,14 @@ def dq(group: str) -> dict:
     if not ran:
         return {"status": "not_run", "reason": "no dbt run_results.json for this group at release time",
                 "subjects": subjects}
-    missing = [n for n, s in subjects.items() if s["status"] == "not_run" and not names[n]]
+    # pipeline.py names the group's subjects of this run; the others keep the files of the active
+    # release, which passed this gate when it was published (portfolio.publish.restore).
+    if ran_now := os.environ.get("PORTFOLIO_PUBLISH_SUBJECTS", "").split():
+        config = yaml.safe_load((PLATFORM / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]
+        expected = {config[n].get("target", n) for n in ran_now if n in config}
+        missing = [n for n, s in subjects.items() if s["status"] == "not_run" and n in expected]
+    else:
+        missing = [n for n, s in subjects.items() if s["status"] == "not_run" and not names[n]]
     if missing:
         return {"status": "error", "scope": "dbt build of each subject in the group",
                 "not_run": missing, "subjects": subjects}

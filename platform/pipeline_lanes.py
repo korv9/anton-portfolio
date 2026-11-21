@@ -71,3 +71,22 @@ if __name__ == "__main__":
 
     spec = yaml.safe_load((Path(__file__).parent / "pipeline.yml").read_text(encoding="utf-8"))
     print(json.dumps(matrix(spec["subjects"])))
+
+
+def with_needs(subjects: dict, names: list[str]) -> list[str]:
+    """The named subjects and everything they need, transitively; needs first, then pipeline.yml order.
+
+    A subject's dbt models may read another subject's tables (parliament's export reads welfare's
+    gold.fct_indicator), so a subject built alone builds its needs in the same warehouse first.
+    """
+    wanted: set[str] = set()
+    pending = list(names)
+    while pending:
+        name = pending.pop()
+        if name in wanted:
+            continue
+        if name not in subjects:
+            raise SystemExit(f"Unknown: {name}")
+        wanted.add(name)
+        pending += subjects[name].get("needs", [])
+    return [name for name in subjects if name in wanted]

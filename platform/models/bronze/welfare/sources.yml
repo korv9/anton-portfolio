@@ -10,7 +10,7 @@ sources:
     meta:
       external_location: >-
         read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/{name}/part-*.json',
-        filename = true, maximum_object_size = 500000000)
+        filename = true, maximum_object_size = 64000000)
     tables:
       - name: aku_region_year
         description: NAKUBefolkningLAr. Population 15-74 by county, labour-force status and sex, annual.
@@ -40,7 +40,7 @@ sources:
     meta:
       external_location: >-
         read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fohm/{name}/part-*.json',
-        filename = true, maximum_object_size = 500000000)
+        filename = true, maximum_object_size = 64000000)
     tables:
       - name: hlv1psyxreg
         description: Mental health by county, sex and pooled four-year period.
@@ -71,7 +71,7 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/fk/ohm-sjptal-tvanoll/SJPT2.json.gz',
-            maximum_object_size = 500000000)
+            maximum_object_size = 256000000)
       - name: started_by_diagnosis
         description: Started sick-leave cases by ICD-10 chapter and sex, monthly, national, from 2006.
         meta:
@@ -112,7 +112,7 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/kolada/*/page-*.json',
-            maximum_object_size = 100000000)
+            maximum_object_size = 64000000)
       - name: kpis
         description: KPI metadata, one file per selected KPI.
         meta:
