@@ -14,7 +14,7 @@ sources:
         meta:
           external_location: >-
             read_json_objects('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/reports/*.json',
-            filename = true, maximum_object_size = 200000000)
+            filename = true, maximum_object_size = 64000000)
       - name: studies
         description: >-
           Statens offentliga utredningar (SOU), Departementsserien (Ds) and Riksrevisionen's
@@ -25,14 +25,14 @@ sources:
             read_json_objects(['{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/studies/sou/*.json',
             '{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/studies/ds/*.json',
             '{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/riksdagen/studies/rir/*.json'],
-            filename = true, maximum_object_size = 200000000)
+            filename = true, maximum_object_size = 64000000)
 
   - name: scb_elections
     description: Statistics Sweden (SCB), PxWeb API v1. Riksdag elections and the party preference survey (PSU).
     meta:
       external_location: >-
         read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb/{name}/part-*.json',
-        filename = true, maximum_object_size = 500000000)
+        filename = true, maximum_object_size = 64000000)
     tables:
       - name: election_country
         description: ME0104T3 with region eliminated. Votes and share of valid votes per party, Sweden.
@@ -51,4 +51,4 @@ sources:
         meta:
           external_location: >-
             read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/val/*/RD_*.json',
-            filename = true, maximum_object_size = 200000000)
+            filename = true, maximum_object_size = 64000000)
