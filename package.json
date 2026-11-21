@@ -93,7 +93,7 @@
     "@types/three": "0.169.0",
     "@vitejs/plugin-react": "^6.1.2",
     "knip": "^6.46.1",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "typescript": "~7.0.2",
     "vite": "^8.3.5",
     "wrangler": "^4.162.0"
