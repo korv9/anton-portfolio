@@ -115,13 +115,13 @@ change through Terraform, not the dashboard.
      Once set in the delivery file, the generator preserves that connection;
    - retain historical copies until versioned reads, rollback and reproduction pass.
 5. **Scheduled refreshes.** Each morning (UTC): `refresh-jobs.yml` at 04:23 (new archives and
-   the day's job ads from JobTech's stream), `refresh-welfare.yml` at 04:37 (welfare, taxes
-   and parliament: roll calls, reports, polls, elections, government, studies) and
-   `refresh-news.yml` at 05:17. Each publishes a validated R2 group: jobs, public-data
-   or news. They run in the `anton-portfolio` environment, whose secrets
-   hold the R2 credentials, and can also be run by hand from the Actions tab. To pause one,
-   comment out its `schedule:` lines. Riksdag speeches and the analyses built on them
-   (embeddings, maps) are refreshed by *Build and store the warehouse*, weekly on Saturday at 07:13 UTC or by hand.
+   the day's job ads from JobTech's stream) and `refresh-news.yml` at 05:17; on the 2nd of each
+   month `refresh-welfare.yml` at 04:37 (welfare, taxes and parliament). Each publishes a
+   validated R2 group: jobs, news or public-data. They run in the `anton-portfolio` environment,
+   whose secrets hold the R2 credentials, and can also be run by hand from the Actions tab. To
+   pause one, comment out its `schedule:` lines. Every other subject runs by hand with
+   *Run subjects* (`run-subject.yml`); *Build and store the warehouse* is the full rebuild, by
+   hand only.
 6. **Refresh secrets.** Settings → Environments → `anton-portfolio` → Secrets:
    `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` (an R2 API token
    with read and write on the bucket). Without them the daily refresh stops at its first step

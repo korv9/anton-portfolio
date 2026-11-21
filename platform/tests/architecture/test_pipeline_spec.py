@@ -23,7 +23,7 @@ def test_every_subject_declares_an_sla_and_only_known_keys():
         assert set(subject) <= KEYS, f"{name}: unknown {set(subject) - KEYS}"
         assert set(subject["sla"]) == {"fresh_within"}, name
         within = subject["sla"]["fresh_within"]
-        if subject.get("manual"):
+        if subject.get("manual") or subject["schedule"] == "on demand":
             assert within == "none", f"{name} runs by hand and promises no freshness"
             continue
         # Longer than the schedule's period, so one run on time never reads as stale.
@@ -71,11 +71,12 @@ def test_source_freshness_warns_at_the_subject_sla():
                     continue
                 found.add(path.parent.name)
                 subject = SUBJECTS[folders.get(path.parent.name, path.parent.name)]
+                assert subject["sla"]["fresh_within"] != "none", (path, "runs on demand: no freshness")
                 sla = heartbeat.duration(subject["sla"]["fresh_within"]).total_seconds() / 3600
                 assert hours(freshness["warn_after"]) == sla, (path, table["name"])
                 assert hours(freshness["error_after"]) == 2 * sla, (path, table["name"])
                 assert table["config"]["loaded_at_field"], (path, table["name"])
-    assert {"news", "sfs"} <= found
+    assert "news" in found
 
 
 def test_heartbeat_runs_hourly_with_public_data_only():

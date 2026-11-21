@@ -1,0 +1,47 @@
+name: Run subjects
+
+# By hand: build and publish the named subjects of platform/pipeline.yml, and nothing else. Each
+# subject also builds what it needs (`needs`, platform/pipeline.py --with-needs), since its dbt
+# models may read their tables. The active releases are restored first, so a group publishes
+# with its other subjects' files as they are. A new product is one pipeline.yml entry and one
+# run of this workflow; build-warehouse.yml rebuilds everything only when that is the point.
+
+on:
+  workflow_dispatch:
+    inputs:
+      subjects:
+        description: Subjects of platform/pipeline.yml, space-separated (python platform/pipeline.py list)
+        type: string
+        required: true
+      timeout-minutes:
+        description: The data job's timeout
+        type: number
+        default: 300
+
+permissions:
+  contents: read
+
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+  # Wait in order: the default keeps one pending run and cancels the one before it.
+  queue: max
+
+jobs:
+  # The steps and the failure alert are in data-subject.yml. The R2 credentials are secrets of
+  # the anton-portfolio environment, which only the called job enters. The token is limited to
+  # what the alert needs.
+  refresh:
+    uses: ./.github/workflows/data-subject.yml
+    secrets: inherit
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+    with:
+      subjects: ${{ inputs.subjects }}
+      store: ${{ inputs.subjects }}
+      timeout-minutes: ${{ inputs.timeout-minutes }}
+      with-needs: true
+      scb-key: true
+      workers-ai: true

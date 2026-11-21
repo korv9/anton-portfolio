@@ -86,39 +86,50 @@ before, so the last writer wins for them. Folders listed in `LOCAL_ONLY` in
 
 ## Subjects
 
-Times are UTC. "Weekly" is `build-warehouse.yml`, Saturday 07:13, which runs
-`pipeline.py run --all` after its parallel ingest lanes. It starts after Saturday's daily runs and
-ends the same Swedish day, as the jobs gate requires the stream to cover all of yesterday.
+Times are UTC. Only what changes on a clock runs on one: the jobs (market daily, the job
+assistant hourly), news daily, and the public statistics of welfare, parliament and taxes monthly,
+as their sources publish monthly or quarterly. Every other subject runs **on demand**: by hand
+with `run-subject.yml` (Actions → Run subjects → the subject names), which also builds what each
+subject `needs`, or in a full rebuild with `build-warehouse.yml`, which has no schedule and is run
+after a dependency upgrade or to recover the stored warehouse.
+
+Every data workflow first restores the active releases into `frontend/public/data`
+(`src/portfolio/publish/restore.py`, public reads checked against the release manifests). The
+run's exports overwrite only their own files, so a group publishes when the subjects of the run
+came through, with its other subjects' files as they were. The politics document shards are
+their own group, `politics-archive` (~900 MB), restored and republished only by the manual
+`politics_archive` subject, so a baseline release no longer copies them.
 
 | Subject | Workflow | Schedule | Command | Group | Automatic |
 |---|---|---|---|---|---|
-| welfare | `refresh-welfare.yml` | daily 04:37 | `run welfare` | public-data | yes |
-| parliament | `refresh-welfare.yml` | daily 04:37 | `run parliament` | public-data | yes |
-| taxes | `refresh-welfare.yml` | daily 04:37 | `run taxes` | public-data | yes |
+| welfare | `refresh-welfare.yml` | monthly, the 2nd, 04:37 | `run welfare` | public-data | yes |
+| parliament | `refresh-welfare.yml` | monthly, the 2nd, 04:37 | `run parliament` | public-data | yes |
+| taxes | `refresh-welfare.yml` | monthly, the 2nd, 04:37 | `run taxes` | public-data | yes |
 | market | `refresh-jobs.yml` | daily 04:23 | `run market` | jobs | yes |
 | news | `refresh-news.yml` | daily 05:17 | `run news` | news | yes |
-| politics | `build-warehouse.yml` | weekly | `run politics` | baseline | yes |
-| ai_act | `build-warehouse.yml` | weekly | `run ai_act` | baseline | yes |
-| sfs | `build-warehouse.yml` | weekly | `run sfs` | baseline | yes |
-| ai_politics | `build-warehouse.yml` | weekly | `run ai_politics` | baseline | yes |
-| symbolic | `build-warehouse.yml` | weekly | `run symbolic` | baseline | yes |
-| philosophy | `build-warehouse.yml` | weekly | `run philosophy` | baseline | yes |
-| job_ai_governance | `build-warehouse.yml` | weekly | `run job_ai_governance` | baseline | yes |
-| concepts | `build-warehouse.yml` | weekly | `run concepts` | baseline | yes |
-| cross_domain | `build-warehouse.yml` | weekly | `run cross_domain` | baseline | yes |
-| philosophy_moral | `build-warehouse.yml` | weekly | `run philosophy_moral` | baseline | yes |
-| sweden | `build-warehouse.yml` | weekly | `run sweden` | sweden | yes |
-| sweden_language | `build-warehouse.yml` | weekly | `run sweden_language` | sweden | yes |
-| sweden_futures | `build-warehouse.yml` | weekly | `run sweden_futures` | sweden | yes |
-| clusters | `build-warehouse.yml` | weekly | `run clusters` | sweden | yes |
-| quality | `build-warehouse.yml` | weekly | `run quality` | baseline | yes |
+| politics | `run-subject.yml` | on demand | `run politics` | baseline | one click |
+| ai_act | `run-subject.yml` | on demand | `run ai_act` | baseline | one click |
+| sfs | `run-subject.yml` | on demand | `run sfs` | baseline | one click |
+| ai_politics | `run-subject.yml` | on demand | `run ai_politics` | baseline | one click |
+| symbolic | `run-subject.yml` | on demand | `run symbolic` | baseline | one click |
+| philosophy | `run-subject.yml` | on demand | `run philosophy` | baseline | one click |
+| job_ai_governance | `run-subject.yml` | on demand | `run job_ai_governance` | baseline | one click |
+| concepts | `run-subject.yml` | on demand | `run concepts` | baseline | one click |
+| cross_domain | `run-subject.yml` | on demand | `run cross_domain` | baseline | one click |
+| philosophy_moral | `run-subject.yml` | on demand | `run philosophy_moral` | baseline | one click |
+| sweden | `run-subject.yml` | on demand | `run sweden` | sweden | one click |
+| sweden_language | `run-subject.yml` | on demand | `run sweden_language` | sweden | one click |
+| sweden_futures | `run-subject.yml` | on demand | `run sweden_futures` | sweden | one click |
+| clusters | `run-subject.yml` | on demand | `run clusters` | sweden | one click |
+| quality | `run-subject.yml` | on demand | `run quality` | baseline | one click |
 | ai_act_diffusion | none | by hand | `run ai_act_diffusion` | baseline | no |
 | jobs_analysis | `refresh-job-analysis.yml` | by hand | `run jobs_analysis` | jobs-analysis | one click |
 | legacy | none | by hand | `run legacy` | baseline | no |
 | job_assistant | `refresh-job-assistant.yml` | hourly at :07 | `run job_assistant` | job-assistant | yes |
 | politics_check | `ci.yml` | every push | `run politics_check` | none | yes, checks only |
+| politics_archive | `run-subject.yml` | by hand | `run politics_archive` | politics-archive | one click |
 
-The weekly run also rebuilds the daily subjects, so it stores one complete warehouse in R2
+A full rebuild also rebuilds the scheduled subjects, so it stores one complete warehouse in R2
 (`warehouse/portfolio.duckdb.gz`, `warehouse/raw/`, `warehouse/features/`).
 
 ## What the workflows add
@@ -260,8 +271,8 @@ Five subjects have one: ai_politics (similarity to the Act), symbolic, philosoph
 clusters. The clusters stages have no staleness check: each is skipped when its `marker` exists,
 unless `--ml always` is given. Each of the other four hashes what it is about to embed and records the hash in its `run.json`
 (`platform/nlp/text/staleness.py`). With `--ml stale` the stage runs with `--if-stale` and does
-nothing when the hash is unchanged. The scheduled weekly run uses `stale`; a run started by hand
-defaults to `missing`.
+nothing when the hash is unchanged. `build-warehouse.yml` takes the mode as its `ml` input,
+`missing` by default.
 
 A `run.json` written before the stages recorded a hash counts as stale, so the first `stale`
 run recomputes ai_politics, philosophy and concepts once.
@@ -310,9 +321,11 @@ bucket's `r2.dev` address.
 2. Fetch through `src/portfolio/storage/rawstore.py` (`fetch` or `store`). That gives the fetch
    log with lineage, the refetch only of what changed, the answer checks and the hash check.
 3. Give its files to a group in `configs/delivery/`, or leave them to `baseline`.
-4. `python platform/pipeline.py run <subject> --dry-run`, then run it.
+4. `python platform/pipeline.py run <subject> --with-needs --dry-run`, then run it: Actions →
+   Run subjects, with its name. Nothing else is rebuilt.
 
-No workflow changes: the weekly run picks up every subject that is not marked `manual`.
+No workflow changes: `schedule: on demand` with `sla: {fresh_within: none}`, and a full rebuild
+picks it up too. A subject that must refresh on a clock gets a cron in a refresh workflow.
 
 What then protects it, without more code:
 - A source that stalls stops only its lane, and what the lane fetched is stored.

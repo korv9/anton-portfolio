@@ -76,5 +76,6 @@ def test_the_subjects_the_audit_named_are_checked():
     import yaml
     declared = yaml.safe_load((ROOT / "pipeline.yml").read_text(encoding="utf-8"))["subjects"]
     found = heartbeat.stale(declared, status(), NOW, {"groups": {}})
-    assert {"clusters", "politics", "concepts", "cross_domain"} <= set(found)
+    # The subjects on a clock; the ones run on demand promise no freshness.
+    assert {"welfare", "parliament", "taxes", "market", "news"} <= set(found)
     assert not {n for n, s in declared.items() if s["sla"]["fresh_within"] == "none"} & set(found)

@@ -21,7 +21,8 @@ IMMUTABLE = "public, max-age=31536000, immutable"
 SHORT = "no-cache, max-age=0, must-revalidate"
 PRIVATE = {"private", "thesis", "raw", "warehouse", "features", "models", "embeddings"}
 PRIVATE_ROOT = PRIVATE - {"warehouse"}  # warehouse/delivery is an approved staging location.
-EXTENSIONS = {".json", ".parquet", ".csv", ".svg", ".png", ".webp"}
+# .bin: the Workers AI demos' int8 vectors (frontend/src/workersAi/corpus.ts), read as raw bytes.
+EXTENSIONS = {".json", ".parquet", ".csv", ".svg", ".png", ".webp", ".bin"}
 PUBLIC_TYPES = {**CONTENT_TYPES, ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp"}
 
 

@@ -1,0 +1,10 @@
+{
+  "schema_version": 2,
+  "include": [
+    "politics/parliament/issues/*",
+    "politics/parliament/debates/*",
+    "politics/decisions/*",
+    "politics/laws/v1/*",
+    "politics/laws/v2/*"
+  ]
+}
