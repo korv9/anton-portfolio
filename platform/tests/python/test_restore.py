@@ -28,12 +28,24 @@ def bucket(files, group="baseline"):
 def test_restores_every_file_and_keeps_what_already_matches(tmp_path, monkeypatch):
     objects = bucket({"gold/a.json": b"[1]", "workers-ai/sfs/vectors.bin": b"\x01\x02"})
     monkeypatch.setattr(restore, "fetch", lambda key, fresh=False: objects[key])
-    assert restore.restore(tmp_path) == {"files": 2, "written": 2, "kept": 0}
+    assert restore.restore(tmp_path) == {"files": 2, "written": 2, "kept": 0, "offloaded": 0}
     assert (tmp_path / "workers-ai/sfs/vectors.bin").read_bytes() == b"\x01\x02"
     (tmp_path / "gold/a.json").write_bytes(b"[2]")  # a stale export is replaced
-    assert restore.restore(tmp_path) == {"files": 2, "written": 1, "kept": 1}
+    assert restore.restore(tmp_path) == {"files": 2, "written": 1, "kept": 1, "offloaded": 0}
     assert (tmp_path / "gold/a.json").read_bytes() == b"[1]"
-    assert restore.restore(tmp_path, skip=["baseline"])["files"] == 0
+    catalog = json.loads((tmp_path / "catalog.json").read_text(encoding="utf-8"))
+    assert [e["path"] for e in catalog["files"]] == ["gold/a.json", "workers-ai/sfs/vectors.bin"]
+    assert json.loads((tmp_path / "delivery.json").read_text(encoding="utf-8"))["bases"]["json"] == "data/"
+
+
+def test_a_skipped_group_is_catalogued_as_offloaded(tmp_path, monkeypatch):
+    objects = bucket({"politics/decisions/a.json": b"{}"}, group="politics-archive")
+    monkeypatch.setattr(restore, "fetch", lambda key, fresh=False: objects[key])
+    assert restore.restore(tmp_path, skip=["politics-archive"])["offloaded"] == 1
+    assert not (tmp_path / "politics/decisions/a.json").exists()
+    assert json.loads((tmp_path / "offloaded.json").read_text(encoding="utf-8")) == ["politics/decisions/a.json"]
+    catalog = json.loads((tmp_path / "catalog.json").read_text(encoding="utf-8"))
+    assert catalog["files"][0]["sha256"] == hashlib.sha256(b"{}").hexdigest()
 
 
 def test_a_byte_that_differs_from_the_manifest_fails(tmp_path, monkeypatch):

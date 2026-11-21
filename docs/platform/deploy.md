@@ -110,7 +110,7 @@ change through Terraform, not the dashboard.
      `manifest_key=manifests/pipeline-smoke.json`, then verify the real files and browser
      reads before running it with `manifests/current.json`;
    - enable `manifest_url: https://data.antonernstsson.com/manifests/current.json`
-     in the committed delivery file, or set `VITE_R2_MANIFEST_URL` for the site build.
+     for the site build (done: `PRODUCTION_MANIFEST` in `frontend/src/dataSource.ts`).
      `R2_MANIFEST_URL` / `R2_LIVE_DELIVERY=1` also configure the catalogue generator.
      Once set in the delivery file, the generator preserves that connection;
    - retain historical copies until versioned reads, rollback and reproduction pass.

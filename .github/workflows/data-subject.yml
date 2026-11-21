@@ -87,14 +87,8 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: ${{ inputs.store }}
-      # The site's data is the active releases, not files in Git. Restored first, the run's exports
-      # overwrite only their own files, so its group publishes with the other subjects' files as
-      # they are (platform/pipeline.py, publish). The politics shards are restored only for the
-      # subject that publishes them. Public reads, checked against the release manifests.
-      - name: Restore the active releases
-        run: |
-          case " $SUBJECTS " in *" politics_archive "*) skip='' ;; *) skip='--skip-group politics-archive' ;; esac
-          python src/portfolio/publish/restore.py frontend/public/data $skip
+          # The politics shards only for the subject that publishes them (platform/pipeline.yml).
+          releases: ${{ contains(format(' {0} ', inputs.subjects), ' politics_archive ') && 'all' || 'true' }}
       - name: Summary SDK (optional)
         if: env.SUMMARY_KEY_SET == 'true'
         run: pip install --require-hashes -r platform/requirements-news.lock || echo "::warning::Optional summary SDK could not be installed."

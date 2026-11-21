@@ -57,9 +57,6 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: welfare parliament taxes
-      # The site's data is the active releases (portfolio.publish.restore); the exports overwrite them.
-      - name: Restore the active releases
-        run: python src/portfolio/publish/restore.py frontend/public/data --skip-group politics-archive
       - name: Fetch, build, test and export welfare
         id: welfare
         continue-on-error: true

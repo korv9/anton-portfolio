@@ -315,15 +315,16 @@ def test_dry_run_names_a_module_that_does_not_exist():
     assert cli.missing_files([sys.executable, "-m", "portfolio.publish.relase"], ROOT) == ["-m portfolio.publish.relase"]
 
 
-@pytest.mark.parametrize("filename", ["data-subject.yml", "refresh-welfare.yml", "build-warehouse.yml"])
-def test_the_active_releases_are_restored_before_any_subject_runs(filename):
-    """A group published from a run keeps its other subjects' files only if the root held them."""
-    all_steps = steps(filename)
-    restored = next(i for i, s in enumerate(all_steps) if "portfolio/publish/restore.py" in s.get("run", ""))
-    # The ingest lanes of build-warehouse.yml only fetch; they write no delivery file.
-    runs = [i for i, s in enumerate(all_steps) if "platform/pipeline.py run" in s.get("run", "")
-            and "--only ingest " not in s.get("run", "") + " "]
-    assert runs and restored < min(runs), filename
+def test_the_active_releases_are_restored_before_any_subject_runs():
+    """A group published from a run keeps its other subjects' files only if the root held them:
+    data-setup restores the active releases, and only a fetch-only lane turns that off."""
+    action = yaml.safe_load((ROOT / ".github/actions/data-setup/action.yml").read_text(encoding="utf-8"))
+    assert any("portfolio/publish/restore.py" in s.get("run", "") for s in action["runs"]["steps"])
+    for filename in DATA_WORKFLOWS + ["data-subject.yml", "export-proof.yml", "heavy-compute.yml",
+                                      "job-clusters.yml"]:
+        for step in steps(filename):
+            if step.get("uses") == "./.github/actions/data-setup" and step.get("with", {}).get("releases") == "false":
+                assert filename == "build-warehouse.yml", f"{filename} turns the restore off"
 
 
 def test_build_warehouse_runs_only_by_hand():

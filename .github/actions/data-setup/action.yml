@@ -1,6 +1,7 @@
 name: Data setup
 description: >-
-  Checks the R2 credentials, installs Python and the platform's requirements, and restores the
+  Checks the R2 credentials, installs Python and the platform's requirements, restores the active
+  releases into frontend/public/data (the site's data, which is not in Git), and restores the
   stored raw and feature files of the named subjects. Run actions/checkout first: a local action
   is read from the checkout. The job's env must carry the four R2 values.
 
@@ -13,6 +14,11 @@ inputs:
     default: 'false'
   r2:
     description: Require the R2 credentials. 'false' only for a run that writes nothing to R2 and pulls nothing.
+    default: 'true'
+  releases:
+    description: >-
+      Restore the active releases into frontend/public/data: 'true', 'false' (a job that only
+      fetches), or 'all' to include the politics-archive group (~900 MB of document shards)
     default: 'true'
 
 runs:
@@ -53,3 +59,13 @@ runs:
         SUBJECTS: ${{ inputs.pull }}
       # Unquoted on purpose: one argument per subject.
       run: python platform/pipeline.py pull $SUBJECTS
+    # Every export, check and publication reads or overwrites these files (portfolio.publish.restore):
+    # a group published from this run keeps its other subjects' files as they are.
+    - name: Restore the active releases
+      if: inputs.releases != 'false'
+      shell: bash
+      env:
+        RELEASES: ${{ inputs.releases }}
+      run: |
+        if [ "$RELEASES" = all ]; then skip=(); else skip=(--skip-group politics-archive); fi
+        python src/portfolio/publish/restore.py frontend/public/data "${skip[@]}"

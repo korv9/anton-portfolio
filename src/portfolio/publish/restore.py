@@ -52,8 +52,8 @@ def checked(data: bytes, entry: dict, what: str) -> bytes:
     return data
 
 
-def active_files(groups: list[str] | None = None, skip: list[str] | None = None) -> dict[str, dict]:
-    """{logical path: {key, bytes, sha256}} for every file of the active releases."""
+def active_files(groups: list[str] | None = None) -> dict[str, dict]:
+    """{logical path: {key, bytes, sha256, group}} for every file of the active releases."""
     current = json.loads(fetch("manifests/current.json", fresh=True))
     if current.get("schema_version") != 2:
         raise ValueError("Unsupported active manifest")
@@ -61,7 +61,7 @@ def active_files(groups: list[str] | None = None, skip: list[str] | None = None)
         raise ValueError(f"Not active: {', '.join(unknown)}")
     files: dict[str, dict] = {}
     for name, pointer in current["groups"].items():
-        if (groups and name not in groups) or name in (skip or []):
+        if groups and name not in groups:
             continue
         if not RELEASE.fullmatch(pointer["release"]):
             raise ValueError(f"Invalid release of {name}")
@@ -71,12 +71,39 @@ def active_files(groups: list[str] | None = None, skip: list[str] | None = None)
             if (path.startswith("/") or any(p in ("", ".", "..") for p in parts) or "\\" in path
                     or entry["key"] != f"releases/{name}/{pointer['release']}/files/{path}"):
                 raise ValueError(f"Invalid delivered path in {name}: {path}")
-            files[path] = entry
+            files[path] = {**entry, "group": name}
     return files
 
 
+def write_catalog(root: Path, files: dict[str, dict], offloaded: list[str]) -> None:
+    """catalog.json, delivery.json and offloaded.json for the restored root, as
+    portfolio.publish.catalog writes them: the validators, the publication steps and the dev
+    server read them. A file of a skipped group stays catalogued as offloaded, read from R2."""
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from portfolio.publish import catalog as c
+
+    c.PUBLIC, c.CATALOG, c.DELIVERY = root, root / "catalog.json", root / "delivery.json"
+    entries = []
+    for path, entry in sorted(files.items()):
+        fmt = c.classify(path)
+        local = root / path
+        entries.append({"path": path, "product": c.product_of(path), "format": fmt,
+                        "bytes": entry["bytes"], "rows": c.row_count(local, fmt) if local.is_file() else None,
+                        "schema_version": c.SCHEMA_VERSION, "partition": c.partition_of(path),
+                        "sha256": entry["sha256"], "hash_algorithm": "sha256-exact-bytes"})
+    run_id = hashlib.sha256("".join(f"{e['path']}:{e['sha256']}" for e in entries).encode()).hexdigest()[:16]
+    for entry in entries:
+        entry["run_id"] = run_id
+    catalog = {"schema_version": c.SCHEMA_VERSION, "hash_algorithm": "sha256-exact-bytes",
+               "run_id": run_id, "bases": c.BASES, "files": entries}
+    c.CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    c.write_delivery(catalog)
+    (root / "offloaded.json").write_text(json.dumps(sorted(offloaded), indent=1) + "\n", encoding="utf-8")
+
+
 def restore(root: Path = ROOT, groups: list[str] | None = None, skip: list[str] | None = None) -> dict:
-    files = active_files(groups, skip)
+    files = active_files(groups)
+    wanted = {p: e for p, e in files.items() if e["group"] not in (skip or [])}
 
     def one(item: tuple[str, dict]) -> int:
         path, entry = item
@@ -90,8 +117,11 @@ def restore(root: Path = ROOT, groups: list[str] | None = None, skip: list[str] 
 
     # ponytail: 16 threads over ~7,000 small objects; ranged or batched reads if it grows past minutes.
     with ThreadPoolExecutor(max_workers=16) as pool:
-        written = sum(pool.map(one, files.items()))
-    return {"files": len(files), "written": written, "kept": len(files) - written}
+        written = sum(pool.map(one, wanted.items()))
+    if not groups:  # a catalogue of a few groups would claim the delivery is smaller than it is
+        write_catalog(root, files, [p for p in files if p not in wanted])
+    return {"files": len(wanted), "written": written, "kept": len(wanted) - written,
+            "offloaded": len(files) - len(wanted)}
 
 
 def main() -> int:

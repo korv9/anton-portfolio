@@ -37,6 +37,9 @@ for entry in catalog['files']:
         assert len(content) == entry['bytes'], entry['path']
         assert raw_sha(path) == entry['sha256'], entry['path']
         local += 1
+    elif relative == 'politics/parliament/README.md':
+        # Documentation, not data: no release delivers it (configs/delivery/baseline.json).
+        continue
     else:
         # Absent files must be shards that were deliberately moved, never silent losses.
         assert delivery.is_shard(relative), f'Missing and not a shard: {entry["path"]}'

@@ -68,24 +68,30 @@ Components ask for logical paths such as `gold/overview.json`, never URLs.
 | `useData(path)` | React hook in `frontend/src/meaning/kit.tsx`, used by the feed posts |
 | `resolveDataUrl(path)` | A resolved URL for a link or download |
 
-The production site reads the data committed under `frontend/public/data`. The committed
-`delivery.json` has schema version 1, JSON base `data/`, and the bucket's `r2.dev` address for
-Parquet and shards. It has no `manifest_url`, and `VITE_R2_MANIFEST_URL` is not used, so the
-site reads most groups from these bases, not from the versioned releases the workflows publish
-to R2 ([r2-delivery-contract.md](r2-delivery-contract.md)). The exception is `live`: paths under
-its `prefixes` (`job-assistant/`, `LIVE_PREFIXES` in `portfolio.publish.catalog`) are resolved through its
-`manifest_url`, the active R2 manifest. That group is never committed under `frontend/public/data`,
-so it exists only as a release. Use `VITE_DELIVERY_MODE=local` to read a local export instead.
+The production site reads every data file from the active R2 releases. A production build reads
+`https://data.antonernstsson.com/manifests/current.json` (`PRODUCTION_MANIFEST` in
+`dataSource.ts`; `VITE_R2_MANIFEST_URL` replaces it, and `VITE_DELIVERY_MODE=local` reads the
+local copy, as the CI and `verify:full` builds do), so `dataSource.ts` resolves each
+logical path through the group manifests ([r2-delivery-contract.md](r2-delivery-contract.md)).
+A new release is live without a commit or a deploy. No data is in Git: `frontend/public/data` is
+ignored, and the built site carries no data files.
 
-`VITE_DELIVERY_MODE=local` reads everything from `data/`, for development and offline
-fixtures. On localhost a missing `delivery.json` is tolerated the same way.
+Locally and in CI, `npm run data:restore` (`src/portfolio/publish/restore.py`) writes the active
+releases into `frontend/public/data`, each file checked against its manifest; a file that already
+matches is kept. It reads the bucket's public address and needs no credentials. It also writes
+`catalog.json`, `delivery.json` and `offloaded.json` for that copy, as `portfolio.publish.catalog`
+does, so the validators and the dev server read it the way they read the old committed tree.
+`--skip-group politics-archive` leaves out the ~900 MB of politics document shards; they stay
+catalogued as offloaded and are read from R2 one shard at a time.
+`VITE_DELIVERY_MODE=local` reads everything from `data/`.
 
 ## Adding a delivered file
 
-1. Write it under `frontend/public/data/<product>/`.
-2. Run `npm run data:catalog`.
-3. Read it by logical path through one of the functions above.
-4. Give it to a delivery group in `configs/delivery/`, or leave it to `baseline`.
+1. Write it under `frontend/public/data/<product>/` from the subject's export step.
+2. Read it by logical path through one of the functions above.
+3. Give it to a delivery group in `configs/delivery/`, or leave it to `baseline`.
+4. Run the subject (`run-subject.yml`): its group's next release carries the file, and the site
+   reads it from there.
 
 A directory whose files are read one document at a time goes in `SHARD_DIRECTORIES` in
 `portfolio.publish.catalog`. The site reads that list from `delivery.json`, so nothing in `src/` changes.

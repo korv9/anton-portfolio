@@ -203,7 +203,7 @@ subjects:
     group: politics-archive
     steps: []
 
-  # CI: politics from the committed deliveries in an empty warehouse, where the parliament
+  # CI: politics from the delivered files in an empty warehouse, where the parliament
   # models have nothing to read, then proof that the export is byte-identical to the site's files.
   politics_check:
     schedule: every push
