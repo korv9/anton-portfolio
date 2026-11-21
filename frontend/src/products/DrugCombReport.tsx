@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { currentLocale, l } from '../i18n'
 import { fixed as num } from '../format'
 import { fetchData } from '../dataSource'
+import { useDataUrl } from '../dataUrl'
 import CalibrationScatter from './CalibrationScatter'
 import { Empty } from '../report/board/Board'
 import Columns from '../report/board/Columns'
@@ -911,7 +912,32 @@ export default function DrugCombReport({ route }: { route: Route }) {
   )
 }
 
+/** A figure from the release: the PNG inline, linked to its SVG. */
+function Figure({
+  file,
+  alt,
+  width,
+  height,
+}: {
+  file: string
+  alt: string
+  width: number
+  height: number
+}) {
+  const svg = useDataUrl(`products/drugcomb/figures/${file}.svg`)
+  const png = useDataUrl(`products/drugcomb/figures/${file}.png`)
+  return (
+    <a href={svg} target="_blank" rel="noreferrer">
+      {png && (
+        <img src={png} alt={alt} width={width} height={height} loading="lazy" />
+      )}
+    </a>
+  )
+}
+
 function Method({ report }: { report: Report }) {
+  const reportUrl = useDataUrl('products/drugcomb/REPORT.md')
+  const manifestUrl = useDataUrl('products/drugcomb/data_manifest.json')
   const r = (model: string) =>
     num(
       report.metrics.find((m) => m.scheme === 'cold_pair' && m.model === model)
@@ -981,10 +1007,10 @@ function Method({ report }: { report: Report }) {
         )}
       </p>
       <div className="product-actions">
-        <a href="data/products/drugcomb/REPORT.md" download>
+        <a href={reportUrl} download>
           {l('Full upstream report', 'Hela rapporten')}
         </a>
-        <a href="data/products/drugcomb/data_manifest.json" download>
+        <a href={manifestUrl} download>
           {l('Input manifest', 'Indatamanifest')}
         </a>
         <a
@@ -1046,19 +1072,7 @@ function Method({ report }: { report: Report }) {
           ] as [string, number, number, string, string][]
         ).map(([file, w, h, en, sv]) => (
           <figure key={file}>
-            <a
-              href={`data/products/drugcomb/figures/${file}.svg`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <img
-                src={`data/products/drugcomb/figures/${file}.png`}
-                alt={l(en, sv)}
-                width={w}
-                height={h}
-                loading="lazy"
-              />
-            </a>
+            <Figure file={file} alt={l(en, sv)} width={w} height={h} />
             <figcaption>{l(en, sv)}</figcaption>
           </figure>
         ))}

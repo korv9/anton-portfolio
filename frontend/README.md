@@ -26,7 +26,7 @@ npm run verify:quick     # types, formatting, unit tests
 | `src/products/` | DrugComb, the thesis, Homie and the DiVA lakehouse pages |
 | `src/lib/` | Release and job parsers that `scripts/check_compliance_release.mjs`, `check_job_companies.mjs` and `rank_local_jobs.mjs` read; no page imports them |
 | `src/tokens.css` | Design tokens ([design system](../docs/site/design-system.md)) |
-| `public/data/` | Delivered data committed for first paint, with `catalog.json` and `delivery.json` |
+| `public/data/` | Not in Git: a local copy of the active R2 releases (`npm run data:restore`), read by the dev server and the tests |
 | `tests/` | Playwright specs and `tests/unit/` ([how to run them](tests/README.md)) |
 
 Data paths resolve through `src/dataSource.ts`: a file either ships under `public/data/` or is

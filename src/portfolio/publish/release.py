@@ -22,8 +22,10 @@ SHORT = "no-cache, max-age=0, must-revalidate"
 PRIVATE = {"private", "thesis", "raw", "warehouse", "features", "models", "embeddings"}
 PRIVATE_ROOT = PRIVATE - {"warehouse"}  # warehouse/delivery is an approved staging location.
 # .bin: the Workers AI demos' int8 vectors (frontend/src/workersAi/corpus.ts), read as raw bytes.
-EXTENSIONS = {".json", ".parquet", ".csv", ".svg", ".png", ".webp", ".bin"}
-PUBLIC_TYPES = {**CONTENT_TYPES, ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp"}
+# .md: the DrugComb report's upstream REPORT.md, offered as a download.
+EXTENSIONS = {".json", ".parquet", ".csv", ".svg", ".png", ".webp", ".bin", ".md"}
+PUBLIC_TYPES = {**CONTENT_TYPES, ".svg": "image/svg+xml", ".png": "image/png", ".webp": "image/webp",
+                ".md": "text/markdown; charset=utf-8"}
 
 
 def public_data_validator():
@@ -462,7 +464,10 @@ def main():
         elif args.command == "materialize":
             result = materialize(s3, bucket, args.root,
                                  json.loads(args.spec.read_text(encoding="utf-8")),
-                                 json.loads(args.catalog.read_text(encoding="utf-8")), args.prefer_active)
+                                 # A restored root has no catalogue until portfolio.publish.catalog writes
+                                 # one; the active releases then name every file.
+                                 json.loads(args.catalog.read_text(encoding="utf-8")) if args.catalog.is_file()
+                                 else {"files": []}, args.prefer_active)
         elif args.command == "activate":
             choices = dict(item.split("=", 1) for item in args.release)
             result = activate(s3, bucket, {g: release_pointer(s3, bucket, g, r) for g, r in choices.items()})

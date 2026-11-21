@@ -18,6 +18,8 @@ const plans = {
   // Everything here but knip also runs in ci.yml; none of these steps needs a secret.
   full: [
     ...quick,
+    'compliance:check',
+    'jobs:check',
     'build',
     'wrangler-dry-run',
     'lint-imports',
@@ -106,7 +108,10 @@ for (const step of plans[mode]) {
           PORTFOLIO_DB: join(logs, 'ci.duckdb'),
           PORTFOLIO_RAW: join(logs, 'raw'),
         }
-      : process.env,
+      : step === 'build'
+        ? // As in CI: the tests read the restored copy, not the R2 releases.
+          { ...process.env, VITE_DELIVERY_MODE: 'local' }
+        : process.env,
     stdio: ['ignore', descriptor, descriptor],
   })
   closeSync(descriptor)

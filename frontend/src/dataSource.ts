@@ -24,6 +24,8 @@ type Delivery = {
   // Legacy delivery with a few groups already read from the versioned R2 manifest.
   live?: { manifest_url: string; prefixes: string[] }
 }
+const PRODUCTION_MANIFEST =
+  'https://data.antonernstsson.com/manifests/current.json'
 const LOCAL: Delivery = {
   bases: { json: 'data/', parquet: 'data/', shard: 'data/' },
   shardPrefixes: [],
@@ -153,7 +155,11 @@ async function fileIndex(
 
 async function bootstrap(): Promise<Delivery> {
   if (localMode) return LOCAL
-  const override = import.meta.env.VITE_R2_MANIFEST_URL
+  // A production build reads every file from the active R2 releases; no data is in Git. A test
+  // build sets VITE_DELIVERY_MODE=local to read the restored copy (npm run data:restore).
+  const override =
+    import.meta.env.VITE_R2_MANIFEST_URL ??
+    (import.meta.env.PROD ? PRODUCTION_MANIFEST : undefined)
   if (override) return snapshot(override)
   let manifest
   try {

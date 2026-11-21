@@ -16,9 +16,9 @@ A subject is fetched to `warehouse/raw`, built and tested by dbt into
 release in R2 (`src/portfolio/publish/release.py`, specs in `configs/delivery/`). Each release's
 group manifest records the dbt results of the group's subjects and its file row counts under
 `dq` and `reconcile`; a blocking dbt result or a large row drop stops the upload
-([r2-delivery-contract.md](r2-delivery-contract.md)). The site does not
-read these releases: it serves the data committed under `frontend/public/data`
-([storage-and-serving.md](storage-and-serving.md)). No workflow commits data.
+([r2-delivery-contract.md](r2-delivery-contract.md)). The site reads these releases and nothing
+else; no data is in Git ([storage-and-serving.md](storage-and-serving.md)). Every data workflow
+restores the active releases into `frontend/public/data` before it runs (`.github/actions/data-setup`).
 
 ## Running a subject locally
 

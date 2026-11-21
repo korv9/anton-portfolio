@@ -12,7 +12,7 @@
     python platform/pipeline.py lanes                 # the build's parallel ingest jobs (JSON)
 
 The same command runs locally and in GitHub Actions. Publishing changes the active release in R2
-(the site serves the data committed under frontend/public/data, docs/platform/pipeline.md), so it runs
+(the site reads it at once, docs/platform/storage-and-serving.md), so it runs
 only in Actions or when asked for with --only publish. One failed subject does not stop the
 others; the exit code is non-zero if any failed.
 """

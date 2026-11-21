@@ -56,11 +56,13 @@ Python and ships as compact files, so the browser does vector search and cheap m
 
 ```bash
 npm ci
+npm run data:restore   # the active R2 releases into frontend/public/data, verified (Python 3)
 npm run dev            # http://127.0.0.1:5173, every page
 npm run verify:quick   # types, formatting, frontend and Worker unit tests
 ```
 
-The site's data is committed, so it builds with Node alone. Rebuilding a subject and the
+The site's data is not in Git: it is the active R2 releases, which the production site reads
+directly and `data:restore` copies for development and tests. Rebuilding a subject and the
 fuller checks are in [the pipeline](docs/platform/pipeline.md) and
 [the development workflow](docs/platform/development.md).
 
@@ -80,7 +82,7 @@ Most of the code is written with AI agents; [CLAUDE.md](CLAUDE.md) holds the rul
 |---|---|
 | [`platform/`](platform/README.md) | Ingestion, dbt models, publishing, quality checks, the pipeline registry and the Python tests |
 | [`ml/`](ml/README.md) | The analysis and ML layer: clustering, model cards, pre-registered studies |
-| [`frontend/`](frontend/README.md) | The React site, its committed data (`public/data/`) and the browser and unit tests |
+| [`frontend/`](frontend/README.md) | The React site and its browser and unit tests; its data comes from the R2 releases (`npm run data:restore` for a local copy) |
 | `worker/` | The Cloudflare Worker: static assets, the Workers AI endpoints, the job assistant API |
 | [`configs/`](configs/README.md) | Delivery groups and schemas, clustering settings, Workers AI settings |
 | [`scripts/`](scripts/README.md) | Verification, build checks and workspace tools |

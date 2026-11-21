@@ -21,6 +21,10 @@ def check(level, root=ROOT):
     if not (root / 'node_modules/typescript/bin/tsc').is_file():
         raise RuntimeError('Dependencies are missing. Request installation or use an existing '
                            'installation with the same package-lock.json.')
+    # The site's data is the R2 releases, not files in Git; the tests read a local copy.
+    if not (root / 'frontend/public/data/catalog.json').is_file():
+        raise RuntimeError('frontend/public/data has no copy of the delivered data. '
+                           'Run npm run data:restore first.')
     status = subprocess.run(['git', 'status', '--porcelain=v1', '-uno'], cwd=root,
                             capture_output=True, text=True, check=True)
     print(f'Preflight: {free:.1f} GiB free; {len(status.stdout.splitlines())} changed tracked paths; '

@@ -223,16 +223,9 @@ def register(paths: list[Path]) -> None:
     DELIVERY.write_text(json.dumps(delivery, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
-def main() -> None:
-    global PUBLIC, CATALOG, DELIVERY
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--root", type=Path, default=PUBLIC, help="public export staging root")
-    args = parser.parse_args()
-    PUBLIC = args.root
-    CATALOG = PUBLIC / "catalog.json"
-    DELIVERY = PUBLIC / "delivery.json"
-    catalog = build()
-    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+def write_delivery(catalog: dict) -> None:
+    """delivery.json for a catalogue: bases, shard prefixes, the live prefixes and Parquet parts.
+    portfolio.publish.restore writes the same file for a restored root."""
     # DuckDB cannot glob over HTTP, so the parts of each Parquet dataset are listed here for
     # the browser to pass to read_parquet as an explicit array.
     datasets: dict[str, list[str]] = {}
@@ -256,6 +249,19 @@ def main() -> None:
                                          for name, parts in sorted(datasets.items())}},
                    ensure_ascii=False, indent=1) + "\n",
         encoding="utf-8")
+
+
+def main() -> None:
+    global PUBLIC, CATALOG, DELIVERY
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=PUBLIC, help="public export staging root")
+    args = parser.parse_args()
+    PUBLIC = args.root
+    CATALOG = PUBLIC / "catalog.json"
+    DELIVERY = PUBLIC / "delivery.json"
+    catalog = build()
+    CATALOG.write_text(json.dumps(catalog, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    write_delivery(catalog)
     totals = {}
     for entry in catalog["files"]:
         current = totals.setdefault(entry["format"], [0, 0])

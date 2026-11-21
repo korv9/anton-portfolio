@@ -33,8 +33,9 @@ ml/runs/
 ml/.cache/
 platform/.cache/
 
-# Analyst Parquet exports: written and uploaded by the refresh, never committed.
-frontend/public/data/parquet/welfare/
+# The site's data: the active R2 releases, restored here by `npm run data:restore` and written
+# by the exports. Never committed (docs/platform/storage-and-serving.md).
+frontend/public/data/
 
 # Wrangler local state
 .wrangler/
@@ -46,9 +47,6 @@ frontend/public/data/parquet/welfare/
 # journal is committed (docs/platform/idea-lineage.md).
 .idea-lineage/*
 !.idea-lineage/public/
-frontend/public/data/status/
-# The job assistant's hourly files: published to R2 by refresh-job-assistant.yml, never committed.
-frontend/public/data/job-assistant/
 
 # pip install -e . metadata
 *.egg-info/

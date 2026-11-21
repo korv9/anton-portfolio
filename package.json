@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config frontend/vite.config.ts --host 127.0.0.1 --port 5173 --strictPort",
-    "build": "npm run compliance:check && npm run jobs:check && tsc -b frontend && vite build --config frontend/vite.config.ts",
+    "build": "tsc -b frontend && vite build --config frontend/vite.config.ts",
     "jobs:check": "node --experimental-strip-types scripts/check_job_companies.mjs",
     "compliance:check": "node --experimental-strip-types scripts/check_compliance_release.mjs",
     "preview": "vite preview --config frontend/vite.config.ts --host 127.0.0.1",
@@ -27,6 +27,7 @@
     "politics:parties": "python platform/publish/export_party_profiles.py",
     "politics:debates": "python platform/publish/export_debates.py",
     "pipeline": "python platform/pipeline.py",
+    "data:restore": "python src/portfolio/publish/restore.py --skip-group politics-archive",
     "data:catalog": "python -m portfolio.publish.catalog",
     "data:upload": "python -m portfolio.storage.upload",
     "data:check": "python platform/pipeline.py check",

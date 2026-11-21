@@ -102,6 +102,8 @@ jobs:
           R2_BUCKET: ${{ secrets.R2_BUCKET }}
         with:
           pull: ${{ matrix.subjects }}
+          # A lane only fetches; the build job restores the active releases.
+          releases: 'false'
       # Stops before the job does, so the store below always has time to run.
       - name: Fetch the lane's subjects
         timeout-minutes: ${{ matrix.timeout }}
@@ -163,9 +165,6 @@ jobs:
         with:
           pull: --all
           ml: 'true'
-      # The site's data is the active releases (portfolio.publish.restore); the exports overwrite them.
-      - name: Restore the active releases
-        run: python src/portfolio/publish/restore.py frontend/public/data --skip-group politics-archive
       - name: Collect the lanes' outcomes
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:

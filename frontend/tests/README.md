@@ -4,7 +4,7 @@
 `npm run test:e2e` runs browser tests on desktop and mobile interaction checks.
 Playwright only loads `*.spec.ts`; unit tests run separately.
 
-UI contract tests use the committed delivery snapshots. Versioned resolver tests
+UI contract tests read the local copy of the active releases (`npm run data:restore`). Versioned resolver tests
 in `r2-delivery.spec.ts` cover manifest refresh, failed requests and pinned file
 versions with explicit fixtures. `live-delivery.spec.ts` is a separate opt-in
 check of actual R2 hashes and browser reads for jobs, news, welfare and taxes.
@@ -23,11 +23,11 @@ Remove-Item Env:PLAYWRIGHT_PORT, Env:E2E_R2_MANIFEST_URL, Env:E2E_SITE_URL, Env:
 Choose an unused port and a unique output directory for concurrent work.
 For production acceptance, use `manifests/current.json` and omit the override:
 the test then requires the deployed site's real configuration to match. The production site
-does not read R2 releases today: it serves the committed data
+reads every data file from the R2 releases
 ([storage-and-serving.md](../../docs/platform/storage-and-serving.md)).
 Set `E2E_LIVE_DELIVERY=1` to run the
 shared UI tests against the site's configured live delivery instead of the
-committed snapshots.
+local copy.
 
 Tag a browser test `@mobile` when touch interaction or a narrow viewport can
 change its behaviour. Use `@mobile-only` for a phone-specific test. Data values,

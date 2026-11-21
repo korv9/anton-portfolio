@@ -1,10 +1,9 @@
 # Versionsbunden dataleverans från R2
 
 Hur `src/portfolio/publish/release.py` publicerar en leveransgrupp som en version i R2.
-Workflowen publicerar releaser enligt detta kontrakt, men webbplatsen läser i regel inte dem:
-produktionen läser den incheckade datan under `frontend/public/data`, vars
-`delivery.json` saknar `manifest_url`, och `VITE_R2_MANIFEST_URL` används inte. Undantaget är
-`live` i `delivery.json`: paths under dess `prefixes` (`job-assistant/`) löses via aktivmanifestet.
+Workflowen publicerar releaser enligt detta kontrakt, och webbplatsen läser all sin data ur dem:
+ett produktionsbygge läser aktivmanifestet (`PRODUCTION_MANIFEST` i `frontend/src/dataSource.ts`).
+Ingen data ligger i Git.
 Vilka ämnen som hör till vilken grupp och när de
 körs står i [pipeline.md](pipeline.md). Hur sajten hittar sina filer står i
 [storage-and-serving.md](storage-and-serving.md). Innehållskontrollerna för jobb,
@@ -224,10 +223,9 @@ ny publicering normaliserar inga payloads.
 
 `python -m portfolio.publish.catalog --root STAGING` stöder annan exportrot.
 
-Resolvern i `frontend/src/dataSource.ts` har ett liveläge som läser
-`manifests/current.json`, men det är inte inkopplat: den incheckade `delivery.json`
-saknar `manifest_url` och `VITE_R2_MANIFEST_URL` används inte. Sajten använder
-schema1-formatbaserna. `VITE_DELIVERY_MODE=local` väljer uttryckligen lokala
+Resolvern i `frontend/src/dataSource.ts` läser `manifests/current.json` i produktion
+(`PRODUCTION_MANIFEST` i `dataSource.ts`; `VITE_R2_MANIFEST_URL` ersätter den). Lokalt och i CI läser den kopian som
+`npm run data:restore` skriver. `VITE_DELIVERY_MODE=local` väljer uttryckligen lokala
 `data/`-filer för utveckling och reproducerbara offlinefixtures. På localhost tillåts
 saknat bootstrapmanifest och Parquetfallback för äldre lokala leveranser.
 
