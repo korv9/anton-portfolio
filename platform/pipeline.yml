@@ -115,6 +115,8 @@ subjects:
     write: {raw: mirror, warehouse: overwrite, delivery: versioned}
     group: public-data
     lane: public
+    # Its export reads welfare's gold.fct_indicator.
+    needs: [welfare]
     raw: [scb, riksdagen/votes, riksdagen/reports, riksdagen/studies, riksdagen/formation, riksdagen/formation_votes,
           riksdagen/_checkpoints, riksdagen/_manifest.jsonl, val]
     prune: true
@@ -468,6 +470,8 @@ subjects:
     write: {features: {merge: [path]}, warehouse: overwrite, delivery: versioned}
     group: sweden
     lane: sweden_futures
+    # export_connections reads sweden's fct_municipal_similarity.
+    needs: [sweden]
     features: [sweden/futures, sweden/futures_theses, sweden/futures_theses_detail]
     steps:
       - ingest: python platform/ingest/riksdagen/futures_language.py --max-new 12

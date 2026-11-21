@@ -39,7 +39,7 @@ sources:
     meta:
       external_location: >-
         read_json('{{ env_var('PORTFOLIO_RAW', '../warehouse/raw') }}/scb_deso/{name}/part-*.json',
-        filename = true, maximum_object_size = 500000000)
+        filename = true, maximum_object_size = 64000000)
     tables:
       - name: residents
         description: FolkmDesoAldKon, residents of all ages per DeSO and year.
